@@ -1,0 +1,223 @@
+# Product and MVP specification
+
+Status: planning baseline accepted, updated 2026-09-05
+
+## Product promise
+
+LibreTabs helps a complete beginner understand what to do with a guitar, open a suitable MIDI song, see one honest playable arrangement, and practice a small section at a comfortable speed. It works offline after installation or first web load and does not require an account.
+
+The app is a teacher-shaped practice aid, not a replacement for a teacher, a full notation editor, or an automatic arranger that claims every MIDI file is playable.
+
+## Primary learner
+
+The MVP learner:
+
+- is primarily an adult or teen learning independently; a child may use LibreTabs with guidance from a parent, guardian, or teacher;
+- owns or can borrow a six-string guitar;
+- may not know string numbers, fret numbers, note names, rhythm values, clefs, or tablature;
+- can use a mouse/touchscreen, with keyboard operation also supported;
+- wants a private, free tool without subscriptions or song uploads;
+- will benefit from visible explanations and graceful errors more than dense expert controls.
+
+A musician importing complex orchestral MIDI is an important test user, but is not the person who decides the initial interface.
+
+## Product principles
+
+1. Teach before testing. A new term is introduced visually and in plain language before the UI relies on it.
+2. One next action. Each lesson and empty state has a clear primary action.
+3. Honest assistance. Generated fingering is labeled as an arrangement; simplifications and impossible notes are visible.
+4. Practice, not performance. The main view keeps current and upcoming music readable instead of maximizing animation.
+5. Local-first. Imported songs and progress stay on the device unless the user explicitly exports something.
+6. Representation is reversible. Import events are retained unchanged and every derived decision can eventually be recomputed.
+
+## Confirmed directions and remaining assumptions
+
+These choices keep the first usable release bounded. The product owner confirmed the delivery, practice, and notation directions on 2026-09-02, the project organization on 2026-09-03, the provisional name and non-commercial intent on 2026-09-04, and audience, content licensing, and review timing on 2026-09-05.
+
+- **Provisional project name:** LibreTabs. Reconfirm or replace it before public alpha; keep the existing `litetabs` repository slug until then to avoid rename churn.
+- **Project organization:** `bluehexagons`; use this name in project copyright notices unless a later legal review requires a different holder name.
+- **Project operation:** LibreTabs is a non-commercial free-software effort. Official project plans contain no paid edition, subscription, advertising, affiliate placement, or data monetization.
+- **License meaning:** Apache-2.0 remains the license. “Non-commercial” describes bluehexagons' operation of the project and does not restrict others from commercial use, redistribution, or paid support permitted by Apache-2.0.
+- **Non-code content:** project-authored documentation, lesson text, illustrations, music, and test MIDI fixtures are dedicated under CC0-1.0. Third-party work cannot be relicensed and requires its own provenance and license record.
+- **Audience:** adults and teens are the primary independent learners. Children are welcome with parent, guardian, or teacher guidance; the MVP is not designed as an unsupervised child-directed service.
+- **Human review:** recruit musical reviewers and true beginners when their roadmap checkpoints arrive. Their unavailability does not block M0 engineering work, and agents do not substitute for them.
+- **Primary delivery:** web export first for broad access, then unsigned development builds for Linux, Windows, and macOS.
+- **Practice feedback:** guided visual/audio play-along is sufficient for MVP; no microphone pitch detection or live grading. A non-grading volume-impulse progression mode is the first post-MVP input experiment.
+- **Instrument:** six-string guitar in E2-A2-D3-G3-B3-E4 tuning, with the tuning represented as data so alternate tunings do not require an algorithm rewrite.
+- **Import contract:** best-effort arrangement of one selected pitched MIDI track, not guaranteed conversion of a complete orchestral arrangement.
+- **Notation:** tablature is the primary, larger representation. Synchronized standard staff notation is always shown above it for reference, with a concise reading guide in Help. Treble is the guitar default, with bass and automatic clef selection available.
+- **Content language:** English lessons first, but all UI/content structures are localization-ready from their first implementation.
+- **Connectivity:** no backend, accounts, telemetry, content catalog, or third-party song search.
+
+No owner decision currently blocks M0. The provisional name still needs a final clearance/reconfirmation checkpoint before public alpha. Any future listening mode changes permissions, calibration, testing, and onboarding scope, even when it does not grade pitch.
+
+## Core user journeys
+
+### First run
+
+1. The learner sees three choices: **Start learning**, **Open a MIDI file**, and **Settings**.
+2. Start learning explains that sound begins after a click/tap and offers a short audio check.
+3. The learner is shown guitar orientation, string numbering, and fret numbering without assuming music vocabulary.
+4. The learner completes an open-string exercise using listen, count-in, and play-along steps.
+5. Progress is saved locally and the next lesson is offered.
+
+### Import and arrange
+
+1. The learner chooses or drops a `.mid`/`.midi` file. On web, the browser supplies bytes; the app never receives an arbitrary host path.
+2. The app validates the file before allocating unbounded data.
+3. The app lists pitched tracks with friendly names, note range, polyphony, estimated guitar coverage, and a **Recommended** badge. Percussion is separated.
+4. The learner chooses a practice track and keeps, mutes, or solos the remaining backing tracks.
+5. The app shows a short arrangement summary: clef, quantization, playable coverage, highest fret, and warnings.
+6. The practice view opens at the first sounding measure.
+
+### Practice a passage
+
+1. The learner presses play and hears a count-in followed by synchronized audio.
+2. The active beat/notes are emphasized in both staff and tab, using shape/position as well as color.
+3. The learner can pause, seek by measure, choose 50–100% tempo, enable the metronome, and define a measure loop.
+4. A compact fretboard guide shows the current string and fret and repeats the convention that string 1 is the thinnest/highest string.
+5. A persistent Help action summarizes how tab lines/fret numbers align with staff pitch/rhythm without covering the current notes.
+
+## MVP functional requirements
+
+### Learning path
+
+Ship six original, short lessons with purpose-built MIDI data:
+
+1. **Meet the guitar:** safe handling, string and fret numbering, picking direction, and how to read the on-screen cue.
+2. **Hear and check the open strings:** reference tones for E-A-D-G-B-E and guidance to use a physical/external tuner if tuning is wrong.
+3. **Play open strings in time:** quarter-note pulse, count-in, start/stop, and metronome.
+4. **Press the first frets:** finger just behind the fret; simple notes on strings 1 and 2.
+5. **Read tab and rhythm together:** zeros, fret numbers, quarter/eighth notes, and rests.
+6. **Practice a tiny melody:** slow down, select two measures, loop, then play the whole exercise.
+
+Each lesson has an objective, terms, demonstration, guided exercise, recap, and a manual **Mark complete** action. Automatic scoring waits for a later input-feedback milestone.
+
+### MIDI ingest
+
+- Accept Standard MIDI File formats 0 and 1 with ticks-per-quarter-note division.
+- Reject format 2 and SMPTE time division with a specific explanation in MVP.
+- Correctly handle variable-length quantities, running status, note-on velocity zero, tempo changes, time signatures, key signatures, track/instrument names, program changes, channel 10 percussion, and end-of-track.
+- Pair note-on/off events, diagnose unmatched/truncated events, and cap file bytes, tracks, events, text length, duration, and simultaneous voices.
+- Retain an unchanged session-owned copy of the imported file bytes and an immutable, ordered parsed-event sequence with source byte spans and stable IDs. Normalized notes, metadata, notation, and fingering are derived data linked back to those IDs.
+- Operate entirely on local bytes. A malformed file must never crash or freeze the application.
+
+Initial safety limits should be configurable and tested. Proposed defaults are 10 MiB, 128 tracks, 1,000,000 events, 24 hours of timeline duration, and 256 simultaneously active source notes.
+
+### Arrangement and notation projection
+
+- Keep source timing intact for playback.
+- Quantize a separate display projection to straight whole through sixteenth-note positions, dotted values, rests, chords, ties across beats/measures, and the common 2/4, 3/4, 4/4, and 6/8 meters.
+- Preserve tempo changes. For unsupported tuplets, swing interpretation, or unusual meter grouping, show a simplification diagnostic rather than silently claiming exact notation.
+- Use a supplied key signature when present; otherwise use deterministic pitch spelling with visible accidentals.
+- Default to octave-transposing treble clef for guitar. Allow treble, bass, or auto selection and explain that guitar treble notation sounds an octave lower than written.
+- Render the selected practice track only; backing tracks are audible but do not crowd the score.
+- Render staff lines, clef, meter/key, barlines, noteheads, stems/beams, rests, accidentals, ledger lines, dots, ties, and an aligned six-line tab staff. The staff remains visible as a smaller reference while tab receives primary visual weight. This is focused practice notation, not print engraving.
+- Provide an always-available Help summary that explains staff direction, clef, note position, rhythm values, string lines, and fret numbers in beginner language.
+
+### Guitar fingering
+
+- Model tuning as an ordered array of open-string MIDI pitches; E standard is `[40, 45, 50, 55, 59, 64]` from string 6 to string 1.
+- Enumerate every in-range string/fret candidate for a pitch up to a configurable fret limit (default 20).
+- Assign simultaneous pitches to distinct strings and reject impossible pitch counts, duplicate-string use, and excessive span.
+- Optimize the whole phrase, not each note independently, using a deterministic dynamic-programming/shortest-path cost.
+- Penalize hand-position movement, large within-chord fret span, very high frets, awkward string skips, and unnecessary position changes. Give small configurable preferences to open strings and positions introduced by early lessons.
+- Report exact playable-note coverage, dropped/shifted notes, maximum fret, maximum span, and a difficulty estimate.
+- Never rewrite source pitches in MVP. Out-of-range or impossible passages remain visible as diagnostics instead of being silently octave-shifted.
+
+### Playback and practice controls
+
+- Play/pause/stop, measure seek, timeline scrub, count-in, metronome, 50–100% tempo, and contiguous measure loop.
+- Per-track mute/solo and a one-action **Mute my part** control.
+- A procedural practice synthesizer with bounded polyphony and clear track distinction; pitch must not change when tempo changes.
+- The audio scheduler, cursor, loop boundaries, and display all use the same tempo-aware transport.
+- Audio starts only after a user gesture on web and has an explicit, recoverable muted/blocked state.
+- Resuming, seeking, changing speed, and looping must release stale voices and restore current program/controller state deterministically.
+
+### Local state
+
+- Save lesson completion, last location, accessibility/display settings, and user defaults in a versioned local schema.
+- Imported MIDI is session-only by default. Remember a recent item only after explicit consent, because web and desktop file capabilities differ.
+- Include reset/export controls before adding any cloud synchronization.
+
+### Offline web delivery
+
+- Enable Godot's Progressive Web App export so a successfully loaded release can start without a network connection.
+- Test a first online load followed by a network-disabled reload on the reference browser. Cache eviction is possible, so provide a small offline fallback page that explains how to reconnect and reload.
+- Test release updates and service-worker cache replacement so an old application shell cannot silently load incompatible persisted state.
+
+## Interface shape
+
+The MVP has four routes/scenes:
+
+- **Home:** continue learning, lessons, open MIDI, settings.
+- **Lesson:** one-column instruction and illustration area with persistent practice controls.
+- **Import review:** track list, arrangement options, diagnostic summary, open practice.
+- **Practice:** song/track header, responsive paired staff/tab viewport with tab emphasized, current-position/fretboard cue, Help, and a compact transport bar.
+
+Advanced settings stay behind a disclosure. The practice screen should remain useful at roughly 360 CSS pixels wide and at desktop widths; touch targets should be at least 44 logical pixels where practical.
+
+## Accessibility and internationalization baseline
+
+- Full keyboard navigation for menus and transport, with visible focus.
+- Rebindable shortcuts eventually; MVP shortcuts never replace visible controls.
+- Do not use color alone. Current notes also change outline/weight, warnings have icons/text, and strings retain numbers.
+- UI scale settings and responsive wrapping; verify 200% text/UI scale.
+- Use a general Unicode UI font with fallbacks. Keep the SMuFL music font separate from translated text.
+- Stable message keys, translation context, plural-aware messages, and translator comments from the start.
+- No string-built sentences; parameters are substituted into complete messages.
+- Pseudolocalization, long-label, and right-to-left layout smoke tests are MVP release gates even if English is the only shipped locale.
+- Store MIDI pitches, clefs, tunings, and note spellings as structured data. Localize only presentation.
+
+Godot canvas applications do not automatically inherit the semantic accessibility of HTML controls. Screen-reader support must be investigated during the technical spike and documented honestly; it is not safe to promise full screen-reader accessibility for MVP before that work.
+
+## Explicit non-goals for MVP
+
+- Microphone pitch detection, MIDI-controller assessment, scoring, or latency calibration.
+- Microphone/line-input volume-impulse progression. It is the first post-MVP input candidate, but guided playback does not depend on it.
+- Built-in chromatic tuner.
+- Audio recording or audio-to-MIDI transcription.
+- Score/tab editing, printing, PDF export, or MIDI export.
+- MusicXML, Guitar Pro, ABC, or audio-file import.
+- Alternate/capo/custom tuning UI, bass guitar, left-handed diagrams, or instruments other than guitar.
+- Guitar techniques not represented by plain MIDI, such as bend choice, hammer-on, pull-off, slide, palm mute, fingering fingers, or pick direction.
+- Tuplet/swing-perfect engraving, multiple notation voices, lyrics, repeats, codas, or page layout.
+- Accounts, social features, hosted song catalog, YouTube sync, or copyrighted song distribution.
+- Mobile-native store releases. Responsive web is tested; native mobile packaging follows desktop stability.
+
+## First post-MVP input experiment
+
+**Volume impulse progression** is a step-practice mode that waits at a cue and advances when it detects a clear pluck/strum transient. It does not identify a note, decide correctness, calculate accuracy, or retain audio. Any sufficiently distinct sound may advance it.
+
+The experiment should:
+
+- be optional and off by default;
+- explain and request microphone/line-input permission only when selected;
+- include a short adaptive noise-floor/threshold calibration and visible input meter;
+- process samples locally and never record or persist audio;
+- provide keyboard/touch **Next cue** as an equivalent fallback;
+- debounce echoes/background noise and expose sensitivity without implying certainty;
+- label the mode **Advance on sound**, not **Listen** or **Check my playing**.
+
+Ship it only after measuring false advances, missed impulses, browser permission recovery, and behavior with acoustic microphone and electric line input. It must remain useful when permission is denied or no input device exists.
+
+## MVP success measures
+
+For a small moderated test with at least five true beginners:
+
+- Four can identify string 1 and fret 1 after the first lesson without help.
+- Four can start, slow, and loop the built-in melody without help.
+- Four understand that a generated tab is an arrangement and can locate its warning summary.
+- All can recover from a bad/unsupported MIDI file without restarting the app.
+
+Engineering measures:
+
+- All legal MIDI fixtures parse deterministically on Linux and web.
+- At least 95% of notes in the curated guitar-ready MIDI corpus receive a valid E-standard fingering; the remaining notes have deterministic diagnostics.
+- Cursor/audio drift remains under 30 ms over a ten-minute variable-tempo fixture on the reference VM/browser, excluding initial device latency.
+- The app remains responsive while importing the maximum accepted file and refuses inputs over configured bounds.
+- No network request is required for lessons, import, synthesis, practice, or progress.
+
+## Pre-alpha owner checkpoint
+
+1. Reconfirm LibreTabs after a proper name-clearance pass, or select a replacement before publishing the alpha and registering package/store identities.

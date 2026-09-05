@@ -1,0 +1,26 @@
+# Godot generated state
+.godot/
+
+# Build artifacts
+build/
+dist/
+exports/
+
+# Local editor and operating-system files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.tmp
+*.log
+
+# Local inputs and research downloads (fixtures belong under tests/fixtures)
+/user-midi/
+/research-downloads/
+
+# Credentials and local environment overrides
+.env
+.env.*
+!.env.example
+export_credentials.cfg
