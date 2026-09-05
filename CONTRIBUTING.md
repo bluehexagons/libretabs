@@ -20,7 +20,7 @@ The first implementation work is M0. It proves or rejects Godot before productio
 - Keep controls keyboard-operable, responsive, translatable, and understandable without prior music vocabulary.
 - Record new dependencies and assets in `third_party/README.md` before merge.
 
-Run the checks applicable to the change. Before the test harness exists, the planned baseline is:
+Run the checks applicable to the change. Documentation-only work currently uses `git diff --check` and link/consistency review: there is no `project.godot` yet. After M0.1 creates the project, the baseline includes:
 
 ```bash
 godot --headless --path . --editor --quit-after 1

@@ -1,6 +1,6 @@
 # LibreTabs
 
-LibreTabs is the provisional public name for a free, offline-friendly application that helps a person with no musical background start playing guitar. It will combine short guided lessons with a focused practice player that can turn suitable Standard MIDI Files into synchronized staff notation and E-standard guitar tablature. It is designed primarily for adults and teens; children should use it with a parent, guardian, or teacher. The name may be reconsidered before public alpha; the existing `litetabs` repository slug remains unchanged for now.
+LibreTabs is the provisional public name for a free, offline-friendly application that helps a person with no musical background start playing guitar. It will combine short guided lessons with a focused practice player that can turn suitable Standard MIDI Files into synchronized staff notation and E-standard guitar tablature. It is designed primarily for adults and teens; children should use it with a parent, guardian, or teacher. The name may be reconsidered before public alpha; the GitHub repository is `bluehexagons/libretabs`, while the managed checkout directory remains `litetabs`.
 
 This repository is in the planning and technical-spike stage. The MVP deliberately favors a small, trustworthy learning loop over a full score editor or a promise that every arbitrary MIDI arrangement can be made comfortably playable on guitar.
 
@@ -12,7 +12,7 @@ LibreTabs is a non-commercial project: bluehexagons does not plan paid editions,
 
 - Learn guitar and notation vocabulary through six short built-in lessons.
 - Import Standard MIDI File format 0 or 1 from the user's device.
-- Choose one melodic track as the guitar part while retaining other tracks as backing.
+- Choose one pitched part (a MIDI track/channel pair) for guitar while retaining other parts as backing.
 - Produce a readable, non-destructive notation projection in treble or bass clef, always visible as a reference.
 - Generate primary E-standard tablature with explicit warnings for simplified or unplayable passages.
 - Listen, count in, slow down, seek, mute/solo, and loop measures while the score follows playback.
@@ -33,7 +33,8 @@ See [Architecture](docs/architecture.md) for the decision gate and design.
 - [MVP roadmap and acceptance criteria](docs/mvp-roadmap.md)
 - [Agentic development workflow](docs/agentic-development.md)
 - [Comparable projects and technical research](docs/research.md)
-- [Planning handoff and repository setup](docs/project-status.md)
+- [Planning handoff and readiness review](docs/project-status.md)
+- [MVP musical interpretation decisions](docs/decisions/0001-mvp-musical-contracts.md)
 - [Contribution guide](CONTRIBUTING.md)
 - [License scope](LICENSES/README.md)
 - [Instructions for coding agents](AGENTS.md)

@@ -6,7 +6,7 @@ Research date: 2026-09-05. “High quality” below means the public project sho
 
 **LibreTabs is the provisional project name as of 2026-09-05.** The owner may reconsider it before public alpha. No obvious exact-name music application appeared in the preliminary check, but this is not trademark clearance and the generic words may make search distinction harder.
 
-The initial **LiteTabs** codename was not suitable as a public name: [Lite Tabs](https://github.com/Azona77/lite-tabs) is already an active Obsidian plugin, while [Tabs Lite](https://tabslite.com/) is an established open-source guitar chord/tab application in the same product category. Keep the existing `litetabs` repository slug temporarily, but check LibreTabs in relevant trademark databases, package/app stores, domains, and source hosts before publishing an alpha or registering public identities.
+The initial **LiteTabs** codename was not suitable as a public name: [Lite Tabs](https://github.com/Azona77/lite-tabs) is already an active Obsidian plugin, while [Tabs Lite](https://tabslite.com/) is an established open-source guitar chord/tab application in the same product category. The GitHub repository is now `bluehexagons/libretabs`; the managed checkout directory remains `litetabs`. Check LibreTabs in relevant trademark databases, package/app stores, domains, and source hosts before publishing an alpha or registering public identities.
 
 ### Candidate review
 
@@ -27,7 +27,7 @@ The initial **LiteTabs** codename was not suitable as a public name: [Lite Tabs]
 | **ChordScroll** | Describes a synchronized chord-chart player well, but not beginner lessons, staff notation, or note-level tablature. | An [exact-name Chrome extension](https://extpose.com/ext/dhjfmdhhpbpbmkahnhhjnfplhlglbcfe) already provided synchronized, auto-scrolling Spotify chords and lyrics. | Drop; it is both occupied and unusually close in behavior. |
 | **LiteChords** | Familiar and approachable, but repeats the ambiguity and discoverability problems of the initial LiteTabs codename while narrowing the product to chords. | “Guitar Chords Lite” and many other “lite” chord products already occupy app-store results. | Drop. |
 
-Use **LibreTabs** in product planning and user-facing prototypes. The repository identifier remains `litetabs` until the pre-alpha clearance checkpoint; changing repository, package, domain, and store identities is a separate bounded issue.
+Use **LibreTabs** in product planning and user-facing prototypes. The remote identifier is now `bluehexagons/libretabs`; only the managed checkout retains `litetabs`. Further package, domain, and store identity changes remain separate bounded work after the clearance checkpoint.
 
 ### Alternatives retained if the name is revisited
 

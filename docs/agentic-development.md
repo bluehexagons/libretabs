@@ -123,7 +123,7 @@ For a small team, one agent may take several roles sequentially. A feature autho
 
 ## Baseline verification
 
-At repository bootstrap, add a single documented test entry point and keep CI/local commands identical. Until then, the available Godot sanity check is:
+At repository bootstrap, add a single documented test entry point and keep CI/local commands identical. There is currently no `project.godot`; until bootstrap lands, documentation-only changes use `git diff --check` and link/consistency review. Once a project exists, the Godot sanity check is:
 
 ```bash
 godot --headless --path . --editor --quit-after 1
@@ -139,11 +139,11 @@ git diff --check
 
 Do not hide engine warnings to obtain a green result. Treat new parser errors, orphan nodes/resources, leaked objects, and type warnings as failures unless a documented upstream issue makes that impossible.
 
-Algorithm changes should report fixture counts and property iterations. Timing changes should report sample rate, buffer size, duration, platform, browser/build, max drift, and stuck-voice result. Performance comparisons use the same fixture and build type.
+Algorithm changes should report fixture counts and property iterations. Timing changes should report sample rate, stream mode, buffer size/queued latency, duration, platform, browser/build, max/p95 audible-position error, fixed output latency, underruns, control-response latency, and stuck-voice result. Record how audible position was observed; scheduler trace agreement alone cannot certify it. Performance comparisons use the same fixture and build type.
 
 ## Web export and shared preview
 
-The VM currently has healthy Godot desktop and web templates. Before publishing a web-facing slice:
+The September 2026 planning inventory reported desktop and web templates; recheck rather than assuming that historical result still applies. Before publishing a web-facing slice:
 
 ```bash
 infra-tools agent doctor --capability development --json
@@ -164,7 +164,8 @@ Browser verification must at minimum check:
 
 - canvas initialization and responsive size;
 - console errors and failed network requests;
-- successful PWA installation followed by a network-disabled reload and an update from a prior versioned cache;
+- confirmed offline-ready cache followed by a network-disabled reload, interrupted/update recovery, and reconnect after complete storage loss;
+- save confirmation, unavailable/quota-limited storage, and future-schema recovery;
 - user-gesture audio unlock and blocked-audio recovery;
 - browser MIDI file selection and malformed-file recovery;
 - play/pause/seek/speed/loop behavior and background/foreground focus;
@@ -206,7 +207,7 @@ Do not vendor code during an exploratory issue. First produce the bake-off resul
 
 Create `docs/decisions/NNNN-short-title.md` from the repository template when accepting or reversing a decision about stack, parser, audio backend, file bridge, canonical model, dependency, license, supported MIDI contract, or platform target. Include context, decision, alternatives, consequences, and evidence date. Small implementation details belong near code/tests instead.
 
-The first required decision record is the M0 Godot go/no-go result.
+Decision 0001 records the MVP musical contracts. The first stack decision record must still be the measured M0 Godot go/no-go result.
 
 ## Human checkpoints
 
@@ -224,7 +225,7 @@ Request musician review at M3 and true-beginner sessions at M1/M5. Agents can pr
 ## Suggested first issue sequence
 
 1. Bootstrap Godot project, test entry point, exports, and third-party notice file.
-2. Define immutable `MidiSource`, `SongDocument`, source links, diagnostic codes, rational/tick conventions, and fixture builder.
+2. Define immutable `MidiSource`, `SongDocument`, `PracticePart`, channel ownership, source/display intervals, diagnostics, rational/tick conventions, and fixture builder using decision 0001.
 3. Create the parser bake-off fixtures and report; do not build UI yet.
 4. In parallel after contract review: host file adapter, notation proof, and audio/transport proof.
 5. Integrate the M0 vertical slice and run the decision gate.

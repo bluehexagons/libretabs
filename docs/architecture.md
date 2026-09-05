@@ -16,12 +16,12 @@ The Godot spike must demonstrate all of the following in one small web and Linux
 2. A format-0 and a format-1 fixture parse into the same documented canonical model in headless tests.
 3. A Bravura/SMuFL smoke score renders a clef, meter, notes, rest, accidental, beam, tie, ledger line, and aligned six-line tab at narrow and wide sizes.
 4. A single `AudioStreamGenerator` mixes at least 32 procedural voices, tempo changes, a metronome, seek, and a short loop without stuck notes.
-5. A cursor driven from the transport remains within 30 ms of scheduled note onsets over ten minutes in the managed VM's current Chromium; record the exact browser version with the result.
-6. The PWA-enabled web export initializes without console errors through the managed HTTPS host, reloads with the network disabled after one successful load, and presents an actionable fallback if its cache is unavailable. The Linux export runs locally.
+5. A cursor driven from the transport remains within 30 ms of estimated audible note onsets over ten minutes in the managed VM's reference Chromium. Record the browser/engine version, sample rate, stream mode, queued buffer length, output-latency estimate, maximum/p95 error, underruns, and control-response latency. Comparing two consumers of the same scheduler is insufficient timing evidence.
+6. The PWA-enabled web export initializes without console errors through the managed HTTPS host, reloads with the network disabled after one successful load, and presents a cached fallback if application resources are missing while the service worker/fallback survives. Complete site-storage loss requires reconnection; test that recovery separately. The Linux export runs locally.
 7. Pseudolocalized labels at 200% UI scale remain operable; keyboard focus is visible.
 8. The team records what screen readers can and cannot access in the resulting canvas app.
 
-If audio/timing or file upload fails but has a small isolated adapter fix, continue. If useful accessibility requires duplicating the whole UI, basic notation requires a near-full engraving engine, or portable audio requires platform-specific native extensions, prototype the same slice in TypeScript/Tauri before choosing.
+A small isolated audio/timing or file-adapter failure may stay within M0 for a bounded fix and rerun; it does not waive a failed gate or authorize production implementation. Pin the engine binary and matching export templates in M0.1; the historical VM inventory is not reproducible build evidence. If useful accessibility requires duplicating the whole UI, basic notation requires a near-full engraving engine, or portable audio requires platform-specific native extensions, prototype the same slice in TypeScript/Tauri before choosing.
 
 ## System shape
 
@@ -35,6 +35,7 @@ flowchart LR
     Song --> Project[Notation quantizer]
     Project --> Score[Score projection]
     Score --> Fret[Fingering optimizer]
+    Song -->|Source note intervals| Fret
     Fret --> Practice[Practice projection]
     Transport --> Synth[Procedural synth]
     Transport --> View[Practice UI cursor]
@@ -101,6 +102,8 @@ SongDocument
   meter_map: [TimeSignature]
   key_map: [KeySignature]
   tracks: [SongTrack]
+  parts: [PracticePart]
+  channel_events: [TimedChannelEvent]  # Merged programs/controllers across tracks
   end_tick: int
   diagnostics: [Diagnostic]
 
@@ -109,8 +112,13 @@ SongTrack
   channels, programs
   notes: [TimedNote]
   controller_events: [TimedController]
+  key_map: [KeySignature]  # Optional track-local spelling context
+
+PracticePart
+  id, source_track_index, channel
+  note_ids: [NoteId]
   is_percussion: bool
-  analysis: TrackAnalysis
+  analysis: PartAnalysis
 
 TimedNote
   id, track_id, channel, pitch, velocity
@@ -118,7 +126,7 @@ TimedNote
   source_event_ids: [SourceEventId]
 
 ScoreProjection
-  source_track_id
+  source_part_id
   settings: ProjectionSettings
   measures: [NotatedMeasure]
   source_note_links: Dictionary[NoteId, Array[NotatedEventId]]
@@ -134,15 +142,17 @@ PracticeProjection
 
 Use integer ticks and rational musical durations until the audio scheduling boundary. Do not accumulate beats using floating-point frame deltas. Convert ticks to seconds through a precomputed piecewise tempo map and convert seconds to audio frames at the final boundary.
 
+[Decision 0001](decisions/0001-mvp-musical-contracts.md) defines part selection, channel-state ownership, normalization recovery, coverage, and transport behavior. Source tracks remain containers; selectable parts reference a track/channel pair. Controllers are retained at source and consumed through the shared channel event stream, not replayed once per part. Notated events carry source intervals, rational display intervals, and note links; fret feasibility uses source intervals.
+
 All IDs are deterministic from source ordering, not generated UUIDs. This keeps test snapshots stable and lets diagnostics point back to imported events. One source note may become several tied notated events, so projection links are one-to-many.
 
-`MidiSource` retains the exact imported byte sequence for the current session and an immutable ordered parse with source spans. Core APIs expose it read-only or return copies; normalization never edits it. Normalized notes, score events, and fret placements retain stable links back to their source events. This supports honest diagnostics and lets later projections be regenerated without pretending quantization changed the import. The original bytes are discarded when the session ends unless the learner explicitly saves the import.
+`MidiSource` retains the exact imported byte sequence for the current session and an immutable ordered parse with source spans. Core APIs expose it read-only or return copies; normalization never edits it. Normalized notes, score events, and fret placements retain stable links back to their source events. This supports honest diagnostics and lets later projections be regenerated without pretending quantization changed the import. The original bytes are discarded when the session ends. Saved imports and remembered file permissions are deferred beyond MVP.
 
 ## MIDI ingest
 
 ### Parser strategy
 
-M0 compares three options against the same compliance fixtures:
+M0 first screens three options for required platforms, license, and contract fit. Run the same compliance fixtures only for viable candidates; a documented disqualifier is a valid bake-off result and does not justify porting a dependency:
 
 - a narrow application-owned pure-GDScript SMF 0/1 parser;
 - the MIT-licensed pure-GDScript MIDI reader from Clef, currently marked unstable by its publisher;
@@ -158,19 +168,27 @@ The parser produces structured errors containing a code, byte offset, track inde
 
 Parsing stages are header, track chunks, delta-time accumulation, status/running-status resolution, channel/meta/system event decoding, and end-of-track validation. Normalization pairs notes and extracts tempo/meter/key/program metadata without discarding source events.
 
+### Bounded import lifecycle
+
+The host adapter checks file size before reading bytes. An import job owns temporary bytes and all derived objects until success; only then does it replace the active session. Cancel, picker dismissal, and validation errors preserve the previous session. Ignore late callbacks from superseded job IDs. Account for old plus new session memory and JavaScript/WASM copies in the peak budget.
+
+Single-threaded web work must yield between bounded parser, normalization, analysis, and projection batches. M0 measures a starting target of at most 8 ms per batch and cancellation feedback within 250 ms on the recorded reference device. Use deterministic operation/count caps for accept/reject behavior; elapsed time controls yielding, not musical results. Add separate limits for metadata bytes, notes, measure count, projection fragments, candidate states, and diagnostics. Range-check extreme meter exponents and cumulative ticks before arithmetic or allocation. Virtualize visible score layout and scheduling windows so 24 hours of sparse source events never implies allocating 24 hours of drawing/audio buffers.
+
+These targets and the product's proposed input ceilings are provisional. Record measured memory and peak event density in M0 evidence and set provisional limits; remeasure full normalization/projection in M2/M3. Use constructed data for stages not yet implemented; reduce limits with an explicit documented change if the non-threaded build cannot support them. M2 tests every limit at and over its boundary, including repeated replacement and cancellation.
+
 ### Import analysis
 
-For each pitched track, calculate:
+For each pitched part, calculate:
 
 - sounding note count and duration;
 - minimum/maximum and percentile pitch range;
 - peak polyphony;
 - proportion in E-standard range through fret 20;
-- proportion of chord slices with at most six unique pitches;
+- proportion of source overlap slices with at most six active notes;
 - rhythmic density and smallest observed inter-onset interval;
 - program names and source track/channel names.
 
-Recommendation is deterministic and explainable. Favor guitar-family programs, range coverage, lower polyphony, and meaningful note count. Never hide other tracks.
+Range/chord estimates are preliminary, not optimizer-verified playability. Empty/percussion-only input produces no recommendation and a route to another file or lesson. Recommendation is deterministic and explainable. Favor guitar-family programs, range coverage, lower polyphony, and meaningful note count. Never hide other parts.
 
 ## Display quantization and staff notation
 
@@ -178,20 +196,22 @@ The display quantizer takes note starts/ends, meter map, and a user/detail polic
 
 For MVP, generate candidates on a straight 1/16 grid, including coarser and dotted values. Choose the candidate set that minimizes a weighted cost for onset error, duration error, ties, rests/fragments, and very short notation values. Bound search per measure and fall back to a deterministic greedy projection with a warning if limits are exceeded.
 
-Group near-simultaneous onsets into chord slices using a tolerance derived from the source division and quantization grid. Do not merge repeated pitches whose sounding intervals are distinct. Split durations at measure boundaries and use ties.
+Group near-simultaneous onsets into display chord slices using a tolerance derived from the source division and quantization grid. This grouping must not replace source overlap intervals in fingering or playback. Do not merge repeated pitches whose sounding intervals are distinct. Split durations at measure boundaries and use ties.
+
+Clef is a display policy with an explicit written-to-sounding octave offset: guitar treble writes a nominal pitch 12 semitones higher; bass uses sounding pitch. Auto selects one policy for the part before playback rather than changing clefs under the learner. Staff/tab identity tests apply that offset before comparing pitches.
 
 Pitch spelling uses the imported key when available. Without a key, choose a stable spelling that minimizes accidentals per measure, prefer sharps for sharp-key hints and flats for flat-key hints, and remember accidental state within a measure.
 
 The score layout is deliberately narrow:
 
-- one selected track;
+- one selected pitched part;
 - one rhythmic voice;
 - staff and tab paired as a system, with tab visually primary and staff always present as reference;
 - screen layout, not pagination/printing;
 - common meters and binary subdivisions;
 - measure geometry computed separately from drawing.
 
-Use Bravura, the SMuFL reference font under SIL OFL 1.1, for musical glyphs. Draw staff/tab lines and ties as primitives. Pin the font version and include its license/metadata. The regular UI font needs broad-script coverage and will be selected when the first actual translation is chosen.
+Use Bravura, the SMuFL reference font under SIL OFL 1.1, for musical glyphs. Draw staff/tab lines and ties as primitives. Pin the font version and include its license/metadata. Select and license a UI font/fallback set in M1.2 that actually covers the pseudolocale and RTL smoke strings; final language-specific typography may follow the first translation. Missing glyphs cannot count as a passing localization test. Keep musical time left-to-right in an RTL interface and test mirrored controls separately from score geometry.
 
 `ScoreLayoutEngine` outputs semantic draw items and bounding boxes. `ScoreCanvas` only paints them and applies current/selected state. This makes geometry unit-testable and enables future hit testing or another renderer.
 
@@ -199,13 +219,13 @@ Use Bravura, the SMuFL reference font under SIL OFL 1.1, for musical glyphs. Dra
 
 ### Candidate generation
 
-Given tuning pitches from low string to high string, pitch `p` can use a string with open pitch `o` when `0 <= p - o <= max_fret`; the fret is `p - o`. At a chord slice, enumerate injective assignments of unique pitches to strings. Reject more than six unique pitches, impossible ranges, and assignments beyond the configured physical span.
+Given tuning pitches from low string to high string, pitch `p` can use a string with open pitch `o` when `0 <= p - o <= max_fret`; the fret is `p - o`. At every source onset/release boundary, enumerate injective assignments of active note IDs to strings, reserving strings for notes already held. Equal pitches with distinct overlapping note IDs require separate strings. Reject more than six active notes, impossible ranges, and assignments beyond the configured physical span.
 
 Deduplicate equivalent pitch/string/fret configurations and bound candidate count with deterministic ranking before sequence optimization.
 
 ### Sequence optimization
 
-Treat each onset/chord slice as a layer in a directed acyclic graph. Nodes are playable configurations; edges carry transition cost. Dynamic programming chooses the minimum total path for a phrase/section.
+Treat each source onset/release slice as a layer in a directed acyclic graph. Nodes include active placements and the hand anchor; edges preserve held-note string/fret reservations and carry transition cost. Dynamic programming chooses the minimum total path for a phrase/section.
 
 Cost components are data, not scattered constants:
 
@@ -224,7 +244,7 @@ transition cost
   rapid position change weighted by available musical time
 ```
 
-Segment at long rests and explicit phrase/measure boundaries to control memory, but include the preceding hand anchor as initial state for the next segment. Stable tie-breaking is mandatory.
+Segment at long rests and explicit phrase/measure boundaries to control memory, but include the preceding hand anchor and all still-held placements as initial state for the next segment. Stable tie-breaking is mandatory.
 
 Diagnostics distinguish source out of instrument range, too many simultaneous pitches, physically excessive span, optimizer budget exceeded, and supported-but-difficult. A later UI can expose alternate solutions because source-to-candidate links remain intact.
 
@@ -232,11 +252,11 @@ Diagnostics distinguish source out of instrument range, too many simultaneous pi
 
 ### One transport
 
-`Transport` is a state machine with stopped, count-in, playing, paused, seeking, and completed states. It owns source tick, loop tick range, speed multiplier, and track mute/solo state. It exposes position snapshots and seek/state events; it does not render or synthesize.
+`Transport` is a state machine with stopped, count-in, playing, paused, seeking, and completed states. It owns source tick, loop tick range, speed multiplier, and part mute/solo state. It exposes position snapshots and seek/state events; it does not render or synthesize.
 
 Tempo scaling changes tick-to-frame scheduling rather than resampling, so pitch stays fixed. Loop end is half-open. A seek or loop wrap sends all-notes-off, restores channel state applicable at the new tick, rebuilds the scheduling cursor, and pre-fills the buffer.
 
-Tests inject a fake frame clock. Runtime uses rendered audio frames/AudioServer timing as the primary clock, not `_process(delta)` accumulation. The UI interpolates visual position from the latest transport snapshot and resynchronizes rather than integrating its own time.
+Tests inject a fake frame clock. Runtime uses consumed audio frames/AudioServer timing as the primary clock, not `_process(delta)` accumulation or the number of samples queued ahead. Distinguish generation, mixing, and estimated audible position, accounting for stream queues and output latency. A discontinuity must flush/invalidate queued samples as well as note events. Use an explicit streaming playback mode for the generated stream and measure its non-threaded web latency. See [Godot audio synchronization](https://docs.godotengine.org/en/latest/tutorials/audio/sync_with_audio.html) and [AudioStreamGenerator limitations](https://docs.godotengine.org/en/latest/classes/class_audiostreamgenerator.html); verify these against the pinned engine. An audible loopback or equivalent measured output check before alpha complements deterministic event traces; report device latency separately. The UI interpolates visual position from the latest transport snapshot and resynchronizes rather than integrating its own time.
 
 ### Playback backend boundary
 
@@ -244,16 +264,16 @@ Godot supports MIDI device input but not MIDI output or built-in Standard MIDI F
 
 Separate sequencing from sound generation. The application-owned `Transport` schedules normalized note and controller events because that same authority must drive notation, tablature, looping, and the cursor. A `SynthBackend` receives timestamped events and renders sound through its own bounded voice mechanism; it must not own song position or mutate the canonical document. This boundary permits a small built-in synth, an audited third-party implementation, or a later user-supplied SoundFont backend without rewriting practice behavior.
 
-M0 compares two web-capable sound paths behind that interface:
+M0 screens two sound paths behind that interface, then compares viable candidates with a fixed fixture and a bounded experiment:
 
 1. an application-owned `AudioStreamGenerator` oscillator/envelope backend; and
 2. the smallest usable runtime subset of the MIT-licensed Clef SoundFont/player code, with no editor or composition features and no bundled SoundFont.
 
-The default plan is the bespoke backend because intelligible pitch, timing, and track distinction are sufficient for guided practice. It is also the fallback even if Clef is adopted as an enhanced backend. Adopt third-party playback code only if the pinned subset passes web export, deterministic seek/loop/all-notes-off behavior, performance, malformed-input, license/provenance, and maintenance tests. `godot-midi` is not an audio-backend candidate for the web-first MVP because its published GDExtension targets do not include web.
+A comparison that cannot run without an unreviewed asset or out-of-scope engine extension may conclude “not viable for MVP”; it must not hold up the built-in proof. The default plan is the bespoke backend because intelligible pitch, timing, and track distinction are sufficient for guided practice. It is also the fallback even if Clef is adopted as an enhanced backend. Adopt third-party playback code only if the pinned subset passes web export, deterministic seek/loop/all-notes-off behavior, performance, malformed-input, license/provenance, and maintenance tests. `godot-midi` is not an audio-backend candidate for the web-first MVP because its published GDExtension targets do not include web.
 
 ### Built-in practice synthesizer
 
-Use one `AudioStreamGenerator` and an application mixer with a fixed voice pool. Begin with 32 voices in the spike and set the release target after profiling. Voice stealing is deterministic: released/quietest first, then oldest, while protecting the currently selected practice track where possible.
+Use one `AudioStreamGenerator` and an application mixer with a fixed voice pool. Godot documents GDScript generation as a performance risk; profile a lower mix rate and simple voices before considering changes to the accepted language/platform boundary. Begin with 32 voices in the spike and set the release target after profiling. Voice stealing is deterministic: released/quietest first, then oldest, while protecting the currently selected practice part where possible.
 
 Use a small code-generated palette rather than bundling a SoundFont:
 
@@ -262,7 +282,7 @@ Use a small code-generated palette rather than bundling a SoundFont:
 - bass voice with limited harmonics;
 - click/noise voices for a small General MIDI percussion subset and metronome.
 
-Map all GM programs into these few families. This will not reproduce an original arrangement; label it **Practice synth**. Support note velocity, channel volume/expression, pan, program changes, sustain, and pitch bend only as they pass tests. Unknown controllers are retained in source data and safely ignored.
+Map all GM programs into these few families. This will not reproduce an original arrangement; label it **Practice synth**. The release controller minimum and fixed bend-range limitation are defined in decision 0001 and require fixtures; changing that minimum needs a documented scope decision. Unknown controllers are retained in source data and diagnosed when ignored. Voice stealing is an audible approximation distinct from tab coverage: expose a polyphony-limit diagnostic and include it in dense-fixture evidence. Bound final mixer output to avoid clipping as voices and metronome combine.
 
 An optional SoundFont backend can follow MVP. SoundFont code and banks are separate licensing decisions: do not bundle a bank based only on a claim that it is free to download. If the M0 Clef experiment needs a bank, use a documented test-only asset that is not committed until its redistribution terms have been reviewed.
 
@@ -277,22 +297,25 @@ The adapter must be optional, request permission only after an explicit action, 
 Define interfaces around capabilities rather than checking feature tags throughout UI code:
 
 ```text
-FilePicker.pick_midi() -> FilePayload(name, bytes)
-LocalStore.load/save(schema_version, data)
+FilePicker.pick_midi(limits, job_id) -> FilePayload | Cancelled | ImportError
+LocalStore.load/save(schema_version, data) -> StoreResult
+HostExport.download_progress(name, bytes) -> ExportResult
 HostCapabilities(web, desktop, touch, midi_input, screen_reader_notes)
 ```
 
 Desktop uses a native `FileDialog` where supported and `FileAccess`. Godot's web `FileDialog` cannot read the host filesystem, so web uses a small audited custom HTML/JavaScript picker and `JavaScriptBridge` to pass an `ArrayBuffer` as `PackedByteArray`. The JavaScript callback reference must be retained until completion. Drag/drop is optional for the first slice and uses the same payload path.
 
-Web persistence uses `user://`/IndexedDB with explicit filesystem synchronization where needed. Desktop uses a custom user directory. Imported bytes are not persisted unless the learner opts in.
+Web persistence uses `user://`/IndexedDB with explicit filesystem synchronization where needed. Desktop uses a custom user directory. Imported bytes are not persisted in MVP. `StoreResult` distinguishes confirmed save, unavailable storage, quota failure, corrupt data, and unsupported future schema. Keep current-session state usable on failure. Validate persisted field sizes/types, use atomic replacement where supported, and never overwrite newer-schema data with an older app. Reset is scoped and explicit; bounded progress export uses the host adapter and excludes song data.
 
-The web export enables Godot's progressive web app support. Release checks cover initial online load, service-worker installation, a network-disabled reload, cache updates between versions, and the explanatory fallback shown when browser storage has been cleared or evicted. Offline-after-first-load is a tested capability, not a promise that browsers will retain cached files forever.
+The web export enables Godot's progressive web app support. Offline readiness requires a controlling service worker and a complete versioned cache of runtime, fonts, and lessons. Release checks cover interrupted first load, offline reload, update while a session is active, and a failed update that retains the prior usable release. Do not force a reload that discards session-only MIDI. Keep cache releases atomic and test persisted-schema compatibility across rollback.
+
+A cached fallback can explain missing app resources only while the worker/fallback remains available. After complete storage eviction or clearing, an offline navigation may produce the browser's own error. Test reconnect/reinstall recovery and explain this limit before the learner relies on offline use. This follows the browser cache lifecycle described by [MDN on offline operation](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Offline_and_background_operation) and [storage eviction](https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria).
 
 The default web export should start without threads for deployment simplicity. Enable thread support or web GDExtension only if profiling proves it necessary; doing so requires cross-origin isolation and constrains third-party resources.
 
 ## Localization architecture
 
-- UI calls `tr()`/`tr_n()` with stable full-sentence source messages and contexts.
+- UI calls `tr()`/`tr_n()` with stable message IDs and contexts; the bundled English catalog supplies complete source sentences and plural forms. Ensure lesson/diagnostic keys are extracted even when referenced through data.
 - Lesson manifests refer to message keys and semantic media, not embedded English layout.
 - Diagnostic codes are stable and map to localized summaries plus optional technical details.
 - Note display policy is separate from locale: fixed-do/letter names, B/H conventions, and accidental glyphs are explicit settings added when needed, not inferred blindly.
@@ -324,7 +347,7 @@ Expected early dependencies are Godot (MIT) and Bravura (SIL OFL 1.1). No MIDI l
 - tempo-map tick/second/frame conversion including boundaries;
 - note pairing and malformed input;
 - measure partition, quantization, pitch spelling, clef choice;
-- candidate enumeration and optimizer path/cost/tie-breaking;
+- candidate enumeration, held-string reservations, duplicate-pitch intervals, optimizer path/cost/tie-breaking, and source-note coverage;
 - transport state transitions and loop semantics;
 - voice envelopes and deterministic voice stealing;
 - local-state migration.
@@ -333,7 +356,7 @@ Expected early dependencies are Godot (MIT) and Bravura (SIL OFL 1.1). No MIDI l
 
 - the parser never reads past a supplied byte array or hangs;
 - output note intervals are ordered and non-negative;
-- every fret placement reproduces the MIDI pitch and uses a unique string per chord;
+- every fret placement reproduces the nominal MIDI pitch and reserves a unique string throughout overlapping source intervals;
 - optimizer output is deterministic and never exceeds declared constraints;
 - tick-to-seconds is monotonic across valid tempo maps.
 
@@ -344,15 +367,17 @@ Expected early dependencies are Godot (MIT) and Bravura (SIL OFL 1.1). No MIDI l
 - audio event trace compared to expected note/program/controller sequence;
 - seek/speed/loop leaves no active stale voices;
 - narrow/wide/pseudolocale notation and controls;
-- desktop and browser file-pick flows.
+- desktop and browser file-pick, cancellation, superseded callback, and failed-replacement flows;
+- mixed-channel format 0 and shared-channel format 1 part selection, state restoration, and mute behavior;
+- source-onset highlighting with deliberately displaced display quantization.
 
 ### End-to-end
 
 - first lesson completion and persistence;
-- import recommended track, arrange, mute the part, slow, and loop two measures;
+- import recommended part, arrange, mute the part, slow, and loop two measures;
 - unsupported/malformed MIDI recovery;
 - web canvas boot and console/network error check through managed HTTPS;
-- first online load followed by a network-disabled reload, plus a cache-update test between two versioned builds.
+- first online load followed by a network-disabled reload, interrupted download/update, full storage-loss/reconnection, denied/quota-limited persistence, and schema rollback between two versioned builds.
 
 ## Observability without telemetry
 
