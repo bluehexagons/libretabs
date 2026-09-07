@@ -51,16 +51,17 @@ tag, schedule, or pull request triggers them. One Ubuntu job verifies once and
 exports all targets. Artifacts expire after seven days and are not recompressed.
 Monthly grouped Dependabot proposals maintain commit-pinned GitHub Actions.
 
-Before dispatch, copy `release/notes/TEMPLATE.md` to
-`release/notes/0.0.1-prototype.1.md`, edit it with actual changes/test evidence, and
-commit. Supply the same version in the workflow exactly as written: use
-`MAJOR.MINOR.PATCH-prototype.NUMBER`, with no leading `v`. The first prepared
-candidate in this repository is `0.0.1-prototype.1`. Choose `build-only` for a
+Before dispatch, choose an unused version and copy `release/notes/TEMPLATE.md` to
+`release/notes/VERSION.md`, replacing `VERSION` with that exact value. Edit the
+notes with actual changes/test evidence and commit. Supply the same version in
+the workflow: use `MAJOR.MINOR.PATCH-prototype.NUMBER`, with no leading `v`.
+`0.0.1-prototype.2` is already published; a subsequent build needs a new number
+and its own committed notes. Choose `build-only` for a
 seven-day CI artifact, `create-draft` for a private GitHub draft, or
 `publish-prerelease` to publish publicly after the build and uploads pass. Public
 mode first uploads every file to a draft and only then publishes it, so an upload
 failure leaves a private draft rather than a partial public release. A duplicate
-tag or output version is refused. There are no automatic live itch.io or website
+tag, draft release, or output version is refused. There are no automatic live itch.io or website
 deployments and no deployment secrets in the build job.
 
 The release job's contents-write token is used only for an explicitly selected
@@ -68,6 +69,12 @@ GitHub draft or public prerelease; checkout does not persist credentials. Public
 pull requests have read-only verification and cannot enter the dispatch-only release
 workflow. Never use `pull_request_target` to execute contributed code with release
 credentials.
+
+If an upload or publication fails, inspect the draft in GitHub before retrying.
+The helper checks tags and the authenticated, paginated release listing, including
+drafts; it does not append files to an interrupted release. Verify a complete
+draft's assets against the saved checksums before publishing it in GitHub, or
+prepare a fresh version. Never replace an already published asset.
 
 ## Review and publish the same packages
 
@@ -150,7 +157,9 @@ The owner has made the repository public and configured Pages with GitHub Action
 
 The guide source in `site/` has no JavaScript, npm, external fonts or analytics.
 The generated Pages artifact contains only that guide and two validated Godot
-exports. The repository itself is never published as the artifact. Relative asset
+exports. Site assembly stages the complete output before renaming it into place;
+failed validation or copying leaves no partial site directory. The repository
+itself is never published as the artifact. Relative asset
 links and separate service-worker scopes support `/libretabs/play/` and
 `/libretabs/play-compatible/`.
 

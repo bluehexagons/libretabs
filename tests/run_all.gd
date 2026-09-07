@@ -173,6 +173,7 @@ func _initialize() -> void:
 	quit(0 if failures == 0 else 1)
 
 func test_transport(song: SongDocument) -> void:
+	test_subframe_notes()
 	var transport: PracticeTransport = PracticeTransport.new()
 	transport.configure(song, 0, 7680, 0.6, false, false, false, [])
 	var trace: Array[Dictionary] = transport.take_events(PracticeTransport.RATE * 20)
@@ -205,3 +206,39 @@ func test_transport(song: SongDocument) -> void:
 	for event: Dictionary in muted_trace:
 		if event.kind == "on": muted_attacks += 1
 	check(muted_attacks == 0, "mute filters selected part")
+
+func test_subframe_notes() -> void:
+	# One tick is less than one output frame at this valid MIDI division.
+	var song: SongDocument = SongDocument.new()
+	song.division = 32767
+	song.end_tick = 32767
+	check(song.build_measures(), "subframe test song has a bounded measure map")
+	for tick: int in [0, 1, 32766]:
+		song.notes.append({"id": str(tick), "start": tick, "end": tick + 1, "part": 0, "channel": 0, "pitch": 60, "velocity": 80})
+	var original: Array[Dictionary] = song.notes.duplicate(true)
+	for speed: float in [0.25, 1.0, 2.0]:
+		for looped: bool in [false, true]:
+			var transport: PracticeTransport = PracticeTransport.new()
+			transport.configure(song, 0, song.end_tick, speed, looped, false, false, [])
+			var active: Dictionary = {}
+			var attacks: int = 0
+			var releases: int = 0
+			var length: int = transport.cycle_frames * (2 if looped else 1)
+			while transport.rendered_frames <= length:
+				for event: Dictionary in transport.take_events(mini(127, length + 1 - transport.rendered_frames)):
+					if event.frame >= length: continue
+					if event.kind == "on":
+						active[event.note.id] = event.frame
+						attacks += 1
+					elif event.kind == "off":
+						check(active.has(event.note.id), "short note releases only after its attack")
+						if active.has(event.note.id):
+							check(event.frame > active[event.note.id], "short notes occupy at least one audio frame")
+							active.erase(event.note.id)
+							releases += 1
+			# The final source note ends at the playback boundary; its reset and
+			# release are outside the half-open trace counted here.
+			check(attacks == (6 if looped else 3), "short notes retain every attack through loop boundaries")
+			check(releases == (5 if looped else 2), "short notes release within each playback interval")
+			check(active.size() == 1, "only the boundary note remains before final reset")
+	check(song.notes == original, "sample rounding leaves source notes unchanged")

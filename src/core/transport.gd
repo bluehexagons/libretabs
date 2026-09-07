@@ -59,8 +59,13 @@ func configure(document: SongDocument, start_tick: float, end_tick: float, multi
 		var release: float = song.seconds_at(note.end)
 		if release <= start_seconds or onset >= end_seconds:
 			continue
-		add_event(maxi(0, roundi((onset - start_seconds) / speed * RATE)), "on", note)
-		add_event(mini(cycle_frames, roundi((release - start_seconds) / speed * RATE)), "off", note)
+		# A positive source duration may round to a single frame boundary. Keep
+		# off strictly after on so event ordering cannot leave a stuck voice.
+		# This sub-sample rounding never changes source ticks or crosses the end.
+		var on_frame: int = clampi(roundi((onset - start_seconds) / speed * RATE), 0, cycle_frames - 1)
+		var off_frame: int = clampi(roundi((release - start_seconds) / speed * RATE), on_frame + 1, cycle_frames)
+		add_event(on_frame, "on", note)
+		add_event(off_frame, "off", note)
 	if metronome:
 		for bar: Dictionary in song.measures:
 			var pulse: float = float(bar.start)

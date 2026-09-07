@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0
-"""Build only the instructional Pages site; never publish repository contents."""
+"""Stage the Pages guide and optional player exports as one complete site."""
 from pathlib import Path
 import argparse
 import html
 import os
 import shutil
 import stat
+import tempfile
 from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -43,6 +44,15 @@ def copy_player(source, destination):
 
 
 def build(output, player_url='', itch_url='', threaded_player=None, compatibility_player=None):
+    output = output.absolute()
+    if output.exists() or output.is_symlink():
+        raise FileExistsError(f'Refusing to replace existing site: {output}')
+    if compatibility_player is not None and threaded_player is None:
+        raise ValueError('Compatibility player requires the primary player')
+    for source in (threaded_player, compatibility_player):
+        if source is not None and (source.resolve() == output.resolve()
+                                   or source.resolve() in output.resolve().parents):
+            raise ValueError('Site output cannot be inside a player export')
     page = (ROOT / 'site/index.html').read_text()
     bundled = threaded_player is not None
     page = page.replace('{{PAGES_NAV}}', '<a href="play/">Play</a>' if bundled else '')
@@ -62,17 +72,22 @@ def build(output, player_url='', itch_url='', threaded_player=None, compatibilit
     page = page.replace('{{HOSTING_NOTE}}', note)
     if '{{' in page:
         raise ValueError('Unresolved site placeholder')
-    # Require a new directory so stale exports cannot accidentally enter Pages.
-    output.mkdir(parents=True, exist_ok=False)
-    (output / 'index.html').write_text(page)
-    shutil.copy2(ROOT / 'site/style.css', output / 'style.css')
-    (output / '.nojekyll').touch()
-    if threaded_player is not None:
-        copy_player(threaded_player.resolve(), output / 'play')
-    if compatibility_player is not None:
-        if threaded_player is None:
-            raise ValueError('Compatibility player requires the primary player')
-        copy_player(compatibility_player.resolve(), output / 'play-compatible')
+    # Failed validation/copying leaves no output to mistake for a deployable
+    # site. Keep staging beside the destination so the final rename is atomic.
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix='.libretabs-site-', dir=output.parent) as temporary:
+        stage = Path(temporary) / 'site'
+        stage.mkdir()
+        (stage / 'index.html').write_text(page)
+        shutil.copy2(ROOT / 'site/style.css', stage / 'style.css')
+        (stage / '.nojekyll').touch()
+        if threaded_player is not None:
+            copy_player(threaded_player, stage / 'play')
+        if compatibility_player is not None:
+            copy_player(compatibility_player, stage / 'play-compatible')
+        if output.exists() or output.is_symlink():
+            raise FileExistsError(f'Refusing to replace existing site: {output}')
+        stage.rename(output)
 
 
 if __name__ == '__main__':

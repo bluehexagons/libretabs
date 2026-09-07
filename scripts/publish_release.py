@@ -11,6 +11,20 @@ import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
 
+def require_unused_version(repository, version):
+    # A failed upload can leave a draft without a Git tag. Check both objects
+    # before making any changes, including after an interrupted prior attempt.
+    error = 'Tag/release exists or its absence cannot be confirmed; inspect GitHub and choose a new version'
+    result = subprocess.run(['gh', 'api', f'repos/{repository}/git/ref/tags/v{version}'], capture_output=True, text=True)
+    if result.returncode == 0 or 'HTTP 404' not in result.stderr:
+        raise ValueError(error)
+    # The release-by-tag API only promises published releases. Authenticated
+    # listing includes drafts and pagination avoids overlooking older drafts.
+    result = subprocess.run(['gh', 'api', '--paginate', f'repos/{repository}/releases?per_page=100',
+                             '--jq', '.[].tag_name'], capture_output=True, text=True)
+    if result.returncode != 0 or f'v{version}' in result.stdout.splitlines():
+        raise ValueError(error)
+
 def verified_manifest(folder):
     def regular_file(name):
         path = folder / name
@@ -88,10 +102,10 @@ def main():
             commands.append(['gh', 'release', 'edit', 'v' + version, '--repo', args.repository,
                              '--draft=false', '--prerelease', '--latest=false'])
         if args.execute:
-            # Never attach files to an existing tag/release with an ambiguous source.
-            result = subprocess.run(['gh', 'api', f'repos/{args.repository}/git/ref/tags/v{version}'], capture_output=True, text=True)
-            if result.returncode == 0 or '404' not in result.stderr:
-                parser.error('Tag exists or its absence cannot be confirmed; choose a new version')
+            try:
+                require_unused_version(args.repository, version)
+            except ValueError as error:
+                parser.error(str(error))
     else:
         if args.publish:
             parser.error('--publish applies only to GitHub releases')

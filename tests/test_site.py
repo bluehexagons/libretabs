@@ -57,6 +57,39 @@ class SiteTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'symlink'):
                 copy_player(source, Path(temp) / 'output')
 
+    def test_failed_build_leaves_no_partial_site_and_can_be_retried(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            source = root / 'player'
+            source.mkdir()
+            for name in ('index.html', 'index.js', 'index.wasm', 'index.pck'):
+                (source / name).write_text(name)
+            output = root / 'site'
+            with self.assertRaisesRegex(ValueError, 'service.worker'):
+                build(output, threaded_player=source)
+            self.assertFalse(output.exists())
+            self.assertEqual(list(root.glob('.libretabs-site-*')), [])
+            (source / 'index.service.worker.js').write_text('worker')
+            build(output, threaded_player=source)
+            self.assertTrue((output / 'play/index.html').is_file())
+
+    def test_rejects_unsafe_source_and_output_relationships(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            source = root / 'player'
+            source.mkdir()
+            linked = root / 'linked'
+            linked.symlink_to(source, target_is_directory=True)
+            with self.assertRaisesRegex(ValueError, 'directory'):
+                build(root / 'site', threaded_player=linked)
+            self.assertFalse((root / 'site').exists())
+            with self.assertRaisesRegex(ValueError, 'inside a player'):
+                build(source / 'site', threaded_player=source)
+            self.assertEqual(list(source.iterdir()), [])
+            with self.assertRaisesRegex(ValueError, 'requires the primary'):
+                build(root / 'site', compatibility_player=source)
+            self.assertFalse((root / 'site').exists())
+
 
 if __name__ == '__main__':
     unittest.main()

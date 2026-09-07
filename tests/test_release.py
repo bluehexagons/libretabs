@@ -107,6 +107,47 @@ class ReleaseTests(unittest.TestCase):
             self.assertIn('release edit', commands[1])
             self.assertIn('--draft=false', commands[1])
 
+            argv = ['publish_release.py', 'github', str(folder), '--notes', str(notes), '--execute']
+            missing = subprocess.CompletedProcess([], 1, '', 'gh: Not Found (HTTP 404)')
+            success = subprocess.CompletedProcess([], 0, '', '')
+            for public in (False, True):
+                with self.subTest(public=public), patch('sys.argv', argv + (['--publish'] if public else [])), \
+                        patch.object(publish.subprocess, 'run', side_effect=[missing, success, success, success]) as run, \
+                        patch('builtins.print'):
+                    publish.main()
+                executed = [call.args[0] for call in run.call_args_list]
+                self.assertEqual(len(executed), 4 if public else 3)
+                self.assertIn('--paginate', executed[1])
+                self.assertIn('--draft', executed[2])
+                self.assertIn('--target', executed[2])
+                self.assertIn(manifest['commit'], executed[2])
+                if public:
+                    self.assertIn('--draft=false', executed[3])
+                    self.assertIn('--latest=false', executed[3])
+                    self.assertIn('--prerelease', executed[3])
+
+            # An upload failure must never reach the command that makes it public.
+            with patch('sys.argv', argv + ['--publish']), patch('builtins.print'), \
+                    patch.object(publish.subprocess, 'run', side_effect=[
+                        missing, success, subprocess.CalledProcessError(1, 'gh release create')
+                    ]) as run:
+                with self.assertRaises(subprocess.CalledProcessError):
+                    publish.main()
+            self.assertEqual(len(run.call_args_list), 3)
+            self.assertNotIn('--draft=false', run.call_args_list[-1].args[0])
+
+            # Tag collision, draft without a tag, and an API failure all stop
+            # before uploading. A bare "404" in unrelated error text is not proof.
+            draft = subprocess.CompletedProcess([], 0, f'v0.0.1-prototype.1\nv{version}\n', '')
+            for responses in ([success], [missing, draft], [missing, missing],
+                              [subprocess.CompletedProcess([], 1, '', 'connection failed: request 404')]):
+                with patch('sys.argv', argv + ['--publish']), \
+                        patch.object(publish.subprocess, 'run', side_effect=responses) as run, \
+                        patch('sys.stderr'):
+                    with self.assertRaises(SystemExit):
+                        publish.main()
+                self.assertTrue(all(call.args[0][1] == 'api' for call in run.call_args_list))
+
     def test_all_targets_have_presets_and_release_templates(self):
         presets = (ROOT / 'export_presets.cfg').read_text()
         for target in release.TARGETS.values():
