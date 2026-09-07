@@ -23,10 +23,21 @@ SoundFont is bundled. Bravura is removable by replacing the single ScoreView
 font resource. Browser portability and glyph rendering are tested in M0;
 this font selection does not choose a general multilingual UI font for M1.
 
-CI uses [actions/checkout](https://github.com/actions/checkout) at
-`11d5960a326750d5838078e36cf38b85af677262` (MIT), unmodified, only as the checkout
-step in `.github/workflows/verify.yml`; no action code is bundled in the app.
-The action's repository preserves its own LICENSE and dependency notices.
+CI uses unmodified MIT-licensed actions only as development tools, never bundled
+in app packages. Pins checked against upstream latest stable releases on 2026-09-07:
+
+| Action | Version | Commit | Use |
+| --- | --- | --- | --- |
+| [checkout](https://github.com/actions/checkout/releases/tag/v7.0.1) | 7.0.1 | `3d3c42e5aac5ba805825da76410c181273ba90b1` | Verify and manual release source checkout; Node 24 |
+| [upload-artifact](https://github.com/actions/upload-artifact/releases/tag/v7.0.1) | 7.0.1 | `043fb46d1a93c77aae656e7c1c64a875d1fc6a0a` | Manual release artifact retention; Node 24 |
+
+Upstream repositories retain action licenses and transitive dependency notices.
+Dependabot proposes monthly grouped updates. Official unmodified Godot release
+templates for web/Windows/Linux are covered by the engine license inventory;
+`release/toolchain.json` records the complete template archive checksum. Every
+package includes engine-generated notices and the font/content license files.
+The optional butler/gh promotion tools run locally or in CI and are not bundled;
+no itch.io SDK or network dependency is added to the application.
 
 The Godot Linux download archive is pinned to SHA-256
 `cadd3204e728a35d3f13adb7fd0d7902636b79f6b95c40c265eb73b6c35329e4`.

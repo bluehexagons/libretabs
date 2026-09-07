@@ -47,7 +47,7 @@ These choices keep the first usable release bounded. The product owner confirmed
 - **Audience:** adults and teens are the primary independent learners. Children are welcome with parent, guardian, or teacher guidance; the MVP is not designed as an unsupervised child-directed service.
 - **Human review:** recruit musical reviewers and true beginners when their roadmap checkpoints arrive. Their unavailability does not block M0 engineering work, and agents do not substitute for them.
 - **Application stack:** Godot retained by the owner on 2026-09-07; platform support takes priority over full screen-reader integration. Voice synthesis/voiceovers are future candidates, not part of this slice. See [decision 0005](decisions/0005-godot-and-appearance.md).
-- **Primary delivery:** web export first for broad access, then unsigned development builds for Linux, Windows, and macOS.
+- **Primary delivery:** initial prototype/MVP distribution through GitHub Releases, itch.io browser play and Windows/Linux x86_64 downloads, plus the owner website. Android, macOS and other platforms remain future packaging targets; see [decision 0011](decisions/0011-prototype-releases.md).
 - **Practice feedback:** guided visual/audio play-along is sufficient for MVP; no microphone pitch detection or live grading. A non-grading volume-impulse progression mode is the first post-MVP input experiment.
 - **Instrument:** six-string guitar in E2-A2-D3-G3-B3-E4 tuning, with the tuning represented as data so alternate tunings do not require an algorithm rewrite.
 - **Import contract:** best-effort arrangement of one selected pitched part (a source track/channel pair), not guaranteed conversion of a complete orchestral arrangement.

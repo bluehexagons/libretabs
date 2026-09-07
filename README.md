@@ -2,7 +2,7 @@
 
 LibreTabs is the provisional public name for a free, offline-friendly application that helps a person with no musical background start playing guitar. It will combine short guided lessons with a focused practice player that can turn suitable Standard MIDI Files into synchronized staff notation and E-standard guitar tablature. It is designed primarily for adults and teens; children should use it with a parent, guardian, or teacher. The name may be reconsidered before public alpha; the GitHub repository is `bluehexagons/libretabs`, while the managed checkout directory remains `litetabs`.
 
-This repository is in the planning and technical-spike stage. The MVP deliberately favors a small, trustworthy learning loop over a full score editor or a promise that every arbitrary MIDI arrangement can be made comfortably playable on guitar.
+This repository contains an evaluation prototype. The practice player runs now; the six-lesson course and several musical/platform validation gates remain incomplete.
 
 The project is stewarded by **bluehexagons**.
 
@@ -10,7 +10,9 @@ LibreTabs is a non-commercial project: bluehexagons does not plan paid editions,
 
 ## Evaluate the prototype
 
-[Open the managed browser preview](https://192.168.0.44:8443/games/agent/libretabs-prototype/) from a device that can reach the managed network. Press **Play**, adjust the main speed slider or click its percentage for presets, custom BPM and count-in length, then use **Menu → Loop** for measures 1–2. **Menu → Library** includes tempo changes, overlapping notes, and a dense chord. You can also open a local format-0/1 MIDI file (prototype limit: 256 KiB). Imports stay on your device.
+Download versioned prototype packages from [GitHub Releases](https://github.com/bluehexagons/libretabs/releases) when available. Windows and Linux downloads work offline without a Godot installation. Browser releases will be linked here when the itch.io and website pages are published. Build preparation does not imply a public release exists yet.
+
+Press **Play**, adjust speed with the percentage/slider, and use **Songs** to choose a built-in exercise or import a local format-0/1 MIDI file (prototype limit: 256 KiB). Imports stay on your device. **Menu** contains playback, looping, display, keyboard, printing and capture settings.
 
 This is a technical evaluation: procedural sound, basic guitar placement, and a simplified staff reference. It does not yet include the six lessons or reviewed musical arrangements. The [feedback update](docs/evidence/practice-feedback.md) adds a simpler phone-friendly view, larger text, separate volume sliders, and reduced idle work. Choose **Menu → Settings → Appearance & text** for Device setting, Light or Dark appearance and larger text. The [navigation update](docs/evidence/score-navigation.md) adds default smooth scrolling, manual pages (**Score view**), a clearer menu, and a fix for tiny controls on high-density phones. See [evaluation steps, measured results, and remaining gates](docs/evidence/m0-prototype.md).
 
@@ -23,7 +25,9 @@ python3 scripts/verify.py
 godot --path .
 ```
 
-For an unsigned, self-contained Linux x86_64 development package, run `python3 scripts/build_linux.py`; unzip `exports/libretabs-linux-x86_64.zip` and run `libretabs/run.sh`. Web export uses the `Web` preset and requires cross-origin isolation headers; use the [managed publication workflow](docs/agentic-development.md).
+For versioned web, Windows and Linux packages, follow the [release guide](docs/releases.md). It covers the pinned toolchain, manual build workflow, checksums, launch instructions, itch.io uploads and HTTPS website hosting. Release exports happen only when explicitly requested.
+
+Please report bugs and confusing interactions through [GitHub Issues](https://github.com/bluehexagons/libretabs/issues), including the prototype version, device/browser, and reproduction steps. See [privacy](docs/privacy.md) and [private security reporting](SECURITY.md).
 
 ## Proposed MVP
 
@@ -53,10 +57,6 @@ Godot is retained by [owner decision 0005](docs/decisions/0005-godot-and-appeara
 - [Contribution guide](CONTRIBUTING.md)
 - [License scope](LICENSES/README.md)
 - [Instructions for coding agents](AGENTS.md)
-
-## Current environment
-
-The managed development check on 2026-09-02 reported Godot 4.7.2 with desktop and web export templates, Node 24, Go 1.27, and a working C toolchain. The M0 evaluation prototype now runs in Godot 4.7.2. The current VM has web templates; Linux evaluation packaging includes the installed engine because its native export template is absent.
 
 ## Project values
 

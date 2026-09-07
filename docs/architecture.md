@@ -439,3 +439,11 @@ onsets and finite note-start sparks are source-time projections in the cursor
 layer; paused/count-in/reduced-motion views have no particle animation. Print
 geometry, the canonical song, and persistence contracts are unchanged. See
 [decision 0004](decisions/0004-score-navigation.md) and [evidence](evidence/reading-flow.md).
+
+## Prototype release boundary
+
+[Decision 0011](decisions/0011-prototype-releases.md) defines manually triggered,
+checksum-locked, clean-snapshot builds with a target registry. Initial artifacts
+are threaded web and native Windows/Linux x86_64 release templates. Promotion to
+GitHub drafts, itch.io channels and the website reuses the same checked packages.
+See [release operations](releases.md); future mobile signing/toolchains remain separate.

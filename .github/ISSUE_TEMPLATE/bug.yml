@@ -1,0 +1,23 @@
+name: Prototype bug or usability problem
+description: Help reproduce a failure or confusing interaction.
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Prototype version or commit
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Device and environment
+      description: OS, browser or desktop download, screen size/orientation, and audio device if relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: What happened?
+      description: Steps, expected behavior, actual behavior. Please remove private filenames and use only MIDI you may redistribute. Report security issues privately.
+    validations:
+      required: true

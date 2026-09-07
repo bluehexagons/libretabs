@@ -24,3 +24,12 @@ Thumbs.db
 .env.*
 !.env.example
 export_credentials.cfg
+
+# Local release toolchain and Python caches
+.tools/
+__pycache__/
+*.pyc
+*.keystore
+*.jks
+*.p12
+*.pfx

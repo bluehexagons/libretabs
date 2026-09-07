@@ -1,0 +1,57 @@
+# SPDX-License-Identifier: Apache-2.0
+name: Prepare prototype release
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version (e.g. 0.1.0-prototype.1; always a new version)'
+        required: true
+        type: string
+      draft_release:
+        description: 'Also upload a draft GitHub prerelease (never publishes it)'
+        default: false
+        type: boolean
+permissions:
+  contents: read
+concurrency:
+  group: prepare-prototype-release
+  cancel-in-progress: false
+jobs:
+  package:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    env:
+      RELEASE_VERSION: ${{ inputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Validate version before downloading tools
+        run: |
+          python3 -c 'import os,re; assert re.fullmatch(r"\d+\.\d+\.\d+-prototype\.\d+", os.environ["RELEASE_VERSION"]), "Invalid prototype version"'
+          test -f "release/notes/$RELEASE_VERSION.md"
+      - name: Install locked engine and release templates
+        run: python3 scripts/install_toolchain.py --directory "$RUNNER_TEMP/godot" --templates
+      - name: Verify release source
+        run: |
+          python3 scripts/verify.py
+          python3 scripts/generate_fixtures.py
+          python3 scripts/prepare_export.py
+          git diff --exit-code
+      - name: Build web, Windows and Linux once
+        run: python3 scripts/release.py --version "$RELEASE_VERSION"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: libretabs-${{ inputs.version }}
+          path: dist/${{ inputs.version }}/
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
+      - name: Create draft prerelease
+        if: inputs.draft_release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/publish_release.py github "dist/$RELEASE_VERSION" --notes "release/notes/$RELEASE_VERSION.md" --execute

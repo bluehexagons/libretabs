@@ -1,6 +1,6 @@
 # Contributing to LibreTabs
 
-LibreTabs is in its planning and technical-spike stage. Contributions should advance one bounded roadmap result without silently widening the MVP.
+LibreTabs has a running evaluation prototype. Contributions should advance one bounded roadmap result without silently widening the MVP.
 
 ## Before starting
 
@@ -8,7 +8,9 @@ LibreTabs is in its planning and technical-spike stage. Contributions should adv
 2. Agree on a small issue using the contract in `docs/agentic-development.md`: outcome, scope, interfaces, acceptance examples, verification, and platform/accessibility/localization/license impact.
 3. Check existing work before editing. Independent agent tasks use separate managed worktrees; the primary checkout is not a shared editing area.
 
-The first implementation work is M0. It proves or rejects Godot before production UI or lesson artwork is built.
+Godot is retained by owner decision 0005; musical, learner and platform validation remains open.
+
+A normal clone with the pinned toolchain is sufficient. Managed VM/worktree instructions apply to agents using that infrastructure, not to every contributor. See [release and toolchain setup](docs/releases.md).
 
 ## Development expectations
 

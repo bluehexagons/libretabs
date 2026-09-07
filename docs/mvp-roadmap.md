@@ -226,3 +226,12 @@ adds score-only recording/streaming layouts to the evaluation prototype. Validat
 layout, exit paths, shared transport and browser alpha now; actual OBS Browser
 Source, native capture tools, and editor compositing remain platform evidence to
 collect. It does not add recording, a video encoder, or a remote-control service.
+
+## Prototype distribution preparation
+
+The owner requested early feedback releases on GitHub, itch.io and an independent
+website. [Decision 0011](decisions/0011-prototype-releases.md) brings forward M5.7
+packaging infrastructure with manual builds for web and Windows/Linux x86_64.
+It does not mark learner, musician, latency, browser or device gates complete.
+Android and other native platforms remain later additions. Full-MVP platform
+requirements above are planning targets, not claims about available prototype downloads.

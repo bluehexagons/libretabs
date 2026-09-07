@@ -6,7 +6,8 @@ import os,re,subprocess,sys
 root=Path(__file__).resolve().parents[1]
 os.chdir(root)
 engine=os.environ.get('GODOT','godot')
-expected='4.7.2.stable.official.ed1daf0bf'
+import json
+expected=json.loads((root/'release/toolchain.json').read_text())['version']
 version=subprocess.check_output([engine,'--version'],text=True).strip()
 if version!=expected: raise SystemExit(f'Expected {expected}; found {version}')
 def run(args, failure=False):
@@ -17,6 +18,7 @@ def run(args, failure=False):
             raise SystemExit('Test runner did not signal its deliberate failure')
     elif result.returncode or re.search(r'(SCRIPT ERROR:|^ERROR:|^WARNING:|Unicode parsing error|FAIL:)',result.stdout,re.M):
         raise SystemExit('Verification failed: '+str(args))
+run(['python3', '-m', 'unittest', 'discover', '-s', 'tests', '-p', 'test_release.py'])
 run(['node','--test','tests/service_worker.test.mjs'])
 run([engine,'--headless','--path','.','--import'])
 run([engine,'--headless','--path','.','--editor','--quit-after','60'])

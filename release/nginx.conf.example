@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: Apache-2.0
+# Include within an existing HTTPS server with standard mime.types configured.
+# Mount your complete web ZIP contents at /srv/libretabs/current/.
+location /libretabs/ {
+    alias /srv/libretabs/current/;
+    index index.html;
+    add_header Cross-Origin-Opener-Policy same-origin always;
+    add_header Cross-Origin-Embedder-Policy require-corp always;
+    add_header Cache-Control "no-cache" always;
+    # Ensure your server's mime.types maps .wasm to application/wasm.
+    # These headers must also be present on nested locations, if added.
+}
