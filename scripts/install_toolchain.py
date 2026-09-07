@@ -31,7 +31,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--directory', type=Path, required=True)
     parser.add_argument('--templates', action='store_true')
+    targets = json.loads((ROOT / 'release/targets.json').read_text())
+    parser.add_argument('--targets', nargs='+', choices=targets,
+                        help='Extract templates only for these targets (default: all)')
     args = parser.parse_args()
+    if args.targets and not args.templates:
+        parser.error('--targets requires --templates')
     directory = args.directory.resolve()
     directory.mkdir(parents=True, exist_ok=True)
     archive = download('editor', directory)
@@ -41,8 +46,7 @@ def main():
             shutil.copyfileobj(data, out)
     executable.chmod(0o755)
     if args.templates:
-        targets = json.loads((ROOT / 'release/targets.json').read_text())
-        names = {name for target in targets.values() for name in target['templates']}
+        names = {name for key in (args.targets or targets) for name in targets[key]['templates']}
         destination = Path(os.environ.get('XDG_DATA_HOME', Path.home() / '.local/share')) / 'godot/export_templates' / LOCK['template_directory']
         destination.mkdir(parents=True, exist_ok=True)
         with zipfile.ZipFile(download('templates', directory)) as source:

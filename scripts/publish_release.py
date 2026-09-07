@@ -12,32 +12,53 @@ import subprocess
 ROOT = Path(__file__).resolve().parents[1]
 
 def verified_manifest(folder):
-    manifest = json.loads((folder / 'manifest.json').read_text())
-    if not re.fullmatch(r'\d+\.\d+\.\d+-prototype\.\d+', manifest['version']):
+    def regular_file(name):
+        path = folder / name
+        if path.is_symlink() or not path.is_file():
+            raise ValueError(f'Release input must be a regular file: {name}')
+        return path
+
+    manifest = json.loads(regular_file('manifest.json').read_text())
+    if not isinstance(manifest, dict):
+        raise ValueError('Release manifest must be an object')
+    if not isinstance(manifest.get('version'), str) or not re.fullmatch(r'\d+\.\d+\.\d+-prototype\.\d+', manifest['version']):
         raise ValueError('Invalid prototype version')
-    if not re.fullmatch(r'[0-9a-f]{40}', manifest['commit']):
+    if not isinstance(manifest.get('commit'), str) or not re.fullmatch(r'[0-9a-f]{40}', manifest['commit']):
         raise ValueError('Invalid source commit')
+    targets = json.loads((ROOT / 'release/targets.json').read_text())
+    artifacts = manifest.get('artifacts')
+    if not isinstance(artifacts, list) or not 1 <= len(artifacts) <= len(targets):
+        raise ValueError('Invalid release artifact count')
+    expected_files = {'manifest.json'}
+    seen = set()
+    for artifact in artifacts:
+        if not isinstance(artifact, dict):
+            raise ValueError('Invalid artifact entry')
+        target = artifact.get('target')
+        name = artifact.get('file')
+        if not isinstance(target, str) or target not in targets or target in seen or name != f"libretabs-{manifest['version']}-{target}.zip":
+            raise ValueError('Invalid or duplicate artifact target')
+        if (type(artifact.get('bytes')) is not int or artifact['bytes'] <= 0
+                or not isinstance(artifact.get('sha256'), str)
+                or not re.fullmatch(r'[0-9a-f]{64}', artifact['sha256'])):
+            raise ValueError('Invalid artifact size or SHA-256')
+        seen.add(target)
+        expected_files.add(name)
     checksums = {}
-    for line in (folder / 'SHA256SUMS').read_text().splitlines():
+    for line in regular_file('SHA256SUMS').read_text().splitlines():
+        if not re.fullmatch(r'[0-9a-f]{64}  [A-Za-z0-9._-]+', line):
+            raise ValueError('Invalid checksum entry')
         expected, name = line.split('  ', 1)
-        if Path(name).name != name or name in checksums:
+        if name not in expected_files or name in checksums:
             raise ValueError('Invalid checksum filename')
-        with (folder / name).open('rb') as source:
+        with regular_file(name).open('rb') as source:
             if hashlib.file_digest(source, 'sha256').hexdigest() != expected:
                 raise ValueError(f'Checksum mismatch: {name}')
         checksums[name] = expected
-    if 'manifest.json' not in checksums:
-        raise ValueError('Manifest checksum missing')
-    targets = json.loads((ROOT / 'release/targets.json').read_text())
-    if not manifest['artifacts']:
-        raise ValueError('No release artifacts')
-    seen = set()
+    if set(checksums) != expected_files:
+        raise ValueError('Checksums must cover exactly the manifest and declared artifacts')
     for artifact in manifest['artifacts']:
         name = artifact['file']
-        target = artifact['target']
-        if target not in targets or target in seen or name != f"libretabs-{manifest['version']}-{target}.zip":
-            raise ValueError('Invalid or duplicate artifact target')
-        seen.add(target)
         if checksums.get(name) != artifact['sha256'] or (folder / name).stat().st_size != artifact['bytes']:
             raise ValueError(f'Artifact does not match manifest: {name}')
     return manifest

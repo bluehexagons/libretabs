@@ -13,7 +13,7 @@ def main():
     engine = os.environ.get('GODOT')
     if not engine:
         directory = Path.home() / '.cache/libretabs-toolchain'
-        run([sys.executable, ROOT / 'scripts/install_toolchain.py', '--directory', directory, '--templates'])
+        run([sys.executable, ROOT / 'scripts/install_toolchain.py', '--directory', directory, '--templates', '--targets', 'web'])
         engine = str(directory / Path(LOCK['editor']['file']).stem)
     if run([engine, '--version']) != LOCK['version']:
         raise SystemExit('GODOT must match release/toolchain.json')

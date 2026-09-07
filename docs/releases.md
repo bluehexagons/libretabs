@@ -185,8 +185,10 @@ deployment builds with `scripts/export_web.py` as a non-root account in staged
 source; it does not require `.git`. With no `GODOT` override, the script installs
 the checksum-locked Linux x86_64 engine and templates in that account's persistent
 home. Python 3.11+, outbound HTTPS and about 5 GB free working space are required.
-The current installer downloads the full official template archive, including
-desktop templates; this is an explicit VM deployment cost, not an automatic CI job.
+The installer still downloads the full official template archive, but VM builds
+extract only web templates using `--templates --targets web`. Desktop build
+templates are not installed for that path. This is an explicit VM deployment
+cost, not an automatic CI job.
 An operator-provisioned `GODOT` must match the lock and have matching web templates.
 
 The output is checked before activation, with correct MIME, isolation and cache
@@ -218,6 +220,13 @@ promotion steps. No Android SDK, macOS runner, signing secret or scheduled build
 paid for before that target is implemented.
 
 ## Public prototype checklist
+
+Use the [first-launch checklist](launch-checklist.md) to record package testing,
+publication order and checks on the actual public URLs.
+
+The publishing helper requires SHA256SUMS to cover exactly the manifest and its
+declared packages, rejects duplicate entries and symlinked inputs, and checks
+artifact sizes and hashes before running any publishing command.
 
 - Keep README, release notes and platform evidence honest about missing lessons,
   simplified notation, unreviewed arrangements and unsigned builds.

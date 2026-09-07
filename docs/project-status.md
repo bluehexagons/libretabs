@@ -1,26 +1,68 @@
 # Project handoff
 
-Snapshot date: 2026-09-07
+Snapshot date: 2026-09-07. Current phase: preparing public **evaluation prototypes**.
 
 ## Current outcome
 
-The planning review is committed as `2eb89f2`. A runnable **M0 Godot evaluation prototype** now adds local MIDI import, original examples, linked staff/tab, procedural playback, count-in, speed, seek, loops, and part muting. It includes bounded parser tests, a shared frame-based transport, CI configuration, web publication, and Linux development packaging.
+LibreTabs has a runnable Godot practice player: local MIDI import, original
+examples, synchronized staff/tab, generated audio, count-in, tempo, seeking,
+loops, saved preferences, keyboard reference notes, responsive control placement,
+light/dark appearance, printing and capture layouts. The six-lesson course and
+musical/platform acceptance gates remain incomplete.
 
-[Open the managed preview](https://192.168.0.44:8443/games/agent/libretabs-prototype/) on the managed network. Follow the [evaluation guide and evidence](evidence/m0-prototype.md). [Decision 0002](decisions/0002-m0-evaluation-build.md) records the exact prototype subset and threaded web mitigation; [decision 0001](decisions/0001-mvp-musical-contracts.md) still defines the eventual musical contract.
+Godot is retained by [owner decision 0005](decisions/0005-godot-and-appearance.md).
+Full screen-reader integration is deferred; it no longer blocks product work or
+requires an Electron/Tauri comparison. Keyboard access, readable text, touch
+targets and non-color cues remain requirements. Platform and timing evidence
+must still be gathered; the stack decision is not a technical pass.
 
-This completes a testable vertical slice, **not the final Godot go/no-go gate**. Production lessons and M1 UI investment remain behind that gate. No new product-owner decision was required to build the evaluation slice.
+The [managed preview](https://192.168.0.44:8443/games/agent/libretabs-prototype/)
+is available on the managed network. It is not a public launch URL.
 
-Owner feedback has produced a simpler responsive practice screen, larger controls, separate instrument/metronome levels, expanded tempo presets/custom BPM, and event-driven idle updates. See [feedback evidence](evidence/practice-feedback.md) and [decision 0003](decisions/0003-practice-feedback.md).
+## Distribution readiness
+
+- Manual GitHub Actions build pinned web, Windows x86_64 and Linux x86_64
+  packages. Desktop packages use official release templates, not the editor.
+  Checksums, notices and reviewed release notes accompany versioned releases.
+- GitHub Pages hosts the instructional/download site. Its build rehearsal passed;
+  live activation was rejected by GitHub's current private-repository plan.
+  Enable Pages with GitHub Actions when the repository becomes eligible.
+- The Godot infra-tools manifest and export script support explicit VM
+  deployments. The real staged export was tested locally. The production VM,
+  public domain, DNS/TLS and actual target deployment remain to be configured.
+- Final VM and itch.io URLs are unset. Set the Pages workflow's PLAYER_URL and
+  ITCH_URL variables when those destinations are tested and ready.
+
+See the [release guide](releases.md) for commands and
+[hosting evidence](evidence/site-and-vm-hosting.md) for the tested boundaries.
 
 ## Next work, in order
 
-1. **Evaluate the learning interaction.** Steward bluehexagons gathers feedback on finding Play, following the next string/fret, slowing down, looping, and understanding unplaced notes. Record confusing actions and sound/notation observations against the five included examples. This is prototype feedback, not a substitute for the later teacher/musician acceptance reviews.
-2. **Resolve M0 timing and accessibility.** The implementation owner profiles the 18–20 FPS software-rendered browser and captures a ten-minute independent audible/visual timing trace, including seek/pause response. Investigate semantic screen-reader access in Godot. If useful access requires duplicating the UI, run the bounded TypeScript/Tauri comparison specified by the architecture before selecting the stack.
-3. **Finish platform and resilience evidence.** Assign physical Firefox/Safari and desktop audio/file verifiers before alpha; measure worst-case import memory/cancellation; test interrupted cache updates, missing resources, storage denial, and cache eviction/reconnection. Native Linux packaging currently includes the installed editor-capable engine because native export templates are absent.
-4. **Record the final stack decision.** Keep failed gates in M0, fix and rerun bounded issues, or compare the fallback. Once evidence supports a decision, begin M1 with accessible navigation, versioned local settings/progress, and the first three original lessons.
+1. **Prepare one feedback release.** Follow the [launch checklist](launch-checklist.md),
+   record device evidence and known issues, build a new prototype version, and
+   test the exact downloaded packages. Export success alone is not a device pass.
+2. **Publish the agreed channels.** The owner confirms the public identity and
+   repository visibility, publishes the reviewed release, configures the target
+   VM and itch page, then enables the instructional site and its player links.
+3. **Gather first-time-user feedback.** Observe choosing music, finding Play,
+   following the next string/fret, changing tempo, looping and recovering from
+   an unsuitable MIDI file. Record confusing actions without treating this as
+   a substitute for teacher/musician review.
+4. **Close technical and musical evidence gaps.** Capture independent audible
+   timing, physical browser/device results, difficult-import resource use and
+   offline/update/storage recovery. Continue the bounded roadmap toward reviewed
+   lessons and more faithful musical interpretation.
 
-## What remains deliberately incomplete
+## Open limits
 
-The prototype uses a greedy tab baseline and simplified guitar-treble notation. Complete quantization, bass/auto clefs, comfortable phrase fingering, controller/sustain/bend fidelity, reviewed lessons, progress export, and the production import budget remain roadmap work. Do not present its placement coverage as the M3 compatibility-corpus result.
+Notation and guitar placement are prototype projections. Complete musical
+interpretation, comfortable phrase fingering, controller/sustain/bend fidelity,
+reviewed lessons and the production import budget remain roadmap work. Do not
+present placement coverage as the M3 compatibility-corpus result.
 
-The public repository is `bluehexagons/libretabs`; the managed checkout directory remains `litetabs`. Software is Apache-2.0; original documentation/music/fixtures are CC0-1.0; third-party notices are recorded separately. Name clearance, release signing, private security reporting, release/support ownership, and a contributor code of conduct remain before public alpha or broad recruitment. Repository protections have not been audited in this slice.
+The repository is bluehexagons/libretabs; its local checkout is named litetabs.
+Software is Apache-2.0, original documentation/music/fixtures are CC0-1.0, and
+third-party notices remain separate. Name confirmation, private security reporting
+and support ownership need owner attention before publication. Native packages
+are unsigned; signing is future release work. Broader contributor recruitment
+also needs a contribution-conduct policy and repository-protection review.

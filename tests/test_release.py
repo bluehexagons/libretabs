@@ -5,6 +5,7 @@ from pathlib import Path
 import tempfile
 import unittest
 import zipfile
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 def module(name):
@@ -15,6 +16,7 @@ def module(name):
 
 release = module('release')
 publish = module('publish_release')
+installer = module('install_toolchain')
 
 class ReleaseTests(unittest.TestCase):
     def test_version_refuses_paths_and_shell_input(self):
@@ -57,6 +59,54 @@ class ReleaseTests(unittest.TestCase):
             self.assertIn('name="' + target['preset'] + '"', presets)
             self.assertIn(target['entry'], target['required'])
             self.assertTrue(target['templates'])
+
+    def test_promotion_rejects_inconsistent_inventory_and_symlinks(self):
+        for case in ('extra', 'missing', 'duplicate', 'malformed', 'symlink', 'boolean_size', 'unknown_target'):
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as temporary:
+                folder = Path(temporary)
+                filename = 'libretabs-0.1.0-prototype.1-web.zip'
+                artifact = folder / filename
+                artifact.write_bytes(b'archive')
+                entry = {'target':'web', 'file':filename, 'bytes':7, 'sha256':release.digest(artifact)}
+                if case == 'boolean_size':
+                    entry['bytes'] = True
+                if case == 'unknown_target':
+                    entry['target'] = '../other'
+                manifest = {'version':'0.1.0-prototype.1', 'commit':'a'*40, 'artifacts':[entry]}
+                (folder / 'manifest.json').write_text(json.dumps(manifest))
+                sums = ''.join(f'{release.digest(folder / name)}  {name}\n' for name in [filename, 'manifest.json'])
+                if case == 'extra':
+                    sums += 'a'*64 + '  unrelated.txt\n'
+                elif case == 'missing':
+                    sums = sums.splitlines()[0] + '\n'
+                elif case == 'duplicate':
+                    sums += sums.splitlines()[0] + '\n'
+                elif case == 'malformed':
+                    sums = 'invalid checksum\n'
+                elif case == 'symlink':
+                    artifact.rename(folder / 'outside.zip')
+                    artifact.symlink_to(folder / 'outside.zip')
+                (folder / 'SHA256SUMS').write_text(sums)
+                with self.assertRaises(ValueError):
+                    publish.verified_manifest(folder)
+
+    def test_web_only_template_installation(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            folder = Path(temporary)
+            editor = folder / installer.LOCK['editor']['file']
+            with zipfile.ZipFile(editor, 'w') as archive:
+                archive.writestr(editor.stem, b'fake engine')
+            templates = folder / 'templates.zip'
+            with zipfile.ZipFile(templates, 'w') as archive:
+                for target in release.TARGETS.values():
+                    for name in target['templates']:
+                        archive.writestr('templates/' + name, b'fake template')
+            with patch.object(installer, 'download', side_effect=lambda kind, _: editor if kind == 'editor' else templates), \
+                    patch('sys.argv', ['install_toolchain.py', '--directory', str(folder / 'engine'), '--templates', '--targets', 'web']), \
+                    patch.dict('os.environ', {'XDG_DATA_HOME':str(folder / 'data'), 'GITHUB_ENV':''}):
+                installer.main()
+            installed = folder / 'data/godot/export_templates' / installer.LOCK['template_directory']
+            self.assertEqual({path.name for path in installed.iterdir()}, set(release.TARGETS['web']['templates']))
 
 if __name__ == '__main__':
     unittest.main()
