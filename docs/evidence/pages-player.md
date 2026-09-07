@@ -1,6 +1,6 @@
 # GitHub Pages player evidence
 
-Date: 2026-09-07. Scope: local no-header simulation before public deployment.
+Date: 2026-09-07. Scope: local no-header simulation and public Chromium smoke.
 
 Godot 4.7.2 generated a threaded export with
 `ensureCrossOriginIsolationHeaders: true` and a single-thread export with threads
@@ -32,8 +32,17 @@ single-thread templates even for a release export. The locked web target now
 extracts both official single-thread templates as well as the threaded release
 template; no unpinned toolchain input was added.
 
+The manual workflow deployed commit `62e2818` successfully. Public HTTPS checks
+returned HTML, JavaScript, WebAssembly and both player shells with correct MIME
+types. The shared Chromium browser confirmed that `/play/` used the multi-threaded
+engine, was worker-controlled and cross-origin isolated, and rendered at its full
+viewport without a console error. `/play-compatible/` reported the single-threaded
+engine and rendered under its independent scope. VM-local Chromium then reloaded
+the public threaded URL with networking disabled; it retained worker control,
+isolation and the rendered 1280×720 canvas without a console error.
+
 This does not establish physical Safari/iOS/Android compatibility, audible latency,
-long-session timing, storage eviction recovery or an actual Pages deployment.
-Repeat first-visit, console, audio, import, update and offline checks on the public
-URLs after the workflow deploys. The VM host with server headers remains the
-reference threaded build when configured.
+long-session timing, storage eviction recovery, MIDI import, or update behavior on
+the public origin. Repeat those checks on target devices before advertising their
+support. The VM host with server headers remains the reference threaded build when
+configured.

@@ -25,8 +25,9 @@ is available on the managed network. It is not a public launch URL.
   packages. Desktop packages use official release templates, not the editor.
   Checksums, notices and reviewed release notes accompany versioned releases.
 - The repository is public. The [instructional/download site](https://bluehexagons.github.io/libretabs/)
-  is live, and its manual workflow now builds threaded and compatibility players
-  for Pages. Private vulnerability reporting is enabled in GitHub.
+  now links to live threaded and compatibility players on Pages. Public Chromium
+  confirmed both builds render; the threaded build remains isolated on an offline
+  reload. Private vulnerability reporting is enabled in GitHub.
 - The Godot infra-tools manifest and export script support explicit VM
   deployments. The real staged export was tested locally. The production VM,
   public domain, DNS/TLS and actual target deployment remain to be configured.
