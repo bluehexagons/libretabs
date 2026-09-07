@@ -78,7 +78,7 @@ No owner decision currently blocks M0. The provisional name still needs a final 
 3. The learner can pause, seek by measure, choose 25–200% tempo or a custom starting BPM, enable the metronome, and define a measure loop.
 4. A compact fretboard guide shows the current string and fret and repeats the convention that string 1 is the thinnest/highest string.
 5. Menu → Help summarizes how tab lines/fret numbers align with staff pitch/rhythm. Close returns directly to practice.
-6. Music scrolls smoothly by default, with upcoming notes visible ahead of the playhead. Menu → Score view also offers manually turned screen pages with tabs, sheet music, or both. Page turns do not seek or follow playback; Go to playing page explicitly returns to the current music.
+6. Music scrolls smoothly by default, with upcoming notes visible ahead of the playhead. Menu → Score view also offers manually turned screen pages with tabs, sheet music, or both. Pages share scrolling notation and spacing, with a next-page preview. Enable Follow playback for automatic page turns; manually turning a page suspends following without seeking audio. Reduced motion disables decorative effects while preserving the chosen scroll/page behavior. Open brackets highlight upcoming notes, full outlines highlight sounding notes.
 
 ## MVP functional requirements
 

@@ -101,7 +101,6 @@ var menu_scroll: ScrollContainer
 var page_label: Label
 var page_navigation: HFlowContainer
 var seek_navigation: HBoxContainer
-var next_cue: Label
 var view_picker: OptionButton
 var notation_picker: OptionButton
 var drawer: PanelContainer
@@ -295,8 +294,6 @@ func build_ui() -> void:
 	details.add_child(cue)
 	notice_button = button("ARRANGEMENT_SHORT", func() -> void: toggle_drawer("DETAILS"))
 	details.add_child(notice_button)
-	next_cue = label("NEXT_END", 20)
-	panel.add_child(next_cue)
 	view_button = button("SCORE_VIEW", func() -> void: toggle_drawer("SCORE_VIEW"))
 	reading_tools = flow(panel)
 	reading_tools.add_child(view_button)
@@ -342,7 +339,6 @@ func build_ui() -> void:
 	score = ScoreView.new()
 	paper.add_child(score)
 	panel.move_child(details, panel.get_children().find(paper) + 1)
-	panel.move_child(next_cue, panel.get_children().find(details) + 1)
 	var navigation: HBoxContainer = HBoxContainer.new()
 	seek_navigation = navigation
 	panel.add_child(navigation)
@@ -362,9 +358,10 @@ func build_ui() -> void:
 	page_label = label("PAGE_NUMBER")
 	panel.add_child(page_label)
 	page_navigation.add_child(button("PAGE_NEXT", func() -> void: turn_page(1)))
-	page_navigation.add_child(button("PAGE_PLAYBACK", func() -> void: score.page_to_playback(); update_page_controls()))
-	panel.move_child(page_label, panel.get_children().find(paper))
-	panel.move_child(page_navigation, panel.get_children().find(paper))
+	var follow_button: Button = button("PAGE_FOLLOW", toggle_page_follow)
+	follow_button.toggle_mode = true
+	page_navigation.add_child(follow_button)
+	page_label.reparent(page_navigation)
 	page_navigation.hide()
 	# Keep play/pause reachable while the score and settings scroll on phones.
 	dock_panel = PanelContainer.new()
@@ -461,12 +458,13 @@ func build_drawers() -> void:
 	build_print_menu()
 	build_capture_menu()
 	var views: VBoxContainer = section("SCORE_VIEW")
-	views.add_child(label("VIEW_HELP"))
 	view_picker = OptionButton.new()
+	view_picker.tooltip_text = tr("VIEW_HELP")
 	view_picker.custom_minimum_size.y = 56
 	view_picker.fit_to_longest_item = false
 	view_picker.add_item(tr("VIEW_SCROLL"))
 	view_picker.add_item(tr("VIEW_PAGES"))
+	view_picker.add_item(tr("VIEW_FOLLOW_PAGES"))
 	view_picker.item_selected.connect(func(_index: int) -> void: change_view())
 	views.add_child(view_picker)
 	views.add_child(label("PAGE_NOTATION"))
@@ -549,8 +547,6 @@ func build_drawers() -> void:
 	bpm_input.custom_minimum_size.y = 56
 	bpm_input.value_changed.connect(change_bpm)
 	number_field(tempo, bpm_input, "BPM_LABEL")
-	tempo.add_child(label("TEMPO_HELP", 18))
-	tempo.add_child(label("CLICK_HELP", 18))
 
 	var sound: VBoxContainer = section("SOUND")
 	instrument_slider = volume_control(sound, "INSTRUMENT_VOLUME", 85, true)
@@ -628,7 +624,7 @@ func build_drawers() -> void:
 	help.add_child(label("PLAYER_SHORTCUTS"))
 	help.add_child(keyboard_help)
 	help.add_child(button("KEYBOARD", func() -> void: toggle_drawer("KEYBOARD")))
-	for key: String in ["HELP_STRINGS", "HELP_FRETS", "HELP_STAFF", "HELP_TIMING"]:
+	for key: String in ["HELP_HIGHLIGHTS", "VIEW_HELP", "HELP_STRINGS", "HELP_FRETS", "HELP_STAFF", "HELP_TIMING"]:
 		help.add_child(label(key, 20))
 	var display: VBoxContainer = section("DISPLAY")
 	display.add_child(label("APPEARANCE"))
@@ -878,27 +874,36 @@ func menu_focusable(node: Node, controls: Array[Control]) -> void:
 
 func change_view() -> void:
 	notation_picker.disabled = view_picker.selected == 0
+	score.follow_pages = view_picker.selected == 2
 	score.set_view("scroll" if view_picker.selected == 0 else "pages", ["both", "tab", "staff"][notation_picker.selected])
+	if score.follow_pages: score.page_to_playback()
 	update_page_controls()
 	scroll.scroll_vertical = 0
 
 func turn_page(direction: int) -> void:
 	score.turn_page(direction)
+	view_picker.select(1)
 	animate_page()
 	update_page_controls()
 	scroll.scroll_vertical = 0
+
+func toggle_page_follow() -> void:
+	score.follow_pages = not score.follow_pages
+	view_picker.select(2 if score.follow_pages else 1)
+	if score.follow_pages: score.page_to_playback()
+	update_page_controls()
 
 func update_page_controls() -> void:
 	if page_navigation == null: return
 	page_navigation.visible = score.mode == "pages"
 	page_label.visible = score.mode == "pages"
 	cue.get_parent().visible = score.mode == "scroll" and not landscape
-	next_cue.visible = score.mode == "scroll" and not landscape
 	seek_navigation.visible = score.mode == "scroll"
 	page_label.text = tr("PAGE_NUMBER") % [score.page_index + 1, score.pages()]
 	page_navigation.get_child(0).disabled = score.page_index == 0
 	page_navigation.get_child(1).disabled = score.page_index == score.pages() - 1
-	page_navigation.get_child(2).visible = score.page_index != score.measure_index / (ScoreLayout.columns(score.size.x) * ScoreLayout.rows(score.notation))
+	page_navigation.get_child(2).set_pressed_no_signal(score.follow_pages)
+	page_navigation.get_child(2).text = tr("PAGE_FOLLOW_ACTIVE" if score.follow_pages else "PAGE_FOLLOW")
 
 func change_appearance(index: int) -> void:
 	appearance_mode = ["system", "light", "dark"][index]
@@ -914,9 +919,9 @@ func apply_appearance() -> void:
 	RenderingServer.set_default_clear_color(UIAppearance.color("background", dark_mode))
 	host.apply_appearance(dark_mode)
 	appearance_picker.select(["system", "light", "dark"].find(appearance_mode))
-	drawer.add_theme_stylebox_override("panel", UIAppearance.box(UIAppearance.color("paper", dark_mode), 16))
-	paper.add_theme_stylebox_override("panel", UIAppearance.box(UIAppearance.color("paper", dark_mode), 8))
-	dock_panel.add_theme_stylebox_override("panel", UIAppearance.box(UIAppearance.color("paper", dark_mode), 12))
+	drawer.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 16))
+	paper.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 8))
+	dock_panel.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 12))
 	for state_name: String in ["normal", "hover", "pressed", "hover_pressed"]:
 		play_button.add_theme_stylebox_override(state_name, UIAppearance.primary_style(dark_mode, state_name))
 	play_button.add_theme_color_override("font_hover_pressed_color", Color.WHITE)
@@ -971,7 +976,7 @@ func responsive() -> void:
 	metro_button.text = tr("CLICK_ON" if metro_check.button_pressed else "CLICK_OFF") if landscape or size.x >= 760 else ""
 	metro_button.custom_minimum_size.x = 56
 	update_loop_controls()
-	dock_panel.add_theme_stylebox_override("panel", UIAppearance.box(UIAppearance.color("paper", dark_mode), 8 if landscape else 12))
+	dock_panel.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 8 if landscape else 12))
 	dock.custom_minimum_size.x = 0
 	if landscape: dock.custom_minimum_size.x = 144 if expanded_controls else 152
 	speed_control.vertical = landscape
@@ -1379,7 +1384,7 @@ func report_state() -> void:
 	if song == null: return
 	if host.trace_enabled():
 		var evidence: Dictionary = audio.metrics()
-		evidence.merge({"count_beat": int(count_badge.text) if count_badge.visible else 0, "capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "font_style": font_style, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "placed": projection.placed, "eligible": projection.eligible, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
+		evidence.merge({"follow_pages": score.follow_pages, "upcoming_tick": score.upcoming_tick, "count_beat": int(count_badge.text) if count_badge.visible else 0, "capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "font_style": font_style, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "placed": projection.placed, "eligible": projection.eligible, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
 		host.report(evidence)
 	offline.text = tr("OFFLINE_READY") if host.offline_ready() else tr("OFFLINE_PENDING")
 	if host.offline_ready() and not host.trace_enabled(): idle_timer.stop()
@@ -1388,8 +1393,11 @@ func update_position() -> void:
 	position_updates += 1
 	if song == null:
 		return
+	score.effects_playing = audio.playing_practice and audio.audible_frame() >= audio.transport.count_frames
 	score.update_tick(source_tick)
-	if capture_active: capture_view.score.update_tick(source_tick)
+	if capture_active:
+		capture_view.score.effects_playing = score.effects_playing
+		capture_view.score.update_tick(source_tick)
 	update_page_controls()
 	updating = true
 	seek.value = score.measure_index + 1
@@ -1403,17 +1411,6 @@ func update_position() -> void:
 			else:
 				cue.text = tr("CUE_UNPLACED")
 			break
-	next_cue.text = tr("NEXT_END")
-	var upcoming: Dictionary = {}
-	for note: Dictionary in song.notes:
-		if int(note.part) != part or float(note.start) <= source_tick: continue
-		if upcoming.is_empty() or float(note.start) < float(upcoming.start): upcoming = note
-	if not upcoming.is_empty():
-		if projection.placements.has(upcoming.id):
-			var placement: Dictionary = projection.placements[upcoming.id]
-			next_cue.text = tr("NEXT_NOTE") % [placement.string, placement.fret]
-		else:
-			next_cue.text = tr("NEXT_UNPLACED")
 
 func show_notices() -> void:
 	pause()

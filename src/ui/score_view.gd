@@ -4,6 +4,11 @@ extends Control
 
 var reduced_motion: bool = false
 var presentation: bool = false
+var follow_pages: bool = false
+var effects_playing: bool = false
+var page_starts: Array[int] = [0]
+var geometry_width: float = -1
+var upcoming_tick: float = -1
 var ui_font: Font = ThemeDB.fallback_font
 var music_font: Font = preload("res://assets/fonts/Bravura.otf")
 var song: SongDocument
@@ -44,6 +49,7 @@ func set_document(document: SongDocument, selection: int, tab: TabProjection) ->
 	projection = tab
 	page_index = 0
 	page_capacity = 0
+	geometry_width = -1
 	layout.build(song)
 	invalidate()
 
@@ -57,63 +63,78 @@ func invalidate() -> void:
 	refresh()
 
 func set_view(value: String, symbols: String) -> void:
+	var enter_pages: bool = mode != "pages" and value == "pages"
 	mode = value
 	notation = "both" if mode == "scroll" and not presentation else symbols
+	if enter_pages: page_index = page_for_measure(measure_index)
 	invalidate()
 
 func pages() -> int:
-	return ScoreLayout.page_count(song.measures.size(), size.x, notation) if song != null else 1
+	return page_starts.size()
 
 func page_start() -> int:
-	return page_index * ScoreLayout.columns(size.x) * ScoreLayout.rows(notation)
+	return page_starts[clampi(page_index, 0, pages() - 1)]
+
+func page_for_measure(index: int) -> int:
+	return maxi(0, page_starts.bsearch(index, false) - 1)
 
 func turn_page(direction: int) -> void:
+	follow_pages = false
 	page_index = clampi(page_index + direction, 0, pages() - 1)
 	refresh()
 
 func page_to_playback() -> void:
-	page_index = measure_index / (ScoreLayout.columns(size.x) * ScoreLayout.rows(notation))
+	page_index = page_for_measure(measure_index)
 	refresh()
 
 func update_tick(tick: float) -> void:
 	current_tick = tick
 	measure_index = song.measure_at(tick) if song != null else 0
+	upcoming_tick = -1
+	if song != null:
+		for note: Dictionary in song.notes:
+			if int(note.part) == part and float(note.start) > tick and (upcoming_tick < 0 or float(note.start) < upcoming_tick):
+				upcoming_tick = float(note.start)
+	if follow_pages: page_index = page_for_measure(measure_index)
 	refresh()
 
 func playhead_x() -> float:
-	return clampf(size.x * 0.28, 72, 180)
+	return clampf(size.x * 0.38, 88, 360)
+
+func rebuild_geometry() -> void:
+	if geometry_width == size.x: return
+	var anchor: int = page_start()
+	geometry_width = size.x
+	layout.build(song)
+	page_starts.assign([0])
+	var used: float = 0
+	var offset: float = 0
+	var available: float = maxf(144, size.x - 100)
+	for index: int in range(layout.widths.size()):
+		layout.widths[index] = minf(layout.widths[index], available)
+		layout.offsets[index] = offset
+		offset += layout.widths[index]
+		if used > 0 and used + layout.widths[index] > available:
+			page_starts.append(index)
+			used = 0
+		used += layout.widths[index]
+	page_index = page_for_measure(measure_index if follow_pages else anchor)
 
 func refresh() -> void:
 	if song == null or strip == null: return
-	var wanted: Array[int] = []
-	var columns: int = ScoreLayout.columns(size.x)
-	if mode == "pages":
-		var capacity: int = columns * ScoreLayout.rows(notation)
-		if page_capacity > 0 and capacity != page_capacity:
-			page_index = (page_index * page_capacity) / capacity
-		page_capacity = capacity
+	rebuild_geometry()
 	page_index = clampi(page_index, 0, pages() - 1)
+	page_capacity = (page_starts[page_index + 1] if page_index + 1 < pages() else song.measures.size()) - page_start()
 	var row_height: float = ScoreLayout.row_height(notation)
-	if mode == "scroll":
-		custom_minimum_size.y = row_height
-		# Reduced motion uses stationary, fitted measures with a partial next
-		# measure; long bars must not disappear beyond a phone's right edge.
-		if reduced_motion:
-			view_offset = 0
-			strip.position = Vector2.ZERO
-			for index: int in range(measure_index, mini(song.measures.size(), measure_index + ceili(size.x / reduced_width()))): wanted.append(index)
-		else:
-			# Pure projection of source time, never a second elapsed clock.
-			view_offset = layout.timeline_x(current_tick) - playhead_x()
-			strip.position = Vector2(-view_offset, 0)
-			for index: int in range(song.measures.size()):
-				if layout.offsets[index] + layout.widths[index] >= view_offset and layout.offsets[index] <= view_offset + size.x: wanted.append(index)
-	else:
-		custom_minimum_size.y = row_height * ScoreLayout.rows(notation)
-		view_offset = 0
-		strip.position = Vector2.ZERO
-		for index: int in range(page_start(), mini(song.measures.size(), page_start() + columns * ScoreLayout.rows(notation))):
-			wanted.append(index)
+	custom_minimum_size.y = row_height
+	# Functional scrolling stays continuous even with decorative motion disabled.
+	# Paged reading uses exactly the same geometry, with a partial next page.
+	view_offset = maxf(-64, layout.timeline_x(current_tick) - playhead_x()) if mode == "scroll" else layout.offsets[page_start()] - 64
+	strip.position = Vector2(-view_offset, 0)
+	var wanted: Array[int] = []
+	for index: int in range(song.measures.size()):
+		if mode == "pages" and index < page_start(): continue
+		if layout.offsets[index] + layout.widths[index] >= view_offset and layout.offsets[index] <= view_offset + size.x: wanted.append(index)
 	for index: int in tiles.keys():
 		if not wanted.has(index):
 			var old: MeasureCanvas = tiles[index]
@@ -128,7 +149,7 @@ func refresh() -> void:
 			tile.part = part
 			tile.projection = projection
 			tile.index = index
-			tile.continuous = mode == "scroll" and not reduced_motion
+			tile.continuous = true
 			tile.notation = notation
 			tile.ui_font = ui_font
 			tile.music_font = music_font
@@ -136,13 +157,12 @@ func refresh() -> void:
 			strip.add_child(tile)
 			tiles[index] = tile
 		var tile: MeasureCanvas = tiles[index]
-		var slot: int = index - page_start()
-		var next_size: Vector2 = Vector2(reduced_width() if reduced_motion else layout.widths[index], row_height) if mode == "scroll" else Vector2(size.x / columns, row_height)
+		var next_size: Vector2 = Vector2(layout.widths[index], row_height)
 		if tile.size != next_size:
 			tile.size = next_size
 			tile.queue_redraw()
-		tile.position = Vector2((index - measure_index) * reduced_width() if reduced_motion else layout.offsets[index], 0) if mode == "scroll" else Vector2((slot % columns) * size.x / columns, (slot / columns) * row_height)
-	var key: String = "%s:%s:%s:%s" % [mode, page_index, size, current_tick]
+		tile.position = Vector2(layout.offsets[index], 0)
+	var key: String = "%s:%s:%s:%s:%s" % [mode, page_index, size, current_tick, effects_playing]
 	if key != last_key:
 		last_key = key
 		cursor.queue_redraw()
@@ -164,40 +184,44 @@ class CursorLayer extends Control:
 
 func draw_cursor(surface: Control) -> void:
 	if song == null: return
-	var bar: Dictionary = song.measures[measure_index]
 	if tiles.has(measure_index):
 		var tile: MeasureCanvas = tiles[measure_index]
 		var origin: Vector2 = tile.position + strip.position
-		var x: float = playhead_x() if mode == "scroll" and not reduced_motion else origin.x + 68 + (current_tick - float(bar.start)) / float(bar.end - bar.start) * (tile.size.x - 92)
+		var x: float = layout.timeline_x(current_tick) - view_offset
 		surface.draw_line(Vector2(x, origin.y + 60), Vector2(x, origin.y + ScoreLayout.row_height(notation) - 22), get_theme_color("accent", "LibreTabs"), 2, true)
 	for note: Dictionary in song.notes:
-		if int(note.part) != part or current_tick < float(note.start) or current_tick >= float(note.end): continue
+		if int(note.part) != part: continue
+		var upcoming: bool = float(note.start) == upcoming_tick
+		if not upcoming and (current_tick < float(note.start) or current_tick >= float(note.end)): continue
 		for index: int in tiles.keys():
 			var measure: Dictionary = song.measures[index]
 			if note.end <= measure.start or note.start >= measure.end: continue
 			var tile: MeasureCanvas = tiles[index]
 			var origin: Vector2 = tile.position + strip.position
-			var x: float = origin.x + ScoreLayout.note_x(song, note, index, tile.size.x, mode == "scroll" and not reduced_motion)
+			var x: float = origin.x + ScoreLayout.note_x(song, note, index, tile.size.x, true)
 			if notation != "staff" and projection.placements.has(note.id):
 				var placement: Dictionary = projection.placements[note.id]
 				var y: float = origin.y + ScoreLayout.tab_y(int(placement.string), notation)
 				var half: float = ui_font.get_string_size(str(placement.fret), HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x / 2 + 5
-				surface.draw_rect(Rect2(x - half, y - 14, half * 2, 28), get_theme_color("accent", "LibreTabs"), false, 2)
+				draw_note_mark(surface, Vector2(x, y), half, upcoming, note)
 			if notation != "tab":
 				var y: float = origin.y + ScoreLayout.staff_y(int(note.pitch))
 				if y >= origin.y + 48 and y <= origin.y + 144:
-					surface.draw_arc(Vector2(x, y), 11, 0, TAU, 20, get_theme_color("accent", "LibreTabs"), 2, true)
+					if upcoming:
+						draw_note_mark(surface, Vector2(x, y), 10, true, note)
+					else:
+						surface.draw_arc(Vector2(x, y), 11, 0, TAU, 20, get_theme_color("accent", "LibreTabs"), 2, true)
+						if notation == "staff": draw_particles(surface, Vector2(x, y), note)
 
 	draw_live(surface)
-	if mode == "scroll" and not reduced_motion:
-		# Fixed reading guide; notes disappear behind it as they pass.
-		surface.draw_rect(Rect2(0, 48, 44, ScoreLayout.row_height(notation) - 48), get_theme_color("paper", "LibreTabs"))
-		if notation != "tab":
-			surface.draw_string(music_font, Vector2(8, 105), String.chr(0xe050), HORIZONTAL_ALIGNMENT_LEFT, -1, 32, get_theme_color("ink", "LibreTabs"))
-			surface.draw_string(ui_font, Vector2(17, 132), "8", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, get_theme_color("ink", "LibreTabs"))
-		if notation != "staff":
-			for string_index: int in range(6):
-				surface.draw_string(ui_font, Vector2(14, (182 if notation == "both" else 86) + string_index * 21), str(string_index + 1), HORIZONTAL_ALIGNMENT_LEFT, -1, 18, get_theme_color("muted", "LibreTabs"))
+	# Fixed reading guide; notes disappear behind it as they pass.
+	surface.draw_rect(Rect2(0, 48, 44, ScoreLayout.row_height(notation) - 48), get_theme_color("paper", "LibreTabs"))
+	if notation != "tab":
+		surface.draw_string(music_font, Vector2(8, 105), String.chr(0xe050), HORIZONTAL_ALIGNMENT_LEFT, -1, 32, get_theme_color("ink", "LibreTabs"))
+		surface.draw_string(ui_font, Vector2(17, 132), "8", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, get_theme_color("ink", "LibreTabs"))
+	if notation != "staff":
+		for string_index: int in range(6):
+			surface.draw_string(ui_font, Vector2(14, (182 if notation == "both" else 86) + string_index * 21), str(string_index + 1), HORIZONTAL_ALIGNMENT_LEFT, -1, 18, get_theme_color("muted", "LibreTabs"))
 
 func set_live(notes: Array[Dictionary]) -> void:
 	live_notes = notes.duplicate(true)
@@ -207,8 +231,7 @@ func draw_live(surface: Control) -> void:
 	if live_notes.is_empty() or not tiles.has(measure_index): return
 	var tile: MeasureCanvas = tiles[measure_index]
 	var origin: Vector2 = tile.position + strip.position
-	var bar: Dictionary = song.measures[measure_index]
-	var x: float = playhead_x() if mode == "scroll" and not reduced_motion else origin.x + 68 + (current_tick - float(bar.start)) / float(bar.end - bar.start) * (tile.size.x - 92)
+	var x: float = layout.timeline_x(current_tick) - view_offset
 	var color: Color = get_theme_color("live", "LibreTabs")
 	var font: Font = ui_font
 	for note: Dictionary in live_notes:
@@ -232,5 +255,29 @@ func draw_live(surface: Control) -> void:
 			surface.draw_string(font, Vector2(x - half, y + (font.get_ascent(26) - font.get_descent(26)) / 2), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 26, color)
 	surface.draw_string(font, Vector2(48, origin.y + ScoreLayout.row_height(notation) - 16), tr("LIVE_NOTE"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, color)
 
-func reduced_width() -> float:
-	return maxf(252, minf(500, size.x * 0.80))
+# Open corner brackets mean "next"; a complete box means "sounding".
+func draw_note_mark(surface: Control, center: Vector2, half: float, upcoming: bool, note: Dictionary) -> void:
+	var color: Color = get_theme_color("accent", "LibreTabs")
+	if upcoming:
+		for side: float in [-1.0, 1.0]:
+			var x: float = center.x + side * (half + 2)
+			surface.draw_line(Vector2(x, center.y - 14), Vector2(x, center.y + 14), color, 2, true)
+			for y: float in [center.y - 14, center.y + 14]:
+				surface.draw_line(Vector2(x, y), Vector2(x - side * 5, y), color, 2, true)
+	else:
+		surface.draw_rect(Rect2(center - Vector2(half, 14), Vector2(half * 2, 28)), color, false, 2)
+		draw_particles(surface, center, note)
+
+func draw_particles(surface: Control, center: Vector2, note: Dictionary) -> void:
+	var phase: float = particle_phase(note)
+	if phase < 0: return
+	var color: Color = get_theme_color("accent", "LibreTabs")
+	color.a = (1 - phase) * 0.75
+	for index: int in range(4):
+		var direction: Vector2 = Vector2.from_angle(-PI * (0.15 + index * 0.23))
+		surface.draw_circle(center + direction * (19 + phase * 18), 2 * (1 - phase) + 0.5, color, true, -1, true)
+
+func particle_phase(note: Dictionary) -> float:
+	if reduced_motion or not effects_playing: return -1
+	var age: float = song.seconds_at(current_tick) - song.seconds_at(float(note.start))
+	return age / 0.22 if age >= 0 and age < 0.22 else -1

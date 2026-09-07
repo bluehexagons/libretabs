@@ -67,3 +67,6 @@ Native system-theme detection uses
 web uses the browser color-scheme preference behind the existing host adapter.
 Devices without a usable system preference retain the light fallback and explicit
 Light/Dark choices.
+
+The later reading-flow refinement in decision 0004 changes the playhead cap to
+360 pixels and screen pages to one shared notation system with optional following.

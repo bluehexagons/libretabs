@@ -209,7 +209,7 @@ The score layout is deliberately narrow:
 - one selected pitched part;
 - one rhythmic voice;
 - scrolling practice pairs staff and tab, with tab visually primary; manual reading can explicitly select either or both;
-- responsive screen layout with default scrolling and manually turned screen pages; no printing/PDF layout;
+- responsive screen layout with default scrolling and single-system screen pages, with optional playback following; printable layout is separate under decision 0008;
 - common meters and binary subdivisions;
 - measure geometry computed separately from drawing.
 
@@ -428,3 +428,14 @@ values during rapid taps. Count-in UI reads pulse boundaries stored alongside th
 transport's existing click schedule; there is no extra UI clock. ScoreView accepts
 font resources shared by its engraving and cursor layers. CaptureView supplies
 isolated 2× font caches and preserves the chosen title font.
+
+### Reading-flow refinement
+
+Screen pages now group the same continuous measure geometry used in scrolling,
+with a preview of the next page. Page-follow state belongs to the view; manual
+turns suspend it without affecting the transport. Reduced motion suppresses
+nonessential effects without replacing functional scrolling with jumps. Upcoming
+onsets and finite note-start sparks are source-time projections in the cursor
+layer; paused/count-in/reduced-motion views have no particle animation. Print
+geometry, the canonical song, and persistence contracts are unchanged. See
+[decision 0004](decisions/0004-score-navigation.md) and [evidence](evidence/reading-flow.md).

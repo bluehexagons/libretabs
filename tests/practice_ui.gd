@@ -166,10 +166,16 @@ func run() -> void:
 	score.reduced_motion = true
 	score.invalidate()
 	score.update_tick(boundary - song.division / 2.0)
-	check(score.strip.position == Vector2.ZERO and score.tiles.has(1), "reduced follow keeps stationary measures and next-measure preview")
-	check(score.tiles[0].size.x <= score.size.x and not score.tiles[0].continuous, "reduced follow fits the current measure on a phone")
+	check(score.tiles.has(1), "reduced motion retains upcoming preview")
+	score.update_tick(boundary - 0.01)
+	var reduced_before: float = score.view_offset
+	score.update_tick(boundary + 0.01)
+	check(score.view_offset > reduced_before and score.view_offset - reduced_before < 0.1, "reduced scrolling never jumps at a measure boundary")
+	check(score.tiles.has(0), "previous measure remains visible after a reduced-motion boundary")
+	var scroll_width: float = score.tiles[1].size.x
 	score.reduced_motion = false
 	score.invalidate()
+	score.update_tick(0)
 	score.set_view("pages", "both")
 	var original_tick: float = app.get("source_tick")
 	var original_frame: int = player.transport.rendered_frames
@@ -180,13 +186,67 @@ func run() -> void:
 	check(score.page_index == 1, "playback position does not turn manual pages")
 	score.page_to_playback()
 	check(score.page_index == 0, "explicit return to playing page")
+	check(score.tiles[0].continuous and score.tiles[0].size.x == scroll_width and score.custom_minimum_size.y == 320, "pages retain scrolling engraving, spacing and single system height")
+	check(score.tiles.has(1), "stationary phone page previews the next measure")
+	score.follow_pages = true
+	score.update_tick(boundary)
+	check(score.page_index == score.page_for_measure(1), "page following turns at the next page boundary")
+	var followed_offset: float = score.view_offset
+	score.update_tick(boundary + song.division / 2.0)
+	check(score.view_offset == followed_offset, "following pages stays stationary within the page")
+	score.update_tick(0)
+	check(score.page_index == 0, "page following returns on loop wrap or backward seek")
+	score.turn_page(1)
+	check(not score.follow_pages, "manual turn suspends page following")
+	score.update_tick(0)
+	check(score.page_index == 1, "suspended page following keeps the manual passage")
+	app.call("toggle_page_follow")
+	check(score.follow_pages and score.page_index == 0 and app.get("view_picker").selected == 2, "visible follow control returns to playback and synchronizes menu")
+	app.call("toggle_page_follow")
+	check(not score.follow_pages and app.get("view_picker").selected == 1, "follow control can hold the current page")
 	score.set_view("pages", "tab")
 	check(score.notation == "tab" and ScoreLayout.rows(score.notation) == 3, "manual tab-only pages")
 	score.set_view("pages", "staff")
 	check(score.notation == "staff", "manual staff-only pages")
+	root.size = Vector2i(480, 320)
+	for _frame: int in range(10): await process_frame
+	score.set_view("pages", "both")
+	score.page_to_playback()
+	check(score.tiles.has(1) and score.tiles[1].position.x + score.strip.position.x + 16 < score.size.x, "short landscape pages retain an upcoming note preview")
+	check(score.global_position.y <= 16 and score.global_position.y + 281 < 320, "page navigation does not push landscape tablature below the viewport")
+	root.size = Vector2i(390, 844)
+	for _frame: int in range(10): await process_frame
 	score.set_view("scroll", "staff")
 	check(score.notation == "both", "scrolling restores both synchronized representations")
 	check(ScoreLayout.page_count(9, 390, "both") == 5 and ScoreLayout.page_count(9, 1000, "both") == 3, "responsive page counts include final partial page")
+	var highlight_song: SongDocument = SongDocument.new()
+	highlight_song.end_tick = 3840
+	highlight_song.build_measures()
+	highlight_song.notes.assign([
+		{"id": "a", "part": 0, "pitch": 64, "start": 480, "end": 960},
+		{"id": "b", "part": 0, "pitch": 60, "start": 480, "end": 720},
+		{"id": "c", "part": 1, "pitch": 67, "start": 240, "end": 720},
+		{"id": "d", "part": 0, "pitch": 65, "start": 1440, "end": 1920}])
+	var highlights: ScoreView = ScoreView.new()
+	highlights.song = highlight_song
+	highlights.update_tick(0)
+	check(highlights.upcoming_tick == 480, "upcoming cluster skips other parts and includes simultaneous notes")
+	highlights.update_tick(1000)
+	check(highlights.upcoming_tick == 1440, "upcoming highlight spans rests")
+	highlights.update_tick(1440)
+	check(highlights.upcoming_tick == -1, "last onset has no misleading future highlight")
+	highlights.effects_playing = true
+	highlights.update_tick(576)
+	check(absf(highlights.particle_phase(highlight_song.notes[0]) - 0.1 / 0.22) < 0.001, "particles derive age from source tempo time")
+	highlights.reduced_motion = true
+	check(highlights.particle_phase(highlight_song.notes[0]) == -1, "reduced motion suppresses particles")
+	highlights.reduced_motion = false
+	highlights.effects_playing = false
+	check(highlights.particle_phase(highlight_song.notes[0]) == -1, "paused notes do not leave frozen particles")
+	highlights.effects_playing = true
+	highlights.update_tick(800)
+	check(highlights.particle_phase(highlight_song.notes[0]) == -1 and not highlights.is_processing(), "particle burst expires without an idle process loop")
+	highlights.free()
 	app.call("set_speed", 1.0)
 	app.call("toggle_drawer", "TEMPO")
 	var focusable: Array[Control] = []
@@ -348,7 +408,7 @@ func run() -> void:
 	check(not app.get("capture_active") and app.get("root_box").visible, "touch exits capture without needing a small button")
 	app.set("motion_mode", "full")
 	app.call("apply_motion")
-	check(score.playhead_x() <= 180, "wide screens leave room for upcoming music")
+	check(score.playhead_x() <= score.size.x * 0.4 and score.playhead_x() <= 360, "playhead leaves most width for upcoming music and more trailing context")
 	app.call("apply_scale", 2.0)
 	root.size = Vector2i(360, 740)
 	for key: String in app.get("drawers"):

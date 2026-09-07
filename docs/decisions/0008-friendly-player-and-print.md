@@ -63,3 +63,7 @@ are still open.
 The browser APIs follow [MDN reduced motion](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion),
 [page size](https://developer.mozilla.org/en-US/docs/Web/CSS/@page/size) and
 [print](https://developer.mozilla.org/en-US/docs/Web/API/Window/print).
+
+The reading-flow refinement in decision 0004 supersedes fitted stationary measures
+for reduced motion: decorative effects are disabled, functional scrolling stays
+continuous, and following pages provides the stationary alternative.

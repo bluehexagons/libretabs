@@ -34,6 +34,12 @@ static func box(fill: Color, padding: int = 12) -> StyleBoxFlat:
 	style.content_margin_bottom = padding
 	return style
 
+static func panel_style(dark: bool, padding: int = 12) -> StyleBoxFlat:
+	var style: StyleBoxFlat = box(color("paper", dark), padding)
+	style.set_border_width_all(1)
+	style.border_color = color("line", dark)
+	return style
+
 static func make_theme(dark: bool, font_size: int, font_style: String = "rounded") -> Theme:
 	var result: Theme = Theme.new()
 	result.default_font_size = font_size

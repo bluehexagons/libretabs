@@ -365,7 +365,7 @@ msgid "SCORE_VIEW"
 msgstr "Score view"
 
 msgid "VIEW_HELP"
-msgstr "Follow the moving music, or turn pages yourself. Page turns never move playback."
+msgstr "Choose scrolling, manual pages, or pages that follow playback. Turning a page yourself pauses page following, without changing the sound."
 
 msgid "VIEW_SCROLL"
 msgstr "Smooth scrolling"
@@ -374,7 +374,7 @@ msgid "VIEW_PAGES"
 msgstr "Manual pages"
 
 msgid "PAGE_NOTATION"
-msgstr "Show on manual pages"
+msgstr "Show on pages"
 
 msgid "NOTATION_BOTH"
 msgstr "Both"
@@ -545,7 +545,7 @@ msgid "TIP_TEMPO"
 msgstr "Drag the speed slider to find a comfortable pace. Open Playback for an exact BPM, count-in and more options."
 
 msgid "TIP_SCORE_VIEW"
-msgstr "Choose smooth scrolling or pages you turn yourself. You can also print the music or review the generated arrangement."
+msgstr "Choose scrolling, manual pages or automatic page turns. Print or review the arrangement here."
 
 msgid "TIP_PRINT"
 msgstr "Create a printable file of the selected part. Choose tabs, sheet music or both; then open the saved file to print or save as PDF."
@@ -557,10 +557,10 @@ msgid "REDUCED_MOTION"
 msgstr "Reduce motion"
 
 msgid "MOTION_SYSTEM"
-msgstr "Following your device setting. Reduced motion removes transitions and follows the music one measure at a time."
+msgstr "Following your device setting. Decorative effects are off when motion is reduced. Choose pages in Score view for a stationary score."
 
 msgid "MOTION_OVERRIDE"
-msgstr "Your choice is saved on this device. Reduced motion removes transitions and follows the music one measure at a time."
+msgstr "Saved on this device. Reduced motion disables decorative effects. Choose pages in Score view for a stationary score."
 
 msgid "MOTION_FOLLOW"
 msgstr "Follow device setting"
@@ -768,3 +768,18 @@ msgstr "Pause here. Press Play or Space to continue."
 
 msgid "TIP_COUNT_BEAT"
 msgstr "Count-in beat %d. Tap to pause."
+
+msgid "VIEW_FOLLOW_PAGES"
+msgstr "Pages · follow playback"
+
+msgid "HELP_HIGHLIGHTS"
+msgstr "Open brackets on tabs and staff notes show the next notes, including chords. Full outlines show sounding notes. Small sparks mark note starts when reduced motion is off; they do not grade your playing."
+
+msgid "PAGE_FOLLOW"
+msgstr "Follow playback"
+
+msgid "TIP_PAGE_FOLLOW"
+msgstr "Turn pages with the music. Turn off to read at your own pace. Swiping or turning a page yourself also turns following off."
+
+msgid "PAGE_FOLLOW_ACTIVE"
+msgstr "Following"
