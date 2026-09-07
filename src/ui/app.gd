@@ -61,7 +61,8 @@ var loop_toggle: Button
 var count_length: SpinBox
 var speed_dragging: bool = false
 var main_speed: HSlider
-var speed_control: BoxContainer
+var speed_control: PanelContainer
+var speed_unit_layout: BoxContainer
 var keyboard: KeyboardNotes = KeyboardNotes.new()
 var keyboard_picker: OptionButton
 var octave_picker: SpinBox
@@ -124,6 +125,8 @@ var header: BoxContainer
 var header_margin: MarginContainer
 var header_actions: HBoxContainer
 var dock_panel: PanelContainer
+var dock_margin: MarginContainer
+var transport_row: HFlowContainer
 var content_margin: MarginContainer
 var view_button: Button
 var landscape: bool = false
@@ -360,7 +363,7 @@ func build_ui() -> void:
 	seek.max_value = 1
 	seek.step = 1
 	seek.scrollable = false
-	seek.custom_minimum_size = Vector2(40, 48)
+	seek.custom_minimum_size = Vector2(40, 44)
 	seek.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	seek.focus_mode = Control.FOCUS_ALL
 	seek.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
@@ -388,15 +391,17 @@ func build_ui() -> void:
 	page_label.reparent(page_navigation)
 	page_navigation.hide()
 	# Keep play/pause reachable while the score and settings scroll on phones.
+	dock_margin = MarginContainer.new()
+	root_box.add_child(dock_margin)
 	dock_panel = PanelContainer.new()
 	dock_panel.add_theme_stylebox_override("panel", surface("ffffff", 12))
-	root_box.add_child(dock_panel)
+	dock_margin.add_child(dock_panel)
 	dock = BoxContainer.new()
 	dock.vertical = true
 	dock.alignment = BoxContainer.ALIGNMENT_CENTER
 	dock.add_theme_constant_override("separation", 8)
 	dock_panel.add_child(dock)
-	var transport_row: HFlowContainer = HFlowContainer.new()
+	transport_row = HFlowContainer.new()
 	transport_row.add_theme_constant_override("h_separation", 8)
 	transport_row.add_theme_constant_override("v_separation", 4)
 	transport_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -405,6 +410,7 @@ func build_ui() -> void:
 	dock.add_child(transport_row)
 	play_button = button("PLAY", toggle_play)
 	play_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	play_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	play_button.custom_minimum_size.y = 64
 	for mode: String in ["normal", "hover", "pressed"]:
 		play_button.add_theme_stylebox_override(mode, surface("4665d8" if mode == "normal" else "3551bd", 12))
@@ -425,16 +431,21 @@ func build_ui() -> void:
 	quick_row = flow(dock)
 	quick_row.alignment = FlowContainer.ALIGNMENT_CENTER
 	quick_row.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	tempo_button = button("TEMPO", func() -> void: toggle_drawer("TEMPO"))
-	speed_control = BoxContainer.new()
-	speed_control.vertical = true
-	speed_control.add_theme_constant_override("separation", 0)
+	speed_control = PanelContainer.new()
 	speed_control.custom_minimum_size.x = 144
 	speed_control.custom_minimum_size.y = 64
-	speed_control.alignment = BoxContainer.ALIGNMENT_CENTER
 	speed_control.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	quick_row.add_child(speed_control)
-	speed_control.add_child(tempo_button)
+	speed_unit_layout = BoxContainer.new()
+	speed_unit_layout.alignment = BoxContainer.ALIGNMENT_CENTER
+	speed_unit_layout.add_theme_constant_override("separation", 6)
+	speed_control.add_child(speed_unit_layout)
+	tempo_button = button("TEMPO", func() -> void: toggle_drawer("TEMPO"))
+	tempo_button.remove_meta("color_role")
+	tempo_button.theme_type_variation = "TempoDisplayButton"
+	tempo_button.custom_minimum_size.y = 48
+	tempo_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	speed_unit_layout.add_child(tempo_button)
 	main_speed = HSlider.new()
 	main_speed.scrollable = false
 	main_speed.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
@@ -454,13 +465,14 @@ func build_ui() -> void:
 	main_speed.value_changed.connect(func(value: float) -> void:
 		if speed_dragging: tempo_button.text = tr("TEMPO_BUTTON") % roundi(value)
 		else: set_speed(value / 100.0))
-	speed_control.add_child(main_speed)
+	speed_unit_layout.add_child(main_speed)
 	metro_button = button("CLICK_ON", func() -> void: set_metronome(not metro_check.button_pressed))
 	metro_button.toggle_mode = true
-	metro_button.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	metro_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	transport_row.add_child(metro_button)
 	loop_button = button("LOOP_TOOL", func() -> void: toggle_drawer("LOOP_TOOL"))
 	loop_button.toggle_mode = true
+	loop_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	# This opens an editor; the pressed appearance reports the loop setting.
 	loop_button.pressed.connect(update_loop_controls)
 	transport_row.add_child(loop_button)
@@ -933,8 +945,10 @@ func update_page_controls() -> void:
 	if page_navigation == null: return
 	page_navigation.visible = score.mode == "pages"
 	page_label.visible = score.mode == "pages"
-	cue.get_parent().visible = score.mode == "scroll" and not landscape
-	seek_navigation.visible = score.mode == "scroll"
+	# On very short portrait windows the synchronized score carries the same
+	# current-note information; dropping this duplicate row keeps practice fixed.
+	cue.get_parent().visible = score.mode == "scroll" and not landscape and size.y >= 620
+	seek_navigation.visible = score.mode == "scroll" and not landscape
 	page_label.text = tr("PAGE_NUMBER") % [score.page_index + 1, score.pages()]
 	page_navigation.get_child(0).disabled = score.page_index == 0
 	page_navigation.get_child(1).disabled = score.page_index == score.pages() - 1
@@ -960,6 +974,7 @@ func apply_appearance() -> void:
 	drawer.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 16))
 	paper.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 8))
 	dock_panel.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 12))
+	speed_control.add_theme_stylebox_override("panel", UIAppearance.tempo_unit_style(dark_mode))
 	for state_name: String in ["normal", "hover", "pressed", "hover_pressed"]:
 		play_button.add_theme_stylebox_override(state_name, UIAppearance.primary_style(dark_mode, state_name))
 	play_button.add_theme_color_override("font_hover_pressed_color", Color.WHITE)
@@ -980,12 +995,12 @@ func apply_scale(factor: float) -> void:
 	responsive()
 
 func responsive() -> void:
-	compact = size.y < 700 or (theme.default_font_size >= 30 and size.y < 1000)
+	compact = size.y < 780 or (theme.default_font_size >= 30 and size.y < 1000)
 	var short_screen: bool = size.x > size.y and size.y < 500 and size.x >= 480
 	if short_screen != landscape:
 		landscape = short_screen
 		# The same controls retain their signals and focus; only their container changes.
-		dock_panel.reparent(header if landscape else root_box)
+		dock_margin.reparent(header if landscape else root_box)
 		scroll.scroll_vertical = 0
 	root_box.vertical = not landscape
 	header.vertical = landscape
@@ -1005,7 +1020,7 @@ func responsive() -> void:
 		item.custom_minimum_size.x = 56 if header_icons else 0
 	import_button.visible = not landscape
 	header_actions.alignment = BoxContainer.ALIGNMENT_CENTER if landscape or size.x < 760 else BoxContainer.ALIGNMENT_END
-	tempo_button.icon = UIIcons.get_icon("TEMPO") if expanded_controls else null
+	tempo_button.icon = UIIcons.get_icon("TEMPO")
 	quick_row.visible = true
 	tempo_button.visible = true
 	metro_button.visible = expanded_controls
@@ -1014,28 +1029,53 @@ func responsive() -> void:
 	metro_button.text = tr("CLICK_ON" if metro_check.button_pressed else "CLICK_OFF") if landscape or size.x >= 760 else ""
 	metro_button.custom_minimum_size.x = 56
 	update_loop_controls()
-	dock_panel.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 8 if landscape else 12))
+	dock_panel.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 4 if landscape else 10))
+	speed_control.add_theme_stylebox_override("panel", UIAppearance.tempo_unit_style(dark_mode, 2 if landscape else 7))
+	paper.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 0 if landscape else (4 if compact else 8)))
+	for side: String in ["left", "right", "top", "bottom"]:
+		var inset: int = 0 if landscape else (12 if side in ["left", "right", "bottom"] else 4)
+		dock_margin.add_theme_constant_override("margin_" + side, inset)
 	dock.custom_minimum_size.x = 0
+	dock.add_theme_constant_override("separation", 4 if landscape else 8)
 	if landscape: dock.custom_minimum_size.x = 144 if expanded_controls else 152
-	speed_control.vertical = landscape
-	speed_control.custom_minimum_size.x = (144 if expanded_controls else 152) if speed_control.vertical else (320 if size.x >= 760 else 288)
+	speed_unit_layout.vertical = landscape
+	speed_unit_layout.add_theme_constant_override("separation", 0 if landscape else 6)
+	speed_control.custom_minimum_size.x = (144 if expanded_controls else 152) if landscape else (320 if size.x >= 760 else minf(288, size.x - 48))
+	speed_control.custom_minimum_size.y = 88 if landscape else 64
+	main_speed.custom_minimum_size = Vector2(112 if landscape else (176 if size.x >= 760 else 140), 40 if landscape else 48)
+	tempo_button.custom_minimum_size.x = 0 if landscape else 104
+	tempo_button.custom_minimum_size.y = 44 if landscape else 48
 	brand_label.visible = not landscape and size.x >= (760 if expanded_controls else 1100)
 	menu_button.size_flags_horizontal = Control.SIZE_FILL if landscape else Control.SIZE_SHRINK_END
 	header.alignment = BoxContainer.ALIGNMENT_BEGIN if landscape else BoxContainer.ALIGNMENT_END
-	song_title.visible = not landscape and not (compact and theme.default_font_size >= 30)
+	song_title.visible = not landscape and not compact
 	reading_tools.visible = not landscape and not compact
 	set_status(status_key)
 	for side: String in ["left", "right", "top", "bottom"]:
-		content_margin.add_theme_constant_override("margin_" + side, 4 if landscape else (maxi(16, int((size.x - 1280) / 2)) if side in ["left", "right"] else 12))
-	panel.add_theme_constant_override("separation", 4 if landscape else 12)
+		content_margin.add_theme_constant_override("margin_" + side, 0 if landscape else (maxi(16, int((size.x - 1280) / 2)) if side in ["left", "right"] else (4 if compact else 10)))
+	panel.add_theme_constant_override("separation", 4 if landscape or compact else 10)
 	cue.custom_minimum_size.x = minf(size.x - 64, 200 * theme.default_font_size / 20.0)
 	status.custom_minimum_size.y = 0
-	dock.vertical = landscape or size.x < 760
+	dock.vertical = landscape or size.x < 900
 	drawer.position = Vector2(maxf(0, size.x - 560), 0)
 	drawer.size = Vector2(minf(size.x, 560), size.y)
 	adapt_flow(menu_overlay)
 	adapt_flow(root_box)
 	if score != null: score.refresh(); update_page_controls()
+	update_main_scroll.call_deferred()
+
+func update_main_scroll() -> void:
+	if scroll == null or panel == null: return
+	# Visibility and theme changes settle their container minima on the next
+	# frame. Measuring after that pass avoids preserving a stale scrollbar.
+	await get_tree().process_frame
+	# A disabled ScrollContainer contributes its child's full minimum height. Use
+	# the viewport budget rather than its potentially expanded current size when
+	# deciding whether ordinary play actually fits.
+	var available: float = size.y if landscape else maxf(0, size.y - header_margin.get_combined_minimum_size().y - dock_margin.get_combined_minimum_size().y)
+	var overflow: bool = content_margin.get_combined_minimum_size().y > available + 1
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO if overflow else ScrollContainer.SCROLL_MODE_DISABLED
+	if not overflow: scroll.scroll_vertical = 0
 
 func adapt_flow(node: Node) -> void:
 	if node is HFlowContainer or (node is BoxContainer and not node.vertical):

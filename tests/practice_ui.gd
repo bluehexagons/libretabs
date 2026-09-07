@@ -348,6 +348,7 @@ func run() -> void:
 			check(score.global_position.y <= 16 and score.global_position.y + 281 < viewport.y, "staff and all six tab lines visible without first scrolling")
 			check(app.get("root_box").size.x <= viewport.x and app.get("root_box").size.y <= viewport.y, "landscape shell fits at %s / %s: %s" % [viewport, factor, app.get("root_box").size])
 			check(app.get("main_speed").is_visible_in_tree(), "playback settings directly reachable at every scale")
+			check(not app.get("seek_navigation").visible and app.get("scroll").vertical_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "short landscape uses direct score seeking without a duplicate scrollbar")
 			check(app.get("play_button").get_global_rect().end.y <= viewport.y and app.get("menu_button").size.y >= 56, "landscape transport and menu remain usable")
 			check(app.get("songs_button").is_visible_in_tree() and app.get("songs_button").size.x >= 56 and app.get("loop_button").is_visible_in_tree() and app.get("loop_button").size.x >= 56, "landscape keeps large song and loop controls directly reachable")
 			check(app.get("menu_button").global_position.y >= 8 and app.get("songs_button").global_position.x >= 8, "landscape header is inset from the screen edges")
@@ -367,10 +368,19 @@ func run() -> void:
 	root.size = Vector2i(390, 844)
 	for _frame: int in range(10): await process_frame
 	check(not app.get("landscape") and app.get("song_title").visible and app.get("tempo_button").visible, "portrait restores song context and bottom dock")
-	check(app.get("dock_panel").get_parent() == app.get("root_box"), "rotation restores dock parent")
+	check(app.get("dock_margin").get_parent() == app.get("root_box") and app.get("dock_panel").get_parent() == app.get("dock_margin"), "rotation restores inset dock parent")
 	check(app.get("menu_button").size.x >= 56 and app.get("menu_button").size.y <= 100, "portrait menu retains a readable shape after rotation")
 	check(app.get("songs_button").is_visible_in_tree() and app.get("import_button").is_visible_in_tree() and app.get("loop_button").is_visible_in_tree(), "phone exposes song switching, import and looping")
 	check(app.get("menu_button").get_global_rect().end.x <= 374 and app.get("menu_button").global_position.y >= 8, "portrait header has comfortable edge spacing")
+	check(app.get("dock_panel").global_position.x >= 12 and app.get("dock_panel").get_global_rect().end.x <= 378 and app.get("dock_panel").get_global_rect().end.y <= 832, "portrait transport card is inset from every screen edge")
+	check(app.get("speed_control").get_child(0) == app.get("speed_unit_layout") and app.get("speed_unit_layout").get_child_count() == 2, "tempo display and slider form one control unit")
+	check(app.get("tempo_button").icon != null and "%" in app.get("tempo_button").text, "tempo unit keeps an icon and numeric display")
+	for regular_height: int in [600, 650, 700, 800]:
+		root.size = Vector2i(1280, regular_height)
+		for _frame: int in range(10): await process_frame
+		check(app.get("scroll").vertical_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED and app.get("scroll").scroll_vertical == 0, "regular play fits without main scrolling at 1280x%d" % regular_height)
+	root.size = Vector2i(390, 844)
+	for _frame: int in range(10): await process_frame
 
 	var key_down: InputEventKey = InputEventKey.new()
 	key_down.physical_keycode = KEY_Z
@@ -441,11 +451,13 @@ func run() -> void:
 	root.size = Vector2i(1440, 900)
 	for _frame: int in range(10): await process_frame
 	check(first_bar >= score.page_start() and first_bar < score.page_start() + score.page_capacity, "page resize retains the passage being read")
-	check(absf(app.get("tempo_button").global_position.y - app.get("play_button").global_position.y) < 2 and absf(app.get("metro_button").global_position.y - app.get("play_button").global_position.y) < 2, "wide dock keeps common controls on one row")
+	check(absf(app.get("metro_button").global_position.y + app.get("metro_button").size.y / 2.0 - (app.get("play_button").global_position.y + app.get("play_button").size.y / 2.0)) < 2, "wide dock vertically centers common controls")
 	var play_center: float = app.get("play_button").global_position.y + app.get("play_button").size.y / 2.0
 	var speed_center: float = app.get("main_speed").global_position.y + app.get("main_speed").size.y / 2.0
 	check(absf(play_center - speed_center) < 2, "play and tempo slider centers align in the wide bottom bar")
 	check(app.get("main_speed").theme_type_variation == "TempoSlider" and app.get("instrument_slider").theme_type_variation == "VolumeSlider", "tempo and mixer sliders use their visual roles")
+	check(absf(play_center - (app.get("speed_control").global_position.y + app.get("speed_control").size.y / 2.0)) < 2, "play and complete tempo unit share one vertical center")
+	check(app.get("backdrop").ribbon.get_width() == 256 and app.get("backdrop").ribbon.get_height() == 192, "background uses the broad ribbon motif instead of a noise-sized tile")
 	var reading_page: int = score.page_index
 	var capture: CaptureView = app.get("capture_view")
 	app.get("capture_choices")["capture_notation"].select(1)

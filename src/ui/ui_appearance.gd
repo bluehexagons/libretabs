@@ -52,6 +52,16 @@ static func panel_style(dark: bool, padding: int = 12) -> StyleBoxFlat:
 	style.shadow_offset = Vector2(0, 2)
 	return style
 
+static func tempo_unit_style(dark: bool, padding: int = 7) -> StyleBoxFlat:
+	var style: StyleBoxFlat = box(color("sound", dark), padding)
+	style.set_corner_radius_all(16)
+	style.set_border_width_all(1)
+	style.border_color = color("primary", dark).lerp(color("line", dark), 0.35)
+	style.shadow_color = Color(0, 0, 0, 0.12)
+	style.shadow_size = 2
+	style.shadow_offset = Vector2(0, 1)
+	return style
+
 static func role_style(role: String, dark: bool, state: String) -> StyleBoxFlat:
 	var fill: Color = color(role, dark)
 	if state == "disabled": fill = color("disabled", dark)
@@ -135,9 +145,20 @@ static func make_theme(dark: bool, font_size: int, font_style: String = "rounded
 		result.set_stylebox("focus", kind, focus)
 	result.set_type_variation("TempoSlider", "HSlider")
 	result.set_type_variation("VolumeSlider", "HSlider")
+	result.set_type_variation("TempoDisplayButton", "Button")
+	result.set_constant("h_separation", "TempoDisplayButton", 4)
 	apply_slider(result, "HSlider", color("accent", dark), dark)
 	apply_slider(result, "TempoSlider", color("primary", dark), dark)
 	apply_slider(result, "VolumeSlider", color("live", dark), dark)
+	for state: String in ["normal", "hover", "pressed", "hover_pressed"]:
+		var tempo_display: StyleBoxFlat = box(Color.TRANSPARENT, 4)
+		if state == "hover": tempo_display.bg_color = color("paper", dark).lerp(color("sound", dark), 0.45)
+		elif state in ["pressed", "hover_pressed"]: tempo_display.bg_color = color("pressed", dark).lerp(color("sound", dark), 0.35)
+		result.set_stylebox(state, "TempoDisplayButton", tempo_display)
+	var tempo_focus: StyleBoxFlat = box(Color.TRANSPARENT, 4)
+	tempo_focus.set_border_width_all(2)
+	tempo_focus.border_color = color("accent", dark)
+	result.set_stylebox("focus", "TempoDisplayButton", tempo_focus)
 	result.set_constant("h_separation", "Button", 10)
 	result.set_constant("v_separation", "PopupMenu", 36)
 	result.set_stylebox("panel", "PopupMenu", box(color("paper", dark), 8))
