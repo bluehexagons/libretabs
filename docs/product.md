@@ -41,11 +41,12 @@ These choices keep the first usable release bounded. The product owner confirmed
 - **Non-code content:** project-authored documentation, lesson text, illustrations, music, and test MIDI fixtures are dedicated under CC0-1.0. Third-party work cannot be relicensed and requires its own provenance and license record.
 - **Audience:** adults and teens are the primary independent learners. Children are welcome with parent, guardian, or teacher guidance; the MVP is not designed as an unsupervised child-directed service.
 - **Human review:** recruit musical reviewers and true beginners when their roadmap checkpoints arrive. Their unavailability does not block M0 engineering work, and agents do not substitute for them.
+- **Application stack:** Godot retained by the owner on 2026-09-07; platform support takes priority over full screen-reader integration. Voice synthesis/voiceovers are future candidates, not part of this slice. See [decision 0005](decisions/0005-godot-and-appearance.md).
 - **Primary delivery:** web export first for broad access, then unsigned development builds for Linux, Windows, and macOS.
 - **Practice feedback:** guided visual/audio play-along is sufficient for MVP; no microphone pitch detection or live grading. A non-grading volume-impulse progression mode is the first post-MVP input experiment.
 - **Instrument:** six-string guitar in E2-A2-D3-G3-B3-E4 tuning, with the tuning represented as data so alternate tunings do not require an algorithm rewrite.
 - **Import contract:** best-effort arrangement of one selected pitched part (a source track/channel pair), not guaranteed conversion of a complete orchestral arrangement.
-- **Notation:** tablature is the primary, larger representation. Synchronized standard staff notation is always shown above it for reference, with a concise reading guide in Help. Treble is the guitar default, with bass and automatic clef selection available.
+- **Notation:** tablature is the primary, larger representation. Synchronized standard staff notation is shown above it in scrolling practice for reference; manual pages may show either or both, with a concise reading guide in Help. Treble is the guitar default, with bass and automatic clef selection available.
 - **Content language:** English lessons first, but all UI/content structures are localization-ready from their first implementation.
 - **Connectivity:** no backend, accounts, telemetry, content catalog, or third-party song search.
 
@@ -171,14 +172,14 @@ Advanced settings stay behind a disclosure. The practice screen should remain us
 - Full keyboard navigation for menus and transport, with visible focus.
 - Rebindable shortcuts eventually; MVP shortcuts never replace visible controls.
 - Do not use color alone. Current notes also change outline/weight, warnings have icons/text, and strings retain numbers.
-- UI scale settings and responsive wrapping; verify 200% text/UI scale.
+- UI scale settings and responsive wrapping; verify 200% text/UI scale. Offer saved Device setting/Light/Dark appearance with legible notation and controls in both palettes.
 - Use a general Unicode UI font with fallbacks. Keep the SMuFL music font separate from translated text.
 - Stable message keys, translation context, plural-aware messages, and translator comments from the start.
 - No string-built sentences; parameters are substituted into complete messages.
 - Pseudolocalization, long-label, and right-to-left layout smoke tests are MVP release gates even if English is the only shipped locale.
 - Store MIDI pitches, clefs, tunings, and note spellings as structured data. Localize only presentation.
 
-Godot canvas applications do not automatically inherit the semantic accessibility of HTML controls. Screen-reader support must be investigated during the technical spike and documented honestly; it is not safe to promise full screen-reader accessibility for MVP before that work.
+Godot canvas applications do not automatically inherit the semantic accessibility of HTML controls. Full screen-reader integration is deferred by owner decision 0005 and does not block the Godot direction. Document actual limitations honestly. Voice synthesis and voiceovers may be explored later; neither is implemented or required for this UI slice.
 
 ## Explicit non-goals for MVP
 
@@ -190,7 +191,7 @@ Godot canvas applications do not automatically inherit the semantic accessibilit
 - MusicXML, Guitar Pro, ABC, or audio-file import.
 - Alternate/capo/custom tuning UI, bass guitar, left-handed diagrams, or instruments other than guitar.
 - Guitar techniques not represented by plain MIDI, such as bend choice, hammer-on, pull-off, slide, palm mute, fingering fingers, or pick direction.
-- Tuplet/swing-perfect engraving, multiple notation voices, lyrics, repeats, codas, or page layout.
+- Tuplet/swing-perfect engraving, multiple notation voices, lyrics, repeats, codas, or print-grade page layout.
 - Accounts, social features, hosted song catalog, YouTube sync, or copyrighted song distribution.
 - Mobile-native store releases. Responsive web is tested; native mobile packaging follows desktop stability.
 

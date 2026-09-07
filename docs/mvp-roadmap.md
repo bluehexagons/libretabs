@@ -1,6 +1,6 @@
 # MVP roadmap
 
-Status: M0 evaluation prototype available, updated 2026-09-07
+Status: Godot retained; evaluation prototype and technical validation continue, updated 2026-09-07
 
 ## Delivery strategy
 
@@ -10,11 +10,11 @@ Effort labels are relative: **S** is a focused issue, **M** is a multi-issue sli
 
 The [M0 evidence record](evidence/m0-prototype.md) distinguishes implemented experiments from remaining exit gates. A runnable slice does not mark all M0 issues complete.
 
-The [navigation update](decisions/0004-score-navigation.md) adds default scrolling, manual screen pages and density-aware mobile coordinates. Continue the Godot evaluation, then resolve assistive-technology and physical-device timing evidence before full MVP investment. A failed accessibility gate triggers the same-slice semantic web comparison described in that record.
+The [navigation update](decisions/0004-score-navigation.md) adds default scrolling, manual screen pages and density-aware mobile coordinates. The owner has retained Godot under [decision 0005](decisions/0005-godot-and-appearance.md). Screen-reader integration is deferred and no longer blocks UI/product work; physical-device timing and platform evidence remain outstanding.
 
-## M0 — prove Godot or change course
+## M0 — validate the retained Godot implementation
 
-Goal: one ugly but complete web/Linux prototype loads known MIDI bytes, draws representative staff/tab, plays synchronized generated sound, and survives platform constraints.
+Goal: one complete web/Linux prototype loads known MIDI bytes, draws representative staff/tab, plays synchronized generated sound, and survives platform constraints.
 
 M0 may use constructed fixtures for notation and audio; it does not need the production quantizer or fingering optimizer. Screen dependency candidates first and timebox each viable comparison in its issue. A documented platform/license disqualifier ends that candidate's experiment; porting a library or sourcing a SoundFont is not a prerequisite to proving the built-in path.
 
@@ -27,11 +27,11 @@ M0 may use constructed fixtures for notation and audio; it does not need the pro
 - **M0.5 Notation proof (M):** Bravura/SMuFL and primitive geometry for the gate glyphs plus aligned six-line tab at 360, 768, and 1440 logical pixels.
 - **M0.6 Audio/transport bake-off (M):** define the `SynthBackend` boundary; run the bespoke path as one generated stream with 32 voices, variable tempo, click, seek, speed, loop, all-notes-off, and an automated event trace; compare it with the smallest web-capable Clef runtime subset; record audible-position timing, stream mode, sample rate, queued latency, underruns, control response, bundle, maintenance, and license evidence. Retain the bespoke backend as the no-SoundFont fallback.
 - **M0.7 Export and evidence (M):** managed HTTPS publication, Chromium version record, browser canvas/console check, initial-online/network-disabled reload and cache-update checks, Linux launch, timing capture, 200% pseudolocale, and accessibility findings; early Firefox and Safari audio/file smoke where devices are available, otherwise record assigned verification work before alpha.
-- **M0.8 Decision note (S):** continue with Godot, mitigate a bounded issue, or run the TypeScript/Tauri comparison spike.
+- **M0.8 Decision note (S):** owner decision 0005 retains Godot and defers screen-reader integration. Keep remaining technical checks open rather than treating the stack choice as a blanket pass.
 
 ### Exit criteria
 
-All eight checks in the architecture decision gate have evidence with exact build/browser/device versions. Known failures have severity, an owner, and a bounded next step; a failed gate remains within M0 until fixed and rerun or the stack decision changes. Record provisional import/search/memory budgets and the chosen parser, synthesis backend, and application stack before product implementation begins. Engine/headless success alone does not validate web audio or accessibility.
+The technical checks in architecture have evidence with exact build/browser/device versions; screen-reader integration is deferred and non-blocking under decision 0005. Known failures have severity, an owner, and a bounded next step; a failed gate remains within M0 until fixed and rerun or the stack decision changes. Record provisional import/search/memory budgets and the chosen parser, synthesis backend, and application stack before product implementation begins. Engine/headless success alone does not validate web audio or accessibility.
 
 ## M1 — first-time learner slice
 
@@ -182,7 +182,7 @@ Guitar Pro import, hosted songs, YouTube sync, and automatic audio transcription
 
 | Risk | Mitigation |
 | --- | --- |
-| Godot canvas accessibility is insufficient | Investigate in M0; document support; compare HTML/Tauri before UI investment. |
+| Godot canvas accessibility is insufficient | Document limitations; integration is deferred by owner decision 0005. Retain keyboard, text scale and non-color cues; explore optional voice assistance later. |
 | Custom notation becomes a full engraver | Lock the one-part/one-voice screen notation contract; use SMuFL; reject print/editor scope. |
 | MIDI timing looks readable only after destructive edits | Preserve source timing; derive and label a display projection; test links between them. |
 | Guitar assignment is locally valid but conflicts with held notes or is uncomfortable | Active-interval reservations across phrases, duplicate-pitch fixtures, exposed diagnostics/cost fixtures, musician review, later alternatives. |

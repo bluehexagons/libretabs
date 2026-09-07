@@ -1,5 +1,7 @@
 # M0 prototype evaluation and evidence
 
+Current stack direction: [owner decision 0005](../decisions/0005-godot-and-appearance.md) retains Godot and defers screen-reader integration. Historical measurements below remain valid within their stated limits.
+
 Historical first-build evidence; the [practice feedback update](practice-feedback.md) supersedes UI instructions, volume/tempo controls, and idle measurements below.
 
 Date: 2026-09-07. Scope: a testable Godot feasibility slice; **final M0 gate open**.

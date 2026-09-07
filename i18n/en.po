@@ -146,7 +146,7 @@ msgid "SCALE"
 msgstr "Control text size"
 
 msgid "SCALE_VALUE"
-msgstr "Text size %d%%"
+msgstr "%d%%"
 
 msgid "PSEUDO"
 msgstr "Test long labels"
@@ -155,7 +155,7 @@ msgid "NOTICES"
 msgstr "Licenses & notices"
 
 msgid "STORAGE_SESSION"
-msgstr "Display setting changed for this session. Browser storage is unavailable."
+msgstr "Display setting changed for this session. Settings could not be saved on this device."
 
 msgid "OFFLINE_PENDING"
 msgstr "Web offline readiness is not confirmed yet. On desktop the prototype works locally."
@@ -311,7 +311,7 @@ msgid "HELP"
 msgstr "Help"
 
 msgid "DISPLAY"
-msgstr "Display & app"
+msgstr "Appearance & text"
 
 msgid "TEMPO_HELP"
 msgstr "BPM means beats per minute. Here, one beat is a quarter note. Pitch stays the same when you change speed."
@@ -359,7 +359,7 @@ msgid "MENU"
 msgstr "Menu"
 
 msgid "MENU_BACK"
-msgstr "All settings"
+msgstr "Back"
 
 msgid "SCORE_VIEW"
 msgstr "Score view"
@@ -377,13 +377,13 @@ msgid "PAGE_NOTATION"
 msgstr "Show on manual pages"
 
 msgid "NOTATION_BOTH"
-msgstr "Tabs and sheet music"
+msgstr "Both"
 
 msgid "NOTATION_TAB"
 msgstr "Tabs only"
 
 msgid "NOTATION_STAFF"
-msgstr "Sheet music only"
+msgstr "Sheet music"
 
 msgid "PAGE_PREVIOUS"
 msgstr "Previous page"
@@ -405,3 +405,18 @@ msgstr "Next: see sheet music"
 
 msgid "NEXT_END"
 msgstr "No upcoming notes"
+
+msgid "APPEARANCE"
+msgstr "Appearance"
+
+msgid "APPEARANCE_SYSTEM"
+msgstr "Device setting"
+
+msgid "APPEARANCE_LIGHT"
+msgstr "Light"
+
+msgid "APPEARANCE_DARK"
+msgstr "Dark"
+
+msgid "TEXT_SIZE"
+msgstr "Text size"

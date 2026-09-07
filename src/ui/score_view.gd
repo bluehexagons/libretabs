@@ -10,6 +10,7 @@ var measure_index: int = 0
 var mode: String = "scroll"
 var notation: String = "both"
 var page_index: int = 0
+var page_capacity: int = 0
 var layout: ScoreLayout = ScoreLayout.new()
 var tiles: Dictionary = {}
 var strip: Control
@@ -37,6 +38,7 @@ func set_document(document: SongDocument, selection: int, tab: TabProjection) ->
 	part = selection
 	projection = tab
 	page_index = 0
+	page_capacity = 0
 	layout.build(song)
 	invalidate()
 
@@ -52,7 +54,6 @@ func invalidate() -> void:
 func set_view(value: String, symbols: String) -> void:
 	mode = value
 	notation = "both" if mode == "scroll" else symbols
-	page_index = clampi(page_index, 0, pages() - 1)
 	invalidate()
 
 func pages() -> int:
@@ -74,16 +75,24 @@ func update_tick(tick: float) -> void:
 	measure_index = song.measure_at(tick) if song != null else 0
 	refresh()
 
+func playhead_x() -> float:
+	return clampf(size.x * 0.28, 72, 180)
+
 func refresh() -> void:
 	if song == null or strip == null: return
-	page_index = clampi(page_index, 0, pages() - 1)
 	var wanted: Array[int] = []
 	var columns: int = ScoreLayout.columns(size.x)
+	if mode == "pages":
+		var capacity: int = columns * ScoreLayout.rows(notation)
+		if page_capacity > 0 and capacity != page_capacity:
+			page_index = (page_index * page_capacity) / capacity
+		page_capacity = capacity
+	page_index = clampi(page_index, 0, pages() - 1)
 	var row_height: float = ScoreLayout.row_height(notation)
 	if mode == "scroll":
 		custom_minimum_size.y = 320
 		# This is a pure projection of source time, never a second elapsed clock.
-		view_offset = layout.timeline_x(current_tick) - size.x * 0.28
+		view_offset = layout.timeline_x(current_tick) - playhead_x()
 		strip.position = Vector2(-view_offset, 0)
 		for index: int in range(song.measures.size()):
 			if layout.offsets[index] + layout.widths[index] >= view_offset and layout.offsets[index] <= view_offset + size.x:
@@ -146,8 +155,8 @@ func draw_cursor(surface: Control) -> void:
 	if tiles.has(measure_index):
 		var tile: MeasureCanvas = tiles[measure_index]
 		var origin: Vector2 = tile.position + strip.position
-		var x: float = size.x * 0.28 if mode == "scroll" else origin.x + 68 + (current_tick - float(bar.start)) / float(bar.end - bar.start) * (tile.size.x - 92)
-		surface.draw_line(Vector2(x, origin.y + 60), Vector2(x, origin.y + ScoreLayout.row_height(notation) - 22), Color("6b82d8"), 2, true)
+		var x: float = playhead_x() if mode == "scroll" else origin.x + 68 + (current_tick - float(bar.start)) / float(bar.end - bar.start) * (tile.size.x - 92)
+		surface.draw_line(Vector2(x, origin.y + 60), Vector2(x, origin.y + ScoreLayout.row_height(notation) - 22), get_theme_color("accent", "LibreTabs"), 2, true)
 	for note: Dictionary in song.notes:
 		if int(note.part) != part or current_tick < float(note.start) or current_tick >= float(note.end): continue
 		for index: int in tiles.keys():
@@ -159,19 +168,19 @@ func draw_cursor(surface: Control) -> void:
 			if notation != "staff" and projection.placements.has(note.id):
 				var placement: Dictionary = projection.placements[note.id]
 				var y: float = origin.y + (176 if notation == "both" else 80) + (int(placement.string) - 1) * 21
-				surface.draw_rect(Rect2(x - 4, y - 14, 32, 28), Color("4665d8"), false, 2)
+				surface.draw_rect(Rect2(x - 4, y - 14, 32, 28), get_theme_color("accent", "LibreTabs"), false, 2)
 			if notation != "tab":
 				var pitch: int = int(note.pitch) + 12
 				var degree: int = [0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6][pitch % 12]
 				var step: int = (pitch / 12) * 7 + degree
 				var y: float = origin.y + 112 - (step - 37) * 4
 				if y >= origin.y + 48 and y <= origin.y + 144:
-					surface.draw_arc(Vector2(x + 3, y), 11, 0, TAU, 20, Color("4665d8"), 2, true)
+					surface.draw_arc(Vector2(x + 3, y), 11, 0, TAU, 20, get_theme_color("accent", "LibreTabs"), 2, true)
 
 	if mode == "scroll":
 		# Fixed reading guide; notes disappear behind it as they pass.
-		surface.draw_rect(Rect2(0, 48, 44, 250), Color.WHITE)
-		surface.draw_string(preload("res://assets/fonts/Bravura.otf"), Vector2(8, 105), String.chr(0xe050), HORIZONTAL_ALIGNMENT_LEFT, -1, 32, Color("202d49"))
-		surface.draw_string(ThemeDB.fallback_font, Vector2(17, 132), "8", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("202d49"))
+		surface.draw_rect(Rect2(0, 48, 44, 250), get_theme_color("paper", "LibreTabs"))
+		surface.draw_string(preload("res://assets/fonts/Bravura.otf"), Vector2(8, 105), String.chr(0xe050), HORIZONTAL_ALIGNMENT_LEFT, -1, 32, get_theme_color("ink", "LibreTabs"))
+		surface.draw_string(ThemeDB.fallback_font, Vector2(17, 132), "8", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, get_theme_color("ink", "LibreTabs"))
 		for string_index: int in range(6):
-			surface.draw_string(ThemeDB.fallback_font, Vector2(14, 182 + string_index * 21), str(string_index + 1), HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color("79849b"))
+			surface.draw_string(ThemeDB.fallback_font, Vector2(14, 182 + string_index * 21), str(string_index + 1), HORIZONTAL_ALIGNMENT_LEFT, -1, 18, get_theme_color("muted", "LibreTabs"))

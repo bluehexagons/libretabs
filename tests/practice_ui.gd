@@ -94,7 +94,7 @@ func run() -> void:
 	app.call("set_status", "START_HINT")
 	for factor: float in [1.0, 2.0]:
 		app.call("apply_scale", factor)
-		for viewport: Vector2i in [Vector2i(640, 320), Vector2i(844, 390), Vector2i(932, 430)]:
+		for viewport: Vector2i in [Vector2i(480, 320), Vector2i(568, 320), Vector2i(640, 320), Vector2i(844, 390), Vector2i(932, 430)]:
 			root.size = viewport
 			for _frame: int in range(10): await process_frame
 			check(app.get("landscape"), "short landscape layout selected")
@@ -109,12 +109,66 @@ func run() -> void:
 	while ancestor != app.get("scroll"):
 		check(ancestor.mouse_filter != Control.MOUSE_FILTER_STOP, "score ancestors pass touch drag to scroll container")
 		ancestor = ancestor.get_parent()
+	app.call("apply_scale", 1.0)
 	root.size = Vector2i(390, 844)
 	for _frame: int in range(10): await process_frame
 	check(not app.get("landscape") and app.get("song_title").visible and app.get("tempo_button").visible, "portrait restores song context and bottom dock")
 	check(app.get("dock_panel").get_parent() == app.get("root_box"), "rotation restores dock parent")
 	check(app.get("menu_button").size.x >= 56 and app.get("menu_button").size.y <= 100, "portrait menu retains a readable shape after rotation")
+
+	var settings: HostAdapter = HostAdapter.new()
+	settings.display_path = "user://appearance-test-%d.cfg" % Time.get_ticks_usec()
+	check(settings.save_scale(1.5) and settings.save_appearance("dark"), "native settings save")
+	check(settings.load_scale() == 1.5 and settings.load_appearance() == "dark", "appearance save preserves text size")
+	check(settings.save_scale(2.0) and settings.load_appearance() == "dark", "text size save preserves appearance")
+	check(not settings.save_appearance("invalid"), "unknown appearance rejected")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(settings.display_path))
+	settings.free()
+	app.call("apply_scale", 1.0)
+	app.set("appearance_mode", "dark")
+	var tick_before: float = app.get("source_tick")
+	app.call("apply_appearance")
+	check(app.get("dark_mode") and app.get_theme_color("ink", "LibreTabs") == UIAppearance.color("ink", true), "dark palette applied to app and score")
+	check(score.get_theme_color("paper", "LibreTabs") == UIAppearance.color("paper", true), "engraving inherits dark paper")
+	check(app.get("source_tick") == tick_before and not app.is_processing(), "theme change preserves transport and idle processing")
+	for dark: bool in [false, true]:
+		for token: String in ["ink", "muted", "accent"]:
+			check(contrast(UIAppearance.color(token, dark), UIAppearance.color("paper", dark)) >= 4.5, "score text/highlight contrast in both palettes")
+		check(contrast(Color.WHITE, UIAppearance.color("primary", dark)) >= 4.5, "play button text contrast")
+	app.set("appearance_mode", "light")
+	app.call("apply_appearance")
+	root.size = Vector2i(390, 844)
+	for _frame: int in range(10): await process_frame
+	score.set_view("pages", "both")
+	score.turn_page(1)
+	var first_bar: int = score.page_start()
+	root.size = Vector2i(1440, 900)
+	for _frame: int in range(10): await process_frame
+	check(first_bar >= score.page_start() and first_bar < score.page_start() + score.page_capacity, "page resize retains the passage being read")
+	check(score.playhead_x() <= 180, "wide screens leave room for upcoming music")
+	app.call("apply_scale", 2.0)
+	root.size = Vector2i(360, 740)
+	for key: String in app.get("drawers"):
+		app.call("toggle_drawer", key)
+		for _frame: int in range(10): await process_frame
+		check(app.get("drawer").size.x <= 360, "every menu fits narrow 200 percent width: " + key)
+	app.call("close_menu")
+	app.call("set_status", "START_HINT")
+	score.set_view("scroll", "both")
+	app.call("responsive")
+	for _frame: int in range(10): await process_frame
+	check(app.get("compact") and score.global_position.y < 130, "large text in portrait prioritizes the score")
 	app.queue_free()
 	await process_frame
 	print("Practice UI: %d checks, %d failures" % [checks, failures])
 	quit(1 if failures else 0)
+
+
+func luminance(color: Color) -> float:
+	var linear: Color = color.srgb_to_linear()
+	return 0.2126 * linear.r + 0.7152 * linear.g + 0.0722 * linear.b
+
+func contrast(first: Color, second: Color) -> float:
+	var a: float = luminance(first)
+	var b: float = luminance(second)
+	return (maxf(a, b) + 0.05) / (minf(a, b) + 0.05)

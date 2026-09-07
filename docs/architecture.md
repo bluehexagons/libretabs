@@ -1,18 +1,18 @@
 # Technical architecture
 
-Status: M0 evaluation build available; final stack decision remains open
+Status: Godot retained by owner decision 0005; M0 technical validation remains incomplete
 
 ## Decision summary
 
-Build a vertical technical spike in Godot 4.7 using typed GDScript and the Compatibility renderer. Keep the musical core free of scene/node dependencies and keep platform APIs behind adapters. Continue with Godot only if the spike passes the explicit gate below.
+Continue with Godot 4.7, typed GDScript and the Compatibility renderer under [decision 0005](decisions/0005-godot-and-appearance.md). Keep the musical core free of scene/node dependencies and platform APIs behind adapters. The owner prioritizes platform support; screen-reader integration is deferred and no longer blocks this stack choice. The technical checks below still describe outstanding validation.
 
-This is a measured choice rather than a claim that Godot is the easiest notation platform. Godot gives LibreTabs one codebase for a highly custom, responsive practice surface, procedural audio, headless logic tests, and web/desktop exports. Its weak points are browser file exchange, notation libraries, accessibility semantics, and MIDI synthesis. A conventional TypeScript/Tauri app has stronger ready-made notation and Web Audio libraries, so it remains the fallback if the spike shows we would be fighting the engine.
+This owner-directed choice builds on the evaluated prototype; it does not claim Godot is the easiest notation platform. Godot gives LibreTabs one codebase for a highly custom, responsive practice surface, procedural audio, headless logic tests, and web/desktop exports. Its weak points are browser file exchange, notation libraries, accessibility semantics, and MIDI synthesis. A conventional TypeScript/Tauri app was the original comparison candidate. Decision 0005 retains Godot; no replacement spike is currently planned.
 
 The prototype implements a deliberately smaller subset, documented in [decision 0002](decisions/0002-m0-evaluation-build.md). Its threaded web/audio-worker mitigation and conservative import limits apply to evaluation; the contracts below remain the intended production destination. See [measured evidence](evidence/m0-prototype.md).
 
-## M0 Godot decision gate
+## M0 technical validation
 
-The Godot spike must demonstrate all of the following in one small web and Linux build:
+The Godot implementation retains these technical validation tasks; item 8 is deferred and non-blocking under decision 0005:
 
 1. A user gesture opens a browser `.mid` file and delivers its bytes to GDScript; desktop uses a native file dialog through the same adapter interface.
 2. A format-0 and a format-1 fixture parse into the same documented canonical model in headless tests.
@@ -23,7 +23,7 @@ The Godot spike must demonstrate all of the following in one small web and Linux
 7. Pseudolocalized labels at 200% UI scale remain operable; keyboard focus is visible.
 8. The team records what screen readers can and cannot access in the resulting canvas app.
 
-A small isolated audio/timing or file-adapter failure may stay within M0 for a bounded fix and rerun; it does not waive a failed gate or authorize production implementation. Pin the engine binary and matching export templates in M0.1; the historical VM inventory is not reproducible build evidence. If useful accessibility requires duplicating the whole UI, basic notation requires a near-full engraving engine, or portable audio requires platform-specific native extensions, prototype the same slice in TypeScript/Tauri before choosing.
+A small isolated audio/timing or file-adapter failure may stay within M0 for a bounded fix and rerun; it does not waive a failed gate or authorize production implementation. Pin the engine binary and matching export templates in M0.1; the historical VM inventory is not reproducible build evidence. Screen-reader limitations alone no longer trigger a stack comparison. Raise newly demonstrated platform or musical blockers as bounded issues; do not silently change the stack.
 
 ## System shape
 

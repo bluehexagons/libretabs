@@ -42,6 +42,18 @@
     saveScale(value) {
       try { localStorage.setItem('libretabs.scale.v1', String(value)); return true; } catch (_) { return false; }
     },
+    loadAppearance() {
+      try { return localStorage.getItem('libretabs.appearance.v1') || 'system'; } catch (_) { return 'system'; }
+    },
+    saveAppearance(value) {
+      try { localStorage.setItem('libretabs.appearance.v1', value); return true; } catch (_) { return false; }
+    },
+    prefersDark() { return matchMedia('(prefers-color-scheme: dark)').matches; },
+    onAppearance(callback) { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => callback()); },
+    applyAppearance(dark) {
+      document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+      document.body.style.backgroundColor = dark ? '#101620' : '#f4f6fb';
+    },
     traceEnabled: new URLSearchParams(location.search).has('trace'),
     offlineReady: false
   };

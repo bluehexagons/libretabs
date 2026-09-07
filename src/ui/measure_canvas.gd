@@ -2,9 +2,9 @@
 class_name MeasureCanvas
 extends Control
 
-const INK: Color = Color("202d49")
-const MUTED: Color = Color("79849b")
-const ACCENT: Color = Color("4665d8")
+var ink: Color = Color("202d49")
+var muted: Color = Color("79849b")
+var accent: Color = Color("4665d8")
 var music_font: Font = preload("res://assets/fonts/Bravura.otf")
 var ui_font: Font = ThemeDB.fallback_font
 var song: SongDocument
@@ -17,13 +17,16 @@ var draw_count: int = 0
 
 func _draw() -> void:
 	draw_count += 1
+	ink = get_theme_color("ink", "LibreTabs")
+	muted = get_theme_color("muted", "LibreTabs")
+	accent = get_theme_color("accent", "LibreTabs")
 	draw_measure(index, Vector2.ZERO, size.x)
 
-func text_at(at: Vector2, text: String, font_size: int = 15, color: Color = INK) -> void:
-	draw_string(ui_font, at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
+func text_at(at: Vector2, text: String, font_size: int = 15, color: Color = Color(-1, -1, -1)) -> void:
+	draw_string(ui_font, at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, ink if color.r < 0 else color)
 
-func glyph(at: Vector2, code: int, font_size: int = 32, color: Color = INK) -> void:
-	draw_string(music_font, at, String.chr(code), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
+func glyph(at: Vector2, code: int, font_size: int = 32, color: Color = Color(-1, -1, -1)) -> void:
+	draw_string(music_font, at, String.chr(code), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, ink if color.r < 0 else color)
 
 func draw_measure(index: int, origin: Vector2, width: float) -> void:
 	var bar: Dictionary = song.measures[index]
@@ -34,10 +37,10 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 	var start: float = float(bar.start)
 	var finish: float = float(bar.end)
 	text_at(origin + Vector2(8, 22), tr("MEASURE_TITLE") % [index + 1, song.measures.size()], 16)
-	text_at(origin + Vector2(8, 44), tr("STAFF_REFERENCE") if notation != "tab" else tr("TAB_PRIMARY"), 14, MUTED)
+	text_at(origin + Vector2(8, 44), tr("STAFF_REFERENCE") if notation != "tab" else tr("TAB_PRIMARY"), 14, muted)
 	if notation != "tab":
 		for line: int in range(5):
-			draw_line(Vector2(left, top + line * 8), Vector2(right, top + line * 8), MUTED, 1.0, true)
+			draw_line(Vector2(left, top + line * 8), Vector2(right, top + line * 8), muted, 1.0, true)
 		if not continuous: glyph(Vector2(origin.x + 9, top + 25), 0xe050, 32)
 		if not continuous: text_at(Vector2(origin.x + 18, top + 53), "8", 10)
 		if not continuous: text_at(Vector2(left + 2, top + 13), str(bar.numerator), 13)
@@ -45,12 +48,12 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 	if notation != "staff":
 		for string_index: int in range(6):
 			var y: float = tab_top + string_index * 21
-			if not continuous: text_at(Vector2(origin.x + 12, y + 5), str(string_index + 1), 13, MUTED)
-			draw_line(Vector2(left, y), Vector2(right, y), MUTED, 1, true)
+			if not continuous: text_at(Vector2(origin.x + 12, y + 5), str(string_index + 1), 13, muted)
+			draw_line(Vector2(left, y), Vector2(right, y), muted, 1, true)
 		text_at(Vector2(origin.x + 8, tab_top - 17), tr("TAB_PRIMARY"), 13)
-		if notation != "tab": draw_line(Vector2(right, top), Vector2(right, top + 32), INK, 1.5)
-		draw_line(Vector2(right, tab_top), Vector2(right, tab_top + 105), INK, 1.5)
-	if notation == "staff": draw_line(Vector2(right, top), Vector2(right, top + 32), INK, 1.5)
+		if notation != "tab": draw_line(Vector2(right, top), Vector2(right, top + 32), ink, 1.5)
+		draw_line(Vector2(right, tab_top), Vector2(right, tab_top + 105), ink, 1.5)
+	if notation == "staff": draw_line(Vector2(right, top), Vector2(right, top + 32), ink, 1.5)
 	var music_left: float = origin.x + (16 if continuous else 68)
 	var span: float = width if continuous else width - 92
 	var visible_count: int = 0
@@ -65,7 +68,7 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 			continue
 		visible_count += 1
 		if visible_count > 48:
-			text_at(origin + Vector2(12, size.y - 8), tr("DENSE_DISPLAY"), 12, ACCENT)
+			text_at(origin + Vector2(12, size.y - 8), tr("DENSE_DISPLAY"), 12, accent)
 			break
 		var raw: float = maxf(start, float(note.start))
 		var grid: float = song.division / 4.0
@@ -76,7 +79,7 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 		var step: int = (pitch / 12) * 7 + degree
 		var y: float = top + 32 - (step - 37) * 4
 		var active: bool = false
-		var color: Color = ACCENT if active else INK
+		var color: Color = accent if active else ink
 		if notation != "tab":
 			if active:
 				draw_circle(Vector2(x + 3, y), 10, Color(0.95, 0.81, 0.65, 0.65))
@@ -108,17 +111,17 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 				if float(note.end) > finish or float(note.start) < start:
 					draw_arc(Vector2(x + 13, y + 4), 12, 0.2, PI - 0.2, 20, color, 1.5, true)
 			else:
-				text_at(Vector2(x, top + 16), tr("PITCH_MARKER") % int(note.pitch), 11, ACCENT)
+				text_at(Vector2(x, top + 16), tr("PITCH_MARKER") % int(note.pitch), 11, accent)
 		if notation != "staff":
 			if projection.placements.has(note.id):
 				var placement: Dictionary = projection.placements[note.id]
 				var tab_y: float = tab_top + (int(placement.string) - 1) * 21
-				draw_rect(Rect2(x - 3, tab_y - 12, 30, 24), Color("ffffff"))
+				draw_rect(Rect2(x - 3, tab_y - 12, 30, 24), get_theme_color("paper", "LibreTabs"))
 				if active:
-					draw_rect(Rect2(x - 4, tab_y - 13, 30, 26), ACCENT, false, 2)
+					draw_rect(Rect2(x - 4, tab_y - 13, 30, 26), accent, false, 2)
 				text_at(Vector2(x, tab_y + 8), str(placement.fret), 26, color)
 			else:
-				text_at(Vector2(x, tab_top + 31), "!", 22, ACCENT)
+				text_at(Vector2(x, tab_top + 31), "!", 22, accent)
 	# Quarter rests are only claimed for completely empty quarter intervals.
 	if notation == "tab": return
 	var pulse: float = start
@@ -130,5 +133,5 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 				break
 		if not occupied:
 			var x: float = music_left + (pulse - start) / (finish - start) * span
-			glyph(Vector2(x, top + 16), 0xe4e5, 30, MUTED)
+			glyph(Vector2(x, top + 16), 0xe4e5, 30, muted)
 		pulse += song.division

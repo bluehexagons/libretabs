@@ -60,11 +60,19 @@ var drawer_title: Label
 var drawers: Dictionary = {}
 var opened_drawer: String = ""
 var scroll: ScrollContainer
+var appearance_mode: String = "system"
+var dark_mode: bool = false
+var appearance_picker: OptionButton
+var paper: PanelContainer
+var reading_tools: HFlowContainer
+var menu_back: Button
+var previous_focus: Control
 var header: BoxContainer
 var dock_panel: PanelContainer
 var content_margin: MarginContainer
 var view_button: Button
 var landscape: bool = false
+var compact: bool = false
 var status_key: String = "START_HINT"
 var root_box: BoxContainer
 var dock: BoxContainer
@@ -83,6 +91,9 @@ func _ready() -> void:
 	add_child(audio)
 	build_ui()
 	resized.connect(responsive)
+	appearance_mode = host.load_appearance()
+	host.appearance_changed.connect(apply_appearance)
+	apply_appearance()
 	apply_scale(host.load_scale())
 	host.configure_activity(false)
 	idle_timer = Timer.new()
@@ -95,6 +106,7 @@ func _ready() -> void:
 	load_demo(0)
 
 func pass_scroll_input(node: Node) -> void:
+	if node is OptionButton: node.clip_text = true
 	if node is Control and not node is ScrollContainer and not node is Range and not node is LineEdit:
 		if node.mouse_filter == Control.MOUSE_FILTER_STOP: node.mouse_filter = Control.MOUSE_FILTER_PASS
 	for child: Node in node.get_children(): pass_scroll_input(child)
@@ -102,7 +114,7 @@ func pass_scroll_input(node: Node) -> void:
 func set_status(key: String) -> void:
 	status_key = key
 	status.text = tr(key)
-	status.visible = not landscape or key not in ["START_HINT", "STATE_PAUSED", "FOLLOW_HINT"]
+	status.visible = not (landscape or compact) or key not in ["START_HINT", "STATE_PAUSED", "FOLLOW_HINT"]
 
 func label(key: String, font_size: int = 20) -> Label:
 	var item: Label = Label.new()
@@ -154,30 +166,7 @@ func surface(color: String, padding: int = 16) -> StyleBoxFlat:
 	return box
 
 func build_ui() -> void:
-	var palette: Theme = Theme.new()
-	palette.default_font_size = 20
-	for kind: String in ["Label", "Button", "CheckButton", "OptionButton", "LineEdit", "SpinBox", "PopupMenu"]:
-		for state_name: String in ["font_color", "font_focus_color", "font_hover_color", "font_pressed_color", "font_hover_pressed_color"]:
-			palette.set_color(state_name, kind, Color("202d49"))
-	for kind: String in ["Button", "OptionButton", "LineEdit", "CheckButton"]:
-		palette.set_stylebox("normal", kind, surface("edf0f7", 12))
-		palette.set_stylebox("hover", kind, surface("e1e7f5", 12))
-		palette.set_stylebox("pressed", kind, surface("d5dff6", 12))
-		palette.set_stylebox("disabled", kind, surface("f0f2f7", 12))
-		palette.set_color("font_disabled_color", kind, Color("79849b"))
-		var focus: StyleBoxFlat = surface("00000000", 12)
-		focus.border_color = Color("4665d8")
-		focus.set_border_width_all(3)
-		palette.set_stylebox("focus", kind, focus)
-	for name_key: String in ["slider", "grabber_area", "grabber_area_highlight"]:
-		var rail: StyleBoxFlat = surface("d8deef" if name_key == "slider" else "6b82d8", 0)
-		rail.content_margin_top = 3
-		rail.content_margin_bottom = 3
-		palette.set_stylebox(name_key, "HSlider", rail)
-	palette.set_constant("v_separation", "PopupMenu", 36)
-	palette.set_stylebox("panel", "PopupMenu", surface("ffffff", 8))
-	palette.set_stylebox("hover", "PopupMenu", surface("e1e7f5", 8))
-	theme = palette
+	theme = UIAppearance.make_theme(false, 20)
 	root_box = BoxContainer.new()
 	root_box.vertical = true
 	root_box.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -205,7 +194,7 @@ func build_ui() -> void:
 	header.add_child(brand_label)
 	menu_button = button("MENU", func() -> void: toggle_drawer("MENU"))
 	header.add_child(menu_button)
-	song_title = label("DEMO_0", 30)
+	song_title = label("DEMO_0", 28)
 	panel.add_child(song_title)
 	status = label("START_HINT", 18)
 	panel.add_child(status)
@@ -218,13 +207,17 @@ func build_ui() -> void:
 	next_cue = label("NEXT_END", 20)
 	panel.add_child(next_cue)
 	view_button = button("SCORE_VIEW", func() -> void: toggle_drawer("SCORE_VIEW"))
-	panel.add_child(view_button)
+	reading_tools = flow(panel)
+	reading_tools.add_child(view_button)
+	notice_button.reparent(reading_tools)
 	menu_overlay = Control.new()
 	menu_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(menu_overlay)
 	var shade: ColorRect = ColorRect.new()
 	shade.color = Color(0.08, 0.12, 0.22, 0.65)
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	shade.gui_input.connect(func(event: InputEvent) -> void:
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed: close_menu())
 	menu_overlay.add_child(shade)
 	drawer = PanelContainer.new()
 	drawer.add_theme_stylebox_override("panel", surface("ffffff"))
@@ -232,7 +225,8 @@ func build_ui() -> void:
 	var menu_column: VBoxContainer = VBoxContainer.new()
 	drawer.add_child(menu_column)
 	var drawer_header: HFlowContainer = flow(menu_column)
-	drawer_header.add_child(button("MENU_BACK", func() -> void: toggle_drawer("MENU")))
+	menu_back = button("MENU_BACK", func() -> void: toggle_drawer("MENU"))
+	drawer_header.add_child(menu_back)
 	drawer_header.add_child(button("CLOSE", close_menu))
 	menu_scroll = ScrollContainer.new()
 	menu_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -248,12 +242,14 @@ func build_ui() -> void:
 	build_drawers()
 	drawer.hide()
 	menu_overlay.hide()
-	var paper: PanelContainer = PanelContainer.new()
+	paper = PanelContainer.new()
 	paper.mouse_filter = Control.MOUSE_FILTER_PASS
 	paper.add_theme_stylebox_override("panel", surface("ffffff", 8))
 	panel.add_child(paper)
 	score = ScoreView.new()
 	paper.add_child(score)
+	panel.move_child(details, panel.get_children().find(paper) + 1)
+	panel.move_child(next_cue, panel.get_children().find(details) + 1)
 	var navigation: HBoxContainer = HBoxContainer.new()
 	seek_navigation = navigation
 	panel.add_child(navigation)
@@ -418,6 +414,15 @@ func build_drawers() -> void:
 	for key: String in ["HELP_STRINGS", "HELP_FRETS", "HELP_STAFF", "HELP_TIMING"]:
 		help.add_child(label(key, 20))
 	var display: VBoxContainer = section("DISPLAY")
+	display.add_child(label("APPEARANCE"))
+	appearance_picker = OptionButton.new()
+	appearance_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	appearance_picker.fit_to_longest_item = false
+	appearance_picker.custom_minimum_size.y = 56
+	for key: String in ["APPEARANCE_SYSTEM", "APPEARANCE_LIGHT", "APPEARANCE_DARK"]: appearance_picker.add_item(tr(key))
+	appearance_picker.item_selected.connect(change_appearance)
+	display.add_child(appearance_picker)
+	display.add_child(label("TEXT_SIZE"))
 	scale_picker = OptionButton.new()
 	scale_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	scale_picker.fit_to_longest_item = false
@@ -429,9 +434,10 @@ func build_drawers() -> void:
 		apply_scale(factor)
 		if not host.save_scale(factor): set_status("STORAGE_SESSION"))
 	display.add_child(scale_picker)
-	display.add_child(button("PSEUDO", func() -> void:
-		TranslationServer.pseudolocalization_enabled = not TranslationServer.pseudolocalization_enabled
-		get_tree().reload_current_scene()))
+	if host.trace_enabled():
+		display.add_child(button("PSEUDO", func() -> void:
+			TranslationServer.pseudolocalization_enabled = not TranslationServer.pseudolocalization_enabled
+			get_tree().reload_current_scene()))
 	display.add_child(button("NOTICES", show_notices))
 	offline = label("OFFLINE_PENDING", 18)
 	display.add_child(offline)
@@ -455,6 +461,8 @@ func volume_control(parent: Node, key: String, initial: float, instrument: bool)
 	return slider
 
 func toggle_drawer(key: String) -> void:
+	if not menu_overlay.visible: previous_focus = get_viewport().gui_get_focus_owner()
+	menu_back.visible = key != "MENU"
 	opened_drawer = key
 	menu_overlay.show()
 	drawer.show()
@@ -468,7 +476,8 @@ func close_menu() -> void:
 	opened_drawer = ""
 	drawer.hide()
 	menu_overlay.hide()
-	menu_button.grab_focus()
+	if is_instance_valid(previous_focus) and previous_focus.is_visible_in_tree(): previous_focus.grab_focus()
+	else: menu_button.grab_focus()
 
 func _input(event: InputEvent) -> void:
 	if not menu_overlay.visible or not event is InputEventKey or not event.pressed: return
@@ -492,6 +501,7 @@ func change_view() -> void:
 	notation_picker.disabled = view_picker.selected == 0
 	score.set_view("scroll" if view_picker.selected == 0 else "pages", ["both", "tab", "staff"][notation_picker.selected])
 	update_page_controls()
+	scroll.scroll_vertical = 0
 
 func turn_page(direction: int) -> void:
 	score.turn_page(direction)
@@ -509,6 +519,28 @@ func update_page_controls() -> void:
 	page_navigation.get_child(0).disabled = score.page_index == 0
 	page_navigation.get_child(1).disabled = score.page_index == score.pages() - 1
 
+func change_appearance(index: int) -> void:
+	appearance_mode = ["system", "light", "dark"][index]
+	apply_appearance()
+	if not host.save_appearance(appearance_mode): set_status("STORAGE_SESSION")
+
+func apply_appearance() -> void:
+	dark_mode = appearance_mode == "dark" or (appearance_mode == "system" and host.system_dark())
+	var font_size: int = theme.default_font_size if theme != null else 20
+	theme = UIAppearance.make_theme(dark_mode, font_size)
+	RenderingServer.set_default_clear_color(UIAppearance.color("background", dark_mode))
+	host.apply_appearance(dark_mode)
+	appearance_picker.select(["system", "light", "dark"].find(appearance_mode))
+	drawer.add_theme_stylebox_override("panel", UIAppearance.box(UIAppearance.color("paper", dark_mode), 16))
+	paper.add_theme_stylebox_override("panel", UIAppearance.box(UIAppearance.color("paper", dark_mode), 8))
+	dock_panel.add_theme_stylebox_override("panel", UIAppearance.box(UIAppearance.color("paper", dark_mode), 12))
+	for state_name: String in ["normal", "hover", "pressed"]:
+		play_button.add_theme_stylebox_override(state_name, UIAppearance.box(UIAppearance.color("primary" if state_name == "normal" else "primary_hover", dark_mode)))
+	if score != null:
+		for tile: MeasureCanvas in score.tiles.values(): tile.queue_redraw()
+		score.cursor.queue_redraw()
+	responsive()
+
 func apply_scale(factor: float) -> void:
 	theme.default_font_size = roundi(20 * factor)
 	scale_labels(root_box, factor)
@@ -517,7 +549,8 @@ func apply_scale(factor: float) -> void:
 	responsive()
 
 func responsive() -> void:
-	var short_screen: bool = size.x > size.y and size.y < 500 and size.x >= 600
+	compact = size.y < 700 or (theme.default_font_size >= 30 and size.y < 1000)
+	var short_screen: bool = size.x > size.y and size.y < 500 and size.x >= 480
 	if short_screen != landscape:
 		landscape = short_screen
 		# The same controls retain their signals and focus; only their container changes.
@@ -526,22 +559,22 @@ func responsive() -> void:
 	root_box.vertical = not landscape
 	header.vertical = landscape
 	header.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN if landscape else Control.SIZE_FILL
-	tempo_button.visible = not landscape
-	brand_label.visible = not landscape and (size.y >= 700 or size.x >= 760)
-	song_title.visible = not landscape
-	view_button.visible = not landscape
+	tempo_button.visible = not landscape and size.x >= 360 and not (compact and theme.default_font_size >= 30)
+	brand_label.visible = not landscape and not compact
+	header.alignment = BoxContainer.ALIGNMENT_BEGIN if landscape else BoxContainer.ALIGNMENT_END
+	song_title.visible = not landscape and not (compact and theme.default_font_size >= 30)
+	reading_tools.visible = not landscape and not compact
 	set_status(status_key)
 	for side: String in ["left", "right", "top", "bottom"]:
-		content_margin.add_theme_constant_override("margin_" + side, 4 if landscape else 16)
+		content_margin.add_theme_constant_override("margin_" + side, 4 if landscape else (maxi(16, int((size.x - 1400) / 2)) if side in ["left", "right"] else 12))
 	panel.add_theme_constant_override("separation", 4 if landscape else 12)
 	cue.custom_minimum_size.x = minf(size.x - 64, 200 * theme.default_font_size / 20.0)
-	status.custom_minimum_size.y = (0 if landscape else (54 if size.x < 760 else 28)) * theme.default_font_size / 20.0
+	status.custom_minimum_size.y = 0
 	dock.vertical = landscape or size.x < 760
 	drawer.position = Vector2(maxf(0, size.x - 560), 0)
 	drawer.size = Vector2(minf(size.x, 560), size.y)
 	adapt_flow(menu_overlay)
 	adapt_flow(root_box)
-	play_button.custom_minimum_size.x = 120
 	if score != null: score.refresh(); update_page_controls()
 
 func adapt_flow(node: Node) -> void:
@@ -551,8 +584,12 @@ func adapt_flow(node: Node) -> void:
 				child.clip_text = false
 				var font: Font = child.get_theme_font("font")
 				var font_size: int = roundi(float(child.get_meta("base_font_size", 20)) * theme.default_font_size / 20.0)
+				var available: float = minf(size.x - 64, 496) if drawer.is_ancestor_of(node) else size.x - 56
 				var needed: float = font.get_string_size(child.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + (20 if child.has_meta("compact") else (72 if child is CheckButton else 28))
-				child.custom_minimum_size.x = 120 if child == play_button else minf(needed, maxf(80, (size.x - 56) / 2 if node is BoxContainer else size.x - 64))
+				var limit: float = available
+				if node == seek_navigation: limit = (available - 56) / 2
+				elif node is BoxContainer and node != header: limit = available / 2
+				child.custom_minimum_size.x = maxf(120, minf(needed, available)) if child == play_button else minf(needed, maxf(80, limit))
 	for child: Node in node.get_children(): adapt_flow(child)
 
 func scale_labels(node: Node, factor: float) -> void:
@@ -739,6 +776,7 @@ func stop_practice() -> void:
 	pause()
 	source_tick = float(song.measures[int(loop_from.value) - 1].start) if song != null and loop_check.button_pressed else 0.0
 	state = "STATE_READY"
+	set_status("START_HINT")
 	update_position()
 
 func restart_if_playing() -> void:
@@ -799,7 +837,7 @@ func report_state() -> void:
 	if song == null: return
 	if host.trace_enabled():
 		var evidence: Dictionary = audio.metrics()
-		evidence.merge({"landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "placed": projection.placed, "eligible": projection.eligible, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
+		evidence.merge({"compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "placed": projection.placed, "eligible": projection.eligible, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
 		host.report(evidence)
 	offline.text = tr("OFFLINE_READY") if host.offline_ready() else tr("OFFLINE_PENDING")
 	if host.offline_ready() and not host.trace_enabled(): idle_timer.stop()

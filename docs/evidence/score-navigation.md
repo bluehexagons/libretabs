@@ -1,5 +1,7 @@
 # Score navigation and mobile density evaluation
 
+Current stack direction: [owner decision 0005](../decisions/0005-godot-and-appearance.md) retains Godot and defers screen-reader integration. Historical measurements below remain valid within their stated limits.
+
 Date: 2026-09-07. Evaluation changes based on `bec4841`; see
 [decision 0004](../decisions/0004-score-navigation.md). This is functional evidence,
 not closure of the M0 stack, musical engraving, accessibility, or timing gates.

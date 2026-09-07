@@ -49,6 +49,8 @@ Buttons/pickers use at least 56 logical pixels, and popup choices have increased
 vertical spacing. Text scale remains independently adjustable from 100–200%.
 See the [Godot Window scaling contract](https://docs.godotengine.org/en/stable/classes/class_window.html).
 
+The stack recommendation below is superseded by [owner decision 0005](0005-godot-and-appearance.md); navigation semantics remain in force except for its documented refinements.
+
 ## Stack recommendation
 
 Continue this bounded Godot evaluation; the density defect and score navigation

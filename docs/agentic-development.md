@@ -208,7 +208,7 @@ Do not vendor code during an exploratory issue. First produce the bake-off resul
 
 Create `docs/decisions/NNNN-short-title.md` from the repository template when accepting or reversing a decision about stack, parser, audio backend, file bridge, canonical model, dependency, license, supported MIDI contract, or platform target. Include context, decision, alternatives, consequences, and evidence date. Small implementation details belong near code/tests instead.
 
-Decision 0001 records the MVP musical contracts. The first stack decision record must still be the measured M0 Godot go/no-go result.
+Decision 0001 records the MVP musical contracts. Owner decision 0005 retains Godot and defers screen-reader integration; outstanding technical/platform measurements remain required and must not be represented as passing.
 
 ## Human checkpoints
 

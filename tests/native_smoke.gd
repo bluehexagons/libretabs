@@ -10,6 +10,11 @@ func smoke() -> void:
 	root.add_child(app)
 	for _frame: int in range(30):
 		await process_frame
+	var appearance: String = OS.get_environment("LIBRETABS_APPEARANCE")
+	if appearance in ["light", "dark"]:
+		app.set("appearance_mode", appearance)
+		app.call("apply_appearance")
+		for _frame: int in range(5): await process_frame
 	# Idle rendering is intentional; request a frame for the capture.
 	RenderingServer.force_draw()
 	var path: String = OS.get_environment("LIBRETABS_CAPTURE")

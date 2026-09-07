@@ -4,7 +4,7 @@ These instructions apply to the entire LibreTabs repository.
 
 ## Read first
 
-Before changing behavior, read `docs/product.md`, `docs/architecture.md`, and `docs/mvp-roadmap.md`. The repository currently contains an M0 evaluation prototype; the final stack gate remains open. Implement only the bounded issue requested; do not silently expand MVP scope.
+Before changing behavior, read `docs/product.md`, `docs/architecture.md`, and `docs/mvp-roadmap.md`. The repository currently contains an M0 evaluation prototype; Godot is retained under owner decision 0005, while technical/platform validation remains open. Implement only the bounded issue requested; do not silently expand MVP scope.
 
 Product priority is: a first-time learner can understand the next action, musical timing is correct, transformations are honest, and all target platforms remain viable.
 
