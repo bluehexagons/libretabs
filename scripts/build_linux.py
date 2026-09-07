@@ -18,6 +18,7 @@ shutil.copy2(engine,out/'godot')
 launcher=out/'run.sh';launcher.write_text('#!/bin/sh\ncd -- "$(dirname -- "$0")" || exit 1\nexec ./godot --main-pack libretabs.pck "$@"\n');launcher.chmod(0o755)
 shutil.copy2(root/'LICENSE',out/'LICENSE-Apache-2.0.txt')
 shutil.copy2(root/'assets/fonts/Bravura-LICENSE.txt',out/'Bravura-LICENSE.txt')
+shutil.copy2(root/'assets/fonts/Nunito-LICENSE.txt',out/'Nunito-LICENSE.txt')
 (out/'README.txt').write_text('LibreTabs M0 development prototype. Linux x86_64.\nRun ./run.sh (or sh run.sh). No install or account required.\nThe package includes the Godot editor-capable engine because this VM has no native export template. It starts directly in the app.\nUse Licenses & notices in the app for the Godot runtime and dependency notices.\nOriginal MIDI fixtures are CC0-1.0.\n')
 subprocess.run([str(engine),'--headless','--path','.', '--script','res://scripts/engine_notices.gd','--',str(out/'GODOT-NOTICES.txt')],check=True)
 with zipfile.ZipFile(root/'exports/libretabs-linux-x86_64.zip','w',zipfile.ZIP_DEFLATED) as archive:

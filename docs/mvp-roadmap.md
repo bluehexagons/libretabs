@@ -197,7 +197,7 @@ An issue is done only when:
 4. Alternate/capo/custom tunings and four-string bass.
 5. MusicXML import/export, which can preserve notation/tab intent that MIDI lacks.
 6. Fingering alternatives and a constrained editor for correcting arrangements.
-7. Tuplets, swing, multiple voices, richer articulation, and print/PDF layout.
+7. Tuplets, swing, multiple voices, richer articulation, and production print/PDF engraving. Basic printable practice pages are implemented separately under decision 0008.
 8. Native Android/iOS packaging and store-grade accessibility/integration.
 
 Guitar Pro import, hosted songs, YouTube sync, and automatic audio transcription should be evaluated as separate product directions, not assumed extensions of the MIDI MVP.
@@ -215,3 +215,8 @@ Guitar Pro import, hosted songs, YouTube sync, and automatic audio transcription
 | Offline readiness or saved progress is overstated | Confirm cache/save completion; test quota/denial/update/eviction; explain session-only operation and reconnection limits. |
 | A “free” SoundFont/song creates license trouble | Bundle neither in MVP; use code synthesis and original/generated exercises with provenance. |
 | Agents produce incompatible parallel components | Freeze small contracts first, isolate worktrees, require fixtures and integration slices, keep one integration owner. |
+
+
+The owner-requested [friendly player and print slice](decisions/0008-friendly-player-and-print.md)
+adds contrast, finite/reduced motion, font choice and a bounded local print export
+to M0 evaluation. This is not completion of M1/M3/M5 or physical-printer validation.

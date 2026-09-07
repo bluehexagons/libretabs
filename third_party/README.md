@@ -41,3 +41,23 @@ service-worker activation/control before starting the application, with a bounde
 online-only fallback when registration is unavailable. This avoids failed offline
 image requests and an initial service-worker takeover interrupting an imported session. The original
 Godot MIT notice is preserved in `assets/fonts/Godot-template-LICENSE.txt`.
+
+## Nunito UI lettering (2026-09-07)
+
+Bundled unmodified variable `Nunito[wght].ttf` from
+[googlefonts/nunito](https://github.com/googlefonts/nunito) commit
+`8c6a9bb9732545b9ed53f29ec5e1ab0ff53c4e6f`, at `assets/fonts/Nunito.ttf`.
+SHA-256: `bb55a5ca5c2042335b3991af27c4d0705d0ef41cac6164ac737fd8f2a1e85207`.
+Copyright 2014 The Nunito Project Authors; SIL Open Font License 1.1, preserved
+in `assets/fonts/Nunito-LICENSE.txt` and the in-app notices. Source path:
+`fonts/variable/Nunito[wght].ttf`. No font edits or subsetting; 276,932 bytes. Trailing whitespace in the
+license text is normalized; its wording is unchanged.
+
+License review: OFL permits bundling with the app while retaining the font's
+license and copyright; it does not license imported music. Godot loads it as a
+font resource on existing targets, without native extensions or network calls.
+Weights 650/800 distinguish controls from headings, with the engine font as
+fallback. The Simple preference uses that existing engine font and removes the
+Nunito dependency from UI styling. This is a bounded visual choice, not completion
+of multilingual font coverage. Code-generated UI icon outlines are original
+LibreTabs code, with no external icon dependency.

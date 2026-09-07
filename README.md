@@ -76,3 +76,18 @@ LibreTabs uses a simple split:
 - Third-party work keeps its own license and must be recorded before it is added.
 
 Copyright 2026 bluehexagons applies to the Apache-licensed software. Apache-2.0 grants everyone broad rights to use, modify, distribute, sublicense, and sell the software. “Non-commercial project” describes how bluehexagons operates LibreTabs; it does not add a non-commercial license condition. See [license scope](LICENSES/README.md) for the path-level policy.
+
+
+The player now offers warm/light and dark palettes, rounded or standard lettering,
+large icon-and-text controls, touch hold explanations, and finite transitions.
+**Menu → Make it yours** controls appearance, text and reduced motion; motion
+follows the browser setting until you override it. Hold an action button for help,
+use F1 on a focused control, or open Help for the keyboard and swipe shortcuts.
+
+**Menu → Print your music** creates A4 or US Letter pages of the selected part,
+with tabs, staff, or both and an optional measure range. Choose Prepare pages,
+then Save printable file. Open `libretabs-score.html` and choose Print / Save as
+PDF. The file is self-contained and works offline; it retains the prototype's
+notation limitations and includes arrangement notes. Exports are limited to
+24 music pages; use shorter ranges for longer songs. See
+[decision 0008](docs/decisions/0008-friendly-player-and-print.md).

@@ -6,6 +6,11 @@ signal picked(name: String, bytes: PackedByteArray, error: String)
 signal hidden
 signal appearance_changed
 signal focus_lost
+signal motion_changed
+signal exported(success: bool)
+var motion_callback: JavaScriptObject
+var export_dialog: FileDialog
+var pending_export: String = ""
 var settings_path: String = "user://practice-v1.json"
 var settings_writable: bool = true
 var focus_callback: JavaScriptObject
@@ -27,6 +32,8 @@ func _ready() -> void:
 		web.onBlur(focus_callback)
 		appearance_callback = JavaScriptBridge.create_callback(func(_args: Array) -> void: appearance_changed.emit())
 		web.onAppearance(appearance_callback)
+		motion_callback = JavaScriptBridge.create_callback(func(_args: Array) -> void: motion_changed.emit())
+		web.onMotion(motion_callback)
 		resize_callback = JavaScriptBridge.create_callback(func(_args: Array) -> void: sync_display())
 		web.onResize(resize_callback)
 		get_window().size_changed.connect(sync_display)
@@ -173,3 +180,49 @@ func reset_practice_settings() -> bool:
 		if DirAccess.remove_absolute(ProjectSettings.globalize_path(settings_path)) != OK: return false
 	settings_writable = true
 	return true
+
+func load_display_choice(key: String, allowed: Array[String], fallback: String) -> String:
+	var value: String = fallback
+	if web != null: value = str(web.loadDisplayChoice(key, fallback))
+	else:
+		var config: ConfigFile = ConfigFile.new()
+		if config.load(display_path) == OK: value = str(config.get_value("display", key, fallback))
+	return value if value in allowed else fallback
+
+func save_display_choice(key: String, value: String) -> bool:
+	if web != null: return bool(web.saveDisplayChoice(key, value))
+	var config: ConfigFile = ConfigFile.new()
+	config.load(display_path)
+	config.set_value("display", key, value)
+	return config.save(display_path) == OK
+
+func system_reduced_motion() -> bool:
+	return web != null and bool(web.prefersReducedMotion())
+
+func export_print(html: String) -> void:
+	if html.is_empty() or html.length() > 24000000:
+		exported.emit(false)
+		return
+	if web != null:
+		exported.emit(bool(web.downloadPrint(html)))
+		return
+	pending_export = html
+	if export_dialog == null:
+		export_dialog = FileDialog.new()
+		export_dialog.use_native_dialog = true
+		export_dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE
+		export_dialog.access = FileDialog.ACCESS_FILESYSTEM
+		export_dialog.filters = PackedStringArray(["*.html ; HTML"])
+		export_dialog.file_selected.connect(func(path: String) -> void:
+			var file: FileAccess = FileAccess.open(path, FileAccess.WRITE)
+			var success: bool = false
+			if file != null:
+				file.store_string(pending_export)
+				file.flush()
+				success = file.get_error() == OK
+			pending_export = ""
+			exported.emit(success))
+		export_dialog.canceled.connect(func() -> void: pending_export = "")
+		add_child(export_dialog)
+	export_dialog.current_file = "libretabs-score.html"
+	export_dialog.popup_centered_ratio(0.8)

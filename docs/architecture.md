@@ -403,3 +403,11 @@ asset requests to its release across updates. See
 [decision 0007](decisions/0007-offline-release-updates.md). Keyboard preview seeds
 its first audio block with the pressed note; threaded queue targets are 30 ms for
 preview and 60 ms for practice, independently of ring capacity and device latency.
+
+
+[Decision 0008](decisions/0008-friendly-player-and-print.md) adds adapter-owned
+motion/font choices and a bounded print pipeline. PrintLayout computes paper
+systems independently of the viewport; PrintRenderer reuses MeasureCanvas in a
+one-shot offscreen viewport. HostAdapter saves/downloads escaped, self-contained
+HTML. The pipeline pauses practice and does not change source data or the shared
+transport. Font and icon provenance are recorded in third_party/README.md.

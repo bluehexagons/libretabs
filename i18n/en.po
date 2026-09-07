@@ -495,3 +495,144 @@ msgstr "Keyboard: A S D F G H J K play C D E F G A B C. W E T Y U play the black
 
 msgid "LIVE_NOTE"
 msgstr "Keyboard"
+
+msgid "PRACTICE_INVITE"
+msgstr "Find your pace. Play a little."
+
+msgid "CARD_SONG_MENU"
+msgstr "Your music\nOpen a MIDI file or try an exercise"
+
+msgid "CARD_TEMPO"
+msgstr "Playback\nSpeed, count-in and metronome"
+
+msgid "CARD_SCORE_VIEW"
+msgstr "Read the music\nScrolling, pages and arrangement details"
+
+msgid "CARD_PRINT"
+msgstr "Print your music\nTabs, sheet music or both"
+
+msgid "CARD_LOOP_TOOL"
+msgstr "Repeat a passage\nPractice one measure or a section"
+
+msgid "CARD_SOUND"
+msgstr "Sound & parts\nBalance the instrument and the click"
+
+msgid "CARD_DISPLAY"
+msgstr "Make it yours\nColor, text, font and motion"
+
+msgid "CARD_KEYBOARD"
+msgstr "Keyboard notes\nChoose your piano key layout"
+
+msgid "CARD_HELP"
+msgstr "A little help\nReading music and using the player"
+
+msgid "CONTROL_HELP"
+msgstr "What this does"
+
+msgid "TOUCH_HELP"
+msgstr "Hold an action button for a moment to see what it does. Move your finger to scroll instead. With a mouse, hover for a hint; with a keyboard, focus a control and press F1."
+
+msgid "PLAYER_SHORTCUTS"
+msgstr "Space plays or pauses. Left and Right move by measure, or turn a reading page. Escape closes a menu. Tab moves between controls. Swipe across a manual reading page to turn it. Piano keys are listed below."
+
+msgid "TIP_MENU"
+msgstr "Open music, playback, printing and appearance options."
+
+msgid "TIP_PLAY"
+msgstr "Play or pause at the current position. Space does the same. Count-in and speed are in Playback."
+
+msgid "TIP_STOP"
+msgstr "Stop and return to the beginning of the song or selected loop."
+
+msgid "TIP_TEMPO"
+msgstr "Drag the speed slider to find a comfortable pace. Open Playback for an exact BPM, count-in and more options."
+
+msgid "TIP_SCORE_VIEW"
+msgstr "Choose smooth scrolling or pages you turn yourself. You can also print the music or review the generated arrangement."
+
+msgid "TIP_PRINT"
+msgstr "Create a printable file of the selected part. Choose tabs, sheet music or both; then open the saved file to print or save as PDF."
+
+msgid "TIP_CLOSE"
+msgstr "Close this menu and return to your music."
+
+msgid "REDUCED_MOTION"
+msgstr "Reduce motion"
+
+msgid "MOTION_SYSTEM"
+msgstr "Following your device setting. Reduced motion removes transitions and follows the music one measure at a time."
+
+msgid "MOTION_OVERRIDE"
+msgstr "Your choice is saved on this device. Reduced motion removes transitions and follows the music one measure at a time."
+
+msgid "MOTION_FOLLOW"
+msgstr "Follow device setting"
+
+msgid "FONT_CHOICE"
+msgstr "Lettering"
+
+msgid "FONT_ROUNDED"
+msgstr "Rounded · Nunito"
+
+msgid "FONT_SIMPLE"
+msgstr "Simple · standard"
+
+msgid "PRINT"
+msgstr "Print your music"
+
+msgid "PRINT_HELP"
+msgstr "Make a clean, printable copy of the selected part. Use the saved file to print or choose Save as PDF in your browser."
+
+msgid "PRINT_CONTENT"
+msgstr "Include"
+
+msgid "PRINT_PAPER"
+msgstr "Paper size"
+
+msgid "PAPER_A4"
+msgstr "A4"
+
+msgid "PAPER_LETTER"
+msgstr "US Letter"
+
+msgid "PRINT_PREPARE"
+msgstr "Prepare pages"
+
+msgid "PRINT_SAVE"
+msgstr "Save printable file"
+
+msgid "PRINT_CANCEL"
+msgstr "Cancel preparation"
+
+msgid "PRINT_LOCAL"
+msgstr "Created on your device. Nothing is uploaded. The pages keep the prototype’s notation limitations."
+
+msgid "PRINT_PROGRESS"
+msgstr "Preparing page %d of %d…"
+
+msgid "PRINT_READY"
+msgstr "%d music pages ready. Save the file, then open it to print."
+
+msgid "PRINT_RANGE_ERROR"
+msgstr "Choose a valid range of measures, with the first no later than the last."
+
+msgid "PRINT_LIMIT"
+msgstr "That selection needs more than 24 pages. Choose a shorter measure range."
+
+msgid "PRINT_FAILED"
+msgstr "The printable file could not be created or saved. Try a shorter range and check available storage."
+
+msgid "PRINT_SAVED"
+msgstr "The file was handed to your browser or saved on your device. Open libretabs-score.html to print or save as PDF."
+
+msgid "PRINT_SUBTITLE"
+msgstr "Practice arrangement · Part %d · Measures %d–%d · %s"
+
+msgid "PRINT_DIALOG"
+msgstr "Print / Save as PDF"
+
+msgid "PRINT_FILE_HELP"
+msgstr "Choose the matching paper size and turn off browser headers and footers. This file works offline."
+
+msgid "PRINT_NOTES"
+msgstr "About this practice arrangement"

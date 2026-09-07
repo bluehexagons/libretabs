@@ -117,7 +117,7 @@ Import is cancellable and transactional: a failed or cancelled replacement leave
 - Default to octave-transposing treble clef for guitar. Allow treble, bass, or auto selection and explain that guitar treble notation sounds an octave lower than written.
 - Render the selected practice part only; backing parts are audible but do not crowd the score.
 - Highlight source-linked notes at their original playback times even when display positions are rounded. Warn about timing approximation and independent overlapping rhythms that the single-voice display cannot represent exactly; do not imply that quantized notation is an exact transcription.
-- Render staff lines, clef, meter/key, barlines, noteheads, stems/beams, rests, accidentals, ledger lines, dots, ties, and an aligned six-line tab staff. In scrolling practice the staff remains visible as a smaller reference while tab receives primary visual weight; manual reading can show either representation or both. This is focused practice notation, not print engraving.
+- Render staff lines, clef, meter/key, barlines, noteheads, stems/beams, rests, accidentals, ledger lines, dots, ties, and an aligned six-line tab staff. In scrolling practice the staff remains visible as a smaller reference while tab receives primary visual weight; manual reading can show either representation or both. Basic printable copies reuse this practice notation under decision 0008; production print engraving remains deferred.
 - Provide an always-available Help summary that explains staff direction, clef, note position, rhythm values, string lines, and fret numbers in beginner language.
 
 ### Guitar fingering
@@ -205,7 +205,7 @@ Godot canvas applications do not automatically inherit the semantic accessibilit
 - Microphone/line-input volume-impulse progression. It is the first post-MVP input candidate, but guided playback does not depend on it.
 - Built-in chromatic tuner.
 - Audio recording or audio-to-MIDI transcription.
-- Score/tab editing, printing, PDF export, or MIDI export.
+- Score/tab editing, direct vector PDF export, or MIDI export. Basic printable pages are included under decision 0008.
 - MusicXML, Guitar Pro, ABC, or audio-file import.
 - Alternate/capo/custom tuning UI, bass guitar, left-handed diagrams, or instruments other than guitar.
 - Guitar techniques not represented by plain MIDI, such as bend choice, hammer-on, pull-off, slide, palm mute, fingering fingers, or pick direction.
@@ -255,3 +255,11 @@ Engineering measures:
 The runnable M0 prototype is a feasibility slice, not the completed product described above. [Decision 0002](decisions/0002-m0-evaluation-build.md) records its smaller import, notation, and audio contracts; [M0 evidence](evidence/m0-prototype.md) provides evaluation steps and next gates.
 
 The owner-feedback changes to the evaluation practice view and tempo/volume controls are recorded in [decision 0003](decisions/0003-practice-feedback.md).
+
+### Owner-requested player and print slice
+
+[Decision 0008](decisions/0008-friendly-player-and-print.md) adds optional motion
+following browser settings, font choice, touch explanations, and printable
+A4/Letter pages of tabs, staff or both. Printable HTML is generated locally from
+the selected part/range; the user can print it or use the browser's Save as PDF.
+This does not complete print-grade engraving or change imported music.

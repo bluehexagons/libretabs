@@ -2,6 +2,7 @@
 class_name ScoreView
 extends Control
 
+var reduced_motion: bool = false
 var song: SongDocument
 var projection: TabProjection
 var part: int = 0
@@ -92,12 +93,18 @@ func refresh() -> void:
 	var row_height: float = ScoreLayout.row_height(notation)
 	if mode == "scroll":
 		custom_minimum_size.y = 320
-		# This is a pure projection of source time, never a second elapsed clock.
-		view_offset = layout.timeline_x(current_tick) - playhead_x()
-		strip.position = Vector2(-view_offset, 0)
-		for index: int in range(song.measures.size()):
-			if layout.offsets[index] + layout.widths[index] >= view_offset and layout.offsets[index] <= view_offset + size.x:
-				wanted.append(index)
+		# Reduced motion uses stationary, fitted measures with a partial next
+		# measure; long bars must not disappear beyond a phone's right edge.
+		if reduced_motion:
+			view_offset = 0
+			strip.position = Vector2.ZERO
+			for index: int in range(measure_index, mini(song.measures.size(), measure_index + ceili(size.x / reduced_width()))): wanted.append(index)
+		else:
+			# Pure projection of source time, never a second elapsed clock.
+			view_offset = layout.timeline_x(current_tick) - playhead_x()
+			strip.position = Vector2(-view_offset, 0)
+			for index: int in range(song.measures.size()):
+				if layout.offsets[index] + layout.widths[index] >= view_offset and layout.offsets[index] <= view_offset + size.x: wanted.append(index)
 	else:
 		custom_minimum_size.y = row_height * ScoreLayout.rows(notation)
 		view_offset = 0
@@ -118,18 +125,18 @@ func refresh() -> void:
 			tile.part = part
 			tile.projection = projection
 			tile.index = index
-			tile.continuous = mode == "scroll"
+			tile.continuous = mode == "scroll" and not reduced_motion
 			tile.notation = notation
 			tile.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			strip.add_child(tile)
 			tiles[index] = tile
 		var tile: MeasureCanvas = tiles[index]
 		var slot: int = index - page_start()
-		var next_size: Vector2 = Vector2(layout.widths[index], 320) if mode == "scroll" else Vector2(size.x / columns, row_height)
+		var next_size: Vector2 = Vector2(reduced_width() if reduced_motion else layout.widths[index], 320) if mode == "scroll" else Vector2(size.x / columns, row_height)
 		if tile.size != next_size:
 			tile.size = next_size
 			tile.queue_redraw()
-		tile.position = Vector2(layout.offsets[index], 0) if mode == "scroll" else Vector2((slot % columns) * size.x / columns, (slot / columns) * row_height)
+		tile.position = Vector2((index - measure_index) * reduced_width() if reduced_motion else layout.offsets[index], 0) if mode == "scroll" else Vector2((slot % columns) * size.x / columns, (slot / columns) * row_height)
 	var key: String = "%s:%s:%s:%s" % [mode, page_index, size, current_tick]
 	if key != last_key:
 		last_key = key
@@ -156,7 +163,7 @@ func draw_cursor(surface: Control) -> void:
 	if tiles.has(measure_index):
 		var tile: MeasureCanvas = tiles[measure_index]
 		var origin: Vector2 = tile.position + strip.position
-		var x: float = playhead_x() if mode == "scroll" else origin.x + 68 + (current_tick - float(bar.start)) / float(bar.end - bar.start) * (tile.size.x - 92)
+		var x: float = playhead_x() if mode == "scroll" and not reduced_motion else origin.x + 68 + (current_tick - float(bar.start)) / float(bar.end - bar.start) * (tile.size.x - 92)
 		surface.draw_line(Vector2(x, origin.y + 60), Vector2(x, origin.y + ScoreLayout.row_height(notation) - 22), get_theme_color("accent", "LibreTabs"), 2, true)
 	for note: Dictionary in song.notes:
 		if int(note.part) != part or current_tick < float(note.start) or current_tick >= float(note.end): continue
@@ -165,7 +172,7 @@ func draw_cursor(surface: Control) -> void:
 			if note.end <= measure.start or note.start >= measure.end: continue
 			var tile: MeasureCanvas = tiles[index]
 			var origin: Vector2 = tile.position + strip.position
-			var x: float = origin.x + ScoreLayout.note_x(song, note, index, tile.size.x, mode == "scroll")
+			var x: float = origin.x + ScoreLayout.note_x(song, note, index, tile.size.x, mode == "scroll" and not reduced_motion)
 			if notation != "staff" and projection.placements.has(note.id):
 				var placement: Dictionary = projection.placements[note.id]
 				var y: float = origin.y + ScoreLayout.tab_y(int(placement.string), notation)
@@ -177,7 +184,7 @@ func draw_cursor(surface: Control) -> void:
 					surface.draw_arc(Vector2(x, y), 11, 0, TAU, 20, get_theme_color("accent", "LibreTabs"), 2, true)
 
 	draw_live(surface)
-	if mode == "scroll":
+	if mode == "scroll" and not reduced_motion:
 		# Fixed reading guide; notes disappear behind it as they pass.
 		surface.draw_rect(Rect2(0, 48, 44, 250), get_theme_color("paper", "LibreTabs"))
 		surface.draw_string(preload("res://assets/fonts/Bravura.otf"), Vector2(8, 105), String.chr(0xe050), HORIZONTAL_ALIGNMENT_LEFT, -1, 32, get_theme_color("ink", "LibreTabs"))
@@ -194,7 +201,7 @@ func draw_live(surface: Control) -> void:
 	var tile: MeasureCanvas = tiles[measure_index]
 	var origin: Vector2 = tile.position + strip.position
 	var bar: Dictionary = song.measures[measure_index]
-	var x: float = playhead_x() if mode == "scroll" else origin.x + 68 + (current_tick - float(bar.start)) / float(bar.end - bar.start) * (tile.size.x - 92)
+	var x: float = playhead_x() if mode == "scroll" and not reduced_motion else origin.x + 68 + (current_tick - float(bar.start)) / float(bar.end - bar.start) * (tile.size.x - 92)
 	var color: Color = get_theme_color("live", "LibreTabs")
 	var font: Font = ThemeDB.fallback_font
 	for note: Dictionary in live_notes:
@@ -217,3 +224,6 @@ func draw_live(surface: Control) -> void:
 			surface.draw_rect(Rect2(x - half - 5, y - 16, half * 2 + 10, 32), color, false, 3)
 			surface.draw_string(font, Vector2(x - half, y + (font.get_ascent(26) - font.get_descent(26)) / 2), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 26, color)
 	surface.draw_string(font, Vector2(48, origin.y + ScoreLayout.row_height(notation) - 16), tr("LIVE_NOTE"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, color)
+
+func reduced_width() -> float:
+	return maxf(252, minf(500, size.x * 0.80))

@@ -59,11 +59,32 @@
     saveAppearance(value) {
       try { localStorage.setItem('libretabs.appearance.v1', value); return true; } catch (_) { return false; }
     },
+    loadDisplayChoice(key, fallback) {
+      if (!['motion', 'font'].includes(key)) return fallback;
+      try { return localStorage.getItem('libretabs.' + key + '.v1') || fallback; } catch (_) { return fallback; }
+    },
+    saveDisplayChoice(key, value) {
+      if (!['motion', 'font'].includes(key)) return false;
+      try { localStorage.setItem('libretabs.' + key + '.v1', value); return true; } catch (_) { return false; }
+    },
+    prefersReducedMotion() { return matchMedia('(prefers-reduced-motion: reduce)').matches; },
+    onMotion(callback) { matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', () => callback()); },
+    downloadPrint(html) {
+      if (typeof html !== 'string' || html.length > 24000000) return false;
+      try {
+        const url = URL.createObjectURL(new Blob([html], {type: 'text/html;charset=utf-8'}));
+        const link = document.createElement('a');
+        link.href = url; link.download = 'libretabs-score.html';
+        document.body.append(link); link.click(); link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+        return true;
+      } catch (_) { return false; }
+    },
     prefersDark() { return matchMedia('(prefers-color-scheme: dark)').matches; },
     onAppearance(callback) { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => callback()); },
     applyAppearance(dark) {
       document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
-      document.body.style.backgroundColor = dark ? '#101620' : '#f4f6fb';
+      document.body.style.backgroundColor = dark ? '#101e20' : '#f4efe5';
     },
     traceEnabled: new URLSearchParams(location.search).has('trace'),
     offlineReady: false

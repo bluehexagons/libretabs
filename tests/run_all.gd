@@ -37,6 +37,24 @@ func _initialize() -> void:
 	check(PracticeAudio.mix_levels(0.8, 0.2, 0, 1) == PracticeAudio.mix_levels(0, 0.2, 1, 1), "instrument zero leaves only click")
 	check(PracticeAudio.mix_levels(0.8, 0.2, 1, 0) == PracticeAudio.mix_levels(0.8, 0, 1, 1), "click zero leaves only instrument")
 	check(absf(PracticeAudio.mix_levels(-32, -1, 1, 1)) < 0.9, "dense mix stays inside output ceiling")
+	var print_song: SongDocument = parse(fixture("first_melody")).document
+	for notation: String in ["both", "tab", "staff"]:
+		for paper: String in ["A4", "Letter"]:
+			var plan: Dictionary = PrintLayout.plan(print_song, 0, notation, paper, 0, print_song.measures.size() - 1)
+			check(plan.error == "" and not plan.pages.is_empty(), "print plan supports each paper and notation")
+			var indices: Array = []
+			for page: Array in plan.pages:
+				check(page.size() * ScoreLayout.row_height(notation) <= plan.height, "print systems fit inside the page")
+				for row: Array in page: indices.append_array(row)
+			check(indices == range(print_song.measures.size()), "print range includes every measure once in order")
+	check(PrintLayout.plan(print_song, 0, "both", "A4", 2, 1).error == "PRINT_RANGE_ERROR", "backward print range refused")
+	check(PrintLayout.plan(print_song, 0, "both", "A4", -1, 1).error == "PRINT_RANGE_ERROR", "negative print range refused")
+	var print_html: String = PrintLayout.document(["AAAA"], "<script>alert('x')</script>", "&part", "<img src=x onerror=alert(1)>", "A4")
+	check(not print_html.contains("<script>") and not print_html.contains("<img src=x") and print_html.contains("&amp;part"), "imported print metadata cannot become markup")
+	check(print_html.contains("210mm 297mm") and print_html.contains("window.print()"), "print document has A4 page geometry and print action")
+	var long_print: SongDocument = parse(fixture("first_melody")).document
+	while long_print.measures.size() < 512: long_print.measures.append(long_print.measures[0].duplicate())
+	check(PrintLayout.plan(long_print, 0, "both", "A4", 0, 511).error == "PRINT_LIMIT", "print page budget refuses oversized selections")
 	var defaults: Dictionary = PracticeSettings.DEFAULTS.duplicate()
 	check(PracticeSettings.decode(PracticeSettings.encode(defaults)).values == defaults, "preference schema round trip")
 	check(PracticeSettings.decode('{"version":2}').status == "unsupported", "future preferences protected")

@@ -1,6 +1,26 @@
 # SPDX-License-Identifier: Apache-2.0
 extends Control
 
+var page_swipe_start: Vector2
+var page_swipe_active: bool = false
+var motion_mode: String = "system"
+var reduced_motion: bool = false
+var motion_check: CheckButton
+var motion_note: Label
+var font_style: String = "rounded"
+var font_picker: OptionButton
+var menu_tween: Tween
+var page_tween: Tween
+var help_text: Label
+var print_notation: OptionButton
+var print_paper: OptionButton
+var print_first: SpinBox
+var print_last: SpinBox
+var print_status: Label
+var print_prepare: Button
+var print_save: Button
+var printer: PrintRenderer
+var print_html: String = ""
 var host: HostAdapter
 var audio: PracticeAudio
 var song: SongDocument
@@ -105,6 +125,10 @@ func _ready() -> void:
 	host.picked.connect(_file_picked)
 	host.hidden.connect(_suspended)
 	host.focus_lost.connect(release_keyboard)
+	motion_mode = host.load_display_choice("motion", ["system", "reduced", "full"], "system")
+	font_style = host.load_display_choice("font", ["rounded", "simple"], "rounded")
+	host.motion_changed.connect(apply_motion)
+	host.exported.connect(func(success: bool) -> void: print_status.text = tr("PRINT_SAVED" if success else "PRINT_FAILED"))
 	audio = PracticeAudio.new()
 	add_child(audio)
 	build_ui()
@@ -112,6 +136,7 @@ func _ready() -> void:
 	appearance_mode = host.load_appearance()
 	host.appearance_changed.connect(apply_appearance)
 	apply_appearance()
+	apply_motion()
 	apply_scale(host.load_scale())
 	load_preferences()
 	host.configure_activity(false)
@@ -146,15 +171,19 @@ func label(key: String, font_size: int = 20) -> Label:
 	return item
 
 func button(key: String, action: Callable) -> Button:
-	var item: Button = Button.new()
+	var item: FriendlyButton = FriendlyButton.new()
+	item.reduced_motion = reduced_motion
 	item.text = tr(key)
+	item.icon = UIIcons.get_icon(key)
 	item.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
-	item.tooltip_text = tr(key)
+	item.tooltip_text = tr("TIP_" + key) if TranslationServer.translate("TIP_" + key) != "TIP_" + key else tr(key)
 	item.custom_minimum_size.y = 56
 	item.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	item.mouse_filter = Control.MOUSE_FILTER_PASS
 	item.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	item.pressed.connect(action)
+	item.pressed.connect(func() -> void:
+		if not item.suppress_action: action.call())
+	item.help_requested.connect(show_control_help)
 	return item
 
 func check(key: String, checked: bool) -> CheckButton:
@@ -187,7 +216,7 @@ func surface(color: String, padding: int = 16) -> StyleBoxFlat:
 	return box
 
 func build_ui() -> void:
-	theme = UIAppearance.make_theme(false, 20)
+	theme = UIAppearance.make_theme(false, 20, font_style)
 	root_box = BoxContainer.new()
 	root_box.vertical = true
 	root_box.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -211,11 +240,13 @@ func build_ui() -> void:
 	header = BoxContainer.new()
 	root_box.add_child(header)
 	root_box.move_child(header, 0)
-	brand_label = label("BRAND", 20)
+	brand_label = label("BRAND", 24)
+	brand_label.add_theme_font_override("font", UIAppearance.ui_font(font_style, true))
 	header.add_child(brand_label)
 	menu_button = button("MENU", func() -> void: toggle_drawer("MENU"))
 	header.add_child(menu_button)
-	song_title = label("DEMO_0", 28)
+	song_title = label("DEMO_0", 32)
+	song_title.add_theme_font_override("font", UIAppearance.ui_font(font_style, true))
 	panel.add_child(song_title)
 	status = label("START_HINT", 18)
 	panel.add_child(status)
@@ -230,6 +261,7 @@ func build_ui() -> void:
 	view_button = button("SCORE_VIEW", func() -> void: toggle_drawer("SCORE_VIEW"))
 	reading_tools = flow(panel)
 	reading_tools.add_child(view_button)
+	reading_tools.add_child(label("PRACTICE_INVITE", 18))
 	notice_button.reparent(reading_tools)
 	menu_overlay = Control.new()
 	menu_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -261,10 +293,12 @@ func build_ui() -> void:
 	drawer_title = label("MENU", 24)
 	drawer_body.add_child(drawer_title)
 	build_drawers()
+	notice_button.reparent(drawers["SCORE_VIEW"])
 	drawer.hide()
 	menu_overlay.hide()
 	paper = PanelContainer.new()
 	paper.mouse_filter = Control.MOUSE_FILTER_PASS
+	paper.gui_input.connect(page_gesture)
 	paper.add_theme_stylebox_override("panel", surface("ffffff", 8))
 	panel.add_child(paper)
 	score = ScoreView.new()
@@ -274,7 +308,7 @@ func build_ui() -> void:
 	var navigation: HBoxContainer = HBoxContainer.new()
 	seek_navigation = navigation
 	panel.add_child(navigation)
-	navigation.add_child(button("PREVIOUS", func() -> void: seek_measure(maxf(1, seek.value - 1))))
+
 	seek = HSlider.new()
 	seek.min_value = 1
 	seek.max_value = 4
@@ -284,7 +318,7 @@ func build_ui() -> void:
 	seek.tooltip_text = tr("SEEK")
 	seek.value_changed.connect(seek_measure)
 	navigation.add_child(seek)
-	navigation.add_child(button("NEXT", func() -> void: seek_measure(minf(seek.max_value, seek.value + 1))))
+
 	page_navigation = flow(panel)
 	page_navigation.add_child(button("PAGE_PREVIOUS", func() -> void: turn_page(-1)))
 	page_label = label("PAGE_NUMBER")
@@ -309,7 +343,7 @@ func build_ui() -> void:
 	dock.add_child(transport_row)
 	play_button = button("PLAY", toggle_play)
 	play_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	play_button.custom_minimum_size.y = 56
+	play_button.custom_minimum_size.y = 64
 	for mode: String in ["normal", "hover", "pressed"]:
 		play_button.add_theme_stylebox_override(mode, surface("4665d8" if mode == "normal" else "3551bd", 12))
 	for mode: String in ["font_color", "font_focus_color", "font_hover_color", "font_pressed_color"]:
@@ -327,6 +361,7 @@ func build_ui() -> void:
 	quick_row.add_child(speed_control)
 	speed_control.add_child(tempo_button)
 	main_speed = HSlider.new()
+	main_speed.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	main_speed.min_value = 25
 	main_speed.max_value = 200
 	main_speed.step = 5
@@ -344,7 +379,7 @@ func build_ui() -> void:
 	metro_button = button("CLICK_ON", func() -> void: set_metronome(not metro_check.button_pressed))
 	metro_button.toggle_mode = true
 	metro_button.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-	quick_row.add_child(metro_button)
+	transport_row.add_child(metro_button)
 	update_metronome()
 
 
@@ -358,8 +393,16 @@ func section(key: String) -> VBoxContainer:
 
 func build_drawers() -> void:
 	var menu_index: VBoxContainer = section("MENU")
-	for key: String in ["TEMPO", "LOOP_TOOL", "SONG_MENU", "SCORE_VIEW", "SETTINGS", "HELP"]:
-		menu_index.add_child(button(key, func() -> void: toggle_drawer(key)))
+	for key: String in ["SONG_MENU", "TEMPO", "SCORE_VIEW", "PRINT", "LOOP_TOOL", "SOUND", "DISPLAY", "KEYBOARD", "HELP"]:
+		var entry: Button = button(key, func() -> void: toggle_drawer(key))
+		entry.text = tr("CARD_" + key)
+		entry.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		entry.custom_minimum_size.y = 76
+		menu_index.add_child(entry)
+	var control_help: VBoxContainer = section("CONTROL_HELP")
+	help_text = label("TOUCH_HELP")
+	control_help.add_child(help_text)
+	build_print_menu()
 	var views: VBoxContainer = section("SCORE_VIEW")
 	views.add_child(label("VIEW_HELP"))
 	view_picker = OptionButton.new()
@@ -377,6 +420,7 @@ func build_drawers() -> void:
 	notation_picker.disabled = true
 	notation_picker.item_selected.connect(func(_index: int) -> void: change_view())
 	views.add_child(notation_picker)
+	views.add_child(button("PRINT", func() -> void: toggle_drawer("PRINT")))
 	var library: VBoxContainer = section("SONG_MENU")
 	library.add_child(button("OPEN", func() -> void: pause(); host.pick()))
 	library.add_child(label("DEMOS", 18))
@@ -511,6 +555,8 @@ func build_drawers() -> void:
 	keys.add_child(label("KEYBOARD_EXPLAIN", 18))
 	var help: VBoxContainer = section("HELP")
 	keyboard_help = label("KEYBOARD_HELP_LOWER", 18)
+	help.add_child(label("TOUCH_HELP"))
+	help.add_child(label("PLAYER_SHORTCUTS"))
 	help.add_child(keyboard_help)
 	help.add_child(button("KEYBOARD", func() -> void: toggle_drawer("KEYBOARD")))
 	for key: String in ["HELP_STRINGS", "HELP_FRETS", "HELP_STAFF", "HELP_TIMING"]:
@@ -524,6 +570,29 @@ func build_drawers() -> void:
 	for key: String in ["APPEARANCE_SYSTEM", "APPEARANCE_LIGHT", "APPEARANCE_DARK"]: appearance_picker.add_item(tr(key))
 	appearance_picker.item_selected.connect(change_appearance)
 	display.add_child(appearance_picker)
+	motion_check = check("REDUCED_MOTION", false)
+	motion_check.toggled.connect(func(value: bool) -> void:
+		motion_mode = "reduced" if value else "full"
+		apply_motion()
+		if not host.save_display_choice("motion", motion_mode): set_status("STORAGE_SESSION"))
+	display.add_child(motion_check)
+	motion_note = label("MOTION_SYSTEM", 18)
+	display.add_child(motion_note)
+	display.add_child(button("MOTION_FOLLOW", func() -> void:
+		motion_mode = "system"
+		apply_motion()
+		if not host.save_display_choice("motion", motion_mode): set_status("STORAGE_SESSION")))
+	display.add_child(label("FONT_CHOICE"))
+	font_picker = OptionButton.new()
+	font_picker.custom_minimum_size.y = 56
+	font_picker.fit_to_longest_item = false
+	for key: String in ["FONT_ROUNDED", "FONT_SIMPLE"]: font_picker.add_item(tr(key))
+	font_picker.select(0 if font_style == "rounded" else 1)
+	font_picker.item_selected.connect(func(index: int) -> void:
+		font_style = ["rounded", "simple"][index]
+		apply_appearance()
+		if not host.save_display_choice("font", font_style): set_status("STORAGE_SESSION"))
+	display.add_child(font_picker)
 	display.add_child(label("TEXT_SIZE"))
 	scale_picker = OptionButton.new()
 	scale_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
@@ -540,6 +609,7 @@ func build_drawers() -> void:
 		display.add_child(button("PSEUDO", func() -> void:
 			TranslationServer.pseudolocalization_enabled = not TranslationServer.pseudolocalization_enabled
 			get_tree().reload_current_scene()))
+	display.add_child(button("SETTINGS", func() -> void: toggle_drawer("SETTINGS")))
 	display.add_child(button("NOTICES", show_notices))
 	offline = label("OFFLINE_PENDING", 18)
 	display.add_child(offline)
@@ -567,6 +637,7 @@ func toggle_drawer(key: String) -> void:
 	release_keyboard()
 	if not menu_overlay.visible: previous_focus = get_viewport().gui_get_focus_owner()
 	menu_back.visible = key != "MENU"
+	if printer != null and key != "PRINT": printer.cancelled = true
 	opened_drawer = key
 	menu_overlay.show()
 	drawer.show()
@@ -575,8 +646,24 @@ func toggle_drawer(key: String) -> void:
 	menu_scroll.scroll_vertical = 0
 	responsive()
 	drawer.get_child(0).get_child(0).get_child(1).grab_focus()
+	if key == "PRINT" and song != null:
+		print_first.max_value = song.measures.size()
+		print_last.max_value = song.measures.size()
+		if print_html.is_empty(): print_last.value = song.measures.size()
+	if menu_tween != null: menu_tween.kill()
+	drawer.modulate.a = 1
+	if not reduced_motion:
+		var destination: Vector2 = drawer.position
+		drawer.position.x += 24
+		drawer.modulate.a = 0.35
+		menu_tween = create_tween().set_parallel()
+		menu_tween.tween_property(drawer, "position", destination, 0.18).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		menu_tween.tween_property(drawer, "modulate:a", 1.0, 0.18)
 
 func close_menu() -> void:
+	if printer != null: printer.cancelled = true
+	if menu_tween != null: menu_tween.kill()
+	drawer.modulate.a = 1
 	opened_drawer = ""
 	drawer.hide()
 	menu_overlay.hide()
@@ -584,6 +671,23 @@ func close_menu() -> void:
 	else: menu_button.grab_focus()
 
 func _input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo and not event.ctrl_pressed and not event.meta_pressed and not event.alt_pressed:
+		var focused: Control = get_viewport().gui_get_focus_owner()
+		if event.keycode == KEY_F1:
+			if focused != null and not focused.tooltip_text.is_empty(): show_control_help(focused.tooltip_text)
+			else: toggle_drawer("HELP")
+			get_viewport().set_input_as_handled()
+			return
+		if not menu_overlay.visible and not focused is LineEdit and not focused is TextEdit:
+			if event.keycode == KEY_SPACE:
+				toggle_play()
+				get_viewport().set_input_as_handled()
+				return
+			if event.keycode in [KEY_LEFT, KEY_RIGHT] and not focused is Range:
+				if score.mode == "pages": turn_page(-1 if event.keycode == KEY_LEFT else 1)
+				else: seek_measure(clampf(seek.value + (-1 if event.keycode == KEY_LEFT else 1), 1, seek.max_value))
+				get_viewport().set_input_as_handled()
+				return
 	if event is InputEventKey:
 		var physical: int = event.physical_keycode if event.physical_keycode != 0 else event.keycode
 		if not event.pressed:
@@ -630,6 +734,7 @@ func change_view() -> void:
 
 func turn_page(direction: int) -> void:
 	score.turn_page(direction)
+	animate_page()
 	update_page_controls()
 	scroll.scroll_vertical = 0
 
@@ -643,6 +748,7 @@ func update_page_controls() -> void:
 	page_label.text = tr("PAGE_NUMBER") % [score.page_index + 1, score.pages()]
 	page_navigation.get_child(0).disabled = score.page_index == 0
 	page_navigation.get_child(1).disabled = score.page_index == score.pages() - 1
+	page_navigation.get_child(2).visible = score.page_index != score.measure_index / (ScoreLayout.columns(score.size.x) * ScoreLayout.rows(score.notation))
 
 func change_appearance(index: int) -> void:
 	appearance_mode = ["system", "light", "dark"][index]
@@ -652,7 +758,9 @@ func change_appearance(index: int) -> void:
 func apply_appearance() -> void:
 	dark_mode = appearance_mode == "dark" or (appearance_mode == "system" and host.system_dark())
 	var font_size: int = theme.default_font_size if theme != null else 20
-	theme = UIAppearance.make_theme(dark_mode, font_size)
+	theme = UIAppearance.make_theme(dark_mode, font_size, font_style)
+	brand_label.add_theme_font_override("font", UIAppearance.ui_font(font_style, true))
+	song_title.add_theme_font_override("font", UIAppearance.ui_font(font_style, true))
 	RenderingServer.set_default_clear_color(UIAppearance.color("background", dark_mode))
 	host.apply_appearance(dark_mode)
 	appearance_picker.select(["system", "light", "dark"].find(appearance_mode))
@@ -662,6 +770,7 @@ func apply_appearance() -> void:
 	for state_name: String in ["normal", "hover", "pressed", "hover_pressed"]:
 		play_button.add_theme_stylebox_override(state_name, UIAppearance.primary_style(dark_mode, state_name))
 	play_button.add_theme_color_override("font_hover_pressed_color", Color.WHITE)
+	for token: String in ["icon_normal_color", "icon_hover_color", "icon_pressed_color", "icon_focus_color", "icon_hover_pressed_color"]: play_button.add_theme_color_override(token, Color.WHITE)
 	if score != null:
 		for tile: MeasureCanvas in score.tiles.values(): tile.queue_redraw()
 		score.cursor.queue_redraw()
@@ -687,23 +796,27 @@ func responsive() -> void:
 	header.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN if landscape else Control.SIZE_FILL
 	# Keep direct speed adjustment at every scale. Reduce auxiliary actions
 	# before taking space away from the score.
+	if menu_tween != null: menu_tween.kill()
+	drawer.modulate.a = 1
 	var expanded_controls: bool = theme.default_font_size < 30
+	tempo_button.icon = UIIcons.get_icon("TEMPO") if expanded_controls else null
 	quick_row.visible = true
 	tempo_button.visible = true
-	metro_button.visible = expanded_controls and (landscape or size.x >= 360)
-	stop_button.visible = expanded_controls and not landscape
+	metro_button.visible = expanded_controls
+	stop_button.visible = false
 	dock_panel.add_theme_stylebox_override("panel", UIAppearance.box(UIAppearance.color("paper", dark_mode), 8 if landscape else 12))
 	dock.custom_minimum_size.x = 0
 	if landscape: dock.custom_minimum_size.x = 144 if expanded_controls else 152
 	speed_control.vertical = landscape
-	speed_control.custom_minimum_size.x = (144 if expanded_controls else 152) if speed_control.vertical else (240 if size.x >= 760 else 212)
+	speed_control.custom_minimum_size.x = (144 if expanded_controls else 152) if speed_control.vertical else (320 if size.x >= 760 else 288)
 	brand_label.visible = not landscape and not compact
+	menu_button.size_flags_horizontal = Control.SIZE_FILL if landscape else Control.SIZE_SHRINK_END
 	header.alignment = BoxContainer.ALIGNMENT_BEGIN if landscape else BoxContainer.ALIGNMENT_END
 	song_title.visible = not landscape and not (compact and theme.default_font_size >= 30)
 	reading_tools.visible = not landscape and not compact
 	set_status(status_key)
 	for side: String in ["left", "right", "top", "bottom"]:
-		content_margin.add_theme_constant_override("margin_" + side, 4 if landscape else (maxi(16, int((size.x - 1400) / 2)) if side in ["left", "right"] else 12))
+		content_margin.add_theme_constant_override("margin_" + side, 4 if landscape else (maxi(16, int((size.x - 1280) / 2)) if side in ["left", "right"] else 12))
 	panel.add_theme_constant_override("separation", 4 if landscape else 12)
 	cue.custom_minimum_size.x = minf(size.x - 64, 200 * theme.default_font_size / 20.0)
 	status.custom_minimum_size.y = 0
@@ -723,7 +836,7 @@ func adapt_flow(node: Node) -> void:
 				var font_size: int = roundi(float(child.get_meta("base_font_size", 20)) * theme.default_font_size / 20.0)
 				var available: float = minf(size.x - 64, 496) if drawer.is_ancestor_of(node) else size.x - 56
 				if landscape and dock.is_ancestor_of(node): available = dock.custom_minimum_size.x
-				var needed: float = font.get_string_size(child.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + (20 if child.has_meta("compact") else (72 if child is CheckButton else 28))
+				var needed: float = font.get_string_size(child.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + (34 if child.icon != null else 0) + (20 if child.has_meta("compact") else (72 if child is CheckButton else 28))
 				var limit: float = available
 				if node == seek_navigation: limit = (available - 56) / 2
 				elif node is BoxContainer and node != header: limit = available / 2
@@ -763,6 +876,7 @@ func update_metronome() -> void:
 	metro_button.set_pressed_no_signal(metro_check.button_pressed)
 	metro_button.text = tr("CLICK_ON" if metro_check.button_pressed else "CLICK_OFF")
 	metro_button.tooltip_text = tr("CLICK_HELP")
+	metro_button.icon = UIIcons.get_icon("CLICK_ON" if metro_check.button_pressed else "CLICK_OFF")
 	adapt_flow(dock)
 
 func step_speed(direction: int) -> void:
@@ -851,6 +965,8 @@ func finish_import() -> void:
 		set_status("ERR_EMPTY")
 		return
 	audio.stop_practice()
+	print_html = ""
+	print_save.disabled = true
 	song = result
 	title = import_name
 	song_title.text = title
@@ -880,6 +996,8 @@ func finish_import() -> void:
 
 func select_part(index: int) -> void:
 	pause()
+	print_html = ""
+	print_save.disabled = true
 	part = index
 	source_tick = 0.0
 	projection.build(song, part)
@@ -934,6 +1052,7 @@ func start(count_in: bool) -> void:
 	started_msec = Time.get_ticks_msec()
 	state = "STATE_PLAYING"
 	play_button.text = tr("PAUSE")
+	play_button.icon = UIIcons.get_icon("PAUSE")
 
 func pause() -> void:
 	release_keyboard()
@@ -944,7 +1063,7 @@ func pause() -> void:
 		state = "STATE_PAUSED"
 		update_position()
 	set_activity(importer != null)
-	if play_button != null: play_button.text = tr("PLAY")
+	if play_button != null: play_button.text = tr("PLAY"); play_button.icon = UIIcons.get_icon("PLAY")
 	if status != null and state == "STATE_PAUSED": set_status("STATE_PAUSED")
 
 func stop_practice() -> void:
@@ -1014,6 +1133,7 @@ func _process(_delta: float) -> void:
 			set_activity(false)
 			state = "STATE_COMPLETE"
 			play_button.text = tr("PLAY")
+			play_button.icon = UIIcons.get_icon("PLAY")
 			set_status("STATE_COMPLETE")
 	if audio.playing_practice: update_position()
 
@@ -1021,7 +1141,7 @@ func report_state() -> void:
 	if song == null: return
 	if host.trace_enabled():
 		var evidence: Dictionary = audio.metrics()
-		evidence.merge({"keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "placed": projection.placed, "eligible": projection.eligible, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
+		evidence.merge({"reduced_motion": reduced_motion, "motion_mode": motion_mode, "font_style": font_style, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "placed": projection.placed, "eligible": projection.eligible, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
 		host.report(evidence)
 	offline.text = tr("OFFLINE_READY") if host.offline_ready() else tr("OFFLINE_PENDING")
 	if host.offline_ready() and not host.trace_enabled(): idle_timer.stop()
@@ -1065,7 +1185,7 @@ func show_notices() -> void:
 	text.editable = false
 	text.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
 	text.custom_minimum_size = Vector2(270, 350)
-	text.text = "LibreTabs software: Apache-2.0\nOriginal music: CC0-1.0\n\n" + Engine.get_license_text() + "\n\n" + JSON.stringify(Engine.get_copyright_info(), "  ") + "\n\n" + JSON.stringify(Engine.get_license_info(), "  ") + "\n\n" + FileAccess.get_file_as_string("res://assets/fonts/Bravura-LICENSE.txt")
+	text.text = "LibreTabs software: Apache-2.0\nOriginal music: CC0-1.0\n\n" + Engine.get_license_text() + "\n\n" + JSON.stringify(Engine.get_copyright_info(), "  ") + "\n\n" + JSON.stringify(Engine.get_license_info(), "  ") + "\n\n" + FileAccess.get_file_as_string("res://assets/fonts/Bravura-LICENSE.txt") + "\n\n" + FileAccess.get_file_as_string("res://assets/fonts/Nunito-LICENSE.txt")
 	popup.add_child(text)
 	add_child(popup)
 	popup.popup_centered_clamped(Vector2i(700, 550), 0.9)
@@ -1123,3 +1243,116 @@ func reset_preferences() -> void:
 		return
 	apply_preferences(PracticeSettings.DEFAULTS)
 	settings_notice.text = tr("SETTINGS_SAVED")
+
+func show_control_help(text: String) -> void:
+	help_text.text = text
+	toggle_drawer("CONTROL_HELP")
+
+func apply_motion() -> void:
+	reduced_motion = motion_mode == "reduced" or (motion_mode == "system" and host.system_reduced_motion())
+	motion_check.set_pressed_no_signal(reduced_motion)
+	motion_note.text = tr("MOTION_SYSTEM" if motion_mode == "system" else "MOTION_OVERRIDE")
+	if menu_tween != null: menu_tween.kill()
+	if page_tween != null: page_tween.kill()
+	drawer.modulate.a = 1
+	paper.modulate.a = 1
+	apply_button_motion(self)
+	score.reduced_motion = reduced_motion
+	score.invalidate()
+	responsive()
+
+func apply_button_motion(node: Node) -> void:
+	if node is FriendlyButton:
+		node.reduced_motion = reduced_motion
+		if reduced_motion:
+			if node.feedback != null: node.feedback.kill()
+			node.scale = Vector2.ONE
+	for child: Node in node.get_children(): apply_button_motion(child)
+
+func animate_page() -> void:
+	if page_tween != null: page_tween.kill()
+	paper.modulate.a = 1
+	if reduced_motion: return
+	paper.modulate.a = 0.45
+	page_tween = create_tween()
+	page_tween.tween_property(paper, "modulate:a", 1.0, 0.18)
+
+func build_print_menu() -> void:
+	var menu: VBoxContainer = section("PRINT")
+	menu.add_child(label("PRINT_HELP", 18))
+	menu.add_child(label("PRINT_CONTENT"))
+	print_notation = OptionButton.new()
+	print_notation.fit_to_longest_item = false
+	print_notation.custom_minimum_size.y = 56
+	for key: String in ["NOTATION_BOTH", "NOTATION_TAB", "NOTATION_STAFF"]: print_notation.add_item(tr(key))
+	menu.add_child(print_notation)
+	menu.add_child(label("PRINT_PAPER"))
+	print_paper = OptionButton.new()
+	print_paper.fit_to_longest_item = false
+	print_paper.custom_minimum_size.y = 56
+	for key: String in ["PAPER_A4", "PAPER_LETTER"]: print_paper.add_item(tr(key))
+	menu.add_child(print_paper)
+	print_first = SpinBox.new()
+	print_last = SpinBox.new()
+	for item: SpinBox in [print_first, print_last]:
+		menu.add_child(label("FROM" if item == print_first else "THROUGH", 18))
+		item.min_value = 1
+		item.max_value = 512
+		item.custom_minimum_size.y = 56
+		menu.add_child(item)
+	print_prepare = button("PRINT_PREPARE", prepare_print)
+	menu.add_child(print_prepare)
+	print_save = button("PRINT_SAVE", func() -> void: host.export_print(print_html))
+	print_save.disabled = true
+	menu.add_child(print_save)
+	print_status = label("PRINT_LOCAL", 18)
+	menu.add_child(print_status)
+	menu.add_child(button("PRINT_CANCEL", func() -> void:
+		if printer != null: printer.cancelled = true))
+	for picker: OptionButton in [print_notation, print_paper]:
+		picker.item_selected.connect(func(_value: int) -> void: invalidate_print())
+	for item: SpinBox in [print_first, print_last]:
+		item.value_changed.connect(func(_value: float) -> void: invalidate_print())
+
+func invalidate_print() -> void:
+	if printer != null: printer.cancelled = true
+	print_html = ""
+	print_save.disabled = true
+
+func prepare_print() -> void:
+	if song == null or importer != null or printer != null: return
+	pause()
+	invalidate_print()
+	var notation: String = ["both", "tab", "staff"][print_notation.selected]
+	var paper_size: String = ["A4", "Letter"][print_paper.selected]
+	var plan: Dictionary = PrintLayout.plan(song, part, notation, paper_size, int(print_first.value) - 1, int(print_last.value) - 1)
+	if not String(plan.error).is_empty(): print_status.text = tr(plan.error); return
+	print_prepare.disabled = true
+	printer = PrintRenderer.new()
+	add_child(printer)
+	printer.progress.connect(func(page: int, total: int) -> void: print_status.text = tr("PRINT_PROGRESS") % [page, total])
+	print_status.text = tr("PRINT_PROGRESS") % [0, plan.pages.size()]
+	var images: Array[String] = await printer.render(song, projection, part, plan)
+	var cancelled: bool = printer.cancelled
+	printer.queue_free()
+	printer = null
+	print_prepare.disabled = false
+	if images.is_empty():
+		print_status.text = tr("CANCELLED" if cancelled else "PRINT_FAILED")
+		return
+	var subtitle: String = tr("PRINT_SUBTITLE") % [part + 1, int(print_first.value), int(print_last.value), print_notation.get_item_text(print_notation.selected)]
+	print_html = PrintLayout.document(images, title, subtitle, summary.text + "\n\n" + warning.text + "\n\n" + tr("HELP_STRINGS") + "\n\n" + tr("HELP_STAFF"), paper_size)
+	print_save.disabled = print_html.is_empty()
+	print_status.text = tr("PRINT_READY") % images.size()
+
+func page_gesture(event: InputEvent) -> void:
+	if score.mode != "pages": return
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			page_swipe_start = event.position
+			page_swipe_active = true
+		elif page_swipe_active:
+			page_swipe_active = false
+			var distance: Vector2 = event.position - page_swipe_start
+			if absf(distance.x) > 70 and absf(distance.x) > absf(distance.y) * 2:
+				turn_page(1 if distance.x < 0 else -1)
