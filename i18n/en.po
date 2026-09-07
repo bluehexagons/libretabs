@@ -100,6 +100,9 @@ msgstr "Scrub through the music. Drag or click for any position; with the scrubb
 msgid "SEEK_POSITION"
 msgstr "Measure %d · %d:%02d"
 
+msgid "TIP_SCORE_INTERACTION"
+msgstr "Point to preview a position. Click or tap to seek; drag to scroll or turn a page."
+
 msgid "LOOP"
 msgstr "Loop measures"
 
@@ -353,7 +356,7 @@ msgid "HELP_STAFF"
 msgstr "3. The smaller staff above is a pitch and rhythm reference. Higher notes mean higher pitches. Guitar staff notes are written one octave above their sound."
 
 msgid "HELP_TIMING"
-msgstr "4. Press Play and count with the clicks. Outlined numbers show sounding notes. A ! means a note has no guitar placement. Slow down with Playback or repeat a phrase with Loop."
+msgstr "4. Press Play and count with the clicks. Point at the music to preview a position, or click/tap to seek there. Outlined numbers show sounding notes. A ! means a note has no guitar placement. Slow down with Playback or repeat a phrase with Loop."
 
 msgid "FOLLOW_HINT"
 msgstr "Follow the outlined fret numbers."

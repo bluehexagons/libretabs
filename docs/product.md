@@ -133,7 +133,7 @@ Import is cancellable and transactional: a failed or cancelled replacement leave
 
 ### Playback and practice controls
 
-- Play/pause/stop, a continuous timeline scrub with readable measure/time feedback, count-in, metronome, independent instrument/metronome volume, 25–200% tempo and custom starting BPM, and contiguous measure loop.
+- Play/pause/stop, direct click/tap seeking on the music, a continuous timeline scrub with readable measure/time feedback, count-in, metronome, independent instrument/metronome volume, 25–200% tempo and custom starting BPM, and contiguous measure loop.
 - Keep speed and the metronome near Play. Keep a direct speed slider and percentage control at all supported text sizes. Normal text also shows an explicit click on/off toggle; enlarged layouts reach it through the percentage control. Menu → Playback groups speed steps, original speed, metronome, count-in, presets and custom BPM; Volume & parts holds the mixer.
 - Slower/faster steps change speed by five percentage points within 25–200%; Original speed restores 100%. Repeat this measure initializes the existing loop range from the current playback measure.
 - Metronome toggling leaves the active stream and position intact; count-in remains independent. Changing the count-in option affects the next start, not an ongoing phrase.

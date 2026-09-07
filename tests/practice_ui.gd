@@ -238,6 +238,18 @@ func run() -> void:
 	score.reduced_motion = false
 	score.invalidate()
 	score.update_tick(0)
+	var score_seek_tick: float = song.division * 0.75
+	var score_seek_position: Vector2 = Vector2(score.layout.timeline_x(score_seek_tick) - score.view_offset, 120)
+	score.begin_pointer(score_seek_position)
+	check(score.pointer_pressed, "pressing the music shows direct manipulation feedback")
+	score.finish_pointer(score_seek_position)
+	check(is_equal_approx(app.get("source_tick"), score_seek_tick) and not player.playing_practice, "clicking paused music seeks without starting playback")
+	var before_score_drag: float = app.get("source_tick")
+	score.begin_pointer(score_seek_position)
+	score.pointer_position = score_seek_position + Vector2(30, 2)
+	score.pointer_moved = true
+	score.finish_pointer(score.pointer_position)
+	check(app.get("source_tick") == before_score_drag, "dragging across the music remains a scroll gesture rather than seeking")
 	score.set_view("pages", "both")
 	var original_tick: float = app.get("source_tick")
 	var original_frame: int = player.transport.rendered_frames
@@ -430,6 +442,10 @@ func run() -> void:
 	for _frame: int in range(10): await process_frame
 	check(first_bar >= score.page_start() and first_bar < score.page_start() + score.page_capacity, "page resize retains the passage being read")
 	check(absf(app.get("tempo_button").global_position.y - app.get("play_button").global_position.y) < 2 and absf(app.get("metro_button").global_position.y - app.get("play_button").global_position.y) < 2, "wide dock keeps common controls on one row")
+	var play_center: float = app.get("play_button").global_position.y + app.get("play_button").size.y / 2.0
+	var speed_center: float = app.get("main_speed").global_position.y + app.get("main_speed").size.y / 2.0
+	check(absf(play_center - speed_center) < 2, "play and tempo slider centers align in the wide bottom bar")
+	check(app.get("main_speed").theme_type_variation == "TempoSlider" and app.get("instrument_slider").theme_type_variation == "VolumeSlider", "tempo and mixer sliders use their visual roles")
 	var reading_page: int = score.page_index
 	var capture: CaptureView = app.get("capture_view")
 	app.get("capture_choices")["capture_notation"].select(1)

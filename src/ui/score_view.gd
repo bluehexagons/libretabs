@@ -2,6 +2,8 @@
 class_name ScoreView
 extends Control
 
+signal seek_requested(tick: float)
+
 var reduced_motion: bool = false
 var presentation: bool = false
 var follow_pages: bool = false
@@ -29,10 +31,17 @@ var draw_count: int = 0
 var retired_draws: int = 0
 var last_key: String = ""
 var view_offset: float = 0.0
+var pointer_hovered: bool = false
+var pointer_pressed: bool = false
+var pointer_origin: Vector2
+var pointer_position: Vector2
+var pointer_moved: bool = false
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(240, 320)
-	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	mouse_filter = Control.MOUSE_FILTER_PASS
+	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	tooltip_text = tr("TIP_SCORE_INTERACTION")
 	clip_contents = true
 	strip = Control.new()
 	strip.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -42,6 +51,11 @@ func _ready() -> void:
 	cursor.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(cursor)
 	resized.connect(refresh)
+	gui_input.connect(pointer_input)
+	mouse_entered.connect(func() -> void: pointer_hovered = true; cursor.queue_redraw())
+	mouse_exited.connect(func() -> void:
+		pointer_hovered = false
+		if not pointer_pressed: cursor.queue_redraw())
 
 func set_document(document: SongDocument, selection: int, tab: TabProjection) -> void:
 	song = document
@@ -172,6 +186,62 @@ func engraving_draws() -> int:
 	for tile: MeasureCanvas in tiles.values(): total += tile.draw_count
 	return total
 
+func tick_at_position(local_position: Vector2) -> float:
+	if song == null or song.measures.is_empty(): return 0
+	var timeline_position: float = local_position.x + view_offset
+	var index: int = 0
+	for candidate: int in range(layout.offsets.size()):
+		if timeline_position >= layout.offsets[candidate]: index = candidate
+		else: break
+	var bar: Dictionary = song.measures[index]
+	var fraction: float = clampf((timeline_position - layout.offsets[index] - 16.0) / layout.widths[index], 0.0, 1.0)
+	return lerpf(float(bar.start), float(bar.end), fraction)
+
+func pointer_input(event: InputEvent) -> void:
+	if song == null: return
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			begin_pointer(event.position)
+		else:
+			finish_pointer(event.position)
+	elif event is InputEventMouseMotion:
+		pointer_position = event.position
+		pointer_hovered = true
+		if pointer_pressed and pointer_position.distance_to(pointer_origin) > 14: pointer_moved = true
+		cursor.queue_redraw()
+	elif event is InputEventScreenTouch:
+		if event.pressed: begin_pointer(event.position)
+		else: finish_pointer(event.position)
+	elif event is InputEventScreenDrag:
+		pointer_position = event.position
+		if pointer_position.distance_to(pointer_origin) > 14: pointer_moved = true
+		cursor.queue_redraw()
+
+func begin_pointer(position: Vector2) -> void:
+	pointer_pressed = true
+	pointer_moved = false
+	pointer_origin = position
+	pointer_position = position
+	cursor.queue_redraw()
+
+func finish_pointer(position: Vector2) -> void:
+	if not pointer_pressed: return
+	pointer_position = position
+	var should_seek: bool = not pointer_moved and position.distance_to(pointer_origin) <= 14
+	pointer_pressed = false
+	cursor.queue_redraw()
+	if should_seek: seek_requested.emit(tick_at_position(position))
+
+func cancel_pointer() -> void:
+	if not pointer_pressed: return
+	pointer_pressed = false
+	pointer_moved = true
+	cursor.queue_redraw()
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_SCROLL_BEGIN or what == NOTIFICATION_APPLICATION_FOCUS_OUT:
+		if is_instance_valid(cursor): cancel_pointer()
+
 func _draw() -> void:
 	draw_count += 1
 
@@ -184,6 +254,15 @@ class CursorLayer extends Control:
 
 func draw_cursor(surface: Control) -> void:
 	if song == null: return
+	if pointer_hovered or pointer_pressed:
+		var preview_x: float = clampf(pointer_position.x, 44, size.x)
+		var preview_color: Color = get_theme_color("accent", "LibreTabs")
+		preview_color.a = 0.7 if pointer_pressed else 0.42
+		var wash: Color = preview_color
+		wash.a = 0.12 if pointer_pressed else 0.055
+		surface.draw_rect(Rect2(preview_x - (15 if pointer_pressed else 10), 48, 30 if pointer_pressed else 20, ScoreLayout.row_height(notation) - 70), wash)
+		surface.draw_line(Vector2(preview_x, 48), Vector2(preview_x, ScoreLayout.row_height(notation) - 22), preview_color, 3 if pointer_pressed else 2, true)
+		surface.draw_circle(Vector2(preview_x, 48), 7 if pointer_pressed else 5, preview_color, false, 2, true)
 	if tiles.has(measure_index):
 		var tile: MeasureCanvas = tiles[measure_index]
 		var origin: Vector2 = tile.position + strip.position

@@ -345,6 +345,7 @@ func build_ui() -> void:
 	paper.add_theme_stylebox_override("panel", surface("ffffff", 8))
 	panel.add_child(paper)
 	score = ScoreView.new()
+	score.seek_requested.connect(seek_tick)
 	paper.add_child(score)
 	panel.move_child(details, panel.get_children().find(paper) + 1)
 	var navigation: HBoxContainer = HBoxContainer.new()
@@ -400,6 +401,7 @@ func build_ui() -> void:
 	transport_row.add_theme_constant_override("v_separation", 4)
 	transport_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	transport_row.alignment = FlowContainer.ALIGNMENT_CENTER
+	transport_row.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	dock.add_child(transport_row)
 	play_button = button("PLAY", toggle_play)
 	play_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -422,22 +424,28 @@ func build_ui() -> void:
 	transport_row.add_child(stop_button)
 	quick_row = flow(dock)
 	quick_row.alignment = FlowContainer.ALIGNMENT_CENTER
+	quick_row.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	tempo_button = button("TEMPO", func() -> void: toggle_drawer("TEMPO"))
 	speed_control = BoxContainer.new()
 	speed_control.vertical = true
 	speed_control.add_theme_constant_override("separation", 0)
 	speed_control.custom_minimum_size.x = 144
+	speed_control.custom_minimum_size.y = 64
+	speed_control.alignment = BoxContainer.ALIGNMENT_CENTER
+	speed_control.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	quick_row.add_child(speed_control)
 	speed_control.add_child(tempo_button)
 	main_speed = HSlider.new()
 	main_speed.scrollable = false
 	main_speed.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	main_speed.theme_type_variation = "TempoSlider"
 	main_speed.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	main_speed.min_value = 25
 	main_speed.max_value = 200
 	main_speed.step = 5
 	main_speed.value = 100
-	main_speed.custom_minimum_size = Vector2(120, 44)
+	main_speed.custom_minimum_size = Vector2(120, 48)
+	main_speed.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	main_speed.tooltip_text = tr("SPEED")
 	main_speed.drag_started.connect(func() -> void: speed_dragging = true)
 	main_speed.drag_ended.connect(func(_changed: bool) -> void:
@@ -709,6 +717,7 @@ func volume_control(parent: Node, key: String, initial: float, instrument: bool)
 	caption.text = tr(key) % roundi(initial)
 	parent.add_child(caption)
 	var slider: HSlider = HSlider.new()
+	slider.theme_type_variation = "VolumeSlider"
 	slider.scrollable = false
 	slider.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	slider.min_value = 0

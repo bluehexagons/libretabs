@@ -71,6 +71,41 @@ static func apply_roles(node: Node, dark: bool) -> void:
 			node.add_theme_stylebox_override(state, role_style(str(node.get_meta("color_role")), dark, state))
 	for child: Node in node.get_children(): apply_roles(child, dark)
 
+static func apply_slider(result: Theme, kind: String, fill: Color, dark: bool) -> void:
+	var rail: StyleBoxFlat = StyleBoxFlat.new()
+	rail.bg_color = color("line", dark).lerp(color("paper", dark), 0.28)
+	rail.set_corner_radius_all(6)
+	rail.content_margin_top = 5
+	rail.content_margin_bottom = 5
+	rail.border_color = color("line", dark)
+	rail.set_border_width_all(1)
+	result.set_stylebox("slider", kind, rail)
+	for state: String in ["grabber_area", "grabber_area_highlight"]:
+		var active: StyleBoxFlat = StyleBoxFlat.new()
+		active.bg_color = fill.lightened(0.08) if state == "grabber_area_highlight" else fill
+		active.set_corner_radius_all(6)
+		active.content_margin_top = 5
+		active.content_margin_bottom = 5
+		active.border_color = color("paper", dark)
+		active.set_border_width_all(1)
+		result.set_stylebox(state, kind, active)
+	var focus: StyleBoxFlat = StyleBoxFlat.new()
+	focus.bg_color = Color.TRANSPARENT
+	focus.border_color = color("accent", dark)
+	focus.set_border_width_all(2)
+	focus.set_corner_radius_all(8)
+	focus.expand_margin_left = 3
+	focus.expand_margin_right = 3
+	focus.expand_margin_top = 3
+	focus.expand_margin_bottom = 3
+	result.set_stylebox("focus", kind, focus)
+	var svg: String = '<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30"><circle cx="15" cy="16" r="11" fill="#%s" fill-opacity="0.24"/><circle cx="15" cy="14" r="11" fill="#%s" stroke="#%s" stroke-width="3"/><circle cx="12" cy="11" r="2.5" fill="#ffffff" fill-opacity="0.72"/></svg>' % [fill.to_html(false), fill.to_html(false), color("paper", dark).to_html(false)]
+	var highlighted_svg: String = svg.replace('r="11" fill="#%s" stroke' % fill.to_html(false), 'r="12" fill="#%s" stroke' % fill.to_html(false))
+	for entry: Array in [["grabber", svg], ["grabber_highlight", highlighted_svg], ["grabber_disabled", svg]]:
+		var image: Image = Image.new()
+		image.load_svg_from_string(entry[1])
+		result.set_icon(entry[0], kind, ImageTexture.create_from_image(image))
+
 static func make_theme(dark: bool, font_size: int, font_style: String = "rounded") -> Theme:
 	var result: Theme = Theme.new()
 	result.default_font_size = font_size
@@ -98,16 +133,11 @@ static func make_theme(dark: bool, font_size: int, font_style: String = "rounded
 		focus.border_color = color("accent", dark)
 		focus.set_border_width_all(3)
 		result.set_stylebox("focus", kind, focus)
-	for key: String in ["slider", "grabber_area", "grabber_area_highlight"]:
-		var rail: StyleBoxFlat = box(color("line" if key == "slider" else "accent", dark), 0)
-		rail.content_margin_top = 3
-		rail.content_margin_bottom = 3
-		result.set_stylebox(key, "HSlider", rail)
-	var thumb_image: Image = Image.new()
-	thumb_image.load_svg_from_string('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><circle cx="12" cy="12" r="9" fill="#%s" stroke="#%s" stroke-width="3"/></svg>' % [color("accent", dark).to_html(false), color("paper", dark).to_html(false)])
-	var thumb: Texture2D = ImageTexture.create_from_image(thumb_image)
-	result.set_icon("grabber", "HSlider", thumb)
-	result.set_icon("grabber_highlight", "HSlider", thumb)
+	result.set_type_variation("TempoSlider", "HSlider")
+	result.set_type_variation("VolumeSlider", "HSlider")
+	apply_slider(result, "HSlider", color("accent", dark), dark)
+	apply_slider(result, "TempoSlider", color("primary", dark), dark)
+	apply_slider(result, "VolumeSlider", color("live", dark), dark)
 	result.set_constant("h_separation", "Button", 10)
 	result.set_constant("v_separation", "PopupMenu", 36)
 	result.set_stylebox("panel", "PopupMenu", box(color("paper", dark), 8))
