@@ -21,7 +21,7 @@ Product priority is: a first-time learner can understand the next action, musica
 ## Beginner, accessibility, and localization rules
 
 - Define a music term in plain language before relying on it.
-- Keep tablature visually primary, keep its synchronized staff notation visible as reference, and keep the beginner reading summary reachable from the practice view.
+- Keep tablature visually primary and synchronized staff visible in scrolling practice. Manual reading may explicitly show tabs, staff, or both under decision 0004. Keep the beginner reading summary reachable in every view.
 - Never encode string, track, success, or warning state by color alone.
 - Controls need text/tooltips, keyboard focus, and a logical focus order.
 - Use layout containers and test at narrow and wide viewports; do not bake English text widths into controls.

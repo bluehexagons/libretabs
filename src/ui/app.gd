@@ -36,7 +36,6 @@ var updating: bool = false
 var title: String = ""
 var import_name: String = ""
 var max_import_usec: int = 0
-var last_visual_key: String = ""
 var started_msec: int = 0
 var paused_in_count: bool = false
 const SPEEDS: Array[float] = [0.25, 0.4, 0.5, 0.6, 0.75, 0.8, 0.9, 1.0, 1.1, 1.25, 1.5, 1.75, 2.0]
@@ -46,6 +45,15 @@ var song_title: Label
 var brand_label: Label
 var notice_button: Button
 var tempo_button: Button
+var menu_overlay: Control
+var menu_button: Button
+var menu_scroll: ScrollContainer
+var page_label: Label
+var page_navigation: HFlowContainer
+var seek_navigation: HBoxContainer
+var next_cue: Label
+var view_picker: OptionButton
+var notation_picker: OptionButton
 var drawer: PanelContainer
 var drawer_body: VBoxContainer
 var drawer_title: Label
@@ -93,7 +101,7 @@ func button(key: String, action: Callable) -> Button:
 	item.text = tr(key)
 	item.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	item.tooltip_text = tr(key)
-	item.custom_minimum_size.y = 48
+	item.custom_minimum_size.y = 56
 	item.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	item.pressed.connect(action)
 	return item
@@ -104,7 +112,7 @@ func check(key: String, checked: bool) -> CheckButton:
 	item.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	item.tooltip_text = tr(key)
 	item.button_pressed = checked
-	item.custom_minimum_size.y = 48
+	item.custom_minimum_size.y = 56
 	item.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	return item
 
@@ -135,6 +143,8 @@ func build_ui() -> void:
 		palette.set_stylebox("normal", kind, surface("edf0f7", 12))
 		palette.set_stylebox("hover", kind, surface("e1e7f5", 12))
 		palette.set_stylebox("pressed", kind, surface("d5dff6", 12))
+		palette.set_stylebox("disabled", kind, surface("f0f2f7", 12))
+		palette.set_color("font_disabled_color", kind, Color("79849b"))
 		var focus: StyleBoxFlat = surface("00000000", 12)
 		focus.border_color = Color("4665d8")
 		focus.set_border_width_all(3)
@@ -144,6 +154,7 @@ func build_ui() -> void:
 		rail.content_margin_top = 3
 		rail.content_margin_bottom = 3
 		palette.set_stylebox(name_key, "HSlider", rail)
+	palette.set_constant("v_separation", "PopupMenu", 36)
 	palette.set_stylebox("panel", "PopupMenu", surface("ffffff", 8))
 	palette.set_stylebox("hover", "PopupMenu", surface("e1e7f5", 8))
 	theme = palette
@@ -165,10 +176,12 @@ func build_ui() -> void:
 	panel.add_theme_constant_override("separation", 12)
 	margin.add_child(panel)
 	var header: HBoxContainer = HBoxContainer.new()
-	panel.add_child(header)
+	root_box.add_child(header)
+	root_box.move_child(header, 0)
 	brand_label = label("BRAND", 20)
 	header.add_child(brand_label)
-	header.add_child(button("SONG_MENU", func() -> void: toggle_drawer("SONG_MENU")))
+	menu_button = button("MENU", func() -> void: toggle_drawer("MENU"))
+	header.add_child(menu_button)
 	song_title = label("DEMO_0", 30)
 	panel.add_child(song_title)
 	status = label("START_HINT", 18)
@@ -179,26 +192,45 @@ func build_ui() -> void:
 	details.add_child(cue)
 	notice_button = button("ARRANGEMENT_SHORT", func() -> void: toggle_drawer("DETAILS"))
 	details.add_child(notice_button)
+	next_cue = label("NEXT_END", 20)
+	panel.add_child(next_cue)
+	panel.add_child(button("SCORE_VIEW", func() -> void: toggle_drawer("SCORE_VIEW")))
+	menu_overlay = Control.new()
+	menu_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(menu_overlay)
+	var shade: ColorRect = ColorRect.new()
+	shade.color = Color(0.08, 0.12, 0.22, 0.65)
+	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	menu_overlay.add_child(shade)
 	drawer = PanelContainer.new()
 	drawer.add_theme_stylebox_override("panel", surface("ffffff"))
-	panel.add_child(drawer)
-	panel.move_child(drawer, panel.get_children().find(details))
+	menu_overlay.add_child(drawer)
+	var menu_column: VBoxContainer = VBoxContainer.new()
+	drawer.add_child(menu_column)
+	var drawer_header: HFlowContainer = flow(menu_column)
+	drawer_header.add_child(button("MENU_BACK", func() -> void: toggle_drawer("MENU")))
+	drawer_header.add_child(button("CLOSE", close_menu))
+	menu_scroll = ScrollContainer.new()
+	menu_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	menu_scroll.follow_focus = true
+	menu_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	menu_column.add_child(menu_scroll)
 	drawer_body = VBoxContainer.new()
+	drawer_body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	drawer_body.add_theme_constant_override("separation", 14)
-	drawer.add_child(drawer_body)
-	var drawer_header: HBoxContainer = HBoxContainer.new()
-	drawer_body.add_child(drawer_header)
-	drawer_title = label("SONG_MENU", 24)
-	drawer_header.add_child(drawer_title)
-	drawer_header.add_child(button("CLOSE", func() -> void: toggle_drawer(opened_drawer)))
+	menu_scroll.add_child(drawer_body)
+	drawer_title = label("MENU", 24)
+	drawer_body.add_child(drawer_title)
 	build_drawers()
 	drawer.hide()
+	menu_overlay.hide()
 	var paper: PanelContainer = PanelContainer.new()
 	paper.add_theme_stylebox_override("panel", surface("ffffff", 8))
 	panel.add_child(paper)
 	score = ScoreView.new()
 	paper.add_child(score)
 	var navigation: HBoxContainer = HBoxContainer.new()
+	seek_navigation = navigation
 	panel.add_child(navigation)
 	navigation.add_child(button("PREVIOUS", func() -> void: seek_measure(maxf(1, seek.value - 1))))
 	seek = HSlider.new()
@@ -211,6 +243,15 @@ func build_ui() -> void:
 	seek.value_changed.connect(seek_measure)
 	navigation.add_child(seek)
 	navigation.add_child(button("NEXT", func() -> void: seek_measure(minf(seek.max_value, seek.value + 1))))
+	page_navigation = flow(panel)
+	page_navigation.add_child(button("PAGE_PREVIOUS", func() -> void: turn_page(-1)))
+	page_label = label("PAGE_NUMBER")
+	panel.add_child(page_label)
+	page_navigation.add_child(button("PAGE_NEXT", func() -> void: turn_page(1)))
+	page_navigation.add_child(button("PAGE_PLAYBACK", func() -> void: score.page_to_playback(); update_page_controls()))
+	panel.move_child(page_label, panel.get_children().find(paper))
+	panel.move_child(page_navigation, panel.get_children().find(paper))
+	page_navigation.hide()
 	# Keep play/pause reachable while the score and settings scroll on phones.
 	var dock_panel: PanelContainer = PanelContainer.new()
 	dock_panel.add_theme_stylebox_override("panel", surface("ffffff", 12))
@@ -220,10 +261,12 @@ func build_ui() -> void:
 	dock.alignment = BoxContainer.ALIGNMENT_CENTER
 	dock.add_theme_constant_override("separation", 8)
 	dock_panel.add_child(dock)
-	var transport_row: HBoxContainer = HBoxContainer.new()
+	var transport_row: HFlowContainer = HFlowContainer.new()
+	transport_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	transport_row.alignment = FlowContainer.ALIGNMENT_CENTER
 	dock.add_child(transport_row)
 	play_button = button("PLAY", toggle_play)
-	play_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	play_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	play_button.custom_minimum_size.y = 56
 	for mode: String in ["normal", "hover", "pressed"]:
 		play_button.add_theme_stylebox_override(mode, surface("4665d8" if mode == "normal" else "3551bd", 12))
@@ -231,18 +274,8 @@ func build_ui() -> void:
 		play_button.add_theme_color_override(mode, Color.WHITE)
 	transport_row.add_child(play_button)
 	transport_row.add_child(button("STOP", stop_practice))
-	var tools_row: HFlowContainer = flow(dock)
 	tempo_button = button("TEMPO", func() -> void: toggle_drawer("TEMPO"))
-	tools_row.add_child(tempo_button)
-	tools_row.add_child(button("SOUND", func() -> void: toggle_drawer("SOUND")))
-	tools_row.add_child(button("LOOP_TOOL", func() -> void: toggle_drawer("LOOP_TOOL")))
-	tools_row.add_child(button("HELP", func() -> void: toggle_drawer("HELP")))
-	for item: Button in tools_row.get_children():
-		item.set_meta("base_font_size", 18)
-		item.set_meta("compact", true)
-		item.add_theme_font_size_override("font_size", 18)
-		for mode: String in ["normal", "hover", "pressed"]:
-			item.add_theme_stylebox_override(mode, surface("edf0f7" if mode == "normal" else "d5dff6", 8))
+	transport_row.add_child(tempo_button)
 
 
 func section(key: String) -> VBoxContainer:
@@ -254,6 +287,26 @@ func section(key: String) -> VBoxContainer:
 	return content
 
 func build_drawers() -> void:
+	var menu_index: VBoxContainer = section("MENU")
+	for key: String in ["SONG_MENU", "SCORE_VIEW", "TEMPO", "SOUND", "LOOP_TOOL", "HELP", "DETAILS", "DISPLAY"]:
+		menu_index.add_child(button(key, func() -> void: toggle_drawer(key)))
+	var views: VBoxContainer = section("SCORE_VIEW")
+	views.add_child(label("VIEW_HELP"))
+	view_picker = OptionButton.new()
+	view_picker.custom_minimum_size.y = 56
+	view_picker.fit_to_longest_item = false
+	view_picker.add_item(tr("VIEW_SCROLL"))
+	view_picker.add_item(tr("VIEW_PAGES"))
+	view_picker.item_selected.connect(func(_index: int) -> void: change_view())
+	views.add_child(view_picker)
+	views.add_child(label("PAGE_NOTATION"))
+	notation_picker = OptionButton.new()
+	notation_picker.custom_minimum_size.y = 56
+	notation_picker.fit_to_longest_item = false
+	for key: String in ["NOTATION_BOTH", "NOTATION_TAB", "NOTATION_STAFF"]: notation_picker.add_item(tr(key))
+	notation_picker.disabled = true
+	notation_picker.item_selected.connect(func(_index: int) -> void: change_view())
+	views.add_child(notation_picker)
 	var library: VBoxContainer = section("SONG_MENU")
 	library.add_child(button("OPEN", func() -> void: pause(); host.pick()))
 	library.add_child(label("DEMOS", 18))
@@ -261,7 +314,7 @@ func build_drawers() -> void:
 	demo_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	demo_picker.fit_to_longest_item = false
 	demo_picker.clip_text = true
-	demo_picker.custom_minimum_size.y = 48
+	demo_picker.custom_minimum_size.y = 56
 	for index: int in range(fixtures.size()): demo_picker.add_item(tr("DEMO_%d" % index))
 	demo_picker.item_selected.connect(load_demo)
 	library.add_child(demo_picker)
@@ -273,7 +326,7 @@ func build_drawers() -> void:
 	part_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	part_picker.fit_to_longest_item = false
 	part_picker.clip_text = true
-	part_picker.custom_minimum_size.y = 48
+	part_picker.custom_minimum_size.y = 56
 	part_picker.item_selected.connect(select_part)
 	library.add_child(part_picker)
 
@@ -283,7 +336,7 @@ func build_drawers() -> void:
 	speed_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	speed_picker.fit_to_longest_item = false
 	speed_picker.clip_text = true
-	speed_picker.custom_minimum_size.y = 48
+	speed_picker.custom_minimum_size.y = 56
 	for multiplier: float in SPEEDS: speed_picker.add_item(tr("SPEED_VALUE") % roundi(multiplier * 100))
 	speed_picker.add_item(tr("CUSTOM_BPM"))
 	speed_picker.select(SPEEDS.find(1.0))
@@ -294,7 +347,7 @@ func build_drawers() -> void:
 	bpm_input.min_value = 10
 	bpm_input.max_value = 400
 	bpm_input.step = 1
-	bpm_input.custom_minimum_size.y = 48
+	bpm_input.custom_minimum_size.y = 56
 	bpm_input.value_changed.connect(change_bpm)
 	tempo.add_child(bpm_input)
 	tempo_caption = label("TEMPO_HELP", 18)
@@ -325,7 +378,7 @@ func build_drawers() -> void:
 		item.min_value = 1
 		item.max_value = 4
 		item.value = 1 if item == loop_from else 2
-		item.custom_minimum_size.y = 48
+		item.custom_minimum_size.y = 56
 		item.tooltip_text = tr("LOOP_RANGE")
 		item.value_changed.connect(func(_value: float) -> void: loop_changed())
 		loops.add_child(item)
@@ -339,13 +392,12 @@ func build_drawers() -> void:
 	var help: VBoxContainer = section("HELP")
 	for key: String in ["HELP_STRINGS", "HELP_FRETS", "HELP_STAFF", "HELP_TIMING"]:
 		help.add_child(label(key, 20))
-	help.add_child(button("DISPLAY", func() -> void: toggle_drawer("DISPLAY")))
 	var display: VBoxContainer = section("DISPLAY")
 	scale_picker = OptionButton.new()
 	scale_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	scale_picker.fit_to_longest_item = false
 	scale_picker.clip_text = true
-	scale_picker.custom_minimum_size.y = 48
+	scale_picker.custom_minimum_size.y = 56
 	for percent: int in [100, 150, 200]: scale_picker.add_item(tr("SCALE_VALUE") % percent)
 	scale_picker.item_selected.connect(func(index: int) -> void:
 		var factor: float = [1.0, 1.5, 2.0][index]
@@ -378,28 +430,78 @@ func volume_control(parent: Node, key: String, initial: float, instrument: bool)
 	return slider
 
 func toggle_drawer(key: String) -> void:
-	opened_drawer = "" if opened_drawer == key else key
-	drawer.visible = not opened_drawer.is_empty()
-	for name_key: String in drawers: drawers[name_key].visible = name_key == opened_drawer
-	if drawer.visible:
-		drawer_title.text = tr(key)
-		scroll.scroll_vertical = 0
+	opened_drawer = key
+	menu_overlay.show()
+	drawer.show()
+	for name_key: String in drawers: drawers[name_key].visible = name_key == key
+	drawer_title.text = tr(key)
+	menu_scroll.scroll_vertical = 0
 	responsive()
+	drawer.get_child(0).get_child(0).get_child(1).grab_focus()
+
+func close_menu() -> void:
+	opened_drawer = ""
+	drawer.hide()
+	menu_overlay.hide()
+	menu_button.grab_focus()
+
+func _input(event: InputEvent) -> void:
+	if not menu_overlay.visible or not event is InputEventKey or not event.pressed: return
+	if event.keycode == KEY_ESCAPE:
+		close_menu()
+		get_viewport().set_input_as_handled()
+	elif event.keycode == KEY_TAB:
+		var controls: Array[Control] = []
+		menu_focusable(drawer, controls)
+		if not controls.is_empty():
+			var index: int = controls.find(get_viewport().gui_get_focus_owner())
+			controls[posmod(index + (-1 if event.shift_pressed else 1), controls.size())].grab_focus()
+			get_viewport().set_input_as_handled()
+
+func menu_focusable(node: Node, controls: Array[Control]) -> void:
+	if node is Control and node.is_visible_in_tree() and node.focus_mode == Control.FOCUS_ALL:
+		controls.append(node)
+	for child: Node in node.get_children(): menu_focusable(child, controls)
+
+func change_view() -> void:
+	notation_picker.disabled = view_picker.selected == 0
+	score.set_view("scroll" if view_picker.selected == 0 else "pages", ["both", "tab", "staff"][notation_picker.selected])
+	update_page_controls()
+
+func turn_page(direction: int) -> void:
+	score.turn_page(direction)
+	update_page_controls()
+	scroll.scroll_vertical = 0
+
+func update_page_controls() -> void:
+	if page_navigation == null: return
+	page_navigation.visible = score.mode == "pages"
+	page_label.visible = score.mode == "pages"
+	cue.get_parent().visible = score.mode == "scroll"
+	next_cue.visible = score.mode == "scroll"
+	seek_navigation.visible = score.mode == "scroll"
+	page_label.text = tr("PAGE_NUMBER") % [score.page_index + 1, score.pages()]
+	page_navigation.get_child(0).disabled = score.page_index == 0
+	page_navigation.get_child(1).disabled = score.page_index == score.pages() - 1
 
 func apply_scale(factor: float) -> void:
 	theme.default_font_size = roundi(20 * factor)
 	scale_labels(root_box, factor)
+	scale_labels(menu_overlay, factor)
 	scale_picker.select(0 if factor < 1.5 else (1 if factor < 2.0 else 2))
 	responsive()
 
 func responsive() -> void:
+	cue.custom_minimum_size.x = minf(size.x - 64, 200 * theme.default_font_size / 20.0)
 	status.custom_minimum_size.y = (54 if size.x < 760 else 28) * theme.default_font_size / 20.0
 	brand_label.visible = size.y >= 700 or size.x >= 760
 	dock.vertical = size.x < 760
-	dock.get_child(1).custom_minimum_size.x = 0 if size.x < 760 else 420
+	drawer.position = Vector2(maxf(0, size.x - 560), 0)
+	drawer.size = Vector2(minf(size.x, 560), size.y)
+	adapt_flow(menu_overlay)
 	adapt_flow(root_box)
-	play_button.custom_minimum_size.x = 150
-	if score != null: score.queue_redraw(); score.cursor.queue_redraw()
+	play_button.custom_minimum_size.x = 120
+	if score != null: score.refresh(); update_page_controls()
 
 func adapt_flow(node: Node) -> void:
 	if node is HFlowContainer or node is HBoxContainer:
@@ -409,7 +511,7 @@ func adapt_flow(node: Node) -> void:
 				var font: Font = child.get_theme_font("font")
 				var font_size: int = roundi(float(child.get_meta("base_font_size", 20)) * theme.default_font_size / 20.0)
 				var needed: float = font.get_string_size(child.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + (20 if child.has_meta("compact") else (72 if child is CheckButton else 28))
-				child.custom_minimum_size.x = 150 if child == play_button else minf(needed, maxf(80, (size.x - 56) / 2 if node is HBoxContainer else size.x - 64))
+				child.custom_minimum_size.x = 120 if child == play_button else minf(needed, maxf(80, (size.x - 56) / 2 if node is HBoxContainer else size.x - 64))
 	for child: Node in node.get_children(): adapt_flow(child)
 
 func scale_labels(node: Node, factor: float) -> void:
@@ -470,6 +572,7 @@ func load_demo(index: int) -> void:
 func _file_picked(name_value: String, bytes: PackedByteArray, error: String) -> void:
 	if not error.is_empty():
 		status.text = tr(error)
+		if drawer.visible: close_menu()
 		return
 	import_name = name_value
 	importer = MidiImport.new(bytes)
@@ -481,6 +584,7 @@ func finish_import() -> void:
 	set_activity(false)
 	cancel_button.hide()
 	if not importer.error.is_empty():
+		if drawer.visible: close_menu()
 		status.text = tr(importer.error)
 		importer = null
 		return
@@ -492,6 +596,7 @@ func finish_import() -> void:
 			first = index
 			break
 	if first < 0:
+		if drawer.visible: close_menu()
 		status.text = tr("ERR_EMPTY")
 		return
 	audio.stop_practice()
@@ -519,7 +624,7 @@ func finish_import() -> void:
 	select_part(first)
 	state = "STATE_READY"
 	status.text = tr("START_HINT")
-	if drawer.visible: toggle_drawer(opened_drawer)
+	if drawer.visible: close_menu()
 	adapt_flow(panel)
 
 func select_part(index: int) -> void:
@@ -527,10 +632,7 @@ func select_part(index: int) -> void:
 	part = index
 	source_tick = 0.0
 	projection.build(song, part)
-	last_visual_key = ""
-	score.song = song
-	score.part = part
-	score.projection = projection
+	score.set_document(song, part, projection)
 	notice_button.text = tr("ARRANGEMENT_SHORT") if projection.placed == projection.eligible else tr("UNPLACED_SHORT") % (projection.eligible - projection.placed)
 	summary.text = tr("COVERAGE") % [projection.placed, projection.eligible]
 	warning.text = tr("PROTOTYPE_LIMIT")
@@ -656,7 +758,7 @@ func report_state() -> void:
 	if song == null: return
 	if host.trace_enabled():
 		var evidence: Dictionary = audio.metrics()
-		evidence.merge({"position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "placed": projection.placed, "eligible": projection.eligible, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
+		evidence.merge({"engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "placed": projection.placed, "eligible": projection.eligible, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
 		host.report(evidence)
 	offline.text = tr("OFFLINE_READY") if host.offline_ready() else tr("OFFLINE_PENDING")
 	if host.offline_ready() and not host.trace_enabled(): idle_timer.stop()
@@ -665,16 +767,8 @@ func update_position() -> void:
 	position_updates += 1
 	if song == null:
 		return
-	score.current_tick = source_tick
-	score.measure_index = song.measure_at(source_tick)
-	var visual_key: String = str(score.measure_index) + ":" + str(part)
-	for note: Dictionary in song.notes:
-		if int(note.part) == part and source_tick >= float(note.start) and source_tick < float(note.end):
-			visual_key += ":" + String(note.id)
-	if visual_key != last_visual_key:
-		last_visual_key = visual_key
-		score.queue_redraw()
-	score.cursor.queue_redraw()
+	score.update_tick(source_tick)
+	update_page_controls()
 	updating = true
 	seek.value = score.measure_index + 1
 	updating = false
@@ -687,6 +781,17 @@ func update_position() -> void:
 			else:
 				cue.text = tr("CUE_UNPLACED")
 			break
+	next_cue.text = tr("NEXT_END")
+	var upcoming: Dictionary = {}
+	for note: Dictionary in song.notes:
+		if int(note.part) != part or float(note.start) <= source_tick: continue
+		if upcoming.is_empty() or float(note.start) < float(upcoming.start): upcoming = note
+	if not upcoming.is_empty():
+		if projection.placements.has(upcoming.id):
+			var placement: Dictionary = projection.placements[upcoming.id]
+			next_cue.text = tr("NEXT_NOTE") % [placement.string, placement.fret]
+		else:
+			next_cue.text = tr("NEXT_UNPLACED")
 
 func show_notices() -> void:
 	pause()

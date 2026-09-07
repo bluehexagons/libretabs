@@ -4,6 +4,8 @@
 - Date: 2026-09-07
 - Scope: practice UI, mixer levels, and tempo controls; final M0 stack gate stays open
 
+The navigation/menu layout below is superseded by [decision 0004](0004-score-navigation.md). Its audio, tempo and idle-work decisions remain in effect.
+
 ## Decision
 
 Replace the long practice form with a score-first view. Play/pause and the four

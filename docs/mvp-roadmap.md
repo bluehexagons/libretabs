@@ -10,6 +10,8 @@ Effort labels are relative: **S** is a focused issue, **M** is a multi-issue sli
 
 The [M0 evidence record](evidence/m0-prototype.md) distinguishes implemented experiments from remaining exit gates. A runnable slice does not mark all M0 issues complete.
 
+The [navigation update](decisions/0004-score-navigation.md) adds default scrolling, manual screen pages and density-aware mobile coordinates. Continue the Godot evaluation, then resolve assistive-technology and physical-device timing evidence before full MVP investment. A failed accessibility gate triggers the same-slice semantic web comparison described in that record.
+
 ## M0 — prove Godot or change course
 
 Goal: one ugly but complete web/Linux prototype loads known MIDI bytes, draws representative staff/tab, plays synchronized generated sound, and survives platform constraints.

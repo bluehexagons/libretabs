@@ -354,3 +354,54 @@ msgstr "Follow the outlined fret numbers."
 
 msgid "TEMPO_SELECTED"
 msgstr "Tempo %d%%"
+
+msgid "MENU"
+msgstr "Menu"
+
+msgid "MENU_BACK"
+msgstr "All settings"
+
+msgid "SCORE_VIEW"
+msgstr "Score view"
+
+msgid "VIEW_HELP"
+msgstr "Follow the moving music, or turn pages yourself. Page turns never move playback."
+
+msgid "VIEW_SCROLL"
+msgstr "Smooth scrolling"
+
+msgid "VIEW_PAGES"
+msgstr "Manual pages"
+
+msgid "PAGE_NOTATION"
+msgstr "Show on manual pages"
+
+msgid "NOTATION_BOTH"
+msgstr "Tabs and sheet music"
+
+msgid "NOTATION_TAB"
+msgstr "Tabs only"
+
+msgid "NOTATION_STAFF"
+msgstr "Sheet music only"
+
+msgid "PAGE_PREVIOUS"
+msgstr "Previous page"
+
+msgid "PAGE_NEXT"
+msgstr "Next page"
+
+msgid "PAGE_NUMBER"
+msgstr "Page %d of %d"
+
+msgid "PAGE_PLAYBACK"
+msgstr "Go to playing page"
+
+msgid "NEXT_NOTE"
+msgstr "Next: string %d · fret %d"
+
+msgid "NEXT_UNPLACED"
+msgstr "Next: see sheet music"
+
+msgid "NEXT_END"
+msgstr "No upcoming notes"

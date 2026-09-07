@@ -162,7 +162,7 @@ The returned HTTPS URL is authoritative. Do not start a public plain-HTTP server
 
 Browser verification must at minimum check:
 
-- canvas initialization and responsive size;
+- canvas initialization and responsive size at device pixel ratios 1, 2 and 3; verify logical-to-CSS mapping, touch targets and orientation changes, not only viewport width;
 - console errors and failed network requests;
 - confirmed offline-ready cache followed by a network-disabled reload, interrupted/update recovery, and reconnect after complete storage loss;
 - save confirmation, unavailable/quota-limited storage, and future-schema recovery;

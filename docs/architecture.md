@@ -208,10 +208,12 @@ The score layout is deliberately narrow:
 
 - one selected pitched part;
 - one rhythmic voice;
-- staff and tab paired as a system, with tab visually primary and staff always present as reference;
-- screen layout, not pagination/printing;
+- scrolling practice pairs staff and tab, with tab visually primary; manual reading can explicitly select either or both;
+- responsive screen layout with default scrolling and manually turned screen pages; no printing/PDF layout;
 - common meters and binary subdivisions;
 - measure geometry computed separately from drawing.
+
+The evaluation implementation separates pure source-tick geometry (`ScoreLayout`), visible static measure canvases, and the transport-driven cursor. Web logical coordinates match canvas CSS pixels independently of device pixel density. See [decision 0004](decisions/0004-score-navigation.md) for manual-page semantics and the bounded exception to paired notation.
 
 Use Bravura, the SMuFL reference font under SIL OFL 1.1, for musical glyphs. Draw staff/tab lines and ties as primitives. Pin the font version and include its license/metadata. Select and license a UI font/fallback set in M1.2 that actually covers the pseudolocale and RTL smoke strings; final language-specific typography may follow the first translation. Missing glyphs cannot count as a passing localization test. Keep musical time left-to-right in an RTL interface and test mirrored controls separately from score geometry.
 

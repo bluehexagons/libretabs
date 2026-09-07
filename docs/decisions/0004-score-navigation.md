@@ -1,0 +1,76 @@
+# 0004 — Scrolling, manual pages, and mobile coordinates
+
+- Status: accepted for the evaluation prototype following owner feedback
+- Date: 2026-09-07
+- Supersedes: the navigation/menu layout in decision 0003
+- Scope: score navigation and usable mobile controls; final M0 stack gate remains open
+
+## Decision
+
+Smooth horizontal scrolling is the default. The estimated audible source tick
+from the existing transport projects directly onto continuous measure geometry.
+The playhead stays at 28% of the score width, leaving most space for upcoming
+music. Measures share a continuous coordinate system, including meter changes;
+there is no independent animation clock or delayed tween. Seeks, stop and loop
+wraps intentionally reposition immediately. Only visible measures have canvases;
+their engraving is cached separately from the moving highlight. Paused views
+do not request repeated redraws.
+
+Menu → Score view offers manual pages. Pages contain two systems of paired staff
+and tab, or three systems of the selected representation; wide layouts place two
+measures per system. Narrow layouts use one. Previous/Next page changes only the
+reader position, never the audio transport. Playback does not automatically turn
+manual pages. Go to playing page explicitly returns to the current music.
+Viewport resizing reflows pages and clamps the page index.
+
+The owner's request authorizes tab-only or staff-only manual reading as a bounded
+exception to always showing both. Scrolling practice still pairs them, with tab
+primary. These are responsive screen pages of the existing simplified projection,
+not print engraving, PDF export, or a new notation editor. Arrangement disclosures
+and reading help remain available from Menu in every mode.
+
+One Menu exposes Song, Score view, Tempo, Sound, Loop, Help, arrangement details,
+and Display. Its Close/All settings controls remain above scrolling content;
+Escape closes it and Tab cycles within the open menu. Play/Stop and a tempo
+shortcut remain in the practice dock. The current/next fret cues belong to
+scrolling practice, while manual reading leaves more room for the score.
+
+## Mobile defect and fix
+
+The earlier narrow-viewport checks used density 1. At density 3, the old web
+canvas used 1,170 physical pixels as logical UI units inside a 390 CSS-pixel
+viewport. A nominal 48-pixel button occupied only 16 CSS pixels. Enlarging the
+theme alone did not solve this.
+
+The host adapter now supplies the canvas's CSS rectangle as Godot's virtual
+content size, with Canvas Items scaling. The high-resolution backing canvas is
+retained. Browser/window resize events update the mapping; no polling is added.
+Buttons/pickers use at least 56 logical pixels, and popup choices have increased
+vertical spacing. Text scale remains independently adjustable from 100–200%.
+See the [Godot Window scaling contract](https://docs.godotengine.org/en/stable/classes/class_window.html).
+
+## Stack recommendation
+
+Continue this bounded Godot evaluation; the density defect and score navigation
+did not require a stack replacement. Do not treat that as accepting the final MVP
+stack. Physical-device timing, screen-reader tasks, and the remaining M0 gates
+still need evidence.
+
+Before production UI/lesson investment, test a first-time learner opening a file,
+selecting a part, changing tempo, starting/stopping, and reading the current/next
+note with the intended assistive technology. If Godot needs a parallel semantic
+UI or fails those tasks, compare the same slice in semantic HTML/CSS/TypeScript
+with Web Audio. Reuse the musical fixtures and acceptance criteria, not necessarily
+the GDScript implementation. Record startup, idle/active cost, touch usability,
+keyboard/screen-reader reachability, offline behavior and timing on the same devices.
+
+Electron packages Chromium and Node for desktop; choosing it does not itself
+supply a mobile browser application. Evaluate the browser UI first, then consider
+Electron or the existing Tauri fallback for desktop packaging. Tauri uses OS
+webviews, which introduces a different cross-platform testing tradeoff. Neither
+alternative has been benchmarked for LibreTabs in this change. No dependency or
+platform target changes here.
+
+Primary references: [Electron architecture/platforms](https://www.electronjs.org/docs/latest/),
+[Tauri architecture](https://v2.tauri.app/concept/architecture/).
+Verification and limits: [score navigation evidence](../evidence/score-navigation.md).

@@ -8,6 +8,7 @@ var dialog: FileDialog
 var callback: JavaScriptObject
 var hidden_callback: JavaScriptObject
 var web: JavaScriptObject
+var resize_callback: JavaScriptObject
 
 func _ready() -> void:
 	if OS.has_feature("web"):
@@ -15,6 +16,10 @@ func _ready() -> void:
 		callback = JavaScriptBridge.create_callback(_web_file)
 		hidden_callback = JavaScriptBridge.create_callback(func(_args: Array) -> void: hidden.emit())
 		web.onHidden(hidden_callback)
+		resize_callback = JavaScriptBridge.create_callback(func(_args: Array) -> void: sync_display())
+		web.onResize(resize_callback)
+		get_window().size_changed.connect(sync_display)
+		sync_display()
 	else:
 		dialog = FileDialog.new()
 		dialog.use_native_dialog = true
@@ -81,3 +86,11 @@ func configure_activity(active: bool) -> void:
 	# Let the browser pace frames; low-processor mode still skips unchanged draws.
 	OS.low_processor_usage_mode_sleep_usec = 0 if web != null else 16000
 	Engine.max_fps = 0 if web != null else (60 if active else 30)
+
+func sync_display() -> void:
+	if web == null: return
+	var logical: Vector2i = Vector2i(maxi(1, int(web.viewWidth())), maxi(1, int(web.viewHeight())))
+	var window: Window = get_window()
+	window.content_scale_mode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
+	window.content_scale_aspect = Window.CONTENT_SCALE_ASPECT_IGNORE
+	if window.content_scale_size != logical: window.content_scale_size = logical

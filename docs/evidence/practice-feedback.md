@@ -3,6 +3,8 @@
 Date: 2026-09-07. This updates the evaluation interface after owner feedback;
 it does not close the remaining M0 stack gates.
 
+The later [density and navigation evaluation](score-navigation.md) corrects a gap in these phone checks: narrow viewports at density 1 did not catch high-density screens shrinking the logical UI. Its menu/navigation supersedes this report.
+
 ## Evaluate the update
 
 Open the [managed preview](https://192.168.0.44:8443/games/agent/libretabs-prototype/).

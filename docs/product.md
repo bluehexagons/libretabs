@@ -76,7 +76,8 @@ No owner decision currently blocks M0. The provisional name still needs a final 
 2. The active beat/notes are emphasized in both staff and tab, using shape/position as well as color.
 3. The learner can pause, seek by measure, choose 25–200% tempo or a custom starting BPM, enable the metronome, and define a measure loop.
 4. A compact fretboard guide shows the current string and fret and repeats the convention that string 1 is the thinnest/highest string.
-5. A persistent Help action summarizes how tab lines/fret numbers align with staff pitch/rhythm without covering the current notes.
+5. Menu → Help summarizes how tab lines/fret numbers align with staff pitch/rhythm. Close returns directly to practice.
+6. Music scrolls smoothly by default, with upcoming notes visible ahead of the playhead. Menu → Score view also offers manually turned screen pages with tabs, sheet music, or both. Page turns do not seek or follow playback; Go to playing page explicitly returns to the current music.
 
 ## MVP functional requirements
 
@@ -115,7 +116,7 @@ Import is cancellable and transactional: a failed or cancelled replacement leave
 - Default to octave-transposing treble clef for guitar. Allow treble, bass, or auto selection and explain that guitar treble notation sounds an octave lower than written.
 - Render the selected practice part only; backing parts are audible but do not crowd the score.
 - Highlight source-linked notes at their original playback times even when display positions are rounded. Warn about timing approximation and independent overlapping rhythms that the single-voice display cannot represent exactly; do not imply that quantized notation is an exact transcription.
-- Render staff lines, clef, meter/key, barlines, noteheads, stems/beams, rests, accidentals, ledger lines, dots, ties, and an aligned six-line tab staff. The staff remains visible as a smaller reference while tab receives primary visual weight. This is focused practice notation, not print engraving.
+- Render staff lines, clef, meter/key, barlines, noteheads, stems/beams, rests, accidentals, ledger lines, dots, ties, and an aligned six-line tab staff. In scrolling practice the staff remains visible as a smaller reference while tab receives primary visual weight; manual reading can show either representation or both. This is focused practice notation, not print engraving.
 - Provide an always-available Help summary that explains staff direction, clef, note position, rhythm values, string lines, and fret numbers in beginner language.
 
 ### Guitar fingering

@@ -3,6 +3,12 @@
 (() => {
   let chooser, generation = 0;
   window.libretabsHost = {
+    viewWidth() { return Math.round(document.getElementById('canvas')?.getBoundingClientRect().width || innerWidth); },
+    viewHeight() { return Math.round(document.getElementById('canvas')?.getBoundingClientRect().height || innerHeight); },
+    onResize(callback) {
+      window.addEventListener('resize', () => requestAnimationFrame(() => callback()));
+      window.visualViewport?.addEventListener('resize', () => requestAnimationFrame(() => callback()));
+    },
     pick(callback, limit) {
       const ticket = ++generation;
       if (chooser) chooser.remove();

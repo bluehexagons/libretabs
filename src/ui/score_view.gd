@@ -2,165 +2,176 @@
 class_name ScoreView
 extends Control
 
-const INK: Color = Color("202d49")
-const MUTED: Color = Color("79849b")
-const ACCENT: Color = Color("4665d8")
-var draw_count: int = 0
-var music_font: Font = preload("res://assets/fonts/Bravura.otf")
 var song: SongDocument
 var projection: TabProjection
 var part: int = 0
 var current_tick: float = 0.0
 var measure_index: int = 0
+var mode: String = "scroll"
+var notation: String = "both"
+var page_index: int = 0
+var layout: ScoreLayout = ScoreLayout.new()
+var tiles: Dictionary = {}
+var strip: Control
 var cursor: CursorLayer
-var ui_font: Font
+var draw_count: int = 0
+var retired_draws: int = 0
+var last_key: String = ""
+var view_offset: float = 0.0
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(240, 320)
-	ui_font = ThemeDB.fallback_font
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	resized.connect(func() -> void: queue_redraw(); cursor.queue_redraw())
+	clip_contents = true
+	strip = Control.new()
+	strip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(strip)
 	cursor = CursorLayer.new()
 	cursor.owner_score = self
 	cursor.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(cursor)
+	resized.connect(refresh)
+
+func set_document(document: SongDocument, selection: int, tab: TabProjection) -> void:
+	song = document
+	part = selection
+	projection = tab
+	page_index = 0
+	layout.build(song)
+	invalidate()
+
+func invalidate() -> void:
+	for tile: MeasureCanvas in tiles.values():
+		retired_draws += tile.draw_count
+		strip.remove_child(tile)
+		tile.queue_free()
+	tiles.clear()
+	last_key = ""
+	refresh()
+
+func set_view(value: String, symbols: String) -> void:
+	mode = value
+	notation = "both" if mode == "scroll" else symbols
+	page_index = clampi(page_index, 0, pages() - 1)
+	invalidate()
+
+func pages() -> int:
+	return ScoreLayout.page_count(song.measures.size(), size.x, notation) if song != null else 1
+
+func page_start() -> int:
+	return page_index * ScoreLayout.columns(size.x) * ScoreLayout.rows(notation)
+
+func turn_page(direction: int) -> void:
+	page_index = clampi(page_index + direction, 0, pages() - 1)
+	refresh()
+
+func page_to_playback() -> void:
+	page_index = measure_index / (ScoreLayout.columns(size.x) * ScoreLayout.rows(notation))
+	refresh()
+
+func update_tick(tick: float) -> void:
+	current_tick = tick
+	measure_index = song.measure_at(tick) if song != null else 0
+	refresh()
+
+func refresh() -> void:
+	if song == null or strip == null: return
+	page_index = clampi(page_index, 0, pages() - 1)
+	var wanted: Array[int] = []
+	var columns: int = ScoreLayout.columns(size.x)
+	var row_height: float = ScoreLayout.row_height(notation)
+	if mode == "scroll":
+		custom_minimum_size.y = 320
+		# This is a pure projection of source time, never a second elapsed clock.
+		view_offset = layout.timeline_x(current_tick) - size.x * 0.28
+		strip.position = Vector2(-view_offset, 0)
+		for index: int in range(song.measures.size()):
+			if layout.offsets[index] + layout.widths[index] >= view_offset and layout.offsets[index] <= view_offset + size.x:
+				wanted.append(index)
+	else:
+		custom_minimum_size.y = row_height * ScoreLayout.rows(notation)
+		view_offset = 0
+		strip.position = Vector2.ZERO
+		for index: int in range(page_start(), mini(song.measures.size(), page_start() + columns * ScoreLayout.rows(notation))):
+			wanted.append(index)
+	for index: int in tiles.keys():
+		if not wanted.has(index):
+			var old: MeasureCanvas = tiles[index]
+			retired_draws += old.draw_count
+			strip.remove_child(old)
+			old.queue_free()
+			tiles.erase(index)
+	for index: int in wanted:
+		if not tiles.has(index):
+			var tile: MeasureCanvas = MeasureCanvas.new()
+			tile.song = song
+			tile.part = part
+			tile.projection = projection
+			tile.index = index
+			tile.continuous = mode == "scroll"
+			tile.notation = notation
+			tile.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			strip.add_child(tile)
+			tiles[index] = tile
+		var tile: MeasureCanvas = tiles[index]
+		var slot: int = index - page_start()
+		var next_size: Vector2 = Vector2(layout.widths[index], 320) if mode == "scroll" else Vector2(size.x / columns, row_height)
+		if tile.size != next_size:
+			tile.size = next_size
+			tile.queue_redraw()
+		tile.position = Vector2(layout.offsets[index], 0) if mode == "scroll" else Vector2((slot % columns) * size.x / columns, (slot / columns) * row_height)
+	var key: String = "%s:%s:%s:%s" % [mode, page_index, size, current_tick]
+	if key != last_key:
+		last_key = key
+		cursor.queue_redraw()
+
+func engraving_draws() -> int:
+	var total: int = retired_draws
+	for tile: MeasureCanvas in tiles.values(): total += tile.draw_count
+	return total
 
 func _draw() -> void:
 	draw_count += 1
-	if song == null or song.measures.is_empty():
-		return
-	var wide: bool = size.x >= 760
-	custom_minimum_size.y = 320
-	for panel: int in range(2 if wide else 1):
-		var index: int = measure_index + panel
-		if index >= song.measures.size():
-			break
-		var origin: Vector2 = Vector2(panel * size.x / 2.0, 0) if wide else Vector2(0, panel * 330)
-		var width: float = size.x / 2.0 - 16 if wide else size.x - 8
-		draw_measure(index, origin, width)
-
-func text_at(at: Vector2, text: String, font_size: int = 15, color: Color = INK) -> void:
-	draw_string(ui_font, at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
-
-func glyph(at: Vector2, code: int, font_size: int = 32, color: Color = INK) -> void:
-	draw_string(music_font, at, String.chr(code), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
-
-func draw_measure(index: int, origin: Vector2, width: float) -> void:
-	var bar: Dictionary = song.measures[index]
-	var left: float = origin.x + 44
-	var right: float = origin.x + width - 12
-	var top: float = origin.y + 80
-	var tab_top: float = origin.y + 176
-	var start: float = float(bar.start)
-	var finish: float = float(bar.end)
-	text_at(origin + Vector2(8, 22), tr("MEASURE_TITLE") % [index + 1, song.measures.size()], 16)
-	text_at(origin + Vector2(8, 44), tr("STAFF_REFERENCE"), 12, MUTED)
-	for line: int in range(5):
-		draw_line(Vector2(left, top + line * 8), Vector2(right, top + line * 8), MUTED, 1.0, true)
-	glyph(Vector2(origin.x + 9, top + 25), 0xe050, 32)
-	text_at(Vector2(origin.x + 18, top + 53), "8", 10)
-	text_at(Vector2(left + 2, top + 13), str(bar.numerator), 13)
-	text_at(Vector2(left + 2, top + 29), str(bar.denominator), 13)
-	for string_index: int in range(6):
-		var y: float = tab_top + string_index * 21
-		text_at(Vector2(origin.x + 12, y + 5), str(string_index + 1), 13, MUTED)
-		draw_line(Vector2(left, y), Vector2(right, y), MUTED, 1, true)
-	text_at(Vector2(origin.x + 8, tab_top - 17), tr("TAB_PRIMARY"), 13)
-	draw_line(Vector2(right, top), Vector2(right, top + 32), INK, 1.5)
-	draw_line(Vector2(right, tab_top), Vector2(right, tab_top + 105), INK, 1.5)
-	var music_left: float = left + 24
-	var span: float = right - music_left - 12
-	var visible_count: int = 0
-	var beamed: Dictionary = {}
-	var short_counts: Dictionary = {}
-	for candidate: Dictionary in song.notes:
-		if int(candidate.part) == part and candidate.start >= start and candidate.start < finish and candidate.end - candidate.start <= song.division / 2.0:
-			var group: int = floori(float(candidate.start) / song.division)
-			short_counts[group] = int(short_counts.get(group, 0)) + 1
-	for note: Dictionary in song.notes:
-		if int(note.part) != part or float(note.end) <= start or float(note.start) >= finish or note.end <= note.start:
-			continue
-		visible_count += 1
-		if visible_count > 48:
-			text_at(origin + Vector2(12, 312), tr("DENSE_DISPLAY"), 12, ACCENT)
-			break
-		var raw: float = maxf(start, float(note.start))
-		var grid: float = song.division / 4.0
-		var display: float = clampf(round(raw / grid) * grid, start, finish - grid)
-		var x: float = music_left + (display - start) / (finish - start) * span
-		var pitch: int = int(note.pitch) + 12
-		var degree: int = [0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6][pitch % 12]
-		var step: int = (pitch / 12) * 7 + degree
-		var y: float = top + 32 - (step - 37) * 4
-		var active: bool = current_tick >= float(note.start) and current_tick < float(note.end)
-		var color: Color = ACCENT if active else INK
-		if active:
-			draw_circle(Vector2(x + 3, y), 10, Color(0.95, 0.81, 0.65, 0.65))
-		if y >= top - 32 and y <= top + 64:
-			# Ledger lines in octave-transposing guitar treble.
-			for ledger: int in range(1, 12):
-				var below: float = top + 32 + ledger * 8
-				var above: float = top - ledger * 8
-				if y >= below:
-					draw_line(Vector2(x - 4, below), Vector2(x + 12, below), color, 1)
-				if y <= above:
-					draw_line(Vector2(x - 4, above), Vector2(x + 12, above), color, 1)
-			var duration: float = minf(float(note.end), finish) - raw
-			glyph(Vector2(x, y), 0xe0a3 if duration >= song.division * 2 else 0xe0a4, 32, color)
-			if pitch % 12 in [1, 3, 6, 8, 10]:
-				glyph(Vector2(x - 11, y), 0xe262, 26, color)
-			if duration < song.division * 4:
-				draw_line(Vector2(x + 7, y), Vector2(x + 7, y - 26), color, 1.5, true)
-			if duration <= song.division / 2.0:
-				var beat: int = floori(display / song.division)
-				if beamed.has(beat):
-					var previous: Vector2 = beamed[beat]
-					draw_line(previous, Vector2(x + 7, y - 26), color, 3, true)
-				elif int(short_counts.get(beat, 0)) < 2:
-					glyph(Vector2(x + 7, y - 26), 0xe242 if duration <= song.division / 4.0 else 0xe240, 25, color)
-				beamed[beat] = Vector2(x + 7, y - 26)
-			if is_equal_approx(duration / song.division, 1.5) or is_equal_approx(duration / song.division, 3.0):
-				draw_circle(Vector2(x + 13, y - 2), 1.8, color)
-			if float(note.end) > finish or float(note.start) < start:
-				draw_arc(Vector2(x + 13, y + 4), 12, 0.2, PI - 0.2, 20, color, 1.5, true)
-		else:
-			text_at(Vector2(x, top + 16), tr("PITCH_MARKER") % int(note.pitch), 11, ACCENT)
-		if projection.placements.has(note.id):
-			var placement: Dictionary = projection.placements[note.id]
-			var tab_y: float = tab_top + (int(placement.string) - 1) * 21
-			draw_rect(Rect2(x - 3, tab_y - 12, 30, 24), Color("ffffff"))
-			if active:
-				draw_rect(Rect2(x - 4, tab_y - 13, 30, 26), ACCENT, false, 2)
-			text_at(Vector2(x, tab_y + 8), str(placement.fret), 24, color)
-		else:
-			text_at(Vector2(x, tab_top + 31), "!", 22, ACCENT)
-	# Quarter rests are only claimed for completely empty quarter intervals.
-	var pulse: float = start
-	while pulse < finish:
-		var occupied: bool = false
-		for note: Dictionary in song.notes:
-			if int(note.part) == part and float(note.start) < pulse + song.division and float(note.end) > pulse:
-				occupied = true
-				break
-		if not occupied:
-			var x: float = music_left + (pulse - start) / (finish - start) * span
-			glyph(Vector2(x, top + 16), 0xe4e5, 30, MUTED)
-		pulse += song.division
 
 class CursorLayer extends Control:
+	var owner_score: ScoreView
 	var draw_count: int = 0
-	var owner_score: Control
 	func _draw() -> void:
 		draw_count += 1
 		owner_score.draw_cursor(self)
 
 func draw_cursor(surface: Control) -> void:
-	if song == null or song.measures.is_empty(): return
-	var wide: bool = size.x >= 760
+	if song == null: return
 	var bar: Dictionary = song.measures[measure_index]
-	var origin: Vector2 = Vector2.ZERO
-	var width: float = size.x / 2.0 - 16 if wide else size.x - 8
-	var music_left: float = origin.x + 68
-	var span: float = width - 12 - music_left - 12
-	var cursor_x: float = music_left + (current_tick - float(bar.start)) / (float(bar.end) - float(bar.start)) * span
-	surface.draw_line(Vector2(cursor_x, 71), Vector2(cursor_x, 292), Color(0.27, 0.4, 0.85, 0.5), 2, true)
+	if tiles.has(measure_index):
+		var tile: MeasureCanvas = tiles[measure_index]
+		var origin: Vector2 = tile.position + strip.position
+		var x: float = size.x * 0.28 if mode == "scroll" else origin.x + 68 + (current_tick - float(bar.start)) / float(bar.end - bar.start) * (tile.size.x - 92)
+		surface.draw_line(Vector2(x, origin.y + 60), Vector2(x, origin.y + ScoreLayout.row_height(notation) - 22), Color("6b82d8"), 2, true)
+	for note: Dictionary in song.notes:
+		if int(note.part) != part or current_tick < float(note.start) or current_tick >= float(note.end): continue
+		for index: int in tiles.keys():
+			var measure: Dictionary = song.measures[index]
+			if note.end <= measure.start or note.start >= measure.end: continue
+			var tile: MeasureCanvas = tiles[index]
+			var origin: Vector2 = tile.position + strip.position
+			var x: float = origin.x + ScoreLayout.note_x(song, note, index, tile.size.x, mode == "scroll")
+			if notation != "staff" and projection.placements.has(note.id):
+				var placement: Dictionary = projection.placements[note.id]
+				var y: float = origin.y + (176 if notation == "both" else 80) + (int(placement.string) - 1) * 21
+				surface.draw_rect(Rect2(x - 4, y - 14, 32, 28), Color("4665d8"), false, 2)
+			if notation != "tab":
+				var pitch: int = int(note.pitch) + 12
+				var degree: int = [0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6][pitch % 12]
+				var step: int = (pitch / 12) * 7 + degree
+				var y: float = origin.y + 112 - (step - 37) * 4
+				if y >= origin.y + 48 and y <= origin.y + 144:
+					surface.draw_arc(Vector2(x + 3, y), 11, 0, TAU, 20, Color("4665d8"), 2, true)
+
+	if mode == "scroll":
+		# Fixed reading guide; notes disappear behind it as they pass.
+		surface.draw_rect(Rect2(0, 48, 44, 250), Color.WHITE)
+		surface.draw_string(preload("res://assets/fonts/Bravura.otf"), Vector2(8, 105), String.chr(0xe050), HORIZONTAL_ALIGNMENT_LEFT, -1, 32, Color("202d49"))
+		surface.draw_string(ThemeDB.fallback_font, Vector2(17, 132), "8", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("202d49"))
+		for string_index: int in range(6):
+			surface.draw_string(ThemeDB.fallback_font, Vector2(14, 182 + string_index * 21), str(string_index + 1), HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color("79849b"))
