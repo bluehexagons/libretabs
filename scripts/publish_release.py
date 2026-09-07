@@ -58,7 +58,7 @@ def main():
         if not args.notes or not args.notes.is_file():
             parser.error('--notes must name a reviewed release-notes file')
         commands = [['gh', 'release', 'create', 'v' + version, '--repo', args.repository,
-                     '--target', manifest['commit'], '--draft', '--prerelease', '--title', 'LibreTabs ' + version,
+                     '--target', manifest['commit'], '--draft', '--prerelease', '--latest=false', '--title', 'LibreTabs ' + version,
                      '--notes-file', str(args.notes.resolve()), *[str(folder / a['file']) for a in manifest['artifacts']],
                      str(folder / 'manifest.json'), str(folder / 'SHA256SUMS')]]
         if args.execute:

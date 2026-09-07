@@ -100,6 +100,7 @@ def main():
             for source_path in ['LICENSE', 'LICENSES/CC0-1.0.txt', 'third_party/README.md', 'assets/fonts/Bravura-LICENSE.txt', 'assets/fonts/Nunito-LICENSE.txt', 'assets/fonts/Godot-template-LICENSE.txt']:
                 shutil.copy2(stage / source_path, licenses / Path(source_path).name)
             shutil.copy2(notices, licenses / notices.name)
+            shutil.copy2(stage / 'LICENSES/README.md', licenses / 'LICENSE-SCOPE.md')
             (payload / 'BUILD.json').write_text(json.dumps({'version': args.version, 'commit': commit, 'engine': LOCK['version'], 'target': name}, indent=2) + '\n')
             launch = 'Serve index.html over HTTPS with COOP/COEP headers; do not open via file://.' if name == 'web' else f"Extract the whole archive, then run {target['entry']}. No Godot installation is needed."
             (payload / 'README.txt').write_text(f'LibreTabs {args.version} — {name}\n{launch}\nUnsigned evaluation prototype; no installer, account, telemetry or automatic updater.\nImported MIDI stays on your device and is session-only.\nProcedural audio and simplified notation; lessons and musical review remain incomplete.\nFeedback: https://github.com/bluehexagons/libretabs/issues\nSource and release instructions: https://github.com/bluehexagons/libretabs\nLicenses and notices are in licenses/.\n')

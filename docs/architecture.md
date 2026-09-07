@@ -324,7 +324,7 @@ The web export enables Godot's progressive web app support. Offline readiness re
 
 A cached fallback can explain missing app resources only while the worker/fallback remains available. After complete storage eviction or clearing, an offline navigation may produce the browser's own error. Test reconnect/reinstall recovery and explain this limit before the learner relies on offline use. This follows the browser cache lifecycle described by [MDN on offline operation](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Offline_and_background_operation) and [storage eviction](https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria).
 
-The default web export should start without threads for deployment simplicity. Enable thread support or web GDExtension only if profiling proves it necessary; doing so requires cross-origin isolation and constrains third-party resources.
+The evaluated default web export uses threads for audio scheduling, following the M0 performance findings. Release hosting requires cross-origin isolation. The single-thread comparison preset remains an experiment, not a supported fallback. No web GDExtension is enabled.
 
 ## Localization architecture
 
@@ -350,7 +350,7 @@ LibreTabs software, tests, build configuration, and application configuration ar
 
 Permissive dependencies can be included if their license and notices are preserved. File-level/copyleft libraries require a deliberate compatibility review. Every vendored dependency or binary asset gets a row in `third_party/README.md` and an in-app notices entry before merge. The path-level policy lives in `LICENSES/README.md`.
 
-Expected early dependencies are Godot (MIT) and Bravura (SIL OFL 1.1). No MIDI library, UI framework, song corpus, general UI font, SoundFont, or test framework has been selected yet.
+The prototype uses Godot (MIT), Bravura and Nunito (SIL OFL 1.1), and project-authored MIDI exercises. No external MIDI library or SoundFont is bundled. Exact pins and notices are in third_party/README.md.
 
 ## Test architecture
 
