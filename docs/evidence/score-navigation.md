@@ -86,3 +86,41 @@ The owner should evaluate the new menu and next-note readability before further
 layout expansion. Screen-reader tasks and real Safari/Firefox mobile audio/file
 behavior remain unverified. If accessibility requires a second semantic UI, run
 the bounded HTML/Web Audio comparison in decision 0004 before production lessons.
+
+## Landscape touch correction
+
+Owner feedback exposed a gap in the orientation check above: correct logical
+dimensions did not prove that the score was visible or that touch scrolling worked.
+
+The follow-up uses a side column for Menu, Play/Pause and Stop when the viewport
+is landscape, at least 600 pixels wide, and less than 500 pixels high. The score
+receives the full available height. Routine introductory text and shortcuts are
+hidden in that layout; settings, reading help and arrangement details remain in
+Menu. Errors, importing, count-in and completion still appear. Portrait and taller
+desktop windows retain the header and bottom dock.
+
+Decorative containers and buttons pass drag input to their enclosing scroll
+container. Sliders and text fields retain their own input handling. The native
+Godot scroll container supplies drag thresholds, inertia and button cancellation;
+there is no second gesture/timing loop. See the pinned
+[ScrollContainer implementation](https://github.com/godotengine/godot/blob/4.7.2-stable/scene/gui/scroll_container.cpp).
+
+Verification on the same managed Chromium 152.0.7977.8:
+
+- Before, at 844×390 / density 3, the initial viewport contained hints and controls
+  with the entire score below them.
+- After, the score begins at y=12 with a 390-pixel content viewport; staff and all
+  six tab lines are visible immediately. Touch controls remain at least 56 pixels.
+- A real browser touch sequence starting on the score scrolled to the bottom
+  (offset 0→14 at that size). A swipe starting on a menu button scrolled its menu
+  0→282 without opening that section.
+- Manual-page score dragging changed vertical offset 14→366 while page number
+  and source tick remained unchanged.
+- Scene checks cover 640×320, 844×390 and 932×430 at both 100% and 200% text,
+  visible staff/tab geometry, full-height content, reachable controls, error
+  visibility, propagation to the scroll container, and restoring portrait layout.
+  A caught portrait menu-width regression has its own assertion.
+- The baseline now passes 6,085 core and 69 scene checks.
+
+These are browser touch-emulation and layout checks, not physical-phone or new
+audio-performance evidence. The performance and accessibility limits above remain.

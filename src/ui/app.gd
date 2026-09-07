@@ -60,7 +60,13 @@ var drawer_title: Label
 var drawers: Dictionary = {}
 var opened_drawer: String = ""
 var scroll: ScrollContainer
-var root_box: VBoxContainer
+var header: BoxContainer
+var dock_panel: PanelContainer
+var content_margin: MarginContainer
+var view_button: Button
+var landscape: bool = false
+var status_key: String = "START_HINT"
+var root_box: BoxContainer
 var dock: BoxContainer
 var idle_timer: Timer
 var position_updates: int = 0
@@ -84,7 +90,19 @@ func _ready() -> void:
 	idle_timer.timeout.connect(report_state)
 	add_child(idle_timer)
 	idle_timer.start()
+	pass_scroll_input(root_box)
+	pass_scroll_input(drawer)
 	load_demo(0)
+
+func pass_scroll_input(node: Node) -> void:
+	if node is Control and not node is ScrollContainer and not node is Range and not node is LineEdit:
+		if node.mouse_filter == Control.MOUSE_FILTER_STOP: node.mouse_filter = Control.MOUSE_FILTER_PASS
+	for child: Node in node.get_children(): pass_scroll_input(child)
+
+func set_status(key: String) -> void:
+	status_key = key
+	status.text = tr(key)
+	status.visible = not landscape or key not in ["START_HINT", "STATE_PAUSED", "FOLLOW_HINT"]
 
 func label(key: String, font_size: int = 20) -> Label:
 	var item: Label = Label.new()
@@ -103,6 +121,7 @@ func button(key: String, action: Callable) -> Button:
 	item.tooltip_text = tr(key)
 	item.custom_minimum_size.y = 56
 	item.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	item.mouse_filter = Control.MOUSE_FILTER_PASS
 	item.pressed.connect(action)
 	return item
 
@@ -111,6 +130,7 @@ func check(key: String, checked: bool) -> CheckButton:
 	item.text = tr(key)
 	item.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	item.tooltip_text = tr(key)
+	item.mouse_filter = Control.MOUSE_FILTER_PASS
 	item.button_pressed = checked
 	item.custom_minimum_size.y = 56
 	item.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -158,16 +178,19 @@ func build_ui() -> void:
 	palette.set_stylebox("panel", "PopupMenu", surface("ffffff", 8))
 	palette.set_stylebox("hover", "PopupMenu", surface("e1e7f5", 8))
 	theme = palette
-	root_box = VBoxContainer.new()
+	root_box = BoxContainer.new()
+	root_box.vertical = true
 	root_box.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	root_box.add_theme_constant_override("separation", 0)
 	add_child(root_box)
 	scroll = ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	scroll.follow_focus = true
 	root_box.add_child(scroll)
 	var margin: MarginContainer = MarginContainer.new()
+	content_margin = margin
 	margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	for side: String in ["left", "right", "top", "bottom"]:
 		margin.add_theme_constant_override("margin_" + side, 16)
@@ -175,7 +198,7 @@ func build_ui() -> void:
 	panel = VBoxContainer.new()
 	panel.add_theme_constant_override("separation", 12)
 	margin.add_child(panel)
-	var header: HBoxContainer = HBoxContainer.new()
+	header = BoxContainer.new()
 	root_box.add_child(header)
 	root_box.move_child(header, 0)
 	brand_label = label("BRAND", 20)
@@ -194,7 +217,8 @@ func build_ui() -> void:
 	details.add_child(notice_button)
 	next_cue = label("NEXT_END", 20)
 	panel.add_child(next_cue)
-	panel.add_child(button("SCORE_VIEW", func() -> void: toggle_drawer("SCORE_VIEW")))
+	view_button = button("SCORE_VIEW", func() -> void: toggle_drawer("SCORE_VIEW"))
+	panel.add_child(view_button)
 	menu_overlay = Control.new()
 	menu_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(menu_overlay)
@@ -225,6 +249,7 @@ func build_ui() -> void:
 	drawer.hide()
 	menu_overlay.hide()
 	var paper: PanelContainer = PanelContainer.new()
+	paper.mouse_filter = Control.MOUSE_FILTER_PASS
 	paper.add_theme_stylebox_override("panel", surface("ffffff", 8))
 	panel.add_child(paper)
 	score = ScoreView.new()
@@ -253,7 +278,7 @@ func build_ui() -> void:
 	panel.move_child(page_navigation, panel.get_children().find(paper))
 	page_navigation.hide()
 	# Keep play/pause reachable while the score and settings scroll on phones.
-	var dock_panel: PanelContainer = PanelContainer.new()
+	dock_panel = PanelContainer.new()
 	dock_panel.add_theme_stylebox_override("panel", surface("ffffff", 12))
 	root_box.add_child(dock_panel)
 	dock = BoxContainer.new()
@@ -402,7 +427,7 @@ func build_drawers() -> void:
 	scale_picker.item_selected.connect(func(index: int) -> void:
 		var factor: float = [1.0, 1.5, 2.0][index]
 		apply_scale(factor)
-		if not host.save_scale(factor): status.text = tr("STORAGE_SESSION"))
+		if not host.save_scale(factor): set_status("STORAGE_SESSION"))
 	display.add_child(scale_picker)
 	display.add_child(button("PSEUDO", func() -> void:
 		TranslationServer.pseudolocalization_enabled = not TranslationServer.pseudolocalization_enabled
@@ -477,8 +502,8 @@ func update_page_controls() -> void:
 	if page_navigation == null: return
 	page_navigation.visible = score.mode == "pages"
 	page_label.visible = score.mode == "pages"
-	cue.get_parent().visible = score.mode == "scroll"
-	next_cue.visible = score.mode == "scroll"
+	cue.get_parent().visible = score.mode == "scroll" and not landscape
+	next_cue.visible = score.mode == "scroll" and not landscape
 	seek_navigation.visible = score.mode == "scroll"
 	page_label.text = tr("PAGE_NUMBER") % [score.page_index + 1, score.pages()]
 	page_navigation.get_child(0).disabled = score.page_index == 0
@@ -492,10 +517,26 @@ func apply_scale(factor: float) -> void:
 	responsive()
 
 func responsive() -> void:
+	var short_screen: bool = size.x > size.y and size.y < 500 and size.x >= 600
+	if short_screen != landscape:
+		landscape = short_screen
+		# The same controls retain their signals and focus; only their container changes.
+		dock_panel.reparent(header if landscape else root_box)
+		scroll.scroll_vertical = 0
+	root_box.vertical = not landscape
+	header.vertical = landscape
+	header.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN if landscape else Control.SIZE_FILL
+	tempo_button.visible = not landscape
+	brand_label.visible = not landscape and (size.y >= 700 or size.x >= 760)
+	song_title.visible = not landscape
+	view_button.visible = not landscape
+	set_status(status_key)
+	for side: String in ["left", "right", "top", "bottom"]:
+		content_margin.add_theme_constant_override("margin_" + side, 4 if landscape else 16)
+	panel.add_theme_constant_override("separation", 4 if landscape else 12)
 	cue.custom_minimum_size.x = minf(size.x - 64, 200 * theme.default_font_size / 20.0)
-	status.custom_minimum_size.y = (54 if size.x < 760 else 28) * theme.default_font_size / 20.0
-	brand_label.visible = size.y >= 700 or size.x >= 760
-	dock.vertical = size.x < 760
+	status.custom_minimum_size.y = (0 if landscape else (54 if size.x < 760 else 28)) * theme.default_font_size / 20.0
+	dock.vertical = landscape or size.x < 760
 	drawer.position = Vector2(maxf(0, size.x - 560), 0)
 	drawer.size = Vector2(minf(size.x, 560), size.y)
 	adapt_flow(menu_overlay)
@@ -504,14 +545,14 @@ func responsive() -> void:
 	if score != null: score.refresh(); update_page_controls()
 
 func adapt_flow(node: Node) -> void:
-	if node is HFlowContainer or node is HBoxContainer:
+	if node is HFlowContainer or (node is BoxContainer and not node.vertical):
 		for child: Node in node.get_children():
 			if child is Button:
 				child.clip_text = false
 				var font: Font = child.get_theme_font("font")
 				var font_size: int = roundi(float(child.get_meta("base_font_size", 20)) * theme.default_font_size / 20.0)
 				var needed: float = font.get_string_size(child.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + (20 if child.has_meta("compact") else (72 if child is CheckButton else 28))
-				child.custom_minimum_size.x = 120 if child == play_button else minf(needed, maxf(80, (size.x - 56) / 2 if node is HBoxContainer else size.x - 64))
+				child.custom_minimum_size.x = 120 if child == play_button else minf(needed, maxf(80, (size.x - 56) / 2 if node is BoxContainer else size.x - 64))
 	for child: Node in node.get_children(): adapt_flow(child)
 
 func scale_labels(node: Node, factor: float) -> void:
@@ -522,7 +563,7 @@ func scale_labels(node: Node, factor: float) -> void:
 func cancel_import() -> void:
 	importer = null
 	cancel_button.hide()
-	status.text = tr("CANCELLED")
+	set_status("CANCELLED")
 	set_activity(false)
 
 func base_bpm() -> float:
@@ -571,21 +612,21 @@ func load_demo(index: int) -> void:
 
 func _file_picked(name_value: String, bytes: PackedByteArray, error: String) -> void:
 	if not error.is_empty():
-		status.text = tr(error)
+		set_status(error)
 		if drawer.visible: close_menu()
 		return
 	import_name = name_value
 	importer = MidiImport.new(bytes)
 	set_activity(true)
 	cancel_button.show()
-	status.text = tr("IMPORTING")
+	set_status("IMPORTING")
 
 func finish_import() -> void:
 	set_activity(false)
 	cancel_button.hide()
 	if not importer.error.is_empty():
 		if drawer.visible: close_menu()
-		status.text = tr(importer.error)
+		set_status(importer.error)
 		importer = null
 		return
 	var result: SongDocument = importer.document
@@ -597,7 +638,7 @@ func finish_import() -> void:
 			break
 	if first < 0:
 		if drawer.visible: close_menu()
-		status.text = tr("ERR_EMPTY")
+		set_status("ERR_EMPTY")
 		return
 	audio.stop_practice()
 	song = result
@@ -623,7 +664,7 @@ func finish_import() -> void:
 	part_picker.select(first)
 	select_part(first)
 	state = "STATE_READY"
-	status.text = tr("START_HINT")
+	set_status("START_HINT")
 	if drawer.visible: close_menu()
 	adapt_flow(panel)
 
@@ -692,7 +733,7 @@ func pause() -> void:
 		update_position()
 	set_activity(importer != null)
 	if play_button != null: play_button.text = tr("PLAY")
-	if status != null and state == "STATE_PAUSED": status.text = tr("STATE_PAUSED")
+	if status != null and state == "STATE_PAUSED": set_status("STATE_PAUSED")
 
 func stop_practice() -> void:
 	pause()
@@ -724,7 +765,7 @@ func seek_measure(value: float) -> void:
 
 func _suspended() -> void:
 	pause()
-	if status != null: status.text = tr("SUSPENDED")
+	if status != null: set_status("SUSPENDED")
 
 func _process(_delta: float) -> void:
 	if importer != null:
@@ -738,27 +779,27 @@ func _process(_delta: float) -> void:
 		var frame: int = audio.audible_frame()
 		if frame == 0 and Time.get_ticks_msec() - started_msec > 2000:
 			pause()
-			status.text = tr("AUDIO_BLOCKED")
+			set_status("AUDIO_BLOCKED")
 			return
 		source_tick = song.tick_at(audio.transport.seconds_at_frame(frame))
 		if frame < audio.transport.count_frames:
-			status.text = tr("COUNTING")
+			set_status("COUNTING")
 		else:
-			status.text = tr("FOLLOW_HINT")
+			set_status("FOLLOW_HINT")
 		if audio.transport.complete(frame):
 			audio.stop_practice()
 			update_position()
 			set_activity(false)
 			state = "STATE_COMPLETE"
 			play_button.text = tr("PLAY")
-			status.text = tr("STATE_COMPLETE")
+			set_status("STATE_COMPLETE")
 	if audio.playing_practice: update_position()
 
 func report_state() -> void:
 	if song == null: return
 	if host.trace_enabled():
 		var evidence: Dictionary = audio.metrics()
-		evidence.merge({"engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "placed": projection.placed, "eligible": projection.eligible, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
+		evidence.merge({"landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "placed": projection.placed, "eligible": projection.eligible, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
 		host.report(evidence)
 	offline.text = tr("OFFLINE_READY") if host.offline_ready() else tr("OFFLINE_PENDING")
 	if host.offline_ready() and not host.trace_enabled(): idle_timer.stop()

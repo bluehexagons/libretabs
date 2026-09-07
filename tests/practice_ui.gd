@@ -89,6 +89,31 @@ func run() -> void:
 		for _frame: int in range(10): await process_frame
 		check(app.get("root_box").size.x <= width, "200 percent layout fits width %d" % width)
 		check(app.get("drawer").size.x <= width and app.get("drawer_body").size.x <= width, "200 percent menu fits width %d" % width)
+
+	app.call("close_menu")
+	app.call("set_status", "START_HINT")
+	for factor: float in [1.0, 2.0]:
+		app.call("apply_scale", factor)
+		for viewport: Vector2i in [Vector2i(640, 320), Vector2i(844, 390), Vector2i(932, 430)]:
+			root.size = viewport
+			for _frame: int in range(10): await process_frame
+			check(app.get("landscape"), "short landscape layout selected")
+			check(app.get("scroll").size.y >= viewport.y - 1, "landscape score receives full viewport height")
+			check(score.global_position.y <= 16 and score.global_position.y + 281 < viewport.y, "staff and all six tab lines visible without first scrolling")
+			check(app.get("root_box").size.x <= viewport.x and app.get("root_box").size.y <= viewport.y, "landscape shell fits at both text scales")
+			check(app.get("play_button").get_global_rect().end.y <= viewport.y and app.get("menu_button").size.y >= 56, "landscape transport and menu remain usable")
+	app.call("set_status", "ERR_READ")
+	check(app.get("status").visible, "short layout retains actionable errors")
+	app.call("set_status", "START_HINT")
+	var ancestor: Control = score.get_parent()
+	while ancestor != app.get("scroll"):
+		check(ancestor.mouse_filter != Control.MOUSE_FILTER_STOP, "score ancestors pass touch drag to scroll container")
+		ancestor = ancestor.get_parent()
+	root.size = Vector2i(390, 844)
+	for _frame: int in range(10): await process_frame
+	check(not app.get("landscape") and app.get("song_title").visible and app.get("tempo_button").visible, "portrait restores song context and bottom dock")
+	check(app.get("dock_panel").get_parent() == app.get("root_box"), "rotation restores dock parent")
+	check(app.get("menu_button").size.x >= 56 and app.get("menu_button").size.y <= 100, "portrait menu retains a readable shape after rotation")
 	app.queue_free()
 	await process_frame
 	print("Practice UI: %d checks, %d failures" % [checks, failures])

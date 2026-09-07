@@ -74,3 +74,13 @@ platform target changes here.
 Primary references: [Electron architecture/platforms](https://www.electronjs.org/docs/latest/),
 [Tauri architecture](https://v2.tauri.app/concept/architecture/).
 Verification and limits: [score navigation evidence](../evidence/score-navigation.md).
+
+### Landscape refinement
+
+For short landscape windows, the same Menu/Play/Stop controls move beside the
+full-height score. Introductory context and shortcuts no longer precede the music;
+Menu retains settings/help, and actionable statuses remain visible. Decorative
+controls pass touch drags to their enclosing scroll container. Portrait and tall
+desktop layouts retain the bottom dock. This implements the existing responsive
+contract; it does not change manual-page or transport semantics. See the
+landscape touch correction in the evidence record.
