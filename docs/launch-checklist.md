@@ -12,7 +12,7 @@ untested platforms and known limitations visible in release notes. The
 - [ ] Review tracked files/history and notices before publication. Do not include
   private MIDI, credentials or local configuration. Record any newly bundled
   third-party asset's provenance and license.
-- [ ] Choose a fresh `MAJOR.MINOR.PATCH-prototype.NUMBER`, complete its release
+- [x] Choose a fresh `MAJOR.MINOR.PATCH-prototype.NUMBER`, complete its release
   notes, and pass `python3 scripts/verify.py` on the committed source.
 - [ ] Build through the manual release workflow. For device evaluation before
   publication, choose `build-only` or `create-draft`, then download and checksum
@@ -39,7 +39,7 @@ audio device, version, result and known issues. Missing hardware is an open chec
 
 ## Publish and verify links
 
-- [ ] Publish the reviewed GitHub prerelease with its matching notes and checksums,
+- [x] Publish the reviewed GitHub prerelease with its matching notes and checksums,
   either through the workflow's `publish-prerelease` action or by publishing its
   draft in GitHub. Keep a previous approved artifact available for rollback.
 - [ ] Configure the VM and itch destinations, deploy the approved version and

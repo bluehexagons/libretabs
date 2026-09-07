@@ -24,6 +24,10 @@ is available on the managed network. It is not a public launch URL.
 - Manual GitHub Actions build pinned web, Windows x86_64 and Linux x86_64
   packages. Desktop packages use official release templates, not the editor.
   Checksums, notices and reviewed release notes accompany versioned releases.
+- The first public evaluation prerelease,
+  [`0.0.1-prototype.2`](https://github.com/bluehexagons/libretabs/releases/tag/v0.0.1-prototype.2),
+  was built and published by the manual workflow. Its public web, Windows, Linux,
+  manifest, and checksum assets were downloaded and their SHA-256 values verified.
 - The repository is public. The [instructional/download site](https://bluehexagons.github.io/libretabs/)
   now links to live threaded and compatibility players on Pages. Public Chromium
   confirmed both builds render; the threaded build remains isolated on an offline
@@ -39,12 +43,11 @@ See the [release guide](releases.md) for commands and
 
 ## Next work, in order
 
-1. **Prepare one feedback release.** Follow the [launch checklist](launch-checklist.md),
-   record device evidence and known issues, build a new prototype version, and
-   test the exact downloaded packages. Export success alone is not a device pass.
-2. **Publish the remaining channels.** The owner confirms the public identity,
-   publishes the reviewed release, configures the target VM and itch page, then
-   adds their tested URLs to the instructional site.
+1. **Evaluate the published packages.** Follow the [launch checklist](launch-checklist.md),
+   record device evidence and known issues, and test the exact downloaded native
+   packages. Export and checksum success alone are not a device pass.
+2. **Publish the remaining channels.** Configure the target VM and itch page,
+   test each real destination, then add their URLs to the instructional site.
 3. **Gather first-time-user feedback.** Observe choosing music, finding Play,
    following the next string/fret, changing tempo, looping and recovering from
    an unsuitable MIDI file. Record confusing actions without treating this as
