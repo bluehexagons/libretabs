@@ -21,6 +21,7 @@ var hidden_callback: JavaScriptObject
 var web: JavaScriptObject
 var appearance_callback: JavaScriptObject
 var resize_callback: JavaScriptObject
+const DISPLAY_SCALES: Array[float] = [1.0, 1.5, 2.0]
 
 func _ready() -> void:
 	if OS.has_feature("web"):
@@ -85,21 +86,31 @@ func offline_ready() -> bool:
 
 func load_scale() -> float:
 	if web != null:
-		return clampf(float(web.loadScale()), 1.0, 2.0)
+		return validated_scale(web.loadScale())
 	var config: ConfigFile = ConfigFile.new()
 	if config.load(display_path) == OK:
-		var value: Variant = config.get_value("display", "scale", 1.0)
-		if value is float or value is int:
-			return clampf(float(value), 1.0, 2.0)
+		return validated_scale(config.get_value("display", "scale", 1.0))
 	return 1.0
 
 func save_scale(value: float) -> bool:
+	if not is_valid_scale(value): return false
 	if web != null:
 		return bool(web.saveScale(value))
 	var config: ConfigFile = ConfigFile.new()
 	config.load(display_path)
 	config.set_value("display", "scale", value)
 	return config.save(display_path) == OK
+
+static func is_valid_scale(value: Variant) -> bool:
+	if not (value is float or value is int): return false
+	var numeric: float = float(value)
+	if not is_finite(numeric): return false
+	for allowed: float in DISPLAY_SCALES:
+		if is_equal_approx(numeric, allowed): return true
+	return false
+
+static func validated_scale(value: Variant) -> float:
+	return float(value) if is_valid_scale(value) else 1.0
 
 func configure_activity(active: bool) -> void:
 	OS.low_processor_usage_mode = true

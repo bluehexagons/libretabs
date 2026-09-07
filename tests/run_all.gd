@@ -76,12 +76,18 @@ func _initialize() -> void:
 	keys.octave = 3
 	check(keys.release(KEY_A).pitch == 60, "release retains pitch from key down across octave change")
 	check(ScoreLayout.staff_y(64) == 84 and ScoreLayout.tab_y(1) == 176 and ScoreLayout.tab_y(6) == 281, "shared staff and tab centers")
+	check(MidiImport.clean_text("Café لحن.mid") == "Café لحن.mid", "display-name sanitizing preserves ordinary Unicode")
+	check(MidiImport.clean_text("safe\u0007\u0085\u202e\u2066\ufeff.mid") == "safe.mid", "display-name sanitizing removes controls and invisible direction overrides")
 	var bytes: PackedByteArray = fixture("first_melody")
 	var imported: MidiImport = parse(bytes)
 	check(imported.error.is_empty(), "format 1 imports")
 	var song: SongDocument = imported.document
 	check(song.parts.size() == 2 and song.notes.size() == 19, "two pitched parts, nineteen notes")
 	check(song.measures.size() == 4, "four measures")
+	var score_layout: ScoreLayout = ScoreLayout.new()
+	score_layout.build(song)
+	var final_grid_note: Dictionary = {"start": song.measures[0].end - song.division / 4}
+	check(ScoreLayout.note_x(song, final_grid_note, 0, score_layout.widths[0], true) < score_layout.widths[0], "last note grid stays inside its measure barline")
 	for bars: int in range(1, 5):
 		var count: PracticeTransport = PracticeTransport.new()
 		count.configure(song, 0, song.end_tick, 0.5, false, true, false, [], -1, bars)

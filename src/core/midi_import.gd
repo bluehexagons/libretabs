@@ -210,7 +210,9 @@ static func clean_text(value: String) -> String:
 	var result: String = ""
 	for char_index: int in range(mini(value.length(), 80)):
 		var code: int = value.unicode_at(char_index)
-		if code >= 32 and code != 127 and not (code >= 0x202a and code <= 0x202e):
+		var control: bool = code < 32 or (code >= 0x7f and code <= 0x9f)
+		var invisible_format: bool = (code >= 0x200b and code <= 0x200f) or (code >= 0x202a and code <= 0x202e) or (code >= 0x2060 and code <= 0x2069) or code == 0xfeff
+		if not control and not invisible_format:
 			result += String.chr(code)
 	return result
 

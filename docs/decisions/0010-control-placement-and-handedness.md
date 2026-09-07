@@ -25,7 +25,9 @@ while obtaining direction from the active locale.
 The selected control edge is honored when the score fits. On very short landscape
 screens, a top or bottom choice adapts to the preferred hand side. This keeps the
 staff and all six tab lines visible rather than consuming scarce vertical space.
-The settings menu explains this exception.
+On narrow portrait screens, a left or right choice similarly moves below the music
+so it does not consume most of the score width. The settings menu explains these
+adaptive exceptions.
 
 ## Consequences and validation
 

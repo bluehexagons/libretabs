@@ -910,7 +910,7 @@ func _input(event: InputEvent) -> void:
 				toggle_play()
 				get_viewport().set_input_as_handled()
 				return
-			if event.keycode in [KEY_LEFT, KEY_RIGHT] and not focused is Range:
+			if event.keycode in [KEY_LEFT, KEY_RIGHT] and not focused is Range and song != null and importer == null:
 				if score.mode == "pages" and not capture_active: turn_page(-1 if event.keycode == KEY_LEFT else 1)
 				else: seek_measure(clampi(score.measure_index + (-1 if event.keycode == KEY_LEFT else 1), 0, song.measures.size() - 1) + 1)
 				get_viewport().set_input_as_handled()
@@ -1034,6 +1034,8 @@ func responsive() -> void:
 	var effective_position: String = control_position
 	if landscape and control_position in ["top", "bottom"]:
 		effective_position = handedness
+	elif size.x < 600 and size.y >= size.x and control_position in ["left", "right"]:
+		effective_position = "bottom"
 	var side_dock: bool = effective_position in ["left", "right"]
 	controls_on_side = side_dock
 	root_box.vertical = not side_dock
@@ -1041,7 +1043,7 @@ func responsive() -> void:
 	apply_control_layout(effective_position)
 	header_margin.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN if side_dock else Control.SIZE_FILL
 	for side: String in ["left", "right", "top", "bottom"]:
-		header_margin.add_theme_constant_override("margin_" + side, (8 if side in ["left", "right", "top"] else 0) if landscape else (maxi(16, int((size.x - 1280) / 2)) if side in ["left", "right"] else 8))
+		header_margin.add_theme_constant_override("margin_" + side, (8 if side in ["left", "right", "top"] else 0) if side_dock else (maxi(16, int((size.x - 1280) / 2)) if side in ["left", "right"] else 8))
 	# Keep direct speed adjustment at every scale. Reduce auxiliary actions
 	# before taking space away from the score.
 	if menu_tween != null: menu_tween.kill()
@@ -1087,7 +1089,7 @@ func responsive() -> void:
 	reading_tools.visible = not landscape and not compact
 	set_status(status_key)
 	for side: String in ["left", "right", "top", "bottom"]:
-		content_margin.add_theme_constant_override("margin_" + side, 0 if landscape else (maxi(16, int((size.x - 1280) / 2)) if side in ["left", "right"] else (4 if compact else 10)))
+		content_margin.add_theme_constant_override("margin_" + side, 0 if side_dock else (maxi(16, int((size.x - 1280) / 2)) if side in ["left", "right"] else (4 if compact else 10)))
 	panel.add_theme_constant_override("separation", 4 if landscape or compact else 10)
 	cue.custom_minimum_size.x = minf(size.x - 64, 200 * theme.default_font_size / 20.0)
 	status.custom_minimum_size.y = 0

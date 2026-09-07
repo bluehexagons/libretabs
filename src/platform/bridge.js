@@ -48,9 +48,13 @@
       if (new URLSearchParams(location.search).has('trace')) window.libretabsEvidence = JSON.parse(json);
     },
     loadScale() {
-      try { return Number(localStorage.getItem('libretabs.scale.v1')) || 1; } catch (_) { return 1; }
+      try {
+        const value = Number(localStorage.getItem('libretabs.scale.v1'));
+        return [1, 1.5, 2].includes(value) ? value : 1;
+      } catch (_) { return 1; }
     },
     saveScale(value) {
+      if (![1, 1.5, 2].includes(Number(value))) return false;
       try { localStorage.setItem('libretabs.scale.v1', String(value)); return true; } catch (_) { return false; }
     },
     loadAppearance() {

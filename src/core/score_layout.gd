@@ -30,7 +30,7 @@ static func note_x(document: SongDocument, note: Dictionary, index: int, width: 
 	var raw: float = maxf(float(bar.start), float(note.start))
 	var display: float = clampf(round(raw / grid) * grid, bar.start, maxf(bar.start, bar.end - grid))
 	var fraction: float = (display - float(bar.start)) / float(bar.end - bar.start)
-	return 16 + fraction * width if continuous else 68 + fraction * (width - 92)
+	return 16 + fraction * maxf(1, width - 16) if continuous else 68 + fraction * (width - 92)
 
 static func columns(width: float) -> int:
 	return 2 if width >= 820 else 1

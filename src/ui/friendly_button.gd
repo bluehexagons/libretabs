@@ -29,16 +29,26 @@ func _ready() -> void:
 
 func pointer_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		if event.pressed:
-			pointer_down = true
-			press_origin = event.position
-			help_timer.start()
-		else:
-			pointer_down = false
-			help_timer.stop()
+		if event.pressed: begin_pointer(event.position)
+		else: end_pointer()
 	elif event is InputEventMouseMotion and pointer_down:
 		if event.position.distance_to(press_origin) > 14:
 			cancel_pointer_action()
+	elif event is InputEventScreenTouch:
+		if event.pressed: begin_pointer(event.position)
+		else: end_pointer()
+	elif event is InputEventScreenDrag and pointer_down:
+		if event.position.distance_to(press_origin) > 14:
+			cancel_pointer_action()
+
+func begin_pointer(position: Vector2) -> void:
+	pointer_down = true
+	press_origin = position
+	help_timer.start()
+
+func end_pointer() -> void:
+	pointer_down = false
+	help_timer.stop()
 
 func cancel_pointer_action() -> void:
 	if pointer_down: suppress_action = true

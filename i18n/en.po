@@ -608,7 +608,7 @@ msgid "HANDED_RIGHT"
 msgstr "Right-handed layout"
 
 msgid "CONTROL_LAYOUT_HELP"
-msgstr "Handedness mirrors the action order, position label and menu edge. On a very short landscape screen, top or bottom controls move to your preferred hand side so the complete staff and tab remain visible."
+msgstr "Handedness mirrors the action order, position label and menu edge. On very short landscape screens, controls move to your preferred hand side. On narrow portrait screens, side controls move below the music."
 
 msgid "PRINT"
 msgstr "Print your music"
