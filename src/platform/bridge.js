@@ -76,20 +76,18 @@
       return;
     }
     try {
-      for (const key of await caches.keys()) {
-        const cache = await caches.open(key), requests = await cache.keys();
-        const scope = new URL('.', location.href).pathname;
-        const paths = requests.map(request => new URL(request.url).pathname).filter(path => path.startsWith(scope));
-        const required = ['index.html','index.js','index.wasm','index.pck','index.offline.html','index.icon.png','index.apple-touch-icon.png','index.audio.worklet.js','index.audio.position.worklet.js'];
-        if (required.every(file => paths.includes(scope + file))) {
-          // Godot's worker looks up navigation by exact URL. Cache the directory
-          // entry and this bounded query alias as well as index.html.
-          const shell = await cache.match(scope + 'index.html');
-          await cache.put(scope, shell.clone());
-          if (location.href.length < 2048 && requests.length < 16) await cache.put(location.href, shell.clone());
-          window.libretabsHost.offlineReady = true;
-        }
-      }
+      const channel = new MessageChannel();
+      const result = await new Promise(resolve => {
+        const timeout = setTimeout(() => { channel.port1.close(); resolve(null); }, 1500);
+        channel.port1.onmessage = event => {
+          clearTimeout(timeout);
+          channel.port1.close();
+          resolve(event.data);
+        };
+        navigator.serviceWorker.controller.postMessage('libretabs-offline-status', [channel.port2]);
+      });
+      window.libretabsHost.offlineReady = !!result?.ready;
+      window.libretabsHost.release = result?.release || '';
     } catch (_) { /* Offline capability remains unconfirmed. */ }
     if (!window.libretabsHost.offlineReady && readinessChecks < 60) setTimeout(checkOffline, 1000);
   }

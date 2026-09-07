@@ -80,7 +80,7 @@ func _ready() -> void:
 func begin() -> void:
 	begin_stream(true)
 
-func begin_stream(practice: bool) -> void:
+func begin_stream(practice: bool, initial_note: Dictionary = {}) -> void:
 	stop_practice()
 	max_mix_usec = 0
 	steals = 0
@@ -92,6 +92,9 @@ func begin_stream(practice: bool) -> void:
 	playing_practice = practice
 	set_process(not worker_enabled)
 	mutex.lock()
+	if not initial_note.is_empty():
+		live_notes[initial_note.id] = initial_note.duplicate()
+		apply_event({"kind": "on", "note": initial_note})
 	fill()
 	mutex.unlock()
 	if worker_enabled:
@@ -156,9 +159,17 @@ func _worker_loop() -> void:
 func _exit_tree() -> void:
 	stop_practice()
 
+# Capacity is headroom, not a requirement to queue the entire ring buffer.
+# Main-thread comparison builds retain more headroom for frame scheduling.
+static func refill_frames(buffer_capacity: int, available: int, threaded: bool, practice: bool) -> int:
+	var seconds: float = (0.060 if practice else 0.030) if threaded else 0.090
+	var target: int = mini(buffer_capacity, ceili(PracticeTransport.RATE * seconds))
+	return clampi(target - (buffer_capacity - available), 0, available)
+
 func fill() -> void:
 	var started: int = Time.get_ticks_usec()
-	var frames: int = playback.get_frames_available()
+	var available: int = playback.get_frames_available()
+	var frames: int = refill_frames(capacity, available, worker_enabled, playing_practice)
 	if frames <= 0:
 		return
 	var events: Array[Dictionary] = []
@@ -239,7 +250,9 @@ func apply_event(event: Dictionary) -> void:
 			releases[slot] = 0
 
 func live_on(note: Dictionary) -> void:
-	if playback == null: begin_stream(false)
+	if playback == null:
+		begin_stream(false, note)
+		return
 	release_timer.stop()
 	mutex.lock()
 	live_notes[note.id] = note.duplicate()
@@ -263,7 +276,7 @@ func release_live() -> void:
 
 func metrics() -> Dictionary:
 	mutex.lock()
-	var snapshot: Dictionary = {"live_notes": live_notes.size(), "instrument_level": instrument_level, "metronome_level": metronome_level, "active_voices": active_snapshot, "voice_steals": steals_snapshot, "max_mix_ms": mix_snapshot / 1000.0, "underruns": skips_snapshot, "generated_frame": generated_snapshot, "rate": PracticeTransport.RATE, "worker": worker_enabled}
+	var snapshot: Dictionary = {"queued_ms": (capacity - playback.get_frames_available()) * 1000.0 / PracticeTransport.RATE if playback != null else 0.0, "live_notes": live_notes.size(), "instrument_level": instrument_level, "metronome_level": metronome_level, "active_voices": active_snapshot, "voice_steals": steals_snapshot, "max_mix_ms": mix_snapshot / 1000.0, "underruns": skips_snapshot, "generated_frame": generated_snapshot, "rate": PracticeTransport.RATE, "worker": worker_enabled}
 	mutex.unlock()
 	snapshot.merge({"audible_frame": audible_frame(), "device_rate": AudioServer.get_mix_rate(), "output_latency": AudioServer.get_output_latency(), "capacity": capacity, "fps": Engine.get_frames_per_second()})
 	return snapshot

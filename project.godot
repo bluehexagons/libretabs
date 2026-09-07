@@ -28,3 +28,6 @@ locale/fallback="en"
 gdscript/warnings/treat_warnings_as_errors=true
 gdscript/warnings/untyped_declaration=1
 gdscript/warnings/inferred_declaration=1
+
+[editor_plugins]
+enabled=PackedStringArray("res://addons/offline_export/plugin.cfg")

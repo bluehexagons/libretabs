@@ -27,6 +27,11 @@ func _initialize() -> void:
 		check(false, "intentional test-runner failure")
 		quit(1)
 		return
+	check(PracticeAudio.refill_frames(4095, 4095, true, false) == 662, "preview queues 30 ms instead of a full ring")
+	check(PracticeAudio.refill_frames(4095, 3433, true, false) == 0, "full target queues no extra latency")
+	check(PracticeAudio.refill_frames(4095, 3500, true, false) == 67, "preview replenishes only consumed frames")
+	check(PracticeAudio.refill_frames(4095, 4095, true, true) == 1323, "practice retains 60 ms scheduling headroom")
+	check(PracticeAudio.refill_frames(512, 512, false, false) == 512, "small device capacity bounds fill")
 	check(PracticeAudio.mix_levels(0.8, 0.8, 0, 0) == 0, "both mixer sliders at zero are silent")
 	check(PracticeAudio.mix_levels(0.8, 0, 1, 0) > 0.4, "instrument is audible independently of metronome")
 	check(PracticeAudio.mix_levels(0.8, 0.2, 0, 1) == PracticeAudio.mix_levels(0, 0.2, 1, 1), "instrument zero leaves only click")

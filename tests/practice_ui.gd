@@ -169,6 +169,7 @@ func run() -> void:
 	var tick_keyboard: float = app.get("source_tick")
 	app.call("_input", key_down)
 	check(score.live_notes.size() == 1 and player.live_notes.size() == 1, "keyboard note reaches mixer and playhead visual")
+	check(player.active_snapshot == 1, "first preview buffer already contains the pressed note")
 	player.mutex.lock()
 	player.apply_event({"kind": "reset", "note": {}})
 	check(player.ids.has("keyboard:%d" % KEY_Z), "loop reset reconstructs held live voice")

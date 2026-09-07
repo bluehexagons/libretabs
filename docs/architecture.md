@@ -395,3 +395,11 @@ Expected early dependencies are Godot (MIT) and Bravura (SIL OFL 1.1). No MIDI l
 ## Observability without telemetry
 
 Use structured local diagnostic logs with categories and bounded history. A **Copy diagnostic report** action may include version, platform capability flags, sanitized parser error codes, and performance counters, but never MIDI content, filenames, lesson history, or machine identifiers unless separately selected by the user.
+
+The evaluation web export replaces the generated worker through the project-owned
+`addons/offline_export` editor plugin. It hashes and caches the complete release
+before activation, disables unused navigation preload, and pins each document's
+asset requests to its release across updates. See
+[decision 0007](decisions/0007-offline-release-updates.md). Keyboard preview seeds
+its first audio block with the pressed note; threaded queue targets are 30 ms for
+preview and 60 ms for practice, independently of ring capacity and device latency.

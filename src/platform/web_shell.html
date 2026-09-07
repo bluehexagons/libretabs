@@ -200,17 +200,49 @@ const engine = new Engine(GODOT_CONFIG);
 		}
 	} else {
 		setStatusMode('progress');
-		// Complete initial worker registration before exposing any import controls.
+		// Resolve the offline release before exposing any import controls.
 		// A denied/timed-out registration still permits an online-only session.
 		async function prepareOfflineBoot() {
-			if (!GODOT_CONFIG.serviceWorker || !('serviceWorker' in navigator) || navigator.serviceWorker.controller) return true;
+			if (!GODOT_CONFIG.serviceWorker || !('serviceWorker' in navigator)) return true;
+			const before = navigator.serviceWorker.controller;
+			let active = before;
+			let newerRelease = false;
 			try {
 				await Promise.race([
-					engine.installServiceWorker().then(() => navigator.serviceWorker.ready),
+					(async () => {
+						const registration = await navigator.serviceWorker.register(GODOT_CONFIG.serviceWorker, {updateViaCache: 'none'});
+						await registration.update();
+						const installing = registration.installing;
+						if (installing) await new Promise(resolve => {
+							const settled = () => {
+								if (['activated', 'redundant'].includes(installing.state)) {
+									installing.removeEventListener('statechange', settled);
+									resolve();
+								}
+							};
+							installing.addEventListener('statechange', settled);
+							settled();
+						});
+						await navigator.serviceWorker.ready;
+						active = registration.active;
+						// Activation can precede controllerchange delivery, or happen
+						// between this document's navigation and this boot script.
+						if (navigator.serviceWorker.controller) await new Promise(resolve => {
+							const channel = new MessageChannel();
+							const timeout = setTimeout(() => { channel.port1.close(); resolve(); }, 500);
+							channel.port1.onmessage = event => {
+								clearTimeout(timeout);
+								channel.port1.close();
+								newerRelease = !!event.data.activeRelease && event.data.release !== event.data.activeRelease;
+								resolve();
+							};
+							navigator.serviceWorker.controller.postMessage('libretabs-offline-status', [channel.port2]);
+						});
+					})(),
 					new Promise((_, reject) => setTimeout(() => reject(new Error('Offline setup timed out')), 5000)),
 				]);
-				if (!navigator.serviceWorker.controller) { location.reload(); return false; }
-			} catch (_) { return true; }
+				if (!before || active !== before || navigator.serviceWorker.controller !== before || newerRelease) { location.reload(); return false; }
+			} catch (_) { /* Keep the last complete release usable offline or on a slow connection. */ }
 			return true;
 		}
 		prepareOfflineBoot().then((ready) => {
