@@ -393,6 +393,8 @@ func run() -> void:
 		else:
 			check(app.get("dock_margin").get_parent() == app.get("root_box"), "horizontal controls remain a distinct player bar: " + position)
 			check(app.get("dock_margin").get_index() == (1 if position == "top" else app.get("root_box").get_child_count() - 1), "player bar reaches the selected edge: " + position)
+		var dock_rect: Rect2 = app.get("dock_panel").get_global_rect()
+		check(dock_rect.size.x >= 140 and dock_rect.size.y >= 64 and dock_rect.position.x >= 0 and dock_rect.position.y >= 0 and dock_rect.end.x <= root.size.x and dock_rect.end.y <= root.size.y, "complete player bar remains on screen after selecting: " + position)
 		check(app.get("scroll").vertical_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "each desktop control edge keeps ordinary play free of main scrolling: " + position)
 	app.set("control_position", "bottom")
 	app.set("handedness", "left")

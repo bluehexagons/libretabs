@@ -1036,9 +1036,9 @@ func responsive() -> void:
 		effective_position = handedness
 	var side_dock: bool = effective_position in ["left", "right"]
 	controls_on_side = side_dock
-	apply_control_layout(effective_position)
 	root_box.vertical = not side_dock
 	header.vertical = side_dock
+	apply_control_layout(effective_position)
 	header_margin.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN if side_dock else Control.SIZE_FILL
 	for side: String in ["left", "right", "top", "bottom"]:
 		header_margin.add_theme_constant_override("margin_" + side, (8 if side in ["left", "right", "top"] else 0) if landscape else (maxi(16, int((size.x - 1280) / 2)) if side in ["left", "right"] else 8))
