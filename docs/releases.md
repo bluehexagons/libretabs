@@ -55,15 +55,19 @@ Before dispatch, copy `release/notes/TEMPLATE.md` to
 `release/notes/0.0.1-prototype.1.md`, edit it with actual changes/test evidence, and
 commit. Supply the same version in the workflow exactly as written: use
 `MAJOR.MINOR.PATCH-prototype.NUMBER`, with no leading `v`. The first prepared
-candidate in this repository is `0.0.1-prototype.1`. Leave `draft_release` off for
-a build rehearsal. Enable it to upload a **draft prerelease**, never a public
-release. A duplicate tag or output version is refused. There are no automatic live
-itch.io or website deployments and no deployment secrets in the build job.
+candidate in this repository is `0.0.1-prototype.1`. Choose `build-only` for a
+seven-day CI artifact, `create-draft` for a private GitHub draft, or
+`publish-prerelease` to publish publicly after the build and uploads pass. Public
+mode first uploads every file to a draft and only then publishes it, so an upload
+failure leaves a private draft rather than a partial public release. A duplicate
+tag or output version is refused. There are no automatic live itch.io or website
+deployments and no deployment secrets in the build job.
 
-The release job's contents-write token is used only for the optional draft upload;
-checkout does not persist credentials. Public pull requests have read-only verification
-and cannot enter the dispatch-only release workflow. Never use `pull_request_target`
-to execute contributed code with release credentials.
+The release job's contents-write token is used only for an explicitly selected
+GitHub draft or public prerelease; checkout does not persist credentials. Public
+pull requests have read-only verification and cannot enter the dispatch-only release
+workflow. Never use `pull_request_target` to execute contributed code with release
+credentials.
 
 ## Review and publish the same packages
 
@@ -82,6 +86,7 @@ The publishing helper validates package checksums and prints commands by default
 python3 scripts/publish_release.py github dist/0.0.1-prototype.1 \
   --notes release/notes/0.0.1-prototype.1.md
 # Add --execute to create a draft prerelease after authenticating gh.
+# Add --publish --execute to stage the assets, then publish the prerelease.
 python3 scripts/publish_release.py itch dist/0.0.1-prototype.1 \
   --itch-project YOUR_ACCOUNT/YOUR_PROJECT
 # Add --execute after reviewing the destination; this updates itch channels.

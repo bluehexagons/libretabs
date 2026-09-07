@@ -70,6 +70,7 @@ def main():
     parser.add_argument('--repository', default='bluehexagons/libretabs')
     parser.add_argument('--itch-project', help='owner/project')
     parser.add_argument('--notes', type=Path)
+    parser.add_argument('--publish', action='store_true', help='publish the staged GitHub prerelease after every asset uploads')
     parser.add_argument('--execute', action='store_true')
     args = parser.parse_args()
     folder = args.directory.resolve()
@@ -82,12 +83,18 @@ def main():
                      '--target', manifest['commit'], '--draft', '--prerelease', '--latest=false', '--title', 'LibreTabs ' + version,
                      '--notes-file', str(args.notes.resolve()), *[str(folder / a['file']) for a in manifest['artifacts']],
                      str(folder / 'manifest.json'), str(folder / 'SHA256SUMS')]]
+        if args.publish:
+            # Upload into a draft first so a failed asset upload is never public.
+            commands.append(['gh', 'release', 'edit', 'v' + version, '--repo', args.repository,
+                             '--draft=false', '--prerelease', '--latest=false'])
         if args.execute:
             # Never attach files to an existing tag/release with an ambiguous source.
             result = subprocess.run(['gh', 'api', f'repos/{args.repository}/git/ref/tags/v{version}'], capture_output=True, text=True)
             if result.returncode == 0 or '404' not in result.stderr:
                 parser.error('Tag exists or its absence cannot be confirmed; choose a new version')
     else:
+        if args.publish:
+            parser.error('--publish applies only to GitHub releases')
         if not args.itch_project or not re.fullmatch(r'[A-Za-z0-9_-]+/[A-Za-z0-9_-]+', args.itch_project):
             parser.error('--itch-project must be owner/project')
         targets = json.loads((ROOT / 'release/targets.json').read_text())

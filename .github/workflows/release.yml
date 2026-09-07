@@ -8,10 +8,15 @@ on:
         description: 'MAJOR.MINOR.PATCH-prototype.NUMBER (no leading v)'
         required: true
         type: string
-      draft_release:
-        description: 'Also upload a draft GitHub prerelease (never publishes it)'
-        default: false
-        type: boolean
+      release_action:
+        description: 'After a successful build'
+        required: true
+        default: build-only
+        type: choice
+        options:
+          - build-only
+          - create-draft
+          - publish-prerelease
 permissions:
   contents: read
 concurrency:
@@ -49,8 +54,13 @@ jobs:
           if-no-files-found: error
           compression-level: 0
           retention-days: 7
-      - name: Create draft prerelease
-        if: inputs.draft_release
+      - name: Create draft GitHub prerelease
+        if: inputs.release_action == 'create-draft'
         env:
           GH_TOKEN: ${{ github.token }}
         run: python3 scripts/publish_release.py github "dist/$RELEASE_VERSION" --notes "release/notes/$RELEASE_VERSION.md" --execute
+      - name: Publish GitHub prerelease
+        if: inputs.release_action == 'publish-prerelease'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/publish_release.py github "dist/$RELEASE_VERSION" --notes "release/notes/$RELEASE_VERSION.md" --publish --execute

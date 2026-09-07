@@ -79,6 +79,34 @@ class ReleaseTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 publish.verified_manifest(folder)
 
+    def test_github_publish_stages_a_draft_before_making_it_public(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            folder = Path(temporary)
+            version = '0.1.0-prototype.1'
+            archive = folder / f'libretabs-{version}-web.zip'
+            archive.write_bytes(b'archive')
+            manifest = {'version': version, 'commit': 'a' * 40, 'artifacts': [
+                {'target': 'web', 'file': archive.name, 'bytes': archive.stat().st_size,
+                 'sha256': release.digest(archive)}
+            ]}
+            (folder / 'manifest.json').write_text(json.dumps(manifest))
+            (folder / 'SHA256SUMS').write_text(''.join(
+                f'{release.digest(folder / name)}  {name}\n'
+                for name in [archive.name, 'manifest.json']
+            ))
+            notes = folder / 'notes.md'
+            notes.write_text('reviewed notes')
+            with patch('sys.argv', ['publish_release.py', 'github', str(folder),
+                                     '--notes', str(notes), '--publish']), \
+                    patch('builtins.print') as printed:
+                publish.main()
+            commands = [call.args[0] for call in printed.call_args_list]
+            self.assertEqual(len(commands), 2)
+            self.assertIn('release create', commands[0])
+            self.assertIn('--draft', commands[0])
+            self.assertIn('release edit', commands[1])
+            self.assertIn('--draft=false', commands[1])
+
     def test_all_targets_have_presets_and_release_templates(self):
         presets = (ROOT / 'export_presets.cfg').read_text()
         for target in release.TARGETS.values():

@@ -16,9 +16,11 @@ Third-party actions use current stable commit pins and monthly update proposals.
 Build scripts snapshot tracked committed files into an isolated project; stamp its
 version; use native release templates; attach complete license notices, source
 commit, toolchain identity and SHA-256 checksums; and refuse output replacement.
-Publishing reuses those packages. GitHub upload creates a draft prerelease, while
-itch.io and website promotion require explicit operator actions. Public visibility,
-store configuration and release publication are separate from build preparation.
+Publishing reuses those packages. The manual workflow can retain only its temporary
+artifact, create a draft GitHub prerelease, or publish a GitHub prerelease after all
+checks and asset uploads pass. Public mode stages the complete release as a draft
+before changing its visibility. The dispatch choice is the operator's explicit
+publication action. itch.io and website promotion remain separate operator actions.
 
 Retain threaded web audio for the evaluated performance characteristics. Website
 hosting must provide HTTPS and COOP/COEP; itch.io must enable SharedArrayBuffer and
