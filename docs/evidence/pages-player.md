@@ -27,6 +27,10 @@ tree. Pages CI exports into the runner temporary directory so Godot does not sca
 generated icons as project resources. Site unit tests cover required files,
 separate links/scopes, symlink rejection and missing-worker rejection. The full
 baseline covers service-worker interrupted/update/offline behavior separately.
+The first workflow attempt exposed that Godot validates both debug and release
+single-thread templates even for a release export. The locked web target now
+extracts both official single-thread templates as well as the threaded release
+template; no unpinned toolchain input was added.
 
 This does not establish physical Safari/iOS/Android compatibility, audible latency,
 long-session timing, storage eviction recovery or an actual Pages deployment.
