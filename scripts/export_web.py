@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0
-"""Build a VM deployment from staged source without requiring .git metadata."""
+"""Build a web deployment from staged source without requiring .git metadata."""
+import argparse
 import os
 from pathlib import Path
 import shutil
@@ -10,6 +11,11 @@ from release import LOCK, ROOT, TARGETS, run, validate_payload
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--preset', choices=('Web', 'Web single-thread comparison'),
+                        default='Web')
+    parser.add_argument('--output', type=Path, default=ROOT / 'exports/web')
+    args = parser.parse_args()
     engine = os.environ.get('GODOT')
     if not engine:
         directory = Path.home() / '.cache/libretabs-toolchain'
@@ -17,11 +23,13 @@ def main():
         engine = str(directory / Path(LOCK['editor']['file']).stem)
     if run([engine, '--version']) != LOCK['version']:
         raise SystemExit('GODOT must match release/toolchain.json')
-    output = ROOT / 'exports/web'
+    output = args.output.resolve()
+    if output == ROOT:
+        parser.error('--output cannot replace the project directory')
     output.mkdir(parents=True, exist_ok=False)
     run([sys.executable, ROOT / 'scripts/prepare_export.py'])
     run([engine, '--headless', '--path', ROOT, '--import'])
-    run([engine, '--headless', '--path', ROOT, '--export-release', 'Web', output / 'index.html'])
+    run([engine, '--headless', '--path', ROOT, '--export-release', args.preset, output / 'index.html'])
     validate_payload(output, TARGETS['web'])
     licenses = output / 'licenses'
     licenses.mkdir()

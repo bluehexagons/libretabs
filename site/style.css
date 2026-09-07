@@ -23,6 +23,8 @@ p { max-width: 68ch; margin: .8rem 0; }
 .actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-block: 1.75rem; }
 .button { display: inline-flex; align-items: center; gap: .8rem; min-height: 48px; padding: .7rem 1.1rem; border-radius: .65rem; background: var(--accent); color: var(--paper); font-weight: 650; text-decoration: none; }
 .button:hover { box-shadow: 0 0 0 3px var(--line); }
+.text-action { display: inline-flex; min-height: 44px; align-items: center; font-weight: 650; }
+.compatibility:empty { display: none; }
 .steps { padding-left: 1.6rem; margin: 0; }
 .steps li { padding: .75rem 0 .75rem .5rem; }
 .steps li::marker { color: var(--accent); font-weight: 800; }

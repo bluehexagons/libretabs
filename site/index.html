@@ -12,19 +12,21 @@
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
-  <header><a class="brand" href="./">LibreTabs</a><nav aria-label="Main"><a href="#start">Get started</a><a href="#guide">Practice guide</a><a href="#feedback">Feedback</a></nav></header>
+  <header><a class="brand" href="./">LibreTabs</a><nav aria-label="Main">{{PAGES_NAV}}<a href="#start">Get started</a><a href="#guide">Practice guide</a><a href="#feedback">Feedback</a></nav></header>
   <main id="main">
     <section id="start">
       <p class="eyebrow">Evaluation prototype · free and open source</p>
       <h1>Guitar tabs and sheet music, together.</h1>
       <p class="intro">Practice built-in exercises or open a MIDI file from your device. Hear the notes, slow the music down, and repeat a passage.</p>
       <div class="actions">
+        {{PAGES_PLAYER_LINK}}
         <a class="button" href="https://github.com/bluehexagons/libretabs/releases">Prototype downloads <span aria-hidden="true">↗</span></a>
         {{PLAYER_LINK}}
         {{ITCH_LINK}}
       </div>
       <p>Windows and Linux x86_64 downloads run offline after extraction, without installing Godot. Packages appear on the releases page when published; check each release’s tested platforms and known issues.</p>
       <p>{{HOSTING_NOTE}}</p>
+      {{COMPATIBILITY_NOTE}}
     </section>
     <section id="guide">
       <h2>Your first practice session</h2>
@@ -45,6 +47,7 @@
       <details><summary>My MIDI file does not sound or look like the original</summary><p>MIDI describes notes and timing, not a recording or a finished guitar score. Choose a pitched part; drum-only files cannot produce a guitar part. The prototype simplifies notation and proposes guitar placement. Check its warnings and try another part or a simpler file.</p></details>
       <details><summary>How do I use a download offline?</summary><p>Extract the entire Windows or Linux ZIP before opening the application. No Godot installation is needed. The web ZIP is for hosting; opening its index.html file directly will not run the player. Browser offline use requires a completed first download and retained site storage.</p></details>
       <details><summary>A new version isn’t appearing</summary><p>Finish your session before reloading: imported songs must be reopened afterward. Reconnect to the internet and reload the player. If it still shows an old version, report the URL and version. Clearing site data removes saved preferences and offline files, so avoid it as a first step.</p></details>
+      <details><summary>The player says my browser is missing a required feature</summary><p>Try the compatibility player linked near the top of this guide. It does not use browser threads and may work on devices where the main player cannot start, though audio response and performance can be less consistent.</p></details>
     </section>
     <section id="feedback">
       <h2>What to expect—and what to report</h2>

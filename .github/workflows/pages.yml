@@ -16,18 +16,27 @@ jobs:
   build:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Test and build the instructional site
+      - name: Test site tooling
+        run: python3 -m unittest discover -s tests -p test_site.py
+      - name: Install locked Godot and web templates
+        run: python3 scripts/install_toolchain.py --directory "$RUNNER_TEMP/godot" --templates --targets web
+      - name: Export threaded and compatibility players
+        run: |
+          python3 scripts/export_web.py --preset Web --output "$RUNNER_TEMP/pages-threaded"
+          python3 scripts/export_web.py --preset 'Web single-thread comparison' --output "$RUNNER_TEMP/pages-compatible"
+      - name: Build instructional site with players
         env:
           PLAYER_URL: ${{ vars.PLAYER_URL }}
           ITCH_URL: ${{ vars.ITCH_URL }}
         run: |
-          python3 -m unittest discover -s tests -p test_site.py
-          python3 scripts/build_site.py
+          python3 scripts/build_site.py \
+            --threaded-player "$RUNNER_TEMP/pages-threaded" \
+            --compatibility-player "$RUNNER_TEMP/pages-compatible"
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: dist/site

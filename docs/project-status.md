@@ -24,9 +24,9 @@ is available on the managed network. It is not a public launch URL.
 - Manual GitHub Actions build pinned web, Windows x86_64 and Linux x86_64
   packages. Desktop packages use official release templates, not the editor.
   Checksums, notices and reviewed release notes accompany versioned releases.
-- The repository is public and the [instructional/download site](https://bluehexagons.github.io/libretabs/)
-  is live on GitHub Pages. Its HTML and stylesheet return successful HTTPS responses.
-  Private vulnerability reporting is enabled in GitHub.
+- The repository is public. The [instructional/download site](https://bluehexagons.github.io/libretabs/)
+  is live, and its manual workflow now builds threaded and compatibility players
+  for Pages. Private vulnerability reporting is enabled in GitHub.
 - The Godot infra-tools manifest and export script support explicit VM
   deployments. The real staged export was tested locally. The production VM,
   public domain, DNS/TLS and actual target deployment remain to be configured.

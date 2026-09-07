@@ -324,7 +324,12 @@ The web export enables Godot's progressive web app support. Offline readiness re
 
 A cached fallback can explain missing app resources only while the worker/fallback remains available. After complete storage eviction or clearing, an offline navigation may produce the browser's own error. Test reconnect/reinstall recovery and explain this limit before the learner relies on offline use. This follows the browser cache lifecycle described by [MDN on offline operation](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Offline_and_background_operation) and [storage eviction](https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria).
 
-The evaluated default web export uses threads for audio scheduling, following the M0 performance findings. Release hosting requires cross-origin isolation. The single-thread comparison preset remains an experiment, not a supported fallback. No web GDExtension is enabled.
+The evaluated default web export uses threads for audio scheduling, following the
+M0 performance findings. Hosts may supply cross-origin isolation headers directly;
+on GitHub Pages, the PWA service worker adds them to cached responses before boot.
+The single-thread preset is a supported Pages compatibility fallback with weaker
+performance/audio expectations, not the reference timing build. No web GDExtension
+is enabled. See [decision 0013](decisions/0013-pages-player.md).
 
 ## Localization architecture
 

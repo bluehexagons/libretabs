@@ -22,8 +22,9 @@ store configuration and release publication are separate from build preparation.
 
 Retain threaded web audio for the evaluated performance characteristics. Website
 hosting must provide HTTPS and COOP/COEP; itch.io must enable SharedArrayBuffer and
-pass actual iframe tests. GitHub Pages is not an initial threaded hosting target.
-No unreviewed isolation shim or automatic unthreaded fallback is introduced.
+pass actual iframe tests. This initially excluded GitHub Pages as a threaded
+hosting target. The owner later approved the reviewed PWA isolation approach and
+compatibility fallback in [decision 0013](0013-pages-player.md).
 
 Prototype releases are explicitly incomplete: packaging does not satisfy the
 six-lesson, musical review, latency or device evidence gates. See the

@@ -59,6 +59,10 @@ class ReleaseTests(unittest.TestCase):
             self.assertIn('name="' + target['preset'] + '"', presets)
             self.assertIn(target['entry'], target['required'])
             self.assertTrue(target['templates'])
+        shell = (ROOT / 'src/platform/web_shell.html').read_text()
+        self.assertNotIn('Service worker already exists.', shell)
+        self.assertIn('window.location.reload();', shell)
+        self.assertIn('progressive_web_app/ensure_cross_origin_isolation_headers=true', presets)
 
     def test_promotion_rejects_inconsistent_inventory_and_symlinks(self):
         for case in ('extra', 'missing', 'duplicate', 'malformed', 'symlink', 'boolean_size', 'unknown_target'):

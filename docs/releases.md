@@ -2,9 +2,9 @@
 
 The initial distribution targets are browser play on itch.io and an owner-operated
 HTTPS website, plus unsigned Windows/Linux x86_64 downloads on GitHub Releases and
-itch.io. GitHub hosts source and downloadable web ZIPs; GitHub Pages hosts the
-instructional/download site, linking to the VM and itch players once configured.
-The threaded player needs controllable COOP/COEP headers.
+itch.io. GitHub hosts source and downloadable web ZIPs. GitHub Pages hosts the
+guide, a threaded PWA player, and a single-thread compatibility player. Direct
+hosts still provide the most robust COOP/COEP setup for the threaded build.
 Android and additional architectures remain future targets, not advertised support.
 
 ## Build inputs
@@ -137,24 +137,30 @@ force an update that discards the open song.
 
 ## GitHub Pages instructional site
 
-The public guide is live at [bluehexagons.github.io/libretabs](https://bluehexagons.github.io/libretabs/).
+The public guide is live at [bluehexagons.github.io/libretabs](https://bluehexagons.github.io/libretabs/),
+with the primary player at [`/play/`](https://bluehexagons.github.io/libretabs/play/).
 The owner has made the repository public and configured Pages with GitHub Actions.
 
-The site in `site/` has no Godot, JavaScript, npm, external fonts or analytics.
-It covers first practice, downloads, privacy, prototype limitations and feedback.
-Only its generated HTML, CSS and `.nojekyll` are uploaded; the repository itself
-is never used as a Pages artifact. Relative asset links support `/libretabs/`.
+The guide source in `site/` has no JavaScript, npm, external fonts or analytics.
+The generated Pages artifact contains only that guide and two validated Godot
+exports. The repository itself is never published as the artifact. Relative asset
+links and separate service-worker scopes support `/libretabs/play/` and
+`/libretabs/play-compatible/`.
 
-1. Keep **Settings → Pages → Source → GitHub Actions** selected. Pages publishes
-   only the generated guide. The earlier private-repository plan restriction is
-   resolved; site updates use the workflow below.
+1. Keep **Settings → Pages → Source → GitHub Actions** selected. The earlier
+   private-repository plan restriction is resolved; site updates use the workflow below.
 2. Optionally set repository Actions variables `PLAYER_URL` and `ITCH_URL` to
    the final public HTTPS destinations. Empty values omit those buttons. Do not
    put credentials in URLs. Updating variables requires publishing the site again.
 3. Run **Actions → Publish project guide** on main. Leave **publish** enabled to
-   deploy, or turn it off for a one-day preview artifact without Pages activation.
-   The workflow is manual and does not run any Godot exports.
-4. Check the deployment URL, keyboard navigation and phone layout. Until a release
+   deploy, or turn it off for a one-day preview artifact. The manual workflow
+   downloads the locked engine/templates and exports threaded and single-thread
+   players; ordinary pushes do not pay this build cost.
+4. In a fresh browser profile, open `/play/`; allow the one-time reload, verify
+   `crossOriginIsolated`, audio and offline restart. Test `/play-compatible/` on
+   browsers that cannot start the primary player. The fallback avoids threads but
+   can have lower performance or less consistent audio response.
+5. Check the guide URL, keyboard navigation and phone layout. Until a release
    is published, the downloads link leads to the release listing without promising
    a package exists. Prereleases are linked through the listing, not `/latest`.
 

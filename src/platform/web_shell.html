@@ -169,29 +169,22 @@ const engine = new Engine(GODOT_CONFIG);
 
 	if (missing.length !== 0) {
 		if (GODOT_CONFIG['serviceWorker'] && GODOT_CONFIG['ensureCrossOriginIsolationHeaders'] && 'serviceWorker' in navigator) {
-			let serviceWorkerRegistrationPromise;
-			try {
-				serviceWorkerRegistrationPromise = navigator.serviceWorker.getRegistration();
-			} catch (err) {
-				serviceWorkerRegistrationPromise = Promise.reject(new Error('Service worker registration failed.'));
-			}
-			// There's a chance that installing the service worker would fix the issue
-			Promise.race([
-				serviceWorkerRegistrationPromise.then((registration) => {
-					if (registration != null) {
-						return Promise.reject(new Error('Service worker already exists.'));
-					}
-					return registration;
-				}).then(() => engine.installServiceWorker()),
-				// For some reason, `getRegistration()` can stall
-				new Promise((resolve) => {
-					setTimeout(() => resolve(), 2000);
-				}),
-			]).then(() => {
-				// Reload if there was no error.
+			setStatusMode('progress');
+			(async () => {
+				let registration = await navigator.serviceWorker.getRegistration();
+				if (registration == null) {
+					await engine.installServiceWorker();
+					registration = await navigator.serviceWorker.ready;
+				} else {
+					await registration.update();
+					await navigator.serviceWorker.ready;
+				}
+				// Registration can become active before controllerchange reaches this
+				// document. Reload once either way; a controlled navigation receives
+				// the isolation headers and will take the normal boot branch.
 				window.location.reload();
-			}).catch((err) => {
-				console.error('Error while registering service worker:', err);
+			})().catch((err) => {
+				displayFailureNotice('Could not prepare the browser player. Reload this page or try the compatibility player.\n' + err.message);
 			});
 		} else {
 			// Display the message as usual

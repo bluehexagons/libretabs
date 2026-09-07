@@ -1,12 +1,13 @@
 # 0012: Instructional Pages site and VM player hosting
 
-Status: accepted by owner, 2026-09-07.
+Status: superseded in part by decision 0013, 2026-09-07. The VM deployment remains accepted.
 
 GitHub Pages hosts a lightweight guide, download links and project information.
 It links to the owner-operated VM player and itch.io once their public URLs are
-available. The threaded Godot export stays on hosts that can supply COOP/COEP;
-we do not add an isolation service-worker workaround or change the audio build
-to fit Pages. Site deployment is manual and independent of package builds.
+available. The original decision kept the threaded Godot export on hosts that
+supply COOP/COEP directly. [Decision 0013](0013-pages-player.md) now also publishes
+it on Pages using the existing PWA service worker, with a single-thread fallback.
+Site deployment remains manual and independent of release-package builds.
 
 LibreTabs declares an additive infra-tools version-1 `godot-web` component. Its
 application-owned export script pins the engine/templates and works from staged
