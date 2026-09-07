@@ -8,6 +8,7 @@ var suppress_action: bool = false
 var help_timer: Timer
 var feedback: Tween
 var press_origin: Vector2
+var pointer_down: bool = false
 
 func _ready() -> void:
 	help_timer = Timer.new()
@@ -19,15 +20,34 @@ func _ready() -> void:
 		help_requested.emit(tooltip_text))
 	button_down.connect(func() -> void:
 		suppress_action = false
-		press_origin = get_global_mouse_position()
-		help_timer.start()
 		animate_feedback(Vector2(0.97, 0.97)))
 	button_up.connect(func() -> void: help_timer.stop(); animate_feedback(Vector2.ONE))
-	mouse_exited.connect(func() -> void: help_timer.stop(); animate_feedback(Vector2.ONE))
+	mouse_exited.connect(cancel_pointer_action)
 	visibility_changed.connect(func() -> void:
-		if not is_visible_in_tree(): help_timer.stop(); scale = Vector2.ONE)
-	gui_input.connect(func(event: InputEvent) -> void:
-		if event is InputEventMouseMotion and get_global_mouse_position().distance_to(press_origin) > 14: help_timer.stop())
+		if not is_visible_in_tree(): cancel_pointer_action(); pointer_down = false; scale = Vector2.ONE)
+	gui_input.connect(pointer_input)
+
+func pointer_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			pointer_down = true
+			press_origin = event.position
+			help_timer.start()
+		else:
+			pointer_down = false
+			help_timer.stop()
+	elif event is InputEventMouseMotion and pointer_down:
+		if event.position.distance_to(press_origin) > 14:
+			cancel_pointer_action()
+
+func cancel_pointer_action() -> void:
+	if pointer_down: suppress_action = true
+	help_timer.stop()
+	animate_feedback(Vector2.ONE)
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_SCROLL_BEGIN or what == NOTIFICATION_APPLICATION_FOCUS_OUT:
+		if is_instance_valid(help_timer): cancel_pointer_action()
 
 func animate_feedback(target: Vector2) -> void:
 	if feedback != null: feedback.kill()

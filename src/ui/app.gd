@@ -358,6 +358,7 @@ func build_ui() -> void:
 	seek.min_value = 0
 	seek.max_value = 1
 	seek.step = 1
+	seek.scrollable = false
 	seek.custom_minimum_size = Vector2(40, 48)
 	seek.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	seek.focus_mode = Control.FOCUS_ALL
@@ -429,6 +430,8 @@ func build_ui() -> void:
 	quick_row.add_child(speed_control)
 	speed_control.add_child(tempo_button)
 	main_speed = HSlider.new()
+	main_speed.scrollable = false
+	main_speed.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	main_speed.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	main_speed.min_value = 25
 	main_speed.max_value = 200
@@ -706,6 +709,8 @@ func volume_control(parent: Node, key: String, initial: float, instrument: bool)
 	caption.text = tr(key) % roundi(initial)
 	parent.add_child(caption)
 	var slider: HSlider = HSlider.new()
+	slider.scrollable = false
+	slider.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	slider.min_value = 0
 	slider.max_value = 100
 	slider.step = 1
@@ -1413,11 +1418,11 @@ func seek_keyboard_step() -> float:
 	# In 6/8, the learner follows a dotted-quarter pulse; otherwise use the
 	# meter's written beat. Page keys retain the faster measure navigation.
 	if int(bar.numerator) == 6 and int(bar.denominator) == 8:
-		return song.division * 3
+		return song.division * 1.5
 	return song.division * 4.0 / int(bar.denominator)
 
 func begin_seek_drag() -> void:
-	if seek_dragging or song == null or importer == null:
+	if seek_dragging or song == null or importer != null:
 		return
 	seek_dragging = true
 	seek_resume_playback = audio.playing_practice
@@ -1451,6 +1456,9 @@ func seek_tick(value: float) -> void:
 	update_position()
 
 func _suspended() -> void:
+	seek_dragging = false
+	seek_resume_playback = false
+	speed_dragging = false
 	pause()
 	# A hidden browser may throttle the preview-release timer. Stop its worker now.
 	audio.stop_practice()
