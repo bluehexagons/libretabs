@@ -1,12 +1,14 @@
 # Technical architecture
 
-Status: planning baseline accepted; validate the stack in milestone M0
+Status: M0 evaluation build available; final stack decision remains open
 
 ## Decision summary
 
 Build a vertical technical spike in Godot 4.7 using typed GDScript and the Compatibility renderer. Keep the musical core free of scene/node dependencies and keep platform APIs behind adapters. Continue with Godot only if the spike passes the explicit gate below.
 
 This is a measured choice rather than a claim that Godot is the easiest notation platform. Godot gives LibreTabs one codebase for a highly custom, responsive practice surface, procedural audio, headless logic tests, and web/desktop exports. Its weak points are browser file exchange, notation libraries, accessibility semantics, and MIDI synthesis. A conventional TypeScript/Tauri app has stronger ready-made notation and Web Audio libraries, so it remains the fallback if the spike shows we would be fighting the engine.
+
+The prototype implements a deliberately smaller subset, documented in [decision 0002](decisions/0002-m0-evaluation-build.md). Its threaded web/audio-worker mitigation and conservative import limits apply to evaluation; the contracts below remain the intended production destination. See [measured evidence](evidence/m0-prototype.md).
 
 ## M0 Godot decision gate
 

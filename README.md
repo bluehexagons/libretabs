@@ -8,6 +8,21 @@ The project is stewarded by **bluehexagons**.
 
 LibreTabs is a non-commercial project: bluehexagons does not plan paid editions, subscriptions, advertising, or data monetization. This is a project policy, not a restriction on downstream users; the Apache-2.0 license continues to permit commercial use and redistribution.
 
+## Evaluate the prototype
+
+[Open the managed browser preview](https://192.168.0.44:8443/games/agent/libretabs-prototype/) from a device that can reach the managed network. Press **Play**, try **Speed 60%**, then loop measures 1–2. The sample menu includes tempo changes, overlapping notes, and a dense chord. You can also open a local format-0/1 MIDI file (prototype limit: 256 KiB). Imports stay on your device.
+
+This is a technical evaluation: procedural sound, basic guitar placement, and a simplified staff reference. It does not yet include the six lessons or reviewed musical arrangements. See [evaluation steps, measured results, and remaining gates](docs/evidence/m0-prototype.md).
+
+With the pinned Godot `4.7.2.stable.official.ed1daf0bf` installed:
+
+```bash
+python3 scripts/verify.py
+godot --path .
+```
+
+For an unsigned, self-contained Linux x86_64 development package, run `python3 scripts/build_linux.py`; unzip `exports/libretabs-linux-x86_64.zip` and run `libretabs/run.sh`. Web export uses the `Web` preset and requires cross-origin isolation headers; use the [managed publication workflow](docs/agentic-development.md).
+
 ## Proposed MVP
 
 - Learn guitar and notation vocabulary through six short built-in lessons.
@@ -41,7 +56,7 @@ See [Architecture](docs/architecture.md) for the decision gate and design.
 
 ## Current environment
 
-The managed development check on 2026-09-02 reported Godot 4.7.2 with desktop and web export templates, Node 24, Go 1.27, and a working C toolchain. There is no application implementation yet.
+The managed development check on 2026-09-02 reported Godot 4.7.2 with desktop and web export templates, Node 24, Go 1.27, and a working C toolchain. The M0 evaluation prototype now runs in Godot 4.7.2. The current VM has web templates; Linux evaluation packaging includes the installed engine because its native export template is absent.
 
 ## Project values
 

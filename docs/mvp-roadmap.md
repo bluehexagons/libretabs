@@ -1,12 +1,14 @@
 # MVP roadmap
 
-Status: planning baseline accepted, updated 2026-09-05
+Status: M0 evaluation prototype available, updated 2026-09-07
 
 ## Delivery strategy
 
 Build thin end-to-end slices in dependency order. Do not implement a full parser, engraver, synthesizer, and curriculum in isolation and hope they integrate later. Every milestone ends with something a person can run and a recorded set of fixtures/measurements.
 
 Effort labels are relative: **S** is a focused issue, **M** is a multi-issue slice, and **L** must be split before assignment. They are not calendar promises.
+
+The [M0 evidence record](evidence/m0-prototype.md) distinguishes implemented experiments from remaining exit gates. A runnable slice does not mark all M0 issues complete.
 
 ## M0 — prove Godot or change course
 

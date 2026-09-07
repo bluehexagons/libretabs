@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: Apache-2.0
+name: Prototype checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  core:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Install pinned Godot
+        shell: bash
+        run: |
+          curl --fail --location --retry 3 --output /tmp/godot.zip https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          echo 'cadd3204e728a35d3f13adb7fd0d7902636b79f6b95c40c265eb73b6c35329e4  /tmp/godot.zip' | sha256sum --check
+          mkdir -p /tmp/libretabs-godot
+          unzip /tmp/godot.zip -d /tmp/libretabs-godot
+          chmod +x /tmp/libretabs-godot/Godot_v4.7.2-stable_linux.x86_64
+          echo 'GODOT=/tmp/libretabs-godot/Godot_v4.7.2-stable_linux.x86_64' >> "$GITHUB_ENV"
+      - name: Verify
+        run: python3 scripts/verify.py
+      - name: Fixtures reproduce exactly
+        run: |
+          python3 scripts/generate_fixtures.py
+          python3 scripts/prepare_export.py
+          git diff --exit-code

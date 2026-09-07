@@ -229,3 +229,7 @@ Engineering measures:
 ## Pre-alpha owner checkpoint
 
 1. Reconfirm LibreTabs after a proper name-clearance pass, or select a replacement before publishing the alpha and registering package/store identities.
+
+## Current evaluation scope
+
+The runnable M0 prototype is a feasibility slice, not the completed product described above. [Decision 0002](decisions/0002-m0-evaluation-build.md) records its smaller import, notation, and audio contracts; [M0 evidence](evidence/m0-prototype.md) provides evaluation steps and next gates.

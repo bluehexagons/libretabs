@@ -20,12 +20,13 @@ The first implementation work is M0. It proves or rejects Godot before productio
 - Keep controls keyboard-operable, responsive, translatable, and understandable without prior music vocabulary.
 - Record new dependencies and assets in `third_party/README.md` before merge.
 
-Run the checks applicable to the change. Documentation-only work currently uses `git diff --check` and link/consistency review: there is no `project.godot` yet. After M0.1 creates the project, the baseline includes:
+Run the checks applicable to the change. Documentation-only work uses `git diff --check` and link/consistency review. The local and CI baseline for implementation is:
 
 ```bash
-godot --headless --path . --editor --quit-after 1
-git diff --check
+python3 scripts/verify.py
 ```
+
+This verifies the pinned engine, imports the project, checks the editor, runs the headless algorithm suite and deliberate-failure check, boots the app, and checks whitespace. See [M0 evidence](docs/evidence/m0-prototype.md) for the current limitations.
 
 Web-visible work must also use the managed export and browser workflow in `docs/agentic-development.md`.
 

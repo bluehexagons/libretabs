@@ -1,0 +1,275 @@
+msgid ""
+msgstr ""
+"Language: en\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "BRAND"
+msgstr "LIBRETABS  /  PRACTICE LAB"
+
+msgid "HEADLINE"
+msgstr "One phrase at a time."
+
+msgid "INTRO"
+msgstr "Try an original melody, or open a MIDI file from your device. Listen first, then follow the string and fret numbers."
+
+msgid "OPEN"
+msgstr "Open MIDI file"
+
+msgid "DEMOS"
+msgstr "Choose a built-in example"
+
+msgid "DEMO_0"
+msgstr "First melody"
+
+msgid "DEMO_1"
+msgstr "Changing tempo"
+
+msgid "DEMO_2"
+msgstr "Two parts · format 0"
+
+msgid "DEMO_3"
+msgstr "Held notes & warnings"
+
+msgid "RELOAD_DEMO"
+msgstr "Reload example"
+
+msgid "CANCEL"
+msgstr "Cancel import"
+
+msgid "CANCELLED"
+msgstr "Import cancelled. Your previous song is still available."
+
+msgid "STATE_READY"
+msgstr "Ready. Press Play to hear the example."
+
+msgid "STATE_PAUSED"
+msgstr "Paused"
+
+msgid "STATE_PLAYING"
+msgstr "Playing"
+
+msgid "STATE_COMPLETE"
+msgstr "Finished. Try slowing down or looping a few measures."
+
+msgid "PART_PICKER"
+msgstr "Choose the part to practice"
+
+msgid "PART_VALUE"
+msgstr "Part %d · %s · channel %d"
+
+msgid "ARRANGEMENT"
+msgstr "Basic practice arrangement"
+
+msgid "COVERAGE"
+msgstr "Basic tab: %d of %d notes placed · E standard · guitar treble"
+
+msgid "PROTOTYPE_LIMIT"
+msgstr "Evaluation prototype: basic low-fret placement and rounded rhythm display, not a reviewed arrangement. Audio keeps the original timing. Controllers, pitch bend and drums are not reproduced yet."
+
+msgid "PLAY"
+msgstr "Play"
+
+msgid "PAUSE"
+msgstr "Pause"
+
+msgid "STOP"
+msgstr "Stop"
+
+msgid "SPEED"
+msgstr "Playback speed; pitch stays the same"
+
+msgid "SPEED_VALUE"
+msgstr "Speed %d%%"
+
+msgid "COUNT_IN"
+msgstr "Count in"
+
+msgid "METRONOME"
+msgstr "Beat click"
+
+msgid "MUTE_MY_PART"
+msgstr "Mute my part"
+
+msgid "SEEK"
+msgstr "Seek to a measure"
+
+msgid "LOOP"
+msgstr "Loop measures"
+
+msgid "FROM"
+msgstr "From"
+
+msgid "THROUGH"
+msgstr "Through"
+
+msgid "LOOP_RANGE"
+msgstr "Choose the first and last measure to repeat"
+
+msgid "CUE_READY"
+msgstr "Your next note appears here."
+
+msgid "CUE_REST"
+msgstr "Rest — listen and wait for the next note."
+
+msgid "CUE_NOTE"
+msgstr "String %d · fret %d"
+
+msgid "CUE_UNPLACED"
+msgstr "This note has no tab placement. Listen for it in the source audio."
+
+msgid "MEASURE_TITLE"
+msgstr "MEASURE %d / %d"
+
+msgid "STAFF_REFERENCE"
+msgstr "Staff · pitch and rhythm reference"
+
+msgid "TAB_PRIMARY"
+msgstr "TAB"
+
+msgid "DENSE_DISPLAY"
+msgstr "! Dense measure: some symbols are hidden."
+
+msgid "BACKING"
+msgstr "Other parts"
+
+msgid "BACKING_VALUE"
+msgstr "Hear part %d"
+
+msgid "HELP_TITLE"
+msgstr "How to follow along"
+
+msgid "HELP_TEXT"
+msgstr "Tab is a map of the six guitar strings. The top line is string 1, the thinnest and highest-sounding string. A number tells you which fret to press; 0 means play the open string. The staff above is a pitch and rhythm reference: higher notes appear higher up. Guitar treble is written one octave above its sound. A measure is a small group of beats between vertical lines. The moving line follows the original timing; outlined notes show what is sounding. A ! marks a note this basic arrangement could not place. Use From and Through to repeat a short section."
+
+msgid "SCALE"
+msgstr "Control text size"
+
+msgid "SCALE_VALUE"
+msgstr "Controls %d%%"
+
+msgid "PSEUDO"
+msgstr "Test long labels"
+
+msgid "NOTICES"
+msgstr "Licenses & notices"
+
+msgid "STORAGE_SESSION"
+msgstr "Display setting changed for this session. Browser storage is unavailable."
+
+msgid "OFFLINE_PENDING"
+msgstr "Web offline readiness is not confirmed yet. On desktop the prototype works locally."
+
+msgid "OFFLINE_READY"
+msgstr "This prototype is cached for offline use. Clearing site storage requires reconnecting."
+
+msgid "IMPORTING"
+msgstr "Reading MIDI safely…"
+
+msgid "LOADED"
+msgstr "Loaded: %s"
+
+msgid "SUSPENDED"
+msgstr "Practice paused when the browser was hidden. Press Play to resume."
+
+msgid "COUNTING"
+msgstr "Count with the beat, then begin."
+
+msgid "PLAYING_STATUS"
+msgstr "Playing: %s"
+
+msgid "ERR_SIZE"
+msgstr "This prototype accepts files up to 256 KiB. Try a shorter MIDI file."
+
+msgid "ERR_HEADER"
+msgstr "This is not a Standard MIDI File. Choose a .mid or .midi file."
+
+msgid "ERR_LENGTH"
+msgstr "The MIDI file is truncated or a data length is invalid. Try another file."
+
+msgid "ERR_FORMAT"
+msgstr "Format 2 is not supported. Choose a format 0 or 1 MIDI file."
+
+msgid "ERR_DIVISION"
+msgstr "SMPTE or zero time division is not supported. Choose a ticks-per-quarter MIDI file."
+
+msgid "ERR_TRACKS"
+msgstr "The track structure is invalid or exceeds the prototype limit of 32 tracks."
+
+msgid "ERR_END"
+msgstr "A MIDI track has no valid end marker. Try another file."
+
+msgid "ERR_VLQ"
+msgstr "A MIDI timing value is too long. Try another file."
+
+msgid "ERR_RUNNING"
+msgstr "A MIDI event is missing its status byte. Try another file."
+
+msgid "ERR_LIMIT"
+msgstr "This file exceeds a prototype limit: 8,192 events, 2,048 notes, 256 measures or 10 minutes. Try a shorter file."
+
+msgid "ERR_TEMPO"
+msgstr "The MIDI file contains a zero tempo. Try another file."
+
+msgid "ERR_METER"
+msgstr "This MIDI meter is invalid or outside the prototype limits."
+
+msgid "ERR_PORT"
+msgstr "Multiple MIDI ports are not supported by this prototype."
+
+msgid "ERR_DATA"
+msgstr "A MIDI event contains invalid data bytes. Try another file."
+
+msgid "ERR_STATUS"
+msgstr "This file uses an unsupported MIDI status. Try another file."
+
+msgid "ERR_READ"
+msgstr "The file could not be read. Choose it again."
+
+msgid "ERR_EMPTY"
+msgstr "There are no pitched parts to practice. Try another file or a built-in example."
+
+msgid "WARN_KEY"
+msgstr "Imported key signatures are preserved, but this basic display uses explicit sharps."
+
+msgid "WARN_CONTROLLERS"
+msgstr "Some source controllers or system messages are preserved but not played by this prototype."
+
+msgid "WARN_PARTIAL"
+msgstr "A meter change creates a partial measure."
+
+msgid "WARN_MAP"
+msgstr "Timing metadata was recovered from a non-conductor track."
+
+msgid "WARN_OVERLAP"
+msgstr "Repeated pitches overlap; note endings use a deterministic oldest-first pairing."
+
+msgid "WARN_PAIR"
+msgstr "A missing or extra note ending was recovered. Check this passage by ear."
+
+msgid "WARN_ZERO"
+msgstr "Zero-duration events are preserved but excluded from tab and audio."
+
+msgid "WARN_SHARED"
+msgstr "Some parts share a MIDI channel; controller fidelity is deferred."
+
+msgid "WARN_UNPLACED"
+msgstr "! Unplaced notes remain audible. No source pitch was dropped, shifted or shortened."
+
+msgid "WARN_TEXT"
+msgstr "Non-ASCII MIDI metadata is preserved in the source; this prototype shows a safe label approximation."
+
+msgid "DEMO_4"
+msgstr "Dense chord · sound test"
+
+msgid "UPDATE"
+msgstr "Check for a prototype update"
+
+msgid "PITCH_MARKER"
+msgstr "MIDI %d"
+
+msgid "AUDIO_BLOCKED"
+msgstr "Audio has not started. Check the browser sound permission, then press Play again."
+
+msgid "UNNAMED_PART"
+msgstr "Pitched part"

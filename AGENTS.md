@@ -4,7 +4,7 @@ These instructions apply to the entire LibreTabs repository.
 
 ## Read first
 
-Before changing behavior, read `docs/product.md`, `docs/architecture.md`, and `docs/mvp-roadmap.md`. The repository is currently in the planning/spike stage. Implement only the bounded issue requested; do not silently expand MVP scope.
+Before changing behavior, read `docs/product.md`, `docs/architecture.md`, and `docs/mvp-roadmap.md`. The repository currently contains an M0 evaluation prototype; the final stack gate remains open. Implement only the bounded issue requested; do not silently expand MVP scope.
 
 Product priority is: a first-time learner can understand the next action, musical timing is correct, transformations are honest, and all target platforms remain viable.
 
@@ -39,8 +39,7 @@ Product priority is: a first-time learner can understand the next action, musica
 The planned baseline gates are:
 
 ```bash
-godot --headless --path . --editor --quit-after 1
-# Add the repository's headless test command when the test harness lands.
+python3 scripts/verify.py
 ```
 
 For a web-facing slice, also export and validate through the managed workflow described in `docs/agentic-development.md`.

@@ -123,19 +123,19 @@ For a small team, one agent may take several roles sequentially. A feature autho
 
 ## Baseline verification
 
-At repository bootstrap, add a single documented test entry point and keep CI/local commands identical. There is currently no `project.godot`; until bootstrap lands, documentation-only changes use `git diff --check` and link/consistency review. Once a project exists, the Godot sanity check is:
+The local and CI baseline is:
 
 ```bash
-godot --headless --path . --editor --quit-after 1
+python3 scripts/verify.py
 ```
 
-Target commands once the harness exists should resemble:
+It requires the pinned Godot 4.7.2 engine and includes import, editor, algorithm tests, a deliberate assertion failure, runtime boot, and whitespace checks. For a focused algorithm run after import:
 
 ```bash
 godot --headless --path . --script res://tests/run_all.gd
-godot --headless --path . --editor --quit-after 1
-git diff --check
 ```
+
+Documentation-only changes use `git diff --check` and link/consistency review. The original one-frame editor check aborts the asynchronous scan on this build; the verifier waits for import and allows 60 editor frames.
 
 Do not hide engine warnings to obtain a green result. Treat new parser errors, orphan nodes/resources, leaked objects, and type warnings as failures unless a documented upstream issue makes that impossible.
 
@@ -147,7 +147,7 @@ The September 2026 planning inventory reported desktop and web templates; rechec
 
 ```bash
 infra-tools agent doctor --capability development --json
-godot --headless --path . --editor --quit-after 1
+python3 scripts/verify.py
 infra-web publish godot --json
 ```
 
@@ -158,7 +158,7 @@ infra-web url GAME
 infra-web doctor GAME
 ```
 
-The returned HTTPS URL is authoritative. Do not start a public plain-HTTP server, edit Nginx/UFW, invent a local public URL, or bypass certificate checks. The normal web build should be static and non-threaded initially. If threads or web GDExtensions are later required, the deployment and every external asset need compatible cross-origin-isolation headers.
+The returned HTTPS URL is authoritative. Do not start a public plain-HTTP server, edit Nginx/UFW, invent a local public URL, or bypass certificate checks. The evaluation `Web` preset is threaded following the measured mitigation in [decision 0002](decisions/0002-m0-evaluation-build.md). It remains static; the deployment must supply compatible cross-origin-isolation headers. The non-threaded comparison preset remains available.
 
 Browser verification must at minimum check:
 
