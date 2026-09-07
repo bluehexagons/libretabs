@@ -375,10 +375,46 @@ func run() -> void:
 	check(app.get("dock_panel").global_position.x >= 12 and app.get("dock_panel").get_global_rect().end.x <= 378 and app.get("dock_panel").get_global_rect().end.y <= 832, "portrait transport card is inset from every screen edge")
 	check(app.get("speed_control").get_child(0) == app.get("speed_unit_layout") and app.get("speed_unit_layout").get_child_count() == 2, "tempo display and slider form one control unit")
 	check(app.get("tempo_button").icon != null and "%" in app.get("tempo_button").text, "tempo unit keeps an icon and numeric display")
+	check(app.get("control_position_picker").selected == 3 and app.get("handedness_picker").selected == 1, "bottom and right hand are the default reach settings")
 	for regular_height: int in [600, 650, 700, 800]:
 		root.size = Vector2i(1280, regular_height)
 		for _frame: int in range(10): await process_frame
 		check(app.get("scroll").vertical_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED and app.get("scroll").scroll_vertical == 0, "regular play fits without main scrolling at 1280x%d" % regular_height)
+	root.size = Vector2i(1280, 800)
+	for position: String in ["left", "top", "right", "bottom"]:
+		app.set("control_position", position)
+		app.call("responsive")
+		for _frame: int in range(10): await process_frame
+		var side: bool = position in ["left", "right"]
+		check(app.get("controls_on_side") == side and app.get("root_box").vertical == not side, "control edge changes the shell axis: " + position)
+		if side:
+			check(app.get("dock_margin").get_parent() == app.get("header"), "side controls share the reachable action rail: " + position)
+			check(app.get("header_margin").get_index() == (0 if position == "left" else app.get("root_box").get_child_count() - 1), "side action rail reaches the selected edge: " + position)
+		else:
+			check(app.get("dock_margin").get_parent() == app.get("root_box"), "horizontal controls remain a distinct player bar: " + position)
+			check(app.get("dock_margin").get_index() == (1 if position == "top" else app.get("root_box").get_child_count() - 1), "player bar reaches the selected edge: " + position)
+		check(app.get("scroll").vertical_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "each desktop control edge keeps ordinary play free of main scrolling: " + position)
+	app.set("control_position", "bottom")
+	app.set("handedness", "left")
+	app.call("responsive")
+	for _frame: int in range(10): await process_frame
+	check(app.get("header_actions").get_child(0) == app.get("menu_button") and app.get("seek_navigation").get_child(0) == app.get("seek_label"), "left-handed layout mirrors header and seek reach order")
+	check(app.get("dock").get_child(0) == app.get("quick_row") and app.get("transport_row").get_child(0) == app.get("metro_button"), "left-handed layout mirrors both player-control groups")
+	app.call("toggle_drawer", "DISPLAY")
+	for _frame: int in range(20): await process_frame
+	check(app.get("drawer").position.x == 0 and app.get("control_layout_note").text.contains("preferred hand side"), "left-handed menu edge and adaptive layout explanation are visible")
+	app.call("close_menu")
+	root.size = Vector2i(640, 320)
+	app.set("control_position", "top")
+	app.call("responsive")
+	for _frame: int in range(10): await process_frame
+	check(app.get("controls_on_side") and app.get("header_margin").get_index() == 0, "short landscape adapts top controls to the preferred left side")
+	check(app.get("scroll").vertical_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED and score.global_position.y <= 16, "adaptive side keeps the full-height music surface")
+	app.set("handedness", "right")
+	app.call("responsive")
+	for _frame: int in range(10): await process_frame
+	check(app.get("header_margin").get_index() == app.get("root_box").get_child_count() - 1, "right-handed short landscape adapts controls to the right side")
+	app.set("control_position", "bottom")
 	root.size = Vector2i(390, 844)
 	for _frame: int in range(10): await process_frame
 
@@ -422,6 +458,9 @@ func run() -> void:
 	check(settings.save_scale(1.5) and settings.save_appearance("dark"), "native settings save")
 	check(settings.load_scale() == 1.5 and settings.load_appearance() == "dark", "appearance save preserves text size")
 	check(settings.save_scale(2.0) and settings.load_appearance() == "dark", "text size save preserves appearance")
+	check(settings.save_display_choice("control_position", "left") and settings.load_display_choice("control_position", ["left", "top", "right", "bottom"], "bottom") == "left", "control edge persists through the display adapter")
+	check(settings.save_display_choice("handedness", "left") and settings.load_display_choice("handedness", ["left", "right"], "right") == "left", "handedness persists through the display adapter")
+	check(settings.load_display_choice("control_position", ["top", "right", "bottom"], "bottom") == "bottom", "removed or invalid control choices recover to a safe default")
 	check(not settings.save_appearance("invalid"), "unknown appearance rejected")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(settings.display_path))
 	settings.free()

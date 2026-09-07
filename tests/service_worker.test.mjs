@@ -6,6 +6,7 @@ import {webcrypto, createHash} from 'node:crypto';
 import vm from 'node:vm';
 
 const source = readFileSync(new URL('../src/platform/service_worker.js', import.meta.url), 'utf8');
+const bridge = readFileSync(new URL('../src/platform/bridge.js', import.meta.url), 'utf8');
 const scope = 'https://example.test/game/';
 const url = name => scope + name;
 class Cache {
@@ -59,6 +60,13 @@ function worker(env, release) {
     },
   };
 }
+
+test('web bridge admits every persistent reach setting', () => {
+  for (const key of ['control_position', 'handedness']) {
+    assert.match(bridge, new RegExp(`loadDisplayChoice[\\s\\S]*${key}`));
+    assert.match(bridge, new RegExp(`saveDisplayChoice[\\s\\S]*${key}`));
+  }
+});
 
 test('complete update refreshes navigation, preserves open documents and works offline', async () => {
   const env = environment();

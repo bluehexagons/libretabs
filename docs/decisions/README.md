@@ -15,3 +15,5 @@ Copy `0000-template.md` to the next four-digit number and a short kebab-case tit
 [0005 — Godot and appearance](0005-godot-and-appearance.md) records the owner’s stack choice, deferred screen-reader integration, responsive polish and saved light/dark preferences.
 
 [0006 — Player preferences and keyboard notes](0006-player-preferences-and-keyboard.md) defines the minimal navigation, device-preference schema, configurable count-in and both computer-keyboard layouts.
+
+[0010 — Control placement and handed layouts](0010-control-placement-and-handedness.md) defines persistent player-control edges, mirrored reach order and the short-landscape adaptation that preserves the complete score.

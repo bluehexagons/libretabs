@@ -6,6 +6,11 @@ Status: planning baseline accepted, updated 2026-09-05
 
 LibreTabs helps a complete beginner understand what to do with a guitar, open a suitable MIDI song, see one honest playable arrangement, and practice a small section at a comfortable speed. It works offline after installation or a completed first web download and does not require an account.
 
+Player controls can sit on any screen edge. A handed layout mirrors the main
+actions and menu edge for comfortable reach while holding an instrument; very
+short landscape screens keep the full score visible by adapting a top or bottom
+choice to the preferred hand side.
+
 The app is a teacher-shaped practice aid, not a replacement for a teacher, a full notation editor, or an automatic arranger that claims every MIDI file is playable.
 
 ## Primary learner

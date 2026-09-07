@@ -583,6 +583,33 @@ msgstr "Rounded · Nunito"
 msgid "FONT_SIMPLE"
 msgstr "Simple · standard"
 
+msgid "CONTROL_POSITION"
+msgstr "Player control location"
+
+msgid "CONTROL_LEFT"
+msgstr "Left side"
+
+msgid "CONTROL_TOP"
+msgstr "Top"
+
+msgid "CONTROL_RIGHT"
+msgstr "Right side"
+
+msgid "CONTROL_BOTTOM"
+msgstr "Bottom"
+
+msgid "HANDEDNESS"
+msgstr "Preferred hand"
+
+msgid "HANDED_LEFT"
+msgstr "Left-handed layout"
+
+msgid "HANDED_RIGHT"
+msgstr "Right-handed layout"
+
+msgid "CONTROL_LAYOUT_HELP"
+msgstr "Handedness mirrors the action order, position label and menu edge. On a very short landscape screen, top or bottom controls move to your preferred hand side so the complete staff and tab remain visible."
+
 msgid "PRINT"
 msgstr "Print your music"
 
