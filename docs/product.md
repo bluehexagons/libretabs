@@ -191,6 +191,7 @@ Advanced settings stay behind a disclosure. The practice screen should remain us
 - Rebindable shortcuts eventually; MVP shortcuts never replace visible controls.
 - Do not use color alone. Current notes also change outline/weight, warnings have icons/text, and strings retain numbers.
 - UI scale settings and responsive wrapping; verify 200% text/UI scale. Offer saved Device setting/Light/Dark appearance with legible notation and controls in both palettes.
+- Use restrained color families to distinguish song, reading, audio and practice controls, alongside text/icons. Decorative textures stay behind the UI; score surfaces remain plain and capture margins stay transparent.
 - Use a general Unicode UI font with fallbacks. Keep the SMuFL music font separate from translated text.
 - Stable message keys, translation context, plural-aware messages, and translator comments from the start.
 - No string-built sentences; parameters are substituted into complete messages.

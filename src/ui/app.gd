@@ -4,6 +4,7 @@ extends Control
 var page_swipe_start: Vector2
 var capture_view: CaptureView
 var capture_active: bool = false
+var backdrop: ThemeBackdrop
 var capture_choices: Dictionary = {}
 var page_swipe_active: bool = false
 var motion_mode: String = "system"
@@ -191,6 +192,7 @@ func button(key: String, action: Callable) -> Button:
 	item.reduced_motion = reduced_motion
 	item.text = tr(key)
 	item.icon = UIIcons.get_icon(key)
+	if UIAppearance.BUTTON_ROLES.has(key): item.set_meta("color_role", UIAppearance.BUTTON_ROLES[key])
 	item.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	item.tooltip_text = tr("TIP_" + key) if TranslationServer.translate("TIP_" + key) != "TIP_" + key else tr(key)
 	item.custom_minimum_size.y = 56
@@ -244,11 +246,14 @@ func surface(color: String, padding: int = 16) -> StyleBoxFlat:
 
 func build_ui() -> void:
 	theme = UIAppearance.make_theme(false, 20, font_style)
+	backdrop = ThemeBackdrop.new()
+	add_child(backdrop)
 	root_box = BoxContainer.new()
 	root_box.vertical = true
 	root_box.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	root_box.add_theme_constant_override("separation", 0)
 	add_child(root_box)
+	root_box.visibility_changed.connect(func() -> void: backdrop.visible = root_box.visible)
 	scroll = ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -914,6 +919,8 @@ func apply_appearance() -> void:
 	dark_mode = appearance_mode == "dark" or (appearance_mode == "system" and host.system_dark())
 	var font_size: int = theme.default_font_size if theme != null else 20
 	theme = UIAppearance.make_theme(dark_mode, font_size, font_style)
+	UIAppearance.apply_roles(self, dark_mode)
+	backdrop.set_palette(dark_mode)
 	brand_label.add_theme_font_override("font", UIAppearance.ui_font(font_style, true))
 	song_title.add_theme_font_override("font", UIAppearance.ui_font(font_style, true))
 	RenderingServer.set_default_clear_color(UIAppearance.color("background", dark_mode))

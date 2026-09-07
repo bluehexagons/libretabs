@@ -352,6 +352,11 @@ func run() -> void:
 		for token: String in ["ink", "muted", "accent"]:
 			check(contrast(UIAppearance.color(token, dark), UIAppearance.color("paper", dark)) >= 4.5, "score text/highlight contrast in both palettes")
 		check(contrast(Color.WHITE, UIAppearance.color("primary", dark)) >= 4.5, "play button text contrast")
+		for role: String in ["library", "practice", "sound", "reading"]:
+			for state: String in ["normal", "hover", "pressed", "hover_pressed", "disabled"]:
+				var style: StyleBoxFlat = UIAppearance.role_style(role, dark, state)
+				var token: String = "muted" if state == "disabled" else "ink"
+				check(contrast(UIAppearance.color(token, dark), style.bg_color) >= 4.5, "colored control text keeps contrast: %s / %s / %s" % [role, state, dark])
 	app.set("appearance_mode", "light")
 	app.call("apply_appearance")
 	root.size = Vector2i(390, 844)
@@ -371,6 +376,7 @@ func run() -> void:
 	app.call("enter_capture")
 	for _frame: int in range(10): await process_frame
 	check(app.get("capture_active") and not app.get("root_box").visible and not app.get("menu_overlay").visible, "capture hides all player controls")
+	check(not app.get("backdrop").visible, "capture hides the texture to preserve transparent margins")
 	check(capture.score.notation == "tab" and score.notation == "both" and score.mode == "pages", "tab-only capture preserves paired practice and manual page settings")
 	check(capture.score.song == song and capture.score.projection == score.projection, "capture reuses immutable song and derived arrangement")
 	check(capture.score.ui_font != score.ui_font and capture.score.music_font != score.music_font and capture.score.ui_font.oversampling == 2.0, "capture uses separate high-resolution font caches")
@@ -391,6 +397,7 @@ func run() -> void:
 	escape.pressed = true
 	app.call("_input", escape)
 	check(not app.get("capture_active") and app.get("root_box").visible and Input.mouse_mode == Input.MOUSE_MODE_VISIBLE, "Escape restores player controls and pointer")
+	check(app.get("backdrop").visible and not app.get("backdrop").is_processing() and app.get("backdrop").mouse_filter == Control.MOUSE_FILTER_IGNORE, "texture returns without idle animation or intercepted input")
 	check(score.mode == "pages" and score.notation == "both", "leaving capture restores reading view")
 	root.size = Vector2i(1440, 900)
 	for _frame: int in range(10): await process_frame

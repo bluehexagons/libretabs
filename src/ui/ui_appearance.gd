@@ -3,14 +3,23 @@ class_name UIAppearance
 extends RefCounted
 
 const LIGHT: Dictionary = {
-	"background": "f4efe5", "paper": "fffdf7", "ink": "213b38", "muted": "50615a",
-	"accent": "09665b", "control": "e5e9dc", "hover": "d2dfce", "pressed": "bcd4c1",
-	"disabled": "edece4", "line": "78877a", "primary": "126356", "primary_hover": "0c5046", "primary_pressed": "083e37", "live": "9b461d"
+	"background": "ede7f1", "paper": "fffbf2", "ink": "30283e", "muted": "66596e",
+	"accent": "7040a0", "control": "eee8f3", "hover": "e1d4ec", "pressed": "d3bee5",
+	"disabled": "eae6e8", "line": "8b7e95", "primary": "12645f", "primary_hover": "0c514f", "primary_pressed": "083e3d", "live": "9b461d",
+	"library": "f7dfa9", "practice": "f4d4c6", "sound": "cce8df", "reading": "e0d5f3"
 }
 const DARK: Dictionary = {
-	"background": "101e20", "paper": "1b2d2d", "ink": "f7f3df", "muted": "bdcebf",
-	"accent": "9ce3c8", "control": "304543", "hover": "3e5750", "pressed": "4b6359",
-	"disabled": "263a38", "line": "8da397", "primary": "126356", "primary_hover": "0c5046", "primary_pressed": "083e37", "live": "ffc18e"
+	"background": "171725", "paper": "242439", "ink": "faf2e3", "muted": "c8bdd7",
+	"accent": "d0b2ff", "control": "37354c", "hover": "49405f", "pressed": "584867",
+	"disabled": "2c2b3d", "line": "9e90af", "primary": "12645f", "primary_hover": "0c514f", "primary_pressed": "083e3d", "live": "ffc18e",
+	"library": "4d3d2b", "practice": "50333e", "sound": "24483f", "reading": "413659"
+}
+
+const BUTTON_ROLES: Dictionary = {
+	"SONG_MENU": "library", "IMPORT_MIDI": "library", "OPEN": "library", "PRINT": "library",
+	"LOOP_TOOL": "practice", "KEYBOARD": "practice",
+	"TEMPO": "sound", "SOUND": "sound", "CLICK_ON": "sound", "CLICK_OFF": "sound",
+	"SCORE_VIEW": "reading", "MENU": "reading", "DISPLAY": "reading", "CAPTURE": "reading"
 }
 
 static func ui_font(style: String = "rounded", heading: bool = false) -> Font:
@@ -38,7 +47,29 @@ static func panel_style(dark: bool, padding: int = 12) -> StyleBoxFlat:
 	var style: StyleBoxFlat = box(color("paper", dark), padding)
 	style.set_border_width_all(1)
 	style.border_color = color("line", dark)
+	style.shadow_color = Color(0.08, 0.04, 0.14, 0.16 if dark else 0.09)
+	style.shadow_size = 3
+	style.shadow_offset = Vector2(0, 2)
 	return style
+
+static func role_style(role: String, dark: bool, state: String) -> StyleBoxFlat:
+	var fill: Color = color(role, dark)
+	if state == "disabled": fill = color("disabled", dark)
+	elif state in ["pressed", "hover_pressed"]: fill = fill.lerp(color("accent", dark), 0.16)
+	elif state == "hover": fill = fill.lightened(0.08) if dark else fill.darkened(0.04)
+	var style: StyleBoxFlat = box(fill)
+	style.set_border_width_all(2 if state in ["hover", "pressed", "hover_pressed"] else 1)
+	style.border_color = color("accent" if state in ["hover", "pressed", "hover_pressed"] else "line", dark)
+	if state in ["pressed", "hover_pressed"]:
+		style.content_margin_top += 2
+		style.content_margin_bottom -= 2
+	return style
+
+static func apply_roles(node: Node, dark: bool) -> void:
+	if node is Button and node.has_meta("color_role"):
+		for state: String in ["normal", "hover", "pressed", "hover_pressed", "disabled"]:
+			node.add_theme_stylebox_override(state, role_style(str(node.get_meta("color_role")), dark, state))
+	for child: Node in node.get_children(): apply_roles(child, dark)
 
 static func make_theme(dark: bool, font_size: int, font_style: String = "rounded") -> Theme:
 	var result: Theme = Theme.new()
