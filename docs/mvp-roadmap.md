@@ -92,7 +92,7 @@ Goal: a learner can hear a whole imported arrangement, isolate their part, slow 
 ### Work packages
 
 - **M4.1 Practice synth v2 (L, split by voice/controller):** program-family voices, selected GM percussion, the controller/bend contract from decision 0001, output headroom, bounded polyphony, and visible voice-stealing/unsupported-feature diagnostics.
-- **M4.2 Transport controls (M):** count-in including 6/8 pulse, play/pause/stop/completion, measure seek, scrub, speed, metronome, part mute/solo, mute-my-part precedence.
+- **M4.2 Transport controls (M):** count-in including 6/8 pulse, play/pause/stop/completion, measure seek, scrub, 25–200% speed/custom starting BPM, independent instrument/metronome volume, metronome, part mute/solo, mute-my-part precedence.
 - **M4.3 Loop interaction (M):** keyboard/touch measure range selection, clear loop state, half-open boundary semantics, restart behavior.
 - **M4.4 Cursor/fret guide (M):** active beat/note in staff/tab plus string/fret panel using non-color state.
 - **M4.5 Seek/state restoration (M):** controller/program and held-note reconstruction, queued-sample invalidation, and no-stuck-note tests across seek, speed, loop, pause, and browser suspension/resume.

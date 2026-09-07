@@ -1,5 +1,7 @@
 # M0 prototype evaluation and evidence
 
+Historical first-build evidence; the [practice feedback update](practice-feedback.md) supersedes UI instructions, volume/tempo controls, and idle measurements below.
+
 Date: 2026-09-07. Scope: a testable Godot feasibility slice; **final M0 gate open**.
 
 ## Try it

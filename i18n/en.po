@@ -5,7 +5,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgid "BRAND"
-msgstr "LIBRETABS  /  PRACTICE LAB"
+msgstr "LibreTabs"
 
 msgid "HEADLINE"
 msgstr "One phrase at a time."
@@ -26,10 +26,10 @@ msgid "DEMO_1"
 msgstr "Changing tempo"
 
 msgid "DEMO_2"
-msgstr "Two parts · format 0"
+msgstr "Two parts"
 
 msgid "DEMO_3"
-msgstr "Held notes & warnings"
+msgstr "Held notes"
 
 msgid "RELOAD_DEMO"
 msgstr "Reload example"
@@ -50,7 +50,7 @@ msgid "STATE_PLAYING"
 msgstr "Playing"
 
 msgid "STATE_COMPLETE"
-msgstr "Finished. Try slowing down or looping a few measures."
+msgstr "Phrase complete. Play again, slow down, or try a loop."
 
 msgid "PART_PICKER"
 msgstr "Choose the part to practice"
@@ -80,13 +80,13 @@ msgid "SPEED"
 msgstr "Playback speed; pitch stays the same"
 
 msgid "SPEED_VALUE"
-msgstr "Speed %d%%"
+msgstr "%d%% speed"
 
 msgid "COUNT_IN"
-msgstr "Count in"
+msgstr "Count in before playing"
 
 msgid "METRONOME"
-msgstr "Beat click"
+msgstr "Metronome during playback"
 
 msgid "MUTE_MY_PART"
 msgstr "Mute my part"
@@ -107,25 +107,25 @@ msgid "LOOP_RANGE"
 msgstr "Choose the first and last measure to repeat"
 
 msgid "CUE_READY"
-msgstr "Your next note appears here."
+msgstr "Your next note"
 
 msgid "CUE_REST"
-msgstr "Rest — listen and wait for the next note."
+msgstr "Listen · your part rests here"
 
 msgid "CUE_NOTE"
 msgstr "String %d · fret %d"
 
 msgid "CUE_UNPLACED"
-msgstr "This note has no tab placement. Listen for it in the source audio."
+msgstr "! Listen — this note has no tab placement"
 
 msgid "MEASURE_TITLE"
 msgstr "MEASURE %d / %d"
 
 msgid "STAFF_REFERENCE"
-msgstr "Staff · pitch and rhythm reference"
+msgstr "Staff · rhythm reference"
 
 msgid "TAB_PRIMARY"
-msgstr "TAB"
+msgstr "TAB · FRETS"
 
 msgid "DENSE_DISPLAY"
 msgstr "! Dense measure: some symbols are hidden."
@@ -146,7 +146,7 @@ msgid "SCALE"
 msgstr "Control text size"
 
 msgid "SCALE_VALUE"
-msgstr "Controls %d%%"
+msgstr "Text size %d%%"
 
 msgid "PSEUDO"
 msgstr "Test long labels"
@@ -273,3 +273,84 @@ msgstr "Audio has not started. Check the browser sound permission, then press Pl
 
 msgid "UNNAMED_PART"
 msgstr "Pitched part"
+
+msgid "SONG_MENU"
+msgstr "Song"
+
+msgid "START_HINT"
+msgstr "Press Play. Follow the highlighted fret numbers."
+
+msgid "ARRANGEMENT_SHORT"
+msgstr "Basic tab"
+
+msgid "DETAILS"
+msgstr "About this arrangement"
+
+msgid "UNPLACED_SHORT"
+msgstr "! %d notes without tab · details"
+
+msgid "CLOSE"
+msgstr "Close"
+
+msgid "PREVIOUS"
+msgstr "Back"
+
+msgid "NEXT"
+msgstr "Next"
+
+msgid "TEMPO"
+msgstr "Tempo"
+
+msgid "SOUND"
+msgstr "Sound"
+
+msgid "LOOP_TOOL"
+msgstr "Loop"
+
+msgid "HELP"
+msgstr "Help"
+
+msgid "DISPLAY"
+msgstr "Display & app"
+
+msgid "TEMPO_HELP"
+msgstr "BPM means beats per minute. Here, one beat is a quarter note. Pitch stays the same when you change speed."
+
+msgid "BPM_LABEL"
+msgstr "Custom starting BPM"
+
+msgid "CUSTOM_BPM"
+msgstr "Custom BPM"
+
+msgid "TEMPO_CURRENT"
+msgstr "Starts at %.1f BPM · original %.1f · %d%%. Later tempo changes keep their proportions."
+
+msgid "TEMPO_BUTTON"
+msgstr "%d%%"
+
+msgid "INSTRUMENT_VOLUME"
+msgstr "Instrument · %d%%"
+
+msgid "CLICK_VOLUME"
+msgstr "Metronome · %d%%"
+
+msgid "LOOP_HELP"
+msgstr "A measure is a small group of beats between vertical lines. Repeat a few measures to practice a short phrase."
+
+msgid "HELP_STRINGS"
+msgstr "1. Follow the six tab lines. The top line is string 1: your thinnest guitar string."
+
+msgid "HELP_FRETS"
+msgstr "2. Press the fret number shown. A 0 means play the open string, without pressing a fret."
+
+msgid "HELP_STAFF"
+msgstr "3. The smaller staff above is a pitch and rhythm reference. Higher notes mean higher pitches. Guitar staff notes are written one octave above their sound."
+
+msgid "HELP_TIMING"
+msgstr "4. Press Play and count with the clicks. Outlined numbers show sounding notes. A ! means a note has no guitar placement. Slow down with Tempo or repeat a phrase with Loop."
+
+msgid "FOLLOW_HINT"
+msgstr "Follow the outlined fret numbers."
+
+msgid "TEMPO_SELECTED"
+msgstr "Tempo %d%%"

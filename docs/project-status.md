@@ -10,6 +10,8 @@ The planning review is committed as `2eb89f2`. A runnable **M0 Godot evaluation 
 
 This completes a testable vertical slice, **not the final Godot go/no-go gate**. Production lessons and M1 UI investment remain behind that gate. No new product-owner decision was required to build the evaluation slice.
 
+Owner feedback has produced a simpler responsive practice screen, larger controls, separate instrument/metronome levels, expanded tempo presets/custom BPM, and event-driven idle updates. See [feedback evidence](evidence/practice-feedback.md) and [decision 0003](decisions/0003-practice-feedback.md).
+
 ## Next work, in order
 
 1. **Evaluate the learning interaction.** Steward bluehexagons gathers feedback on finding Play, following the next string/fret, slowing down, looping, and understanding unplaced notes. Record confusing actions and sound/notation observations against the five included examples. This is prototype feedback, not a substitute for the later teacher/musician acceptance reviews.

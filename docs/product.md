@@ -74,7 +74,7 @@ No owner decision currently blocks M0. The provisional name still needs a final 
 
 1. The learner presses play and hears a count-in followed by synchronized audio.
 2. The active beat/notes are emphasized in both staff and tab, using shape/position as well as color.
-3. The learner can pause, seek by measure, choose 50–100% tempo, enable the metronome, and define a measure loop.
+3. The learner can pause, seek by measure, choose 25–200% tempo or a custom starting BPM, enable the metronome, and define a measure loop.
 4. A compact fretboard guide shows the current string and fret and repeats the convention that string 1 is the thinnest/highest string.
 5. A persistent Help action summarizes how tab lines/fret numbers align with staff pitch/rhythm without covering the current notes.
 
@@ -131,7 +131,7 @@ Import is cancellable and transactional: a failed or cancelled replacement leave
 
 ### Playback and practice controls
 
-- Play/pause/stop, measure seek, timeline scrub, count-in, metronome, 50–100% tempo, and contiguous measure loop.
+- Play/pause/stop, measure seek, timeline scrub, count-in, metronome, independent instrument/metronome volume, 25–200% tempo and custom starting BPM, and contiguous measure loop.
 - Per-part mute/solo and a one-action **Mute my part** control.
 - A procedural practice synthesizer with bounded polyphony and clear part distinction; pitch must not change when tempo changes.
 - The audio scheduler, cursor, loop boundaries, and display all use the same tempo-aware transport.
@@ -233,3 +233,5 @@ Engineering measures:
 ## Current evaluation scope
 
 The runnable M0 prototype is a feasibility slice, not the completed product described above. [Decision 0002](decisions/0002-m0-evaluation-build.md) records its smaller import, notation, and audio contracts; [M0 evidence](evidence/m0-prototype.md) provides evaluation steps and next gates.
+
+The owner-feedback changes to the evaluation practice view and tempo/volume controls are recorded in [decision 0003](decisions/0003-practice-feedback.md).

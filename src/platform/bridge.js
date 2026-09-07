@@ -36,6 +36,7 @@
     saveScale(value) {
       try { localStorage.setItem('libretabs.scale.v1', String(value)); return true; } catch (_) { return false; }
     },
+    traceEnabled: new URLSearchParams(location.search).has('trace'),
     offlineReady: false
   };
   let readinessChecks = 0;

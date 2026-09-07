@@ -10,7 +10,8 @@ func smoke() -> void:
 	root.add_child(app)
 	for _frame: int in range(30):
 		await process_frame
-	await RenderingServer.frame_post_draw
+	# Idle rendering is intentional; request a frame for the capture.
+	RenderingServer.force_draw()
 	var path: String = OS.get_environment("LIBRETABS_CAPTURE")
 	if not path.is_empty():
 		root.get_texture().get_image().save_png(path)

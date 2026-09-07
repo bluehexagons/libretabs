@@ -2,9 +2,10 @@
 class_name ScoreView
 extends Control
 
-const INK: Color = Color("24413d")
-const MUTED: Color = Color("70817b")
-const ACCENT: Color = Color("bc592e")
+const INK: Color = Color("202d49")
+const MUTED: Color = Color("79849b")
+const ACCENT: Color = Color("4665d8")
+var draw_count: int = 0
 var music_font: Font = preload("res://assets/fonts/Bravura.otf")
 var song: SongDocument
 var projection: TabProjection
@@ -15,21 +16,22 @@ var cursor: CursorLayer
 var ui_font: Font
 
 func _ready() -> void:
-	custom_minimum_size = Vector2(280, 650)
+	custom_minimum_size = Vector2(240, 320)
 	ui_font = ThemeDB.fallback_font
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	resized.connect(queue_redraw)
+	resized.connect(func() -> void: queue_redraw(); cursor.queue_redraw())
 	cursor = CursorLayer.new()
 	cursor.owner_score = self
 	cursor.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(cursor)
 
 func _draw() -> void:
+	draw_count += 1
 	if song == null or song.measures.is_empty():
 		return
 	var wide: bool = size.x >= 760
-	custom_minimum_size.y = 340 if wide else 660
-	for panel: int in range(2):
+	custom_minimum_size.y = 320
+	for panel: int in range(2 if wide else 1):
 		var index: int = measure_index + panel
 		if index >= song.measures.size():
 			break
@@ -47,8 +49,8 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 	var bar: Dictionary = song.measures[index]
 	var left: float = origin.x + 44
 	var right: float = origin.x + width - 12
-	var top: float = origin.y + 100
-	var tab_top: float = origin.y + 206
+	var top: float = origin.y + 80
+	var tab_top: float = origin.y + 176
 	var start: float = float(bar.start)
 	var finish: float = float(bar.end)
 	text_at(origin + Vector2(8, 22), tr("MEASURE_TITLE") % [index + 1, song.measures.size()], 16)
@@ -60,12 +62,12 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 	text_at(Vector2(left + 2, top + 13), str(bar.numerator), 13)
 	text_at(Vector2(left + 2, top + 29), str(bar.denominator), 13)
 	for string_index: int in range(6):
-		var y: float = tab_top + string_index * 15
+		var y: float = tab_top + string_index * 21
 		text_at(Vector2(origin.x + 12, y + 5), str(string_index + 1), 13, MUTED)
 		draw_line(Vector2(left, y), Vector2(right, y), MUTED, 1, true)
 	text_at(Vector2(origin.x + 8, tab_top - 17), tr("TAB_PRIMARY"), 13)
 	draw_line(Vector2(right, top), Vector2(right, top + 32), INK, 1.5)
-	draw_line(Vector2(right, tab_top), Vector2(right, tab_top + 75), INK, 1.5)
+	draw_line(Vector2(right, tab_top), Vector2(right, tab_top + 105), INK, 1.5)
 	var music_left: float = left + 24
 	var span: float = right - music_left - 12
 	var visible_count: int = 0
@@ -80,7 +82,7 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 			continue
 		visible_count += 1
 		if visible_count > 48:
-			text_at(origin + Vector2(12, 322), tr("DENSE_DISPLAY"), 12, ACCENT)
+			text_at(origin + Vector2(12, 312), tr("DENSE_DISPLAY"), 12, ACCENT)
 			break
 		var raw: float = maxf(start, float(note.start))
 		var grid: float = song.division / 4.0
@@ -125,11 +127,11 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 			text_at(Vector2(x, top + 16), tr("PITCH_MARKER") % int(note.pitch), 11, ACCENT)
 		if projection.placements.has(note.id):
 			var placement: Dictionary = projection.placements[note.id]
-			var tab_y: float = tab_top + (int(placement.string) - 1) * 15
-			draw_rect(Rect2(x - 3, tab_y - 10, 25, 20), Color("fffdf6"))
+			var tab_y: float = tab_top + (int(placement.string) - 1) * 21
+			draw_rect(Rect2(x - 3, tab_y - 12, 30, 24), Color("ffffff"))
 			if active:
-				draw_rect(Rect2(x - 4, tab_y - 11, 26, 22), ACCENT, false, 2)
-			text_at(Vector2(x, tab_y + 6), str(placement.fret), 19, color)
+				draw_rect(Rect2(x - 4, tab_y - 13, 30, 26), ACCENT, false, 2)
+			text_at(Vector2(x, tab_y + 8), str(placement.fret), 24, color)
 		else:
 			text_at(Vector2(x, tab_top + 31), "!", 22, ACCENT)
 	# Quarter rests are only claimed for completely empty quarter intervals.
@@ -146,8 +148,10 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 		pulse += song.division
 
 class CursorLayer extends Control:
+	var draw_count: int = 0
 	var owner_score: Control
 	func _draw() -> void:
+		draw_count += 1
 		owner_score.draw_cursor(self)
 
 func draw_cursor(surface: Control) -> void:
@@ -159,4 +163,4 @@ func draw_cursor(surface: Control) -> void:
 	var music_left: float = origin.x + 68
 	var span: float = width - 12 - music_left - 12
 	var cursor_x: float = music_left + (current_tick - float(bar.start)) / (float(bar.end) - float(bar.start)) * span
-	surface.draw_line(Vector2(cursor_x, 91), Vector2(cursor_x, 290), Color(0.74, 0.35, 0.18, 0.45), 2, true)
+	surface.draw_line(Vector2(cursor_x, 71), Vector2(cursor_x, 292), Color(0.27, 0.4, 0.85, 0.5), 2, true)

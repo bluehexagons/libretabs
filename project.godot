@@ -18,7 +18,7 @@ window/stretch/scale_mode="fractional"
 [rendering]
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
-environment/defaults/default_clear_color=Color(0.95, 0.94, 0.90, 1)
+environment/defaults/default_clear_color=Color(0.96, 0.97, 0.99, 1)
 
 [internationalization]
 locale/translations=PackedStringArray("res://i18n/en.po")

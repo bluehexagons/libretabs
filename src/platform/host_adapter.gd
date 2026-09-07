@@ -48,6 +48,9 @@ func _desktop_file(path: String) -> void:
 	else:
 		picked.emit(MidiImport.clean_text(path.get_file()), file.get_buffer(file.get_length()), "")
 
+func trace_enabled() -> bool:
+	return web != null and bool(web.traceEnabled)
+
 func report(data: Dictionary) -> void:
 	if web != null:
 		web.report(JSON.stringify(data))
@@ -71,3 +74,10 @@ func save_scale(value: float) -> bool:
 	var config: ConfigFile = ConfigFile.new()
 	config.set_value("display", "scale", value)
 	return config.save("user://display.cfg") == OK
+
+func configure_activity(active: bool) -> void:
+	OS.low_processor_usage_mode = true
+	# Explicit main-thread sleeps/FPS caps busy-wait in the pinned Web runtime.
+	# Let the browser pace frames; low-processor mode still skips unchanged draws.
+	OS.low_processor_usage_mode_sleep_usec = 0 if web != null else 16000
+	Engine.max_fps = 0 if web != null else (60 if active else 30)

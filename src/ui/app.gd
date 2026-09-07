@@ -36,10 +36,28 @@ var updating: bool = false
 var title: String = ""
 var import_name: String = ""
 var max_import_usec: int = 0
-var last_report: int = 0
 var last_visual_key: String = ""
 var started_msec: int = 0
 var paused_in_count: bool = false
+const SPEEDS: Array[float] = [0.25, 0.4, 0.5, 0.6, 0.75, 0.8, 0.9, 1.0, 1.1, 1.25, 1.5, 1.75, 2.0]
+var bpm_input: SpinBox
+var tempo_caption: Label
+var song_title: Label
+var brand_label: Label
+var notice_button: Button
+var tempo_button: Button
+var drawer: PanelContainer
+var drawer_body: VBoxContainer
+var drawer_title: Label
+var drawers: Dictionary = {}
+var opened_drawer: String = ""
+var scroll: ScrollContainer
+var root_box: VBoxContainer
+var dock: BoxContainer
+var idle_timer: Timer
+var position_updates: int = 0
+var instrument_slider: HSlider
+var click_slider: HSlider
 var fixtures: Array[String] = ["first_melody", "changing_tempo", "format0", "held_notes", "dense_chord"]
 
 func _ready() -> void:
@@ -50,13 +68,20 @@ func _ready() -> void:
 	audio = PracticeAudio.new()
 	add_child(audio)
 	build_ui()
-	resized.connect(func() -> void: adapt_flow(panel))
+	resized.connect(responsive)
 	apply_scale(host.load_scale())
+	host.configure_activity(false)
+	idle_timer = Timer.new()
+	idle_timer.wait_time = 1.0
+	idle_timer.timeout.connect(report_state)
+	add_child(idle_timer)
+	idle_timer.start()
 	load_demo(0)
 
-func label(key: String, font_size: int = 16) -> Label:
+func label(key: String, font_size: int = 20) -> Label:
 	var item: Label = Label.new()
 	item.text = tr(key)
+	item.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	item.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	item.add_theme_font_size_override("font_size", font_size)
 	item.set_meta("base_font_size", font_size)
@@ -66,200 +91,376 @@ func label(key: String, font_size: int = 16) -> Label:
 func button(key: String, action: Callable) -> Button:
 	var item: Button = Button.new()
 	item.text = tr(key)
+	item.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	item.tooltip_text = tr(key)
-	item.custom_minimum_size.y = 44
+	item.custom_minimum_size.y = 48
+	item.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	item.pressed.connect(action)
 	return item
 
 func check(key: String, checked: bool) -> CheckButton:
 	var item: CheckButton = CheckButton.new()
 	item.text = tr(key)
+	item.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	item.tooltip_text = tr(key)
 	item.button_pressed = checked
-	item.custom_minimum_size.y = 44
+	item.custom_minimum_size.y = 48
+	item.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	return item
 
-func build_ui() -> void:
-	var theme_resource: Theme = Theme.new()
-	theme_resource.default_font_size = 17
-	for kind: String in ["Label", "Button", "CheckButton", "OptionButton", "LineEdit", "SpinBox"]:
-		theme_resource.set_color("font_color", kind, Color("24413d"))
-		theme_resource.set_color("font_focus_color", kind, Color("24413d"))
-		theme_resource.set_color("font_hover_color", kind, Color("24413d"))
-		theme_resource.set_color("font_pressed_color", kind, Color("24413d"))
-		theme_resource.set_color("font_hover_pressed_color", kind, Color("24413d"))
+func flow(parent: Node) -> HFlowContainer:
+	var row: HFlowContainer = HFlowContainer.new()
+	row.add_theme_constant_override("h_separation", 8)
+	row.add_theme_constant_override("v_separation", 8)
+	parent.add_child(row)
+	return row
+
+func surface(color: String, padding: int = 16) -> StyleBoxFlat:
 	var box: StyleBoxFlat = StyleBoxFlat.new()
-	box.bg_color = Color("e1e8dd")
-	box.set_corner_radius_all(8)
-	box.content_margin_left = 13
-	box.content_margin_right = 13
-	box.content_margin_top = 8
-	box.content_margin_bottom = 8
+	box.bg_color = Color(color)
+	box.set_corner_radius_all(16)
+	box.content_margin_left = padding
+	box.content_margin_right = padding
+	box.content_margin_top = padding
+	box.content_margin_bottom = padding
+	return box
+
+func build_ui() -> void:
+	var palette: Theme = Theme.new()
+	palette.default_font_size = 20
+	for kind: String in ["Label", "Button", "CheckButton", "OptionButton", "LineEdit", "SpinBox", "PopupMenu"]:
+		for state_name: String in ["font_color", "font_focus_color", "font_hover_color", "font_pressed_color", "font_hover_pressed_color"]:
+			palette.set_color(state_name, kind, Color("202d49"))
 	for kind: String in ["Button", "OptionButton", "LineEdit", "CheckButton"]:
-		for mode: String in ["normal", "hover", "pressed"]:
-			theme_resource.set_stylebox(mode, kind, box)
-		var focus: StyleBoxFlat = box.duplicate() as StyleBoxFlat
-		focus.bg_color = Color(0, 0, 0, 0)
-		focus.border_color = Color("bc592e")
+		palette.set_stylebox("normal", kind, surface("edf0f7", 12))
+		palette.set_stylebox("hover", kind, surface("e1e7f5", 12))
+		palette.set_stylebox("pressed", kind, surface("d5dff6", 12))
+		var focus: StyleBoxFlat = surface("00000000", 12)
+		focus.border_color = Color("4665d8")
 		focus.set_border_width_all(3)
-		theme_resource.set_stylebox("focus", kind, focus)
-	theme = theme_resource
-	var scroll: ScrollContainer = ScrollContainer.new()
-	scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		palette.set_stylebox("focus", kind, focus)
+	for name_key: String in ["slider", "grabber_area", "grabber_area_highlight"]:
+		var rail: StyleBoxFlat = surface("d8deef" if name_key == "slider" else "6b82d8", 0)
+		rail.content_margin_top = 3
+		rail.content_margin_bottom = 3
+		palette.set_stylebox(name_key, "HSlider", rail)
+	palette.set_stylebox("panel", "PopupMenu", surface("ffffff", 8))
+	palette.set_stylebox("hover", "PopupMenu", surface("e1e7f5", 8))
+	theme = palette
+	root_box = VBoxContainer.new()
+	root_box.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	root_box.add_theme_constant_override("separation", 0)
+	add_child(root_box)
+	scroll = ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	add_child(scroll)
+	scroll.follow_focus = true
+	root_box.add_child(scroll)
 	var margin: MarginContainer = MarginContainer.new()
 	margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	for side: String in ["left", "right", "top", "bottom"]:
-		margin.add_theme_constant_override("margin_" + side, 20)
+		margin.add_theme_constant_override("margin_" + side, 16)
 	scroll.add_child(margin)
 	panel = VBoxContainer.new()
-	panel.add_theme_constant_override("separation", 13)
+	panel.add_theme_constant_override("separation", 12)
 	margin.add_child(panel)
-	panel.add_child(label("BRAND", 15))
-	panel.add_child(label("HEADLINE", 32))
-	panel.add_child(label("INTRO"))
-	var imports: HFlowContainer = HFlowContainer.new()
-	imports.add_theme_constant_override("h_separation", 8)
-	panel.add_child(imports)
-	imports.add_child(button("OPEN", func() -> void: pause(); host.pick()))
-	demo_picker = OptionButton.new()
-	demo_picker.fit_to_longest_item = false
-	demo_picker.clip_text = true
-	demo_picker.custom_minimum_size.x = 200
-	demo_picker.custom_minimum_size.y = 44
-	demo_picker.tooltip_text = tr("DEMOS")
-	for index: int in range(fixtures.size()):
-		demo_picker.add_item(tr("DEMO_%d" % index))
-	demo_picker.item_selected.connect(load_demo)
-	imports.add_child(demo_picker)
-	imports.add_child(button("RELOAD_DEMO", func() -> void: load_demo(demo_picker.selected)))
-	cancel_button = button("CANCEL", func() -> void: importer = null; cancel_button.hide(); status.text = tr("CANCELLED"))
-	cancel_button.hide()
-	imports.add_child(cancel_button)
-	status = label("STATE_READY")
+	var header: HBoxContainer = HBoxContainer.new()
+	panel.add_child(header)
+	brand_label = label("BRAND", 20)
+	header.add_child(brand_label)
+	header.add_child(button("SONG_MENU", func() -> void: toggle_drawer("SONG_MENU")))
+	song_title = label("DEMO_0", 30)
+	panel.add_child(song_title)
+	status = label("START_HINT", 18)
 	panel.add_child(status)
-	part_picker = OptionButton.new()
-	part_picker.fit_to_longest_item = false
-	part_picker.clip_text = true
-	part_picker.custom_minimum_size.y = 44
-	part_picker.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	part_picker.tooltip_text = tr("PART_PICKER")
-	part_picker.item_selected.connect(select_part)
-	panel.add_child(part_picker)
-	summary = label("ARRANGEMENT")
-	panel.add_child(summary)
-	warning = label("PROTOTYPE_LIMIT")
-	warning.add_theme_color_override("font_color", Color("92512f"))
-	panel.add_child(warning)
-	var controls: HFlowContainer = HFlowContainer.new()
-	controls.add_theme_constant_override("h_separation", 8)
-	panel.add_child(controls)
-	play_button = button("PLAY", toggle_play)
-	controls.add_child(play_button)
-	controls.add_child(button("STOP", stop_practice))
-	speed_picker = OptionButton.new()
-	speed_picker.custom_minimum_size.y = 44
-	speed_picker.tooltip_text = tr("SPEED")
-	for percent: int in [100, 80, 60, 50]:
-		speed_picker.add_item(tr("SPEED_VALUE") % percent)
-	speed_picker.item_selected.connect(func(index: int) -> void:
-		var was_playing: bool = audio.playing_practice
-		pause()
-		speed = [1.0, 0.8, 0.6, 0.5][index]
-		if was_playing: start(false))
-	controls.add_child(speed_picker)
-	count_check = check("COUNT_IN", true)
-	metro_check = check("METRONOME", true)
-	mute_check = check("MUTE_MY_PART", false)
-	for item: CheckButton in [count_check, metro_check, mute_check]:
-		controls.add_child(item)
-		item.toggled.connect(func(_pressed: bool) -> void: restart_if_playing())
+	var details: HFlowContainer = flow(panel)
+	cue = label("CUE_READY", 24)
+	# Share the compact cue row with the arrangement disclosure.
+	details.add_child(cue)
+	notice_button = button("ARRANGEMENT_SHORT", func() -> void: toggle_drawer("DETAILS"))
+	details.add_child(notice_button)
+	drawer = PanelContainer.new()
+	drawer.add_theme_stylebox_override("panel", surface("ffffff"))
+	panel.add_child(drawer)
+	panel.move_child(drawer, panel.get_children().find(details))
+	drawer_body = VBoxContainer.new()
+	drawer_body.add_theme_constant_override("separation", 14)
+	drawer.add_child(drawer_body)
+	var drawer_header: HBoxContainer = HBoxContainer.new()
+	drawer_body.add_child(drawer_header)
+	drawer_title = label("SONG_MENU", 24)
+	drawer_header.add_child(drawer_title)
+	drawer_header.add_child(button("CLOSE", func() -> void: toggle_drawer(opened_drawer)))
+	build_drawers()
+	drawer.hide()
+	var paper: PanelContainer = PanelContainer.new()
+	paper.add_theme_stylebox_override("panel", surface("ffffff", 8))
+	panel.add_child(paper)
+	score = ScoreView.new()
+	paper.add_child(score)
+	var navigation: HBoxContainer = HBoxContainer.new()
+	panel.add_child(navigation)
+	navigation.add_child(button("PREVIOUS", func() -> void: seek_measure(maxf(1, seek.value - 1))))
 	seek = HSlider.new()
 	seek.min_value = 1
 	seek.max_value = 4
 	seek.step = 1
-	seek.custom_minimum_size.y = 32
+	seek.custom_minimum_size = Vector2(40, 48)
+	seek.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	seek.tooltip_text = tr("SEEK")
 	seek.value_changed.connect(seek_measure)
-	panel.add_child(seek)
-	var loops: HFlowContainer = HFlowContainer.new()
-	panel.add_child(loops)
+	navigation.add_child(seek)
+	navigation.add_child(button("NEXT", func() -> void: seek_measure(minf(seek.max_value, seek.value + 1))))
+	# Keep play/pause reachable while the score and settings scroll on phones.
+	var dock_panel: PanelContainer = PanelContainer.new()
+	dock_panel.add_theme_stylebox_override("panel", surface("ffffff", 12))
+	root_box.add_child(dock_panel)
+	dock = BoxContainer.new()
+	dock.vertical = true
+	dock.alignment = BoxContainer.ALIGNMENT_CENTER
+	dock.add_theme_constant_override("separation", 8)
+	dock_panel.add_child(dock)
+	var transport_row: HBoxContainer = HBoxContainer.new()
+	dock.add_child(transport_row)
+	play_button = button("PLAY", toggle_play)
+	play_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	play_button.custom_minimum_size.y = 56
+	for mode: String in ["normal", "hover", "pressed"]:
+		play_button.add_theme_stylebox_override(mode, surface("4665d8" if mode == "normal" else "3551bd", 12))
+	for mode: String in ["font_color", "font_focus_color", "font_hover_color", "font_pressed_color"]:
+		play_button.add_theme_color_override(mode, Color.WHITE)
+	transport_row.add_child(play_button)
+	transport_row.add_child(button("STOP", stop_practice))
+	var tools_row: HFlowContainer = flow(dock)
+	tempo_button = button("TEMPO", func() -> void: toggle_drawer("TEMPO"))
+	tools_row.add_child(tempo_button)
+	tools_row.add_child(button("SOUND", func() -> void: toggle_drawer("SOUND")))
+	tools_row.add_child(button("LOOP_TOOL", func() -> void: toggle_drawer("LOOP_TOOL")))
+	tools_row.add_child(button("HELP", func() -> void: toggle_drawer("HELP")))
+	for item: Button in tools_row.get_children():
+		item.set_meta("base_font_size", 18)
+		item.set_meta("compact", true)
+		item.add_theme_font_size_override("font_size", 18)
+		for mode: String in ["normal", "hover", "pressed"]:
+			item.add_theme_stylebox_override(mode, surface("edf0f7" if mode == "normal" else "d5dff6", 8))
+
+
+func section(key: String) -> VBoxContainer:
+	var content: VBoxContainer = VBoxContainer.new()
+	content.add_theme_constant_override("separation", 12)
+	drawer_body.add_child(content)
+	drawers[key] = content
+	content.hide()
+	return content
+
+func build_drawers() -> void:
+	var library: VBoxContainer = section("SONG_MENU")
+	library.add_child(button("OPEN", func() -> void: pause(); host.pick()))
+	library.add_child(label("DEMOS", 18))
+	demo_picker = OptionButton.new()
+	demo_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	demo_picker.fit_to_longest_item = false
+	demo_picker.clip_text = true
+	demo_picker.custom_minimum_size.y = 48
+	for index: int in range(fixtures.size()): demo_picker.add_item(tr("DEMO_%d" % index))
+	demo_picker.item_selected.connect(load_demo)
+	library.add_child(demo_picker)
+	cancel_button = button("CANCEL", cancel_import)
+	cancel_button.hide()
+	library.add_child(cancel_button)
+	library.add_child(label("PART_PICKER", 18))
+	part_picker = OptionButton.new()
+	part_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	part_picker.fit_to_longest_item = false
+	part_picker.clip_text = true
+	part_picker.custom_minimum_size.y = 48
+	part_picker.item_selected.connect(select_part)
+	library.add_child(part_picker)
+
+	var tempo: VBoxContainer = section("TEMPO")
+	tempo.add_child(label("TEMPO_HELP", 18))
+	speed_picker = OptionButton.new()
+	speed_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	speed_picker.fit_to_longest_item = false
+	speed_picker.clip_text = true
+	speed_picker.custom_minimum_size.y = 48
+	for multiplier: float in SPEEDS: speed_picker.add_item(tr("SPEED_VALUE") % roundi(multiplier * 100))
+	speed_picker.add_item(tr("CUSTOM_BPM"))
+	speed_picker.select(SPEEDS.find(1.0))
+	speed_picker.item_selected.connect(change_speed)
+	tempo.add_child(speed_picker)
+	tempo.add_child(label("BPM_LABEL", 18))
+	bpm_input = SpinBox.new()
+	bpm_input.min_value = 10
+	bpm_input.max_value = 400
+	bpm_input.step = 1
+	bpm_input.custom_minimum_size.y = 48
+	bpm_input.value_changed.connect(change_bpm)
+	tempo.add_child(bpm_input)
+	tempo_caption = label("TEMPO_HELP", 18)
+	tempo.add_child(tempo_caption)
+	count_check = check("COUNT_IN", true)
+	tempo.add_child(count_check)
+
+	var sound: VBoxContainer = section("SOUND")
+	instrument_slider = volume_control(sound, "INSTRUMENT_VOLUME", 85, true)
+	click_slider = volume_control(sound, "CLICK_VOLUME", 35, false)
+	metro_check = check("METRONOME", true)
+	mute_check = check("MUTE_MY_PART", false)
+	sound.add_child(metro_check)
+	sound.add_child(mute_check)
+	sound.add_child(label("BACKING", 18))
+	backing_box = flow(sound)
+	for item: CheckButton in [count_check, metro_check, mute_check]:
+		item.toggled.connect(func(_pressed: bool) -> void: restart_if_playing())
+
+	var loops: VBoxContainer = section("LOOP_TOOL")
+	loops.add_child(label("LOOP_HELP", 18))
 	loop_check = check("LOOP", false)
 	loops.add_child(loop_check)
 	loop_from = SpinBox.new()
 	loop_to = SpinBox.new()
 	for item: SpinBox in [loop_from, loop_to]:
+		loops.add_child(label("FROM" if item == loop_from else "THROUGH", 18))
 		item.min_value = 1
 		item.max_value = 4
 		item.value = 1 if item == loop_from else 2
-		item.custom_minimum_size = Vector2(135, 44)
-		item.prefix = tr("FROM") if item == loop_from else tr("THROUGH")
+		item.custom_minimum_size.y = 48
 		item.tooltip_text = tr("LOOP_RANGE")
 		item.value_changed.connect(func(_value: float) -> void: loop_changed())
 		loops.add_child(item)
 	loop_check.toggled.connect(func(_pressed: bool) -> void: loop_changed())
-	cue = label("CUE_READY", 21)
-	panel.add_child(cue)
-	var paper: PanelContainer = PanelContainer.new()
-	var paper_style: StyleBoxFlat = StyleBoxFlat.new()
-	paper_style.bg_color = Color("fffdf6")
-	paper_style.set_corner_radius_all(12)
-	paper_style.content_margin_left = 10
-	paper_style.content_margin_right = 10
-	paper_style.content_margin_top = 10
-	paper_style.content_margin_bottom = 10
-	paper.add_theme_stylebox_override("panel", paper_style)
-	panel.add_child(paper)
-	score = ScoreView.new()
-	paper.add_child(score)
-	panel.add_child(label("BACKING"))
-	backing_box = HFlowContainer.new()
-	panel.add_child(backing_box)
-	panel.add_child(label("HELP_TITLE", 21))
-	panel.add_child(label("HELP_TEXT"))
-	var extras: HFlowContainer = HFlowContainer.new()
-	panel.add_child(extras)
+
+	var details: VBoxContainer = section("DETAILS")
+	summary = label("ARRANGEMENT")
+	details.add_child(summary)
+	warning = label("PROTOTYPE_LIMIT", 18)
+	details.add_child(warning)
+	var help: VBoxContainer = section("HELP")
+	for key: String in ["HELP_STRINGS", "HELP_FRETS", "HELP_STAFF", "HELP_TIMING"]:
+		help.add_child(label(key, 20))
+	help.add_child(button("DISPLAY", func() -> void: toggle_drawer("DISPLAY")))
+	var display: VBoxContainer = section("DISPLAY")
 	scale_picker = OptionButton.new()
-	scale_picker.custom_minimum_size.y = 44
-	scale_picker.tooltip_text = tr("SCALE")
-	for percent: int in [100, 150, 200]:
-		scale_picker.add_item(tr("SCALE_VALUE") % percent)
+	scale_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	scale_picker.fit_to_longest_item = false
+	scale_picker.clip_text = true
+	scale_picker.custom_minimum_size.y = 48
+	for percent: int in [100, 150, 200]: scale_picker.add_item(tr("SCALE_VALUE") % percent)
 	scale_picker.item_selected.connect(func(index: int) -> void:
 		var factor: float = [1.0, 1.5, 2.0][index]
 		apply_scale(factor)
 		if not host.save_scale(factor): status.text = tr("STORAGE_SESSION"))
-	extras.add_child(scale_picker)
-	extras.add_child(button("PSEUDO", func() -> void:
+	display.add_child(scale_picker)
+	display.add_child(button("PSEUDO", func() -> void:
 		TranslationServer.pseudolocalization_enabled = not TranslationServer.pseudolocalization_enabled
 		get_tree().reload_current_scene()))
-	extras.add_child(button("NOTICES", show_notices))
-	offline = label("OFFLINE_PENDING", 13)
-	panel.add_child(offline)
+	display.add_child(button("NOTICES", show_notices))
+	offline = label("OFFLINE_PENDING", 18)
+	display.add_child(offline)
+
+func volume_control(parent: Node, key: String, initial: float, instrument: bool) -> HSlider:
+	var caption: Label = label(key)
+	caption.text = tr(key) % roundi(initial)
+	parent.add_child(caption)
+	var slider: HSlider = HSlider.new()
+	slider.min_value = 0
+	slider.max_value = 100
+	slider.step = 1
+	slider.value = initial
+	slider.custom_minimum_size = Vector2(100, 48)
+	slider.tooltip_text = tr(key) % roundi(initial)
+	slider.value_changed.connect(func(value: float) -> void:
+		caption.text = tr(key) % roundi(value)
+		slider.tooltip_text = caption.text
+		audio.set_level(instrument, value / 100.0))
+	parent.add_child(slider)
+	return slider
+
+func toggle_drawer(key: String) -> void:
+	opened_drawer = "" if opened_drawer == key else key
+	drawer.visible = not opened_drawer.is_empty()
+	for name_key: String in drawers: drawers[name_key].visible = name_key == opened_drawer
+	if drawer.visible:
+		drawer_title.text = tr(key)
+		scroll.scroll_vertical = 0
+	responsive()
 
 func apply_scale(factor: float) -> void:
-	# Scale controls through theme; preserve a usable viewport instead of shrinking it.
-	theme.default_font_size = roundi(17 * factor)
-	scale_labels(panel, factor)
-	adapt_flow(panel)
+	theme.default_font_size = roundi(20 * factor)
+	scale_labels(root_box, factor)
 	scale_picker.select(0 if factor < 1.5 else (1 if factor < 2.0 else 2))
+	responsive()
+
+func responsive() -> void:
+	status.custom_minimum_size.y = (54 if size.x < 760 else 28) * theme.default_font_size / 20.0
+	brand_label.visible = size.y >= 700 or size.x >= 760
+	dock.vertical = size.x < 760
+	dock.get_child(1).custom_minimum_size.x = 0 if size.x < 760 else 420
+	adapt_flow(root_box)
+	play_button.custom_minimum_size.x = 150
+	if score != null: score.queue_redraw(); score.cursor.queue_redraw()
 
 func adapt_flow(node: Node) -> void:
-	if node is HFlowContainer:
+	if node is HFlowContainer or node is HBoxContainer:
 		for child: Node in node.get_children():
 			if child is Button:
-				child.clip_text = true
+				child.clip_text = false
 				var font: Font = child.get_theme_font("font")
-				var needed: float = font.get_string_size(child.text, HORIZONTAL_ALIGNMENT_LEFT, -1, theme.default_font_size).x + (72 if child is OptionButton else (64 if child is CheckButton else 36))
-				child.custom_minimum_size.x = minf(needed, maxf(120, size.x - 64))
-	for child: Node in node.get_children():
-		adapt_flow(child)
+				var font_size: int = roundi(float(child.get_meta("base_font_size", 20)) * theme.default_font_size / 20.0)
+				var needed: float = font.get_string_size(child.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + (20 if child.has_meta("compact") else (72 if child is CheckButton else 28))
+				child.custom_minimum_size.x = 150 if child == play_button else minf(needed, maxf(80, (size.x - 56) / 2 if node is HBoxContainer else size.x - 64))
+	for child: Node in node.get_children(): adapt_flow(child)
 
 func scale_labels(node: Node, factor: float) -> void:
-	if node is Label and node.has_meta("base_font_size"):
+	if node is Control and node.has_meta("base_font_size"):
 		node.add_theme_font_size_override("font_size", roundi(int(node.get_meta("base_font_size")) * factor))
-	for child: Node in node.get_children():
-		scale_labels(child, factor)
+	for child: Node in node.get_children(): scale_labels(child, factor)
+
+func cancel_import() -> void:
+	importer = null
+	cancel_button.hide()
+	status.text = tr("CANCELLED")
+	set_activity(false)
+
+func base_bpm() -> float:
+	if song == null: return 100.0
+	return 60.0 / (song.seconds_at(1) * song.division)
+
+func change_speed(index: int) -> void:
+	if index == SPEEDS.size():
+		bpm_input.get_line_edit().grab_focus()
+		bpm_input.get_line_edit().select_all()
+		return
+	set_speed(SPEEDS[index])
+
+func change_bpm(value: float) -> void:
+	if updating: return
+	speed_picker.select(SPEEDS.size())
+	set_speed(value / base_bpm())
+
+func set_speed(value: float) -> void:
+	var was_playing: bool = audio.playing_practice
+	pause()
+	speed = value
+	update_tempo()
+	if was_playing: start(false)
+
+func update_tempo() -> void:
+	updating = true
+	# Wider bounds support unusual source tempi without silently clamping presets.
+	bpm_input.min_value = minf(10, base_bpm() * 0.25)
+	bpm_input.max_value = maxf(400, base_bpm() * 2)
+	bpm_input.set_value_no_signal(base_bpm() * speed)
+	updating = false
+	tempo_caption.text = tr("TEMPO_CURRENT") % [base_bpm() * speed, base_bpm(), roundi(speed * 100)]
+	tempo_button.text = tr("TEMPO") if is_equal_approx(speed, 1) else tr("TEMPO_SELECTED") % roundi(speed * 100)
+	tempo_button.tooltip_text = tempo_caption.text
+	adapt_flow(dock)
+
+func set_activity(active: bool) -> void:
+	set_process(active)
+	host.configure_activity(active)
 
 func load_demo(index: int) -> void:
 	pause()
@@ -272,10 +473,12 @@ func _file_picked(name_value: String, bytes: PackedByteArray, error: String) -> 
 		return
 	import_name = name_value
 	importer = MidiImport.new(bytes)
+	set_activity(true)
 	cancel_button.show()
 	status.text = tr("IMPORTING")
 
 func finish_import() -> void:
+	set_activity(false)
 	cancel_button.hide()
 	if not importer.error.is_empty():
 		status.text = tr(importer.error)
@@ -294,6 +497,10 @@ func finish_import() -> void:
 	audio.stop_practice()
 	song = result
 	title = import_name
+	song_title.text = title
+	speed = 1.0
+	speed_picker.select(SPEEDS.find(1.0))
+	update_tempo()
 	muted.clear()
 	part_picker.clear()
 	for index: int in range(song.parts.size()):
@@ -311,7 +518,8 @@ func finish_import() -> void:
 	part_picker.select(first)
 	select_part(first)
 	state = "STATE_READY"
-	status.text = tr("LOADED") % title
+	status.text = tr("START_HINT")
+	if drawer.visible: toggle_drawer(opened_drawer)
 	adapt_flow(panel)
 
 func select_part(index: int) -> void:
@@ -323,6 +531,7 @@ func select_part(index: int) -> void:
 	score.song = song
 	score.part = part
 	score.projection = projection
+	notice_button.text = tr("ARRANGEMENT_SHORT") if projection.placed == projection.eligible else tr("UNPLACED_SHORT") % (projection.eligible - projection.placed)
 	summary.text = tr("COVERAGE") % [projection.placed, projection.eligible]
 	warning.text = tr("PROTOTYPE_LIMIT")
 	if projection.placed < projection.eligible:
@@ -367,6 +576,7 @@ func start(count_in: bool) -> void:
 	if mute_check.button_pressed and not filtered.has(part): filtered.append(part)
 	audio.transport.configure(song, start_tick, end_tick, speed, loop_check.button_pressed, count_in, metro_check.button_pressed, filtered, loop_start_tick)
 	audio.begin()
+	set_activity(true)
 	started_msec = Time.get_ticks_msec()
 	state = "STATE_PLAYING"
 	play_button.text = tr("PAUSE")
@@ -377,6 +587,8 @@ func pause() -> void:
 		source_tick = song.tick_at(audio.transport.seconds_at_frame(audio.audible_frame()))
 		audio.stop_practice()
 		state = "STATE_PAUSED"
+		update_position()
+	set_activity(importer != null)
 	if play_button != null: play_button.text = tr("PLAY")
 	if status != null and state == "STATE_PAUSED": status.text = tr("STATE_PAUSED")
 
@@ -430,21 +642,27 @@ func _process(_delta: float) -> void:
 		if frame < audio.transport.count_frames:
 			status.text = tr("COUNTING")
 		else:
-			status.text = tr("PLAYING_STATUS") % title
+			status.text = tr("FOLLOW_HINT")
 		if audio.transport.complete(frame):
 			audio.stop_practice()
+			update_position()
+			set_activity(false)
 			state = "STATE_COMPLETE"
 			play_button.text = tr("PLAY")
 			status.text = tr("STATE_COMPLETE")
-	update_position()
-	if Time.get_ticks_msec() - last_report > 250:
-		last_report = Time.get_ticks_msec()
+	if audio.playing_practice: update_position()
+
+func report_state() -> void:
+	if song == null: return
+	if host.trace_enabled():
 		var evidence: Dictionary = audio.metrics()
-		evidence.merge({"state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "placed": projection.placed, "eligible": projection.eligible, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
+		evidence.merge({"position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "placed": projection.placed, "eligible": projection.eligible, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
 		host.report(evidence)
-		offline.text = tr("OFFLINE_READY") if host.offline_ready() else tr("OFFLINE_PENDING")
+	offline.text = tr("OFFLINE_READY") if host.offline_ready() else tr("OFFLINE_PENDING")
+	if host.offline_ready() and not host.trace_enabled(): idle_timer.stop()
 
 func update_position() -> void:
+	position_updates += 1
 	if song == null:
 		return
 	score.current_tick = source_tick

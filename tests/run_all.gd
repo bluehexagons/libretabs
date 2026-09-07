@@ -27,6 +27,11 @@ func _initialize() -> void:
 		check(false, "intentional test-runner failure")
 		quit(1)
 		return
+	check(PracticeAudio.mix_levels(0.8, 0.8, 0, 0) == 0, "both mixer sliders at zero are silent")
+	check(PracticeAudio.mix_levels(0.8, 0, 1, 0) > 0.4, "instrument is audible independently of metronome")
+	check(PracticeAudio.mix_levels(0.8, 0.2, 0, 1) == PracticeAudio.mix_levels(0, 0.2, 1, 1), "instrument zero leaves only click")
+	check(PracticeAudio.mix_levels(0.8, 0.2, 1, 0) == PracticeAudio.mix_levels(0.8, 0, 1, 1), "click zero leaves only instrument")
+	check(absf(PracticeAudio.mix_levels(-32, -1, 1, 1)) < 0.9, "dense mix stays inside output ceiling")
 	var bytes: PackedByteArray = fixture("first_melody")
 	var imported: MidiImport = parse(bytes)
 	check(imported.error.is_empty(), "format 1 imports")
