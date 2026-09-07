@@ -94,6 +94,12 @@ msgstr "Mute my part"
 msgid "SEEK"
 msgstr "Seek to a measure"
 
+msgid "SEEK_CONTINUOUS"
+msgstr "Scrub through the music. Drag or click for any position; with the scrubber focused, Arrow keys move one beat, Page Up/Down move a measure, and Home/End go to the start/end."
+
+msgid "SEEK_POSITION"
+msgstr "Measure %d · %d:%02d"
+
 msgid "LOOP"
 msgstr "Loop measures"
 
@@ -530,7 +536,7 @@ msgid "TOUCH_HELP"
 msgstr "Hold an action button for a moment to see what it does. Move your finger to scroll instead. With a mouse, hover for a hint; with a keyboard, focus a control and press F1."
 
 msgid "PLAYER_SHORTCUTS"
-msgstr "Space plays or pauses. Left and Right move by measure, or turn a reading page. Escape closes a menu or capture view. F8 toggles capture view. Tab moves between controls. Swipe across a manual reading page to turn it. Piano keys are listed below."
+msgstr "Space always plays or pauses while a menu is closed. Left and Right move by measure, or turn a reading page. Focus the position scrubber for beat-by-beat Arrow keys, Page Up/Down by measure, and Home/End. Escape closes a menu or capture view. F8 toggles capture view. Tab moves between controls. Swipe across a manual reading page to turn it. Piano keys are listed below."
 
 msgid "TIP_MENU"
 msgstr "Open music, playback, printing and appearance options."

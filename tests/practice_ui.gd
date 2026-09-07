@@ -142,6 +142,43 @@ func run() -> void:
 	before = app.get("position_updates")
 	for _frame: int in range(10): await process_frame
 	check(app.get("position_updates") == before, "paused seek redraws once then returns to idle")
+	var seek_bar: HSlider = app.get("seek")
+	check(seek_bar.min_value == 0 and seek_bar.max_value == song.end_tick and seek_bar.step == 1, "position scrubber spans every source tick rather than measure numbers")
+	var seek_press: InputEventMouseButton = InputEventMouseButton.new()
+	seek_press.button_index = MOUSE_BUTTON_LEFT
+	seek_press.pressed = true
+	app.call("seek_input", seek_press)
+	seek_bar.value = song.division * 3 / 2.0
+	var seek_release: InputEventMouseButton = InputEventMouseButton.new()
+	seek_release.button_index = MOUSE_BUTTON_LEFT
+	seek_release.pressed = false
+	app.call("seek_input", seek_release)
+	check(is_equal_approx(app.get("source_tick"), song.division * 3 / 2.0) and app.get("score").measure_index == 0, "pointer dragging seeks within a measure without snapping")
+	check(not player.playing_practice and not app.is_processing(), "paused scrub ends without leaving background work active")
+	var scrub_key: InputEventKey = InputEventKey.new()
+	scrub_key.keycode = KEY_RIGHT
+	scrub_key.pressed = true
+	app.call("seek_input", scrub_key)
+	check(is_equal_approx(app.get("source_tick"), song.division * 5 / 2.0), "focused scrubber Arrow key advances one musical beat")
+	scrub_key.keycode = KEY_HOME
+	app.call("seek_input", scrub_key)
+	check(app.get("source_tick") == 0, "focused scrubber Home key reaches the start")
+	scrub_key.keycode = KEY_END
+	app.call("seek_input", scrub_key)
+	check(app.get("source_tick") == song.end_tick, "focused scrubber End key reaches the source end")
+	app.call("stop_practice")
+	app.call("close_menu")
+	var space: InputEventKey = InputEventKey.new()
+	space.keycode = KEY_SPACE
+	space.pressed = true
+	app.call("_input", space)
+	check(player.playing_practice, "Space plays from any non-menu focus")
+	app.call("_input", space)
+	check(not player.playing_practice, "Space pauses from any non-menu focus")
+	app.call("toggle_drawer", "HELP")
+	app.call("_input", space)
+	check(not player.playing_practice and app.get("menu_overlay").visible, "Space does not play behind an open menu")
+	app.call("close_menu")
 	app.call("load_demo", 0)
 	app.call("cancel_import")
 	check(not app.is_processing() and app.get("song") == song, "cancel preserves previous song and stops processing")

@@ -49,6 +49,9 @@ var import_button: Button
 var speed_picker: OptionButton
 var scale_picker: OptionButton
 var seek: HSlider
+var seek_label: Label
+var seek_dragging: bool = false
+var seek_resume_playback: bool = false
 var loop_from: SpinBox
 var loop_to: SpinBox
 var loop_check: CheckButton
@@ -345,18 +348,32 @@ func build_ui() -> void:
 	paper.add_child(score)
 	panel.move_child(details, panel.get_children().find(paper) + 1)
 	var navigation: HBoxContainer = HBoxContainer.new()
+	navigation.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	seek_navigation = navigation
 	panel.add_child(navigation)
 
 	seek = HSlider.new()
-	seek.min_value = 1
-	seek.max_value = 4
+	# Source ticks keep a scrub at the same precision as the shared transport.
+	# Measures remain a reading aid, rather than artificial seek boundaries.
+	seek.min_value = 0
+	seek.max_value = 1
 	seek.step = 1
 	seek.custom_minimum_size = Vector2(40, 48)
 	seek.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	seek.tooltip_text = tr("SEEK")
-	seek.value_changed.connect(seek_measure)
+	seek.focus_mode = Control.FOCUS_ALL
+	seek.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	seek.tooltip_text = tr("SEEK_CONTINUOUS")
+	seek.drag_started.connect(begin_seek_drag)
+	seek.drag_ended.connect(end_seek_drag)
+	seek.gui_input.connect(seek_input)
+	seek.value_changed.connect(seek_tick)
 	navigation.add_child(seek)
+	seek_label = label("SEEK_POSITION", 16)
+	seek_label.custom_minimum_size.x = 112
+	seek_label.size_flags_horizontal = Control.SIZE_SHRINK_END
+	seek_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	seek_label.tooltip_text = tr("SEEK_CONTINUOUS")
+	navigation.add_child(seek_label)
 
 	page_navigation = flow(panel)
 	page_navigation.add_child(button("PAGE_PREVIOUS", func() -> void: turn_page(-1)))
@@ -836,7 +853,7 @@ func _input(event: InputEvent) -> void:
 				return
 			if event.keycode in [KEY_LEFT, KEY_RIGHT] and not focused is Range:
 				if score.mode == "pages" and not capture_active: turn_page(-1 if event.keycode == KEY_LEFT else 1)
-				else: seek_measure(clampf(seek.value + (-1 if event.keycode == KEY_LEFT else 1), 1, seek.max_value))
+				else: seek_measure(clampi(score.measure_index + (-1 if event.keycode == KEY_LEFT else 1), 0, song.measures.size() - 1) + 1)
 				get_viewport().set_input_as_handled()
 				return
 	if event is InputEventKey:
@@ -1178,7 +1195,7 @@ func finish_import() -> void:
 		part_picker.add_item(tr("PART_VALUE") % [index + 1, info.name if not String(info.name).is_empty() else tr("UNNAMED_PART"), int(info.channel) + 1])
 		part_picker.set_item_disabled(index, bool(info.percussion))
 	updating = true
-	seek.max_value = song.measures.size()
+	seek.max_value = song.end_tick
 	loop_from.max_value = song.measures.size()
 	loop_to.max_value = song.measures.size()
 	loop_from.value = 1
@@ -1349,10 +1366,88 @@ func update_play_control(frame: int = -1) -> void:
 func seek_measure(value: float) -> void:
 	if updating or song == null:
 		return
+	seek_tick(float(song.measures[int(value) - 1].start))
+
+func seek_input(event: InputEvent) -> void:
+	if song == null:
+		return
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			begin_seek_drag()
+		else:
+			end_seek_drag(true)
+		return
+	if event is InputEventScreenTouch:
+		if event.pressed:
+			begin_seek_drag()
+		else:
+			end_seek_drag(true)
+		return
+	if not event is InputEventKey or not event.pressed or event.echo:
+		return
+	if event.ctrl_pressed or event.alt_pressed or event.meta_pressed:
+		return
+	var target: float = source_tick
+	match event.keycode:
+		KEY_LEFT, KEY_DOWN:
+			target -= seek_keyboard_step()
+		KEY_RIGHT, KEY_UP:
+			target += seek_keyboard_step()
+		KEY_PAGEUP:
+			target = float(song.measures[maxi(0, score.measure_index - 1)].start)
+		KEY_PAGEDOWN:
+			target = float(song.measures[mini(song.measures.size() - 1, score.measure_index + 1)].start)
+		KEY_HOME:
+			target = 0
+		KEY_END:
+			target = song.end_tick
+		_:
+			return
+	seek_tick(target)
+	get_viewport().set_input_as_handled()
+
+func seek_keyboard_step() -> float:
+	if song == null:
+		return 1
+	var bar: Dictionary = song.measures[score.measure_index]
+	# In 6/8, the learner follows a dotted-quarter pulse; otherwise use the
+	# meter's written beat. Page keys retain the faster measure navigation.
+	if int(bar.numerator) == 6 and int(bar.denominator) == 8:
+		return song.division * 3
+	return song.division * 4.0 / int(bar.denominator)
+
+func begin_seek_drag() -> void:
+	if seek_dragging or song == null or importer == null:
+		return
+	seek_dragging = true
+	seek_resume_playback = audio.playing_practice
+	# Pause once at the beginning of a drag. Reconfiguring the generator for
+	# every pointer move is audible and makes a scrub feel unresponsive.
+	if seek_resume_playback:
+		pause()
+
+func end_seek_drag(_changed: bool) -> void:
+	if not seek_dragging:
+		return
+	seek_dragging = false
+	if seek_resume_playback:
+		seek_resume_playback = false
+		start(false)
+	update_position()
+
+func seek_tick(value: float) -> void:
+	if updating or song == null:
+		return
+	var next_tick: float = clampf(value, 0.0, float(song.end_tick))
+	if seek_dragging:
+		source_tick = next_tick
+		update_position()
+		return
 	var was_playing: bool = audio.playing_practice
 	pause()
-	source_tick = float(song.measures[int(value) - 1].start)
-	if was_playing: start(false)
+	source_tick = next_tick
+	if was_playing:
+		start(false)
 	update_position()
 
 func _suspended() -> void:
@@ -1407,8 +1502,10 @@ func update_position() -> void:
 		capture_view.score.update_tick(source_tick)
 	update_page_controls()
 	updating = true
-	seek.value = score.measure_index + 1
+	seek.value = source_tick
 	updating = false
+	var elapsed: int = floori(song.seconds_at(source_tick))
+	seek_label.text = tr("SEEK_POSITION") % [score.measure_index + 1, elapsed / 60, posmod(elapsed, 60)]
 	cue.text = tr("CUE_REST")
 	for note: Dictionary in song.notes:
 		if int(note.part) == part and source_tick >= float(note.start) and source_tick < float(note.end):
