@@ -2,8 +2,9 @@
 
 The initial distribution targets are browser play on itch.io and an owner-operated
 HTTPS website, plus unsigned Windows/Linux x86_64 downloads on GitHub Releases and
-itch.io. GitHub hosts source and downloadable web ZIPs; GitHub Pages is not the
-threaded player host because this build needs controllable COOP/COEP headers.
+itch.io. GitHub hosts source and downloadable web ZIPs; GitHub Pages hosts the
+instructional/download site, linking to the VM and itch players once configured.
+The threaded player needs controllable COOP/COEP headers.
 Android and additional architectures remain future targets, not advertised support.
 
 ## Build inputs
@@ -133,6 +134,78 @@ packages, without rebuilding. Keep the old GitHub release available. Existing op
 browser documents stay pinned to their cached release until reload; imported MIDI
 is session-only. Confirm settings-schema compatibility before rollback and never
 force an update that discards the open song.
+
+## GitHub Pages instructional site
+
+The site in `site/` has no Godot, JavaScript, npm, external fonts or analytics.
+It covers first practice, downloads, privacy, prototype limitations and feedback.
+Only its generated HTML, CSS and `.nojekyll` are uploaded; the repository itself
+is never used as a Pages artifact. Relative asset links support `/libretabs/`.
+
+1. When the repository is eligible, choose **Settings → Pages → Source → GitHub
+   Actions**. On 2026-09-07, GitHub rejected activation with HTTP 422: the current
+   plan does not support Pages for this private repository. Make it public when
+   ready, or use a plan supporting private-repository Pages; visibility is an
+   owner decision. Pages content itself is public with the normal configuration.
+2. Optionally set repository Actions variables `PLAYER_URL` and `ITCH_URL` to
+   the final public HTTPS destinations. Empty values omit those buttons. Do not
+   put credentials in URLs. Updating variables requires publishing the site again.
+3. Run **Actions → Publish project guide** on main. Leave **publish** enabled to
+   deploy, or turn it off for a one-day preview artifact without Pages activation.
+   The workflow is manual and does not run any Godot exports.
+4. Check the deployment URL, keyboard navigation and phone layout. Until a release
+   is published, the downloads link leads to the release listing without promising
+   a package exists. Prereleases are linked through the listing, not `/latest`.
+
+Local preview (use a fresh output directory each build):
+
+```sh
+python3 scripts/build_site.py --output dist/site-preview
+python3 -m http.server 8769 --bind 127.0.0.1 --directory dist/site-preview
+```
+
+See [GitHub's custom workflow instructions](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages)
+and [Pages availability](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages).
+
+## infra-tools VM deployment
+
+Use an infra-tools version containing the `godot-web` manifest component.
+LibreTabs' root `infra.json` serves the player at the domain root; change its
+`path` to `/libretabs/` for a subpath. The guide is deployed separately through
+Pages. On your orchestration host, with access to the target VM:
+
+```sh
+infra-tools setup server_web YOUR_VM deploy \
+  --ssl --ssl-email YOUR_EMAIL \
+  --deploy YOUR_PUBLIC_DOMAIN https://github.com/bluehexagons/libretabs.git
+```
+
+First add `--dry-run` to validate configuration and source access. The real
+deployment builds with `scripts/export_web.py` as a non-root account in staged
+source; it does not require `.git`. With no `GODOT` override, the script installs
+the checksum-locked Linux x86_64 engine and templates in that account's persistent
+home. Python 3.11+, outbound HTTPS and about 5 GB free working space are required.
+The current installer downloads the full official template archive, including
+desktop templates; this is an explicit VM deployment cost, not an automatic CI job.
+An operator-provisioned `GODOT` must match the lock and have matching web templates.
+
+The output is checked before activation, with correct MIME, isolation and cache
+headers supplied by infra-tools. A failed export leaves the active tree intact.
+Only `exports/web` is served. Nginx configuration activation follows infra-tools'
+existing setup transaction; it is not a coordinated zero-downtime switch of all
+files and routes. The legacy webhook deployer does not read this manifest; use
+the documented setup/patch path. Do not configure automatic builds inadvertently.
+
+This source deployment rebuilds the selected source and retains its project
+version; it is not promotion of a GitHub release ZIP. For exact release promotion,
+use the version-directory hosting instructions above or a dedicated prebuilt
+export repository with a `godot-web` manifest and no build command. Retain the
+previous approved package or commit for rollback.
+
+After deployment, run `scripts/check_web_release.py` against the HTTPS URL and
+perform the browser checks above before linking it from Pages. No production VM
+or public domain was supplied during implementation, so target-specific DNS,
+certificate issuance, permissions and live deployment remain to be validated.
 
 ## Adding platforms
 

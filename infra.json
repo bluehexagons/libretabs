@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "components": [{
+    "name": "libretabs",
+    "type": "godot-web",
+    "domain": "{{domain}}",
+    "path": "/",
+    "build": "python3 scripts/export_web.py",
+    "output": "exports/web"
+  }]
+}

@@ -1,0 +1,52 @@
+<!doctype html>
+<!-- Project-authored instructional content: CC0-1.0; site code: Apache-2.0. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="LibreTabs prototype downloads, guitar practice instructions, and feedback.">
+  <meta name="color-scheme" content="light dark">
+  <title>LibreTabs — practice guide and downloads</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2314634d'/%3E%3Cpath d='M10 7v18h14v-4H14V7z' fill='%23faf5e9'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header><a class="brand" href="./">LibreTabs</a><nav aria-label="Main"><a href="#start">Get started</a><a href="#guide">Practice guide</a><a href="#feedback">Feedback</a></nav></header>
+  <main id="main">
+    <section id="start">
+      <p class="eyebrow">Evaluation prototype · free and open source</p>
+      <h1>Guitar tabs and sheet music, together.</h1>
+      <p class="intro">Practice built-in exercises or open a MIDI file from your device. Hear the notes, slow the music down, and repeat a passage.</p>
+      <div class="actions">
+        <a class="button" href="https://github.com/bluehexagons/libretabs/releases">Prototype downloads <span aria-hidden="true">↗</span></a>
+        {{PLAYER_LINK}}
+        {{ITCH_LINK}}
+      </div>
+      <p>Windows and Linux x86_64 downloads run offline after extraction, without installing Godot. Packages appear on the releases page when published; check each release’s tested platforms and known issues.</p>
+      <p>{{HOSTING_NOTE}}</p>
+    </section>
+    <section id="guide">
+      <h2>Your first practice session</h2>
+      <ol class="steps">
+        <li><h3>Choose music</h3><p>Open <strong>Songs</strong> to choose an exercise or import a local <code>.mid</code> or <code>.midi</code> file. The prototype accepts Standard MIDI formats 0 and 1, up to 256 KiB. Choose a pitched part if the file contains several.</p></li>
+        <li><h3>Read the guitar tabs</h3><p>Tablature, or tabs, uses six lines for the guitar strings. The top line is string 1, the thinnest string. A number tells you which fret to press; 0 means play the open string. Sheet music above the tabs shows pitch and rhythm. Help explains both views.</p></li>
+        <li><h3>Listen, then play along</h3><p>Press <strong>Play</strong> to start audio. Lower the tempo control to slow down. Toggle the metronome for a steady click and choose a count-in in the playback settings. With menus closed, <kbd>Space</kbd> plays or pauses.</p></li>
+        <li><h3>Repeat a small section</h3><p>Use the loop controls to repeat a range of measures. A measure is a small group of beats. Try a short section at a comfortable speed before increasing the tempo.</p></li>
+      </ol>
+    </section>
+    <section class="details" aria-label="Player options">
+      <article><h2>Make it comfortable</h2><p>The menu offers text size, light/dark appearance, reduced motion, control placement and handed layout. Score view offers scrolling or pages. Open Help for keyboard shortcuts and touch gestures.</p><p>Keyboard reference notes default to <kbd>Z X C V B N M ,</kbd>. An alternate A-row layout is available in keyboard settings. These notes are for reference; they do not record or grade your playing.</p></article>
+      <article><h2>Print or capture</h2><p><strong>Print your music</strong> prepares a self-contained printable HTML file with tabs, staff, or both. Open the saved file in a browser to print or save as PDF.</p><p><strong>Capture &amp; overlay</strong> provides a score-only view for streaming or instructional video. <kbd>F8</kbd> toggles it; <kbd>Escape</kbd> returns to the player.</p></article>
+    </section>
+    <section id="feedback">
+      <h2>What to expect—and what to report</h2>
+      <p>This is an early technical prototype. Guided lessons are incomplete. Guitar arrangements and simplified notation still need musical review. It does not listen to your guitar or assess your performance. Mobile and browser compatibility remain under evaluation.</p>
+      <p>Imported MIDI stays on your device and is session-only. Preferences are stored locally when storage is available. Offline browser use requires a completed first download; cleared browser storage requires reconnection. Native downloads are an alternative.</p>
+      <p><a href="https://github.com/bluehexagons/libretabs/issues">Report a bug or confusing interaction</a> with your version, device, browser and steps to reproduce it. Use original or redistributable music examples; don’t attach private or copyrighted songs.</p>
+      <p><a href="https://github.com/bluehexagons/libretabs/blob/main/docs/privacy.md">Privacy details</a> · <a href="https://github.com/bluehexagons/libretabs/security/policy">Report a security issue privately</a></p>
+    </section>
+  </main>
+  <footer><span>LibreTabs · bluehexagons</span><a href="https://github.com/bluehexagons/libretabs">Source, licenses and build instructions</a></footer>
+</body>
+</html>

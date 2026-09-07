@@ -12,6 +12,10 @@ LibreTabs is a non-commercial project: bluehexagons does not plan paid editions,
 
 Download versioned prototype packages from [GitHub Releases](https://github.com/bluehexagons/libretabs/releases) when available. Windows and Linux downloads work offline without a Godot installation. Browser releases will be linked here when the itch.io and website pages are published. Build preparation does not imply a public release exists yet.
 
+GitHub Pages is the instructional/download site; the threaded browser player runs
+on the owner VM or itch.io. The [hosting guide](docs/releases.md#github-pages-instructional-site)
+covers Pages activation and the included infra-tools deployment manifest.
+
 Press **Play**, adjust speed with the percentage/slider, and use **Songs** to choose a built-in exercise or import a local format-0/1 MIDI file (prototype limit: 256 KiB). Imports stay on your device. **Menu** contains playback, looping, display, keyboard, printing and capture settings.
 
 This is a technical evaluation: procedural sound, basic guitar placement, and a simplified staff reference. It does not yet include the six lessons or reviewed musical arrangements. The [feedback update](docs/evidence/practice-feedback.md) adds a simpler phone-friendly view, larger text, separate volume sliders, and reduced idle work. Choose **Menu → Settings → Appearance & text** for Device setting, Light or Dark appearance and larger text. The [navigation update](docs/evidence/score-navigation.md) adds default smooth scrolling, manual pages (**Score view**), a clearer menu, and a fix for tiny controls on high-density phones. See [evaluation steps, measured results, and remaining gates](docs/evidence/m0-prototype.md).

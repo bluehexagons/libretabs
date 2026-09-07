@@ -1,0 +1,21 @@
+# 0012: Instructional Pages site and VM player hosting
+
+Status: accepted by owner, 2026-09-07.
+
+GitHub Pages hosts a lightweight guide, download links and project information.
+It links to the owner-operated VM player and itch.io once their public URLs are
+available. The threaded Godot export stays on hosts that can supply COOP/COEP;
+we do not add an isolation service-worker workaround or change the audio build
+to fit Pages. Site deployment is manual and independent of package builds.
+
+LibreTabs declares an additive infra-tools version-1 `godot-web` component. Its
+application-owned export script pins the engine/templates and works from staged
+source without Git metadata. Infra-tools validates output before activation and
+serves it with isolation headers, explicit MIME types and revalidation of fixed
+asset names. Source deployment and exact release-artifact promotion remain
+distinct workflows. This adds no app backend, telemetry or new runtime dependency.
+
+Pages activation is blocked by the current private-repository plan, not by the
+site implementation. Repository visibility, final player URLs and public release
+publication remain owner-controlled. Native device and musical evaluation gates
+remain open. See [release and hosting instructions](../releases.md).
