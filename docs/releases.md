@@ -23,7 +23,7 @@ python3 scripts/verify.py
 python3 scripts/generate_fixtures.py
 python3 scripts/prepare_export.py
 git diff --exit-code
-python3 scripts/release.py --version 0.1.0-prototype.1
+python3 scripts/release.py --version 0.0.1-prototype.1
 ```
 
 Use a clean committed checkout. The build copies only `git archive HEAD` into an
@@ -52,11 +52,13 @@ exports all targets. Artifacts expire after seven days and are not recompressed.
 Monthly grouped Dependabot proposals maintain commit-pinned GitHub Actions.
 
 Before dispatch, copy `release/notes/TEMPLATE.md` to
-`release/notes/0.1.0-prototype.1.md`, edit it with actual changes/test evidence, and
-commit. Supply the same version in the workflow. Leave `draft_release` off for a
-build rehearsal. Enable it to upload a **draft prerelease**, never a public release.
-A duplicate tag or output version is refused. There are no automatic live itch.io
-or website deployments and no deployment secrets in the build job.
+`release/notes/0.0.1-prototype.1.md`, edit it with actual changes/test evidence, and
+commit. Supply the same version in the workflow exactly as written: use
+`MAJOR.MINOR.PATCH-prototype.NUMBER`, with no leading `v`. The first prepared
+candidate in this repository is `0.0.1-prototype.1`. Leave `draft_release` off for
+a build rehearsal. Enable it to upload a **draft prerelease**, never a public
+release. A duplicate tag or output version is refused. There are no automatic live
+itch.io or website deployments and no deployment secrets in the build job.
 
 The release job's contents-write token is used only for the optional draft upload;
 checkout does not persist credentials. Public pull requests have read-only verification
@@ -77,10 +79,10 @@ report SmartScreen/antivirus blocks without telling testers to disable protectio
 The publishing helper validates package checksums and prints commands by default:
 
 ```sh
-python3 scripts/publish_release.py github dist/0.1.0-prototype.1 \
-  --notes release/notes/0.1.0-prototype.1.md
+python3 scripts/publish_release.py github dist/0.0.1-prototype.1 \
+  --notes release/notes/0.0.1-prototype.1.md
 # Add --execute to create a draft prerelease after authenticating gh.
-python3 scripts/publish_release.py itch dist/0.1.0-prototype.1 \
+python3 scripts/publish_release.py itch dist/0.0.1-prototype.1 \
   --itch-project YOUR_ACCOUNT/YOUR_PROJECT
 # Add --execute after reviewing the destination; this updates itch channels.
 ```

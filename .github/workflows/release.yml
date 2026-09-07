@@ -1,10 +1,11 @@
 # SPDX-License-Identifier: Apache-2.0
 name: Prepare prototype release
+run-name: Prepare LibreTabs ${{ inputs.version }}
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version (e.g. 0.1.0-prototype.1; always a new version)'
+        description: 'MAJOR.MINOR.PATCH-prototype.NUMBER (no leading v)'
         required: true
         type: string
       draft_release:
@@ -30,9 +31,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Validate version before downloading tools
-        run: |
-          python3 -c 'import os,re; assert re.fullmatch(r"\d+\.\d+\.\d+-prototype\.\d+", os.environ["RELEASE_VERSION"]), "Invalid prototype version"'
-          test -f "release/notes/$RELEASE_VERSION.md"
+        run: python3 scripts/validate_release_request.py "$RELEASE_VERSION"
       - name: Install locked engine and release templates
         run: python3 scripts/install_toolchain.py --directory "$RUNNER_TEMP/godot" --templates
       - name: Verify release source

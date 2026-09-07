@@ -2,6 +2,8 @@
 import importlib.util
 import json
 from pathlib import Path
+import subprocess
+import sys
 import tempfile
 import unittest
 import zipfile
@@ -23,6 +25,30 @@ class ReleaseTests(unittest.TestCase):
         for version in ['../escape', 'v1.0', '1.0.0', '1.0.0-prototype.1;echo bad', '1.0.0-prototype.1\n']:
             self.assertIsNone(release.VERSION.fullmatch(version))
         self.assertIsNotNone(release.VERSION.fullmatch('0.1.0-prototype.1'))
+
+    def test_release_request_reports_actionable_version_and_notes_errors(self):
+        script = ROOT / 'scripts' / 'validate_release_request.py'
+        invalid = subprocess.run(
+            [sys.executable, script, 'v0.1.0'], text=True,
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        )
+        self.assertNotEqual(invalid.returncode, 0)
+        self.assertIn("no leading 'v'", invalid.stdout)
+        self.assertIn('0.0.1-prototype.1', invalid.stdout)
+
+        missing = subprocess.run(
+            [sys.executable, script, '99.99.99-prototype.99'], text=True,
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        )
+        self.assertNotEqual(missing.returncode, 0)
+        self.assertIn('Missing release notes:', missing.stdout)
+
+        valid = subprocess.run(
+            [sys.executable, script, '0.0.1-prototype.1'], text=True,
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        )
+        self.assertEqual(valid.returncode, 0, valid.stdout)
+        self.assertIn('Release request is valid', valid.stdout)
 
     def test_archive_layout_permissions_and_repeatability(self):
         with tempfile.TemporaryDirectory() as temporary:
