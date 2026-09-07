@@ -45,6 +45,13 @@ var song_title: Label
 var brand_label: Label
 var notice_button: Button
 var tempo_button: Button
+var metro_button: Button
+var playback_button: Button
+var stop_button: Button
+var quick_row: HFlowContainer
+var slower_button: Button
+var faster_button: Button
+var original_button: Button
 var menu_overlay: Control
 var menu_button: Button
 var menu_scroll: ScrollContainer
@@ -294,9 +301,18 @@ func build_ui() -> void:
 	for mode: String in ["font_color", "font_focus_color", "font_hover_color", "font_pressed_color"]:
 		play_button.add_theme_color_override(mode, Color.WHITE)
 	transport_row.add_child(play_button)
-	transport_row.add_child(button("STOP", stop_practice))
+	stop_button = button("STOP", stop_practice)
+	transport_row.add_child(stop_button)
+	playback_button = button("PLAYBACK_QUICK", func() -> void: toggle_drawer("TEMPO"))
+	transport_row.add_child(playback_button)
+	quick_row = flow(dock)
+	quick_row.alignment = FlowContainer.ALIGNMENT_CENTER
 	tempo_button = button("TEMPO", func() -> void: toggle_drawer("TEMPO"))
-	transport_row.add_child(tempo_button)
+	quick_row.add_child(tempo_button)
+	metro_button = button("CLICK_ON", func() -> void: set_metronome(not metro_check.button_pressed))
+	metro_button.toggle_mode = true
+	quick_row.add_child(metro_button)
+	update_metronome()
 
 
 func section(key: String) -> VBoxContainer:
@@ -309,7 +325,7 @@ func section(key: String) -> VBoxContainer:
 
 func build_drawers() -> void:
 	var menu_index: VBoxContainer = section("MENU")
-	for key: String in ["SONG_MENU", "SCORE_VIEW", "TEMPO", "SOUND", "LOOP_TOOL", "HELP", "DETAILS", "DISPLAY"]:
+	for key: String in ["TEMPO", "LOOP_TOOL", "SOUND", "SONG_MENU", "SCORE_VIEW", "HELP", "DETAILS", "DISPLAY"]:
 		menu_index.add_child(button(key, func() -> void: toggle_drawer(key)))
 	var views: VBoxContainer = section("SCORE_VIEW")
 	views.add_child(label("VIEW_HELP"))
@@ -352,7 +368,22 @@ func build_drawers() -> void:
 	library.add_child(part_picker)
 
 	var tempo: VBoxContainer = section("TEMPO")
-	tempo.add_child(label("TEMPO_HELP", 18))
+	var speed_steps: HFlowContainer = flow(tempo)
+	slower_button = button("SLOWER", func() -> void: step_speed(-1))
+	faster_button = button("FASTER", func() -> void: step_speed(1))
+	original_button = button("ORIGINAL_SPEED", func() -> void: set_speed(1.0))
+	for item: Button in [slower_button, faster_button, original_button]: speed_steps.add_child(item)
+	speed_steps.add_child(button("STOP", func() -> void: stop_practice(); close_menu()))
+	tempo_caption = label("TEMPO_HELP", 18)
+	tempo.add_child(tempo_caption)
+	metro_check = check("METRONOME", true)
+	metro_check.tooltip_text = tr("CLICK_HELP")
+	metro_check.toggled.connect(set_metronome)
+	tempo.add_child(metro_check)
+	count_check = check("COUNT_IN", true)
+	count_check.tooltip_text = tr("COUNT_HELP")
+	tempo.add_child(count_check)
+	tempo.add_child(label("SPEED_PRESETS", 18))
 	speed_picker = OptionButton.new()
 	speed_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	speed_picker.fit_to_longest_item = false
@@ -371,25 +402,21 @@ func build_drawers() -> void:
 	bpm_input.custom_minimum_size.y = 56
 	bpm_input.value_changed.connect(change_bpm)
 	tempo.add_child(bpm_input)
-	tempo_caption = label("TEMPO_HELP", 18)
-	tempo.add_child(tempo_caption)
-	count_check = check("COUNT_IN", true)
-	tempo.add_child(count_check)
+	tempo.add_child(label("TEMPO_HELP", 18))
+	tempo.add_child(label("CLICK_HELP", 18))
 
 	var sound: VBoxContainer = section("SOUND")
 	instrument_slider = volume_control(sound, "INSTRUMENT_VOLUME", 85, true)
 	click_slider = volume_control(sound, "CLICK_VOLUME", 35, false)
-	metro_check = check("METRONOME", true)
 	mute_check = check("MUTE_MY_PART", false)
-	sound.add_child(metro_check)
 	sound.add_child(mute_check)
 	sound.add_child(label("BACKING", 18))
 	backing_box = flow(sound)
-	for item: CheckButton in [count_check, metro_check, mute_check]:
-		item.toggled.connect(func(_pressed: bool) -> void: restart_if_playing())
+	mute_check.toggled.connect(func(_pressed: bool) -> void: restart_if_playing())
 
 	var loops: VBoxContainer = section("LOOP_TOOL")
 	loops.add_child(label("LOOP_HELP", 18))
+	loops.add_child(button("REPEAT_MEASURE", repeat_measure))
 	loop_check = check("LOOP", false)
 	loops.add_child(loop_check)
 	loop_from = SpinBox.new()
@@ -493,6 +520,7 @@ func _input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 
 func menu_focusable(node: Node, controls: Array[Control]) -> void:
+	if node is BaseButton and node.disabled: return
 	if node is Control and node.is_visible_in_tree() and node.focus_mode == Control.FOCUS_ALL:
 		controls.append(node)
 	for child: Node in node.get_children(): menu_focusable(child, controls)
@@ -559,7 +587,17 @@ func responsive() -> void:
 	root_box.vertical = not landscape
 	header.vertical = landscape
 	header.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN if landscape else Control.SIZE_FILL
-	tempo_button.visible = not landscape and size.x >= 360 and not (compact and theme.default_font_size >= 30)
+	# Preserve the score at enlarged text sizes; one direct panel replaces the
+	# quick row when four large controls would overwhelm the available space.
+	var expanded_controls: bool = theme.default_font_size < 30
+	quick_row.visible = expanded_controls
+	tempo_button.visible = expanded_controls
+	metro_button.visible = expanded_controls
+	playback_button.visible = not expanded_controls
+	stop_button.visible = expanded_controls and not landscape
+	dock_panel.add_theme_stylebox_override("panel", UIAppearance.box(UIAppearance.color("paper", dark_mode), 8 if landscape else 12))
+	dock.custom_minimum_size.x = 0
+	if landscape: dock.custom_minimum_size.x = 144 if expanded_controls else 152
 	brand_label.visible = not landscape and not compact
 	header.alignment = BoxContainer.ALIGNMENT_BEGIN if landscape else BoxContainer.ALIGNMENT_END
 	song_title.visible = not landscape and not (compact and theme.default_font_size >= 30)
@@ -585,12 +623,20 @@ func adapt_flow(node: Node) -> void:
 				var font: Font = child.get_theme_font("font")
 				var font_size: int = roundi(float(child.get_meta("base_font_size", 20)) * theme.default_font_size / 20.0)
 				var available: float = minf(size.x - 64, 496) if drawer.is_ancestor_of(node) else size.x - 56
+				if landscape and dock.is_ancestor_of(node): available = dock.custom_minimum_size.x
 				var needed: float = font.get_string_size(child.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + (20 if child.has_meta("compact") else (72 if child is CheckButton else 28))
 				var limit: float = available
 				if node == seek_navigation: limit = (available - 56) / 2
 				elif node is BoxContainer and node != header: limit = available / 2
 				child.custom_minimum_size.x = maxf(120, minf(needed, available)) if child == play_button else minf(needed, maxf(80, limit))
 	for child: Node in node.get_children(): adapt_flow(child)
+	if node == dock:
+		for row: Control in dock.get_children():
+			var row_width: float = 0
+			for item: Control in row.get_children():
+				if item.visible: row_width += item.custom_minimum_size.x + 8
+			row.custom_minimum_size.x = maxf(0, row_width - 8) if not dock.vertical else 0
+			row.size_flags_horizontal = Control.SIZE_SHRINK_CENTER if not dock.vertical else Control.SIZE_FILL
 
 func scale_labels(node: Node, factor: float) -> void:
 	if node is Control and node.has_meta("base_font_size"):
@@ -606,6 +652,21 @@ func cancel_import() -> void:
 func base_bpm() -> float:
 	if song == null: return 100.0
 	return 60.0 / (song.seconds_at(1) * song.division)
+
+func set_metronome(enabled: bool) -> void:
+	metro_check.set_pressed_no_signal(enabled)
+	audio.set_metronome(enabled)
+	update_metronome()
+
+func update_metronome() -> void:
+	if metro_button == null: return
+	metro_button.set_pressed_no_signal(metro_check.button_pressed)
+	metro_button.text = tr("CLICK_ON" if metro_check.button_pressed else "CLICK_OFF")
+	metro_button.tooltip_text = tr("CLICK_HELP")
+	adapt_flow(dock)
+
+func step_speed(direction: int) -> void:
+	set_speed(clampf(roundf(speed * 100.0 + direction * 5.0) / 100.0, 0.25, 2.0))
 
 func change_speed(index: int) -> void:
 	if index == SPEEDS.size():
@@ -624,7 +685,7 @@ func set_speed(value: float) -> void:
 	pause()
 	speed = value
 	update_tempo()
-	if was_playing: start(false)
+	if was_playing: start(paused_in_count)
 
 func update_tempo() -> void:
 	updating = true
@@ -633,9 +694,17 @@ func update_tempo() -> void:
 	bpm_input.max_value = maxf(400, base_bpm() * 2)
 	bpm_input.set_value_no_signal(base_bpm() * speed)
 	updating = false
-	tempo_caption.text = tr("TEMPO_CURRENT") % [base_bpm() * speed, base_bpm(), roundi(speed * 100)]
-	tempo_button.text = tr("TEMPO") if is_equal_approx(speed, 1) else tr("TEMPO_SELECTED") % roundi(speed * 100)
-	tempo_button.tooltip_text = tempo_caption.text
+	tempo_caption.text = tr("PLAYBACK_RATE") % roundi(speed * 100)
+	tempo_caption.tooltip_text = tr("TEMPO_CURRENT") % [base_bpm() * speed, base_bpm(), roundi(speed * 100)]
+	tempo_button.text = tr("TEMPO_SELECTED") % roundi(speed * 100)
+	var preset: int = -1
+	for index: int in range(SPEEDS.size()):
+		if is_equal_approx(speed, SPEEDS[index]): preset = index
+	speed_picker.select(SPEEDS.size() if preset < 0 else preset)
+	slower_button.disabled = speed <= 0.25
+	faster_button.disabled = speed >= 2.0
+	original_button.disabled = is_equal_approx(speed, 1.0)
+	tempo_button.tooltip_text = tempo_caption.tooltip_text
 	adapt_flow(dock)
 
 func set_activity(active: bool) -> void:
@@ -754,7 +823,7 @@ func start(count_in: bool) -> void:
 			start_tick = loop_start_tick
 	var filtered: Array[int] = muted.duplicate()
 	if mute_check.button_pressed and not filtered.has(part): filtered.append(part)
-	audio.transport.configure(song, start_tick, end_tick, speed, loop_check.button_pressed, count_in, metro_check.button_pressed, filtered, loop_start_tick)
+	audio.transport.configure(song, start_tick, end_tick, speed, loop_check.button_pressed, count_in, true, filtered, loop_start_tick)
 	audio.begin()
 	set_activity(true)
 	started_msec = Time.get_ticks_msec()
@@ -783,6 +852,16 @@ func restart_if_playing() -> void:
 	var was_playing: bool = audio.playing_practice
 	pause()
 	if was_playing: start(false)
+
+func repeat_measure() -> void:
+	if song == null: return
+	updating = true
+	var measure: int = song.measure_at(source_tick) + 1
+	loop_from.value = measure
+	loop_to.value = measure
+	loop_check.set_pressed_no_signal(true)
+	updating = false
+	seek_measure(measure)
 
 func loop_changed() -> void:
 	if updating or song == null:
@@ -837,7 +916,7 @@ func report_state() -> void:
 	if song == null: return
 	if host.trace_enabled():
 		var evidence: Dictionary = audio.metrics()
-		evidence.merge({"compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "placed": projection.placed, "eligible": projection.eligible, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
+		evidence.merge({"metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "placed": projection.placed, "eligible": projection.eligible, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
 		host.report(evidence)
 	offline.text = tr("OFFLINE_READY") if host.offline_ready() else tr("OFFLINE_PENDING")
 	if host.offline_ready() and not host.trace_enabled(): idle_timer.stop()

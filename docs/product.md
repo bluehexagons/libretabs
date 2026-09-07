@@ -134,6 +134,9 @@ Import is cancellable and transactional: a failed or cancelled replacement leave
 ### Playback and practice controls
 
 - Play/pause/stop, measure seek, timeline scrub, count-in, metronome, independent instrument/metronome volume, 25–200% tempo and custom starting BPM, and contiguous measure loop.
+- Keep speed and the metronome near Play. At normal text size, show speed and an explicit click on/off toggle in the practice dock. Enlarged text uses a direct **Speed & click** panel shortcut to preserve score space. Menu → Playback groups speed steps, original speed, metronome, count-in, presets and custom BPM; Volume & parts holds the mixer.
+- Slower/faster steps change speed by five percentage points within 25–200%; Original speed restores 100%. Repeat this measure initializes the existing loop range from the current playback measure.
+- Metronome toggling leaves the active stream and position intact; count-in remains independent. Changing the count-in option affects the next start, not an ongoing phrase.
 - Per-part mute/solo and a one-action **Mute my part** control.
 - A procedural practice synthesizer with bounded polyphony and clear part distinction; pitch must not change when tempo changes.
 - The audio scheduler, cursor, loop boundaries, and display all use the same tempo-aware transport.

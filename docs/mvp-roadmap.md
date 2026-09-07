@@ -100,6 +100,29 @@ Goal: a learner can hear a whole imported arrangement, isolate their part, slow 
 - **M4.5 Seek/state restoration (M):** controller/program and held-note reconstruction, queued-sample invalidation, and no-stuck-note tests across seek, speed, loop, pause, and browser suspension/resume.
 - **M4.6 Lessons 4–6 (M):** first frets, tab plus rhythm, and tiny melody using the production practice surface.
 
+### Playback follow-ups after the control pass
+
+The M0 [playback controls evaluation](evidence/playback-controls.md) exposes speed
+and click shortcuts, groups Playback settings, adds five-point speed steps and
+Repeat this measure, and avoids restarting the stream for metronome toggles.
+This remains a bounded prototype improvement, not completion of M4.
+
+Prioritize these existing MVP requirements next:
+
+1. **Saved practice defaults (M1.6/M4.2):** retain click/count-in/volume defaults
+   with versioned validation and session-only failure recovery. Keep imported-song
+   location and bytes out of that store; source speed still needs an explicit
+   per-import/default policy before persistence.
+2. **Quicker mute-my-part access (M4.2):** make listen-versus-play-along easy to
+   reach while preserving mixer precedence and the compact score layout.
+3. **Direct loop selection (M4.3):** choose first/last measures by touch or
+   keyboard, clearly show the active range, and test seek/repeat boundaries.
+
+Automatic speed increases per loop and configurable repetition counts are
+candidates for later learner feedback, not additions to this MVP baseline.
+They need explicit pacing, count-in and end-state semantics before implementation.
+Microphone scoring remains outside MVP.
+
 ### Exit criteria
 
 The main acceptance scenario runs on web and Linux: import, accept recommended part, mute it, count in at 60%, select two measures, loop five times, seek, restore 100%, and stop with no stuck voices or visible drift.

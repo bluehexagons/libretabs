@@ -28,6 +28,18 @@ func run() -> void:
 	check(is_equal_approx(app.get("speed"), 2.0), "200 percent preset")
 	app.call("change_bpm", 72)
 	check(is_equal_approx(app.get("speed"), 0.72), "custom BPM scales original 100 BPM")
+	app.call("step_speed", 1)
+	check(is_equal_approx(app.get("speed"), 0.77), "faster adds five percentage points to custom speed")
+	app.call("step_speed", -1)
+	check(is_equal_approx(app.get("speed"), 0.72), "slower restores custom speed")
+	app.call("set_speed", 1.0)
+	check(app.get("speed_picker").selected == 7, "original speed synchronizes preset picker")
+	app.call("set_speed", 0.25)
+	app.call("step_speed", -1)
+	check(app.get("speed") == 0.25 and app.get("slower_button").disabled, "slower stops at 25 percent")
+	app.call("set_speed", 2.0)
+	app.call("step_speed", 1)
+	check(app.get("speed") == 2.0 and app.get("faster_button").disabled, "faster stops at 200 percent")
 	app.call("load_demo", 1)
 	for _frame: int in range(30): await process_frame
 	app.call("change_bpm", 50)
@@ -36,6 +48,34 @@ func run() -> void:
 	player.transport.configure(song, 0, song.end_tick, app.get("speed"), false, false, false, [])
 	check(is_equal_approx(player.transport.speed, 0.5), "custom BPM enters the single transport")
 	check(is_equal_approx(song.seconds_at(5760) - song.seconds_at(3840), 3.2), "source tempo change remains unmodified")
+	var frame_before: int = player.transport.rendered_frames
+	app.call("set_metronome", false)
+	check(not app.get("metro_check").button_pressed and not app.get("metro_button").button_pressed and not player.metronome_enabled, "both metronome controls and mixer agree")
+	check(player.transport.rendered_frames == frame_before and not app.is_processing(), "metronome toggle leaves timeline and idle state untouched")
+	player.transport.count_frames = 100
+	player.apply_event({"kind": "click", "note": {"accent": true}, "frame": 99})
+	check(player.click_gain > 0, "count-in remains audible when playback metronome is off")
+	player.click_gain = 0
+	player.apply_event({"kind": "click", "note": {"accent": true}, "frame": 100})
+	check(player.click_gain == 0, "metronome off suppresses playback pulse at count-in boundary")
+	app.call("set_metronome", true)
+	player.apply_event({"kind": "click", "note": {"accent": true}, "frame": 100})
+	check(player.click_gain > 0, "metronome on restores scheduled pulse without configuring transport")
+	app.call("start", true)
+	var stream_before: AudioStreamGeneratorPlayback = player.playback
+	var count_before: int = player.transport.count_frames
+	app.call("set_metronome", false)
+	app.get("count_check").button_pressed = false
+	check(player.playback == stream_before and player.playing_practice, "metronome and count-in toggles do not restart the active stream")
+	check(player.transport.count_frames == count_before and count_before > 0, "count-in setting does not truncate the active count-in")
+	app.call("pause")
+	app.get("count_check").button_pressed = true
+	app.call("set_metronome", true)
+	app.call("seek_measure", 2)
+	app.call("repeat_measure")
+	check(app.get("loop_check").button_pressed and app.get("loop_from").value == 2 and app.get("loop_to").value == 2, "repeat measure selects current passage")
+	check(app.get("source_tick") == song.measures[1].start and not player.playing_practice, "repeat measure seeks to its start without auto-playing")
+	app.get("loop_check").button_pressed = false
 	app.call("toggle_drawer", "SOUND")
 	check(app.get("drawer").visible and app.get("drawers")["SOUND"].visible, "sound controls open on demand")
 	app.get("instrument_slider").value = 0
@@ -80,6 +120,11 @@ func run() -> void:
 	score.set_view("scroll", "staff")
 	check(score.notation == "both", "scrolling restores both synchronized representations")
 	check(ScoreLayout.page_count(9, 390, "both") == 5 and ScoreLayout.page_count(9, 1000, "both") == 3, "responsive page counts include final partial page")
+	app.call("set_speed", 1.0)
+	app.call("toggle_drawer", "TEMPO")
+	var focusable: Array[Control] = []
+	app.call("menu_focusable", app.get("drawer"), focusable)
+	check(not focusable.has(app.get("original_button")), "menu keyboard cycle skips disabled original-speed button")
 	app.call("close_menu")
 	check(not app.get("menu_overlay").visible, "explicit close returns to practice")
 	app.call("apply_scale", 2.0)
@@ -100,7 +145,8 @@ func run() -> void:
 			check(app.get("landscape"), "short landscape layout selected")
 			check(app.get("scroll").size.y >= viewport.y - 1, "landscape score receives full viewport height")
 			check(score.global_position.y <= 16 and score.global_position.y + 281 < viewport.y, "staff and all six tab lines visible without first scrolling")
-			check(app.get("root_box").size.x <= viewport.x and app.get("root_box").size.y <= viewport.y, "landscape shell fits at both text scales")
+			check(app.get("root_box").size.x <= viewport.x and app.get("root_box").size.y <= viewport.y, "landscape shell fits at %s / %s: %s" % [viewport, factor, app.get("root_box").size])
+			check(app.get("tempo_button").is_visible_in_tree() if factor == 1.0 else app.get("playback_button").is_visible_in_tree(), "playback settings directly reachable at every scale")
 			check(app.get("play_button").get_global_rect().end.y <= viewport.y and app.get("menu_button").size.y >= 56, "landscape transport and menu remain usable")
 	app.call("set_status", "ERR_READ")
 	check(app.get("status").visible, "short layout retains actionable errors")
@@ -145,6 +191,7 @@ func run() -> void:
 	root.size = Vector2i(1440, 900)
 	for _frame: int in range(10): await process_frame
 	check(first_bar >= score.page_start() and first_bar < score.page_start() + score.page_capacity, "page resize retains the passage being read")
+	check(absf(app.get("tempo_button").global_position.y - app.get("play_button").global_position.y) < 2 and absf(app.get("metro_button").global_position.y - app.get("play_button").global_position.y) < 2, "wide dock keeps common controls on one row")
 	check(score.playhead_x() <= 180, "wide screens leave room for upcoming music")
 	app.call("apply_scale", 2.0)
 	root.size = Vector2i(360, 740)

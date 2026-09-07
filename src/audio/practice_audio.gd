@@ -4,6 +4,7 @@ extends AudioStreamPlayer
 
 const VOICES: int = 32
 const TABLE_SIZE: int = 2048
+var metronome_enabled: bool = true
 var instrument_level: float = 0.85
 var metronome_level: float = 0.35
 var instrument_current: float = 0.85
@@ -39,6 +40,13 @@ func set_level(instrument: bool, value: float) -> void:
 	mutex.lock()
 	if instrument: instrument_level = clampf(value, 0, 1)
 	else: metronome_level = clampf(value, 0, 1)
+	mutex.unlock()
+
+# Click events remain on the shared timeline. Muting future playback clicks
+# leaves count-in pulses, queued notes and the audible position untouched.
+func set_metronome(enabled: bool) -> void:
+	mutex.lock()
+	metronome_enabled = enabled
 	mutex.unlock()
 
 func _ready() -> void:
@@ -187,6 +195,7 @@ func apply_event(event: Dictionary) -> void:
 		"reset":
 			reset_voices()
 		"click":
+			if not metronome_enabled and int(event.frame) >= transport.count_frames: return
 			click_gain = 0.12
 			click_step = (1200.0 if note.accent else 800.0) / PracticeTransport.RATE * TABLE_SIZE
 			click_phase = 0.0

@@ -86,7 +86,7 @@ msgid "COUNT_IN"
 msgstr "Count in before playing"
 
 msgid "METRONOME"
-msgstr "Metronome during playback"
+msgstr "Beat clicks (metronome)"
 
 msgid "MUTE_MY_PART"
 msgstr "Mute my part"
@@ -299,10 +299,10 @@ msgid "NEXT"
 msgstr "Next"
 
 msgid "TEMPO"
-msgstr "Tempo"
+msgstr "Playback"
 
 msgid "SOUND"
-msgstr "Sound"
+msgstr "Volume & parts"
 
 msgid "LOOP_TOOL"
 msgstr "Loop"
@@ -347,13 +347,13 @@ msgid "HELP_STAFF"
 msgstr "3. The smaller staff above is a pitch and rhythm reference. Higher notes mean higher pitches. Guitar staff notes are written one octave above their sound."
 
 msgid "HELP_TIMING"
-msgstr "4. Press Play and count with the clicks. Outlined numbers show sounding notes. A ! means a note has no guitar placement. Slow down with Tempo or repeat a phrase with Loop."
+msgstr "4. Press Play and count with the clicks. Outlined numbers show sounding notes. A ! means a note has no guitar placement. Slow down with Playback or repeat a phrase with Loop."
 
 msgid "FOLLOW_HINT"
 msgstr "Follow the outlined fret numbers."
 
 msgid "TEMPO_SELECTED"
-msgstr "Tempo %d%%"
+msgstr "Speed %d%%"
 
 msgid "MENU"
 msgstr "Menu"
@@ -420,3 +420,36 @@ msgstr "Dark"
 
 msgid "TEXT_SIZE"
 msgstr "Text size"
+
+msgid "PLAYBACK_QUICK"
+msgstr "Speed & click"
+
+msgid "SLOWER"
+msgstr "Slower −5%"
+
+msgid "FASTER"
+msgstr "Faster +5%"
+
+msgid "ORIGINAL_SPEED"
+msgstr "Original speed"
+
+msgid "CLICK_ON"
+msgstr "Click: on"
+
+msgid "CLICK_OFF"
+msgstr "Click: off"
+
+msgid "CLICK_HELP"
+msgstr "The metronome clicks on each beat to help you keep time. Count-in gives you a measure of clicks before you start."
+
+msgid "COUNT_HELP"
+msgstr "Count in on your next start. Resuming a paused phrase continues immediately."
+
+msgid "SPEED_PRESETS"
+msgstr "Speed presets"
+
+msgid "REPEAT_MEASURE"
+msgstr "Repeat this measure"
+
+msgid "PLAYBACK_RATE"
+msgstr "Playback speed: %d%%"
