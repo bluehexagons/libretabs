@@ -20,7 +20,7 @@ var loop_schedule: Array[Dictionary] = []
 var cycle_offset: int = 0
 var mute_parts: Array[int] = []
 
-func configure(document: SongDocument, start_tick: float, end_tick: float, multiplier: float, looped: bool, count_in: bool, metronome: bool, muted: Array[int], loop_start_tick: float = -1.0) -> void:
+func configure(document: SongDocument, start_tick: float, end_tick: float, multiplier: float, looped: bool, count_in: bool, metronome: bool, muted: Array[int], loop_start_tick: float = -1.0, count_measures: int = 1) -> void:
 	song = document
 	speed = multiplier
 	repeat = looped
@@ -41,9 +41,9 @@ func configure(document: SongDocument, start_tick: float, end_tick: float, multi
 	var pulse_seconds: float = (song.seconds_at(start_tick + 1) - start_seconds) * pulse_ticks
 	var pulses: int = 2 if measure.numerator == 6 and measure.denominator == 8 else int(measure.numerator)
 	if count_in:
-		count_frames = roundi(pulse_seconds * pulses / speed * RATE)
-		for pulse: int in range(pulses):
-			add_event(roundi(pulse * pulse_seconds / speed * RATE) - count_frames, "click", {"accent": pulse == 0})
+		count_frames = roundi(pulse_seconds * pulses * clampi(count_measures, 1, 4) / speed * RATE)
+		for pulse: int in range(pulses * clampi(count_measures, 1, 4)):
+			add_event(roundi(pulse * pulse_seconds / speed * RATE) - count_frames, "click", {"accent": pulse % pulses == 0})
 	add_event(0, "reset", {})
 	for note: Dictionary in song.notes:
 		if int(note.part) in mute_parts or int(note.channel) == 9 or note.end <= note.start:

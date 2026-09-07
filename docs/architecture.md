@@ -296,6 +296,15 @@ The first input experiment is deliberately not pitch recognition. An `ImpulseInp
 
 The adapter must be optional, request permission only after an explicit action, process locally, retain no samples, expose input/sensitivity feedback, and have a keyboard/touch equivalent. Keep it separate from the playback mixer and canonical song model so denial, missing devices, browser differences, or false triggers cannot break ordinary guided playback. Treat echo cancellation, automatic gain control, line-input behavior, and background-tab suspension as platform test variables rather than assumed constants.
 
+## Evaluation application services
+
+[Decision 0006](decisions/0006-player-preferences-and-keyboard.md) defines the
+initial `PracticeSettings` service under `src/app`, validated independently of UI
+and storage. `KeyboardNotes` is a pure held-key/pitch model; the existing mixer
+accepts live notes without introducing another song clock. UI overlays consume
+the same centered staff/tab geometry as imported-note highlights. The host
+adapter alone handles preferences, focus/visibility and file access.
+
 ## Platform adapters
 
 Define interfaces around capabilities rather than checking feature tags throughout UI code:

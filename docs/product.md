@@ -134,7 +134,7 @@ Import is cancellable and transactional: a failed or cancelled replacement leave
 ### Playback and practice controls
 
 - Play/pause/stop, measure seek, timeline scrub, count-in, metronome, independent instrument/metronome volume, 25–200% tempo and custom starting BPM, and contiguous measure loop.
-- Keep speed and the metronome near Play. At normal text size, show speed and an explicit click on/off toggle in the practice dock. Enlarged text uses a direct **Speed & click** panel shortcut to preserve score space. Menu → Playback groups speed steps, original speed, metronome, count-in, presets and custom BPM; Volume & parts holds the mixer.
+- Keep speed and the metronome near Play. Keep a direct speed slider and percentage control at all supported text sizes. Normal text also shows an explicit click on/off toggle; enlarged layouts reach it through the percentage control. Menu → Playback groups speed steps, original speed, metronome, count-in, presets and custom BPM; Volume & parts holds the mixer.
 - Slower/faster steps change speed by five percentage points within 25–200%; Original speed restores 100%. Repeat this measure initializes the existing loop range from the current playback measure.
 - Metronome toggling leaves the active stream and position intact; count-in remains independent. Changing the count-in option affects the next start, not an ongoing phrase.
 - Per-part mute/solo and a one-action **Mute my part** control.
@@ -143,9 +143,24 @@ Import is cancellable and transactional: a failed or cancelled replacement leave
 - Audio starts only after a user gesture on web and has an explicit, recoverable muted/blocked state.
 - Resuming, seeking, changing speed, and looping must release stale voices and restore current program/controller state deterministically.
 - Hidden/suspended browser tabs pause practice and return to an explicit Resume action, without advancing through missed music. Ordinary desktop focus changes must not accidentally resume paused playback.
-- Count-in is one measure at the destination tempo/meter: 2, 3, or 4 quarter-note pulses in simple meters, or two dotted-quarter pulses in 6/8. Explain a pulse as the regular beat to follow; label speed as a percentage so tempo units are unambiguous.
+- Count-in is configurable from one through four measures, or off (default one), at the destination tempo/meter: 2, 3, or 4 quarter-note pulses in simple meters, or two dotted-quarter pulses in 6/8. Explain a pulse as the regular beat to follow; label speed as a percentage so tempo units are unambiguous.
+
+### Computer-keyboard notes
+
+- Play one piano-style row with accidentals above it: Z row by default, with an
+  A-row preference and octave controls. Help lists the active mapping.
+- Hear held notes while stopped or playing and show them at the shared playhead
+  as distinct staff diamonds/tab outlines. They do not modify, record or grade
+  the imported song. Release input on focus loss and when opening menus.
+- See [decision 0006](decisions/0006-player-preferences-and-keyboard.md) for exact
+  keys, range, manual-page behavior and device limits.
 
 ### Local state
+
+The evaluation prototype now saves count-in, click, independent volumes and
+keyboard layout/octave through a versioned preference service, alongside existing
+display storage. Library, Practice and Settings provide the initial app structure.
+Song-specific state and lesson progress remain future implementation work.
 
 - Save lesson completion, last location, accessibility/display settings, and user defaults in a versioned local schema.
 - Imported MIDI is session-only in MVP. Remembered files, song libraries, and persisted file permissions are deferred; returning to an imported song requires reopening it. “Last location” never implies that its bytes were saved.

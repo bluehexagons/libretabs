@@ -275,7 +275,7 @@ msgid "UNNAMED_PART"
 msgstr "Pitched part"
 
 msgid "SONG_MENU"
-msgstr "Song"
+msgstr "Library"
 
 msgid "START_HINT"
 msgstr "Press Play. Follow the highlighted fret numbers."
@@ -440,7 +440,7 @@ msgid "CLICK_OFF"
 msgstr "Click: off"
 
 msgid "CLICK_HELP"
-msgstr "The metronome clicks on each beat to help you keep time. Count-in gives you a measure of clicks before you start."
+msgstr "The metronome clicks on each beat to help you keep time. Count-in gives you clicks before you start."
 
 msgid "COUNT_HELP"
 msgstr "Count in on your next start. Resuming a paused phrase continues immediately."
@@ -453,3 +453,45 @@ msgstr "Repeat this measure"
 
 msgid "PLAYBACK_RATE"
 msgstr "Playback speed: %d%%"
+
+msgid "COUNT_LENGTH"
+msgstr "Count-in length · measures"
+
+msgid "SETTINGS"
+msgstr "Settings"
+
+msgid "SETTINGS_SAVED"
+msgstr "Practice preferences are saved on this device. Imported songs and keyboard notes are not saved."
+
+msgid "SETTINGS_RECOVERY"
+msgstr "Practice preferences are session-only. Storage may be unavailable or contain unreadable/newer settings. Reset practice preferences in Settings to start fresh."
+
+msgid "RESET_PRACTICE"
+msgstr "Reset practice preferences"
+
+msgid "KEYBOARD"
+msgstr "Keyboard notes"
+
+msgid "KEYBOARD_LAYOUT"
+msgstr "Note key layout"
+
+msgid "KEYBOARD_LOWER"
+msgstr "Z row · piano keys"
+
+msgid "KEYBOARD_HOME"
+msgstr "A row · piano keys"
+
+msgid "KEYBOARD_OCTAVE"
+msgstr "Starting C octave"
+
+msgid "KEYBOARD_EXPLAIN"
+msgstr "An octave repeats the same note names higher or lower. Keyboard notes use the instrument volume and appear as diamonds on the staff, with outlined frets at the playhead. A ! means no free guitar string can play that note. Notes are not recorded or scored. See Help for the keys."
+
+msgid "KEYBOARD_HELP_LOWER"
+msgstr "Keyboard: Z X C V B N M , play C D E F G A B C. S D G H J play the black piano keys (sharps/flats). − and = lower/raise the octave. Hold a key to sustain; release to stop. Notes work in practice, including while paused, and are disabled in menus."
+
+msgid "KEYBOARD_HELP_HOME"
+msgstr "Keyboard: A S D F G H J K play C D E F G A B C. W E T Y U play the black piano keys (sharps/flats). Z/X or −/= lower/raise the octave. Hold a key to sustain; release to stop. Notes work in practice, including while paused, and are disabled in menus."
+
+msgid "LIVE_NOTE"
+msgstr "Keyboard"

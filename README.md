@@ -10,9 +10,11 @@ LibreTabs is a non-commercial project: bluehexagons does not plan paid editions,
 
 ## Evaluate the prototype
 
-[Open the managed browser preview](https://192.168.0.44:8443/games/agent/libretabs-prototype/) from a device that can reach the managed network. Press **Play**, open **Tempo** for a slower preset or custom BPM, then use **Menu → Loop** for measures 1–2. **Menu → Song** includes tempo changes, overlapping notes, and a dense chord. You can also open a local format-0/1 MIDI file (prototype limit: 256 KiB). Imports stay on your device.
+[Open the managed browser preview](https://192.168.0.44:8443/games/agent/libretabs-prototype/) from a device that can reach the managed network. Press **Play**, adjust the main speed slider or click its percentage for presets, custom BPM and count-in length, then use **Menu → Loop** for measures 1–2. **Menu → Library** includes tempo changes, overlapping notes, and a dense chord. You can also open a local format-0/1 MIDI file (prototype limit: 256 KiB). Imports stay on your device.
 
-This is a technical evaluation: procedural sound, basic guitar placement, and a simplified staff reference. It does not yet include the six lessons or reviewed musical arrangements. The [feedback update](docs/evidence/practice-feedback.md) adds a simpler phone-friendly view, larger text, separate volume sliders, and reduced idle work. Choose **Menu → Appearance & text** for Device setting, Light or Dark appearance and larger text. The [navigation update](docs/evidence/score-navigation.md) adds default smooth scrolling, manual pages (**Score view**), a clearer menu, and a fix for tiny controls on high-density phones. See [evaluation steps, measured results, and remaining gates](docs/evidence/m0-prototype.md).
+This is a technical evaluation: procedural sound, basic guitar placement, and a simplified staff reference. It does not yet include the six lessons or reviewed musical arrangements. The [feedback update](docs/evidence/practice-feedback.md) adds a simpler phone-friendly view, larger text, separate volume sliders, and reduced idle work. Choose **Menu → Settings → Appearance & text** for Device setting, Light or Dark appearance and larger text. The [navigation update](docs/evidence/score-navigation.md) adds default smooth scrolling, manual pages (**Score view**), a clearer menu, and a fix for tiny controls on high-density phones. See [evaluation steps, measured results, and remaining gates](docs/evidence/m0-prototype.md).
+
+The [player foundation update](docs/evidence/player-foundation.md) adds saved practice preferences, clearer button feedback and centered score symbols. Use **Z X C V B N M ,** for piano-style white keys; **Help** lists accidentals and octave shortcuts. **Settings → Keyboard notes** offers the alternate A row. Held notes sound and appear at the playhead without recording or grading.
 
 With the pinned Godot `4.7.2.stable.official.ed1daf0bf` installed:
 
@@ -35,11 +37,9 @@ For an unsigned, self-contained Linux x86_64 development package, run `python3 s
 
 Live microphone assessment, a non-grading volume-impulse step mode, a tuner, score editing, Guitar Pro/MusicXML import, alternate tunings, and full engraving are intentionally after MVP. The impulse mode is the first input feature to evaluate after the core release.
 
-## Why Godot, provisionally
+## Why Godot
 
-Godot is a plausible fit for the custom real-time practice UI, procedural audio, offline operation, and exports to web and desktop. It is not yet an irreversible choice: the first milestone must prove runtime MIDI upload, deterministic parsing, SMuFL notation, stable synthesized audio, and browser timing. The fallback is a TypeScript web core packaged with Tauri, where the music-library ecosystem is stronger.
-
-See [Architecture](docs/architecture.md) for the decision gate and design.
+Godot is retained by [owner decision 0005](docs/decisions/0005-godot-and-appearance.md) for the custom practice UI and web/desktop delivery. Screen-reader integration is deferred; the remaining platform, audio and timing checks are still open. See [Architecture](docs/architecture.md) for the design and validation gates.
 
 ## Planning documents
 
@@ -76,5 +76,3 @@ LibreTabs uses a simple split:
 - Third-party work keeps its own license and must be recorded before it is added.
 
 Copyright 2026 bluehexagons applies to the Apache-licensed software. Apache-2.0 grants everyone broad rights to use, modify, distribute, sublicense, and sell the software. “Non-commercial project” describes how bluehexagons operates LibreTabs; it does not add a non-commercial license condition. See [license scope](LICENSES/README.md) for the path-level policy.
-
-Godot is retained by [owner decision 0005](docs/decisions/0005-godot-and-appearance.md). Screen-reader integration is deferred; platform and timing validation continue.

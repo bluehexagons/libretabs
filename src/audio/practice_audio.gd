@@ -4,6 +4,8 @@ extends AudioStreamPlayer
 
 const VOICES: int = 32
 const TABLE_SIZE: int = 2048
+var live_notes: Dictionary = {}
+var release_timer: Timer
 var metronome_enabled: bool = true
 var instrument_level: float = 0.85
 var metronome_level: float = 0.35
@@ -51,6 +53,12 @@ func set_metronome(enabled: bool) -> void:
 
 func _ready() -> void:
 	set_process(false)
+	release_timer = Timer.new()
+	release_timer.one_shot = true
+	release_timer.wait_time = 0.20
+	release_timer.timeout.connect(func() -> void:
+		if not playing_practice and live_notes.is_empty(): stop_practice())
+	add_child(release_timer)
 	worker_enabled = not OS.has_feature("web") or OS.has_feature("audio_worker")
 	var generator: AudioStreamGenerator = AudioStreamGenerator.new()
 	generator.mix_rate_mode = AudioStreamGenerator.MIX_RATE_CUSTOM
@@ -70,6 +78,9 @@ func _ready() -> void:
 		table[index] = sin(TAU * index / TABLE_SIZE)
 
 func begin() -> void:
+	begin_stream(true)
+
+func begin_stream(practice: bool) -> void:
 	stop_practice()
 	max_mix_usec = 0
 	steals = 0
@@ -78,7 +89,7 @@ func begin() -> void:
 	playback = get_stream_playback() as AudioStreamGeneratorPlayback
 	capacity = playback.get_frames_available()
 	last_frame = 0
-	playing_practice = true
+	playing_practice = practice
 	set_process(not worker_enabled)
 	mutex.lock()
 	fill()
@@ -91,6 +102,7 @@ func begin() -> void:
 		worker.start(_worker_loop)
 
 func stop_practice() -> void:
+	if release_timer != null: release_timer.stop()
 	playing_practice = false
 	set_process(false)
 	mutex.lock()
@@ -104,6 +116,7 @@ func stop_practice() -> void:
 	stop()
 	playback = null
 	reset_voices()
+	live_notes.clear()
 	active_snapshot = 0
 
 func reset_voices() -> void:
@@ -125,7 +138,7 @@ func audible_frame() -> int:
 	return last_frame
 
 func _process(_delta: float) -> void:
-	if playing_practice and not worker_enabled:
+	if playback != null and not worker_enabled:
 		mutex.lock()
 		fill()
 		mutex.unlock()
@@ -148,7 +161,8 @@ func fill() -> void:
 	var frames: int = playback.get_frames_available()
 	if frames <= 0:
 		return
-	var events: Array[Dictionary] = transport.take_events(frames)
+	var events: Array[Dictionary] = []
+	if playing_practice: events = transport.take_events(frames)
 	var event_index: int = 0
 	for frame: int in range(frames):
 		while event_index < events.size() and int(events[event_index].offset) == frame:
@@ -194,6 +208,7 @@ func apply_event(event: Dictionary) -> void:
 	match String(event.kind):
 		"reset":
 			reset_voices()
+			for held: Dictionary in live_notes.values(): apply_event({"kind": "on", "note": held})
 		"click":
 			if not metronome_enabled and int(event.frame) >= transport.count_frames: return
 			click_gain = 0.12
@@ -223,9 +238,32 @@ func apply_event(event: Dictionary) -> void:
 			targets[slot] = 0.14 * float(note.velocity) / 127.0
 			releases[slot] = 0
 
+func live_on(note: Dictionary) -> void:
+	if playback == null: begin_stream(false)
+	release_timer.stop()
+	mutex.lock()
+	live_notes[note.id] = note.duplicate()
+	apply_event({"kind": "on", "note": note})
+	mutex.unlock()
+
+func live_off(note: Dictionary) -> void:
+	mutex.lock()
+	live_notes.erase(note.id)
+	apply_event({"kind": "off", "note": note})
+	var finished: bool = live_notes.is_empty()
+	mutex.unlock()
+	if finished and not playing_practice: release_timer.start()
+
+func release_live() -> void:
+	mutex.lock()
+	for note: Dictionary in live_notes.values(): apply_event({"kind": "off", "note": note})
+	live_notes.clear()
+	mutex.unlock()
+	if not playing_practice and playback != null: release_timer.start()
+
 func metrics() -> Dictionary:
 	mutex.lock()
-	var snapshot: Dictionary = {"instrument_level": instrument_level, "metronome_level": metronome_level, "active_voices": active_snapshot, "voice_steals": steals_snapshot, "max_mix_ms": mix_snapshot / 1000.0, "underruns": skips_snapshot, "generated_frame": generated_snapshot, "rate": PracticeTransport.RATE, "worker": worker_enabled}
+	var snapshot: Dictionary = {"live_notes": live_notes.size(), "instrument_level": instrument_level, "metronome_level": metronome_level, "active_voices": active_snapshot, "voice_steals": steals_snapshot, "max_mix_ms": mix_snapshot / 1000.0, "underruns": skips_snapshot, "generated_frame": generated_snapshot, "rate": PracticeTransport.RATE, "worker": worker_enabled}
 	mutex.unlock()
 	snapshot.merge({"audible_frame": audible_frame(), "device_rate": AudioServer.get_mix_rate(), "output_latency": AudioServer.get_output_latency(), "capacity": capacity, "fps": Engine.get_frames_per_second()})
 	return snapshot

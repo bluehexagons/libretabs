@@ -32,12 +32,56 @@ func _initialize() -> void:
 	check(PracticeAudio.mix_levels(0.8, 0.2, 0, 1) == PracticeAudio.mix_levels(0, 0.2, 1, 1), "instrument zero leaves only click")
 	check(PracticeAudio.mix_levels(0.8, 0.2, 1, 0) == PracticeAudio.mix_levels(0.8, 0, 1, 1), "click zero leaves only instrument")
 	check(absf(PracticeAudio.mix_levels(-32, -1, 1, 1)) < 0.9, "dense mix stays inside output ceiling")
+	var defaults: Dictionary = PracticeSettings.DEFAULTS.duplicate()
+	check(PracticeSettings.decode(PracticeSettings.encode(defaults)).values == defaults, "preference schema round trip")
+	check(PracticeSettings.decode('{"version":2}').status == "unsupported", "future preferences protected")
+	check(PracticeSettings.decode("invalid").status == "corrupt", "corrupt preferences detected")
+	defaults.count_measures = -1
+	check(PracticeSettings.encode(defaults).is_empty(), "invalid count length rejected")
+	defaults = PracticeSettings.DEFAULTS.duplicate()
+	defaults["song_name"] = "private"
+	check(not PracticeSettings.encode(defaults).contains("private"), "preference allow-list excludes song data")
+	var keys: KeyboardNotes = KeyboardNotes.new()
+	check(keys.press(KEY_Z).pitch == 60, "default lower row starts at middle C")
+	check(keys.press(KEY_Z).is_empty(), "held key does not retrigger")
+	check(keys.press(KEY_S).pitch == 61 and keys.press(KEY_COMMA).pitch == 72, "lower accidentals and octave endpoint")
+	for note: Dictionary in keys.held.values():
+		if note.has("string"): check(TabProjection.TUNING[6 - int(note.string)] + int(note.fret) == note.pitch, "live fret matches sounding pitch")
+	keys.held.clear()
+	keys.layout = "home"
+	check(keys.press(KEY_A).pitch == 60 and keys.press(KEY_W).pitch == 61 and keys.press(KEY_K).pitch == 72, "home row and black keys match pitches")
+	keys.octave = 3
+	check(keys.release(KEY_A).pitch == 60, "release retains pitch from key down across octave change")
+	check(ScoreLayout.staff_y(64) == 84 and ScoreLayout.tab_y(1) == 176 and ScoreLayout.tab_y(6) == 281, "shared staff and tab centers")
 	var bytes: PackedByteArray = fixture("first_melody")
 	var imported: MidiImport = parse(bytes)
 	check(imported.error.is_empty(), "format 1 imports")
 	var song: SongDocument = imported.document
 	check(song.parts.size() == 2 and song.notes.size() == 19, "two pitched parts, nineteen notes")
 	check(song.measures.size() == 4, "four measures")
+	for bars: int in range(1, 5):
+		var count: PracticeTransport = PracticeTransport.new()
+		count.configure(song, 0, song.end_tick, 0.5, false, true, false, [], -1, bars)
+		check(count.count_frames == roundi(4.8 * bars * PracticeTransport.RATE), "custom count length follows speed")
+		var pulses: int = 0
+		var accents: int = 0
+		for event: Dictionary in count.schedule:
+			if event.kind == "click" and event.frame < 0:
+				pulses += 1
+				if event.note.accent: accents += 1
+		check(pulses == bars * 4 and accents == bars, "count-in accents each measure")
+	var compound: SongDocument = SongDocument.new()
+	compound.measures.append({"start": 0, "end": 1440, "numerator": 6, "denominator": 8})
+	compound.end_tick = 1440
+	var compound_count: PracticeTransport = PracticeTransport.new()
+	compound_count.configure(compound, 0, 1440, 1, false, true, false, [], -1, 4)
+	check(compound_count.count_frames == 6 * PracticeTransport.RATE, "four 6/8 measures use destination duration")
+	var compound_pulses: int = 0
+	for event: Dictionary in compound_count.schedule:
+		if event.kind == "click" and event.frame < 0: compound_pulses += 1
+	check(compound_pulses == 8, "6/8 count-in uses two dotted-quarter pulses per measure")
+	compound_count.configure(compound, 0, 1440, 1, false, false, false, [], -1, 4)
+	check(compound_count.count_frames == 0, "off disables count-in regardless of stored length")
 	check(is_equal_approx(song.seconds_at(1920), 2.4), "100 BPM measure")
 	check(song.source.bytes_copy() == bytes, "exact source bytes")
 	var copy: PackedByteArray = song.source.bytes_copy()

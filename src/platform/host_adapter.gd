@@ -5,6 +5,10 @@ extends Node
 signal picked(name: String, bytes: PackedByteArray, error: String)
 signal hidden
 signal appearance_changed
+signal focus_lost
+var settings_path: String = "user://practice-v1.json"
+var settings_writable: bool = true
+var focus_callback: JavaScriptObject
 var display_path: String = "user://display.cfg"
 var dialog: FileDialog
 var callback: JavaScriptObject
@@ -19,6 +23,8 @@ func _ready() -> void:
 		callback = JavaScriptBridge.create_callback(_web_file)
 		hidden_callback = JavaScriptBridge.create_callback(func(_args: Array) -> void: hidden.emit())
 		web.onHidden(hidden_callback)
+		focus_callback = JavaScriptBridge.create_callback(func(_args: Array) -> void: focus_lost.emit())
+		web.onBlur(focus_callback)
 		appearance_callback = JavaScriptBridge.create_callback(func(_args: Array) -> void: appearance_changed.emit())
 		web.onAppearance(appearance_callback)
 		resize_callback = JavaScriptBridge.create_callback(func(_args: Array) -> void: sync_display())
@@ -26,6 +32,7 @@ func _ready() -> void:
 		get_window().size_changed.connect(sync_display)
 		sync_display()
 	else:
+		get_window().focus_exited.connect(func() -> void: focus_lost.emit())
 		if DisplayServer.is_dark_mode_supported(): DisplayServer.set_system_theme_change_callback(func() -> void: appearance_changed.emit())
 		dialog = FileDialog.new()
 		dialog.use_native_dialog = true
@@ -131,3 +138,38 @@ func apply_appearance(dark: bool) -> void:
 func _exit_tree() -> void:
 	if web == null and DisplayServer.is_dark_mode_supported():
 		DisplayServer.set_system_theme_change_callback(Callable())
+
+func load_practice_settings() -> Dictionary:
+	var raw: String = ""
+	if web != null:
+		raw = String(web.loadPractice())
+	elif FileAccess.file_exists(settings_path):
+		var file: FileAccess = FileAccess.open(settings_path, FileAccess.READ)
+		if file == null: raw = "!unavailable"
+		elif file.get_length() > PracticeSettings.MAX_BYTES: raw = "!oversize"
+		else: raw = file.get_as_text()
+	var result: Dictionary = PracticeSettings.decode(raw)
+	settings_writable = result.status == "ok"
+	return result
+
+func save_practice_settings(values: Dictionary) -> bool:
+	if not settings_writable: return false
+	var raw: String = PracticeSettings.encode(values)
+	if raw.is_empty(): return false
+	if web != null: return bool(web.savePractice(raw))
+	var file: FileAccess = FileAccess.open(settings_path + ".tmp", FileAccess.WRITE)
+	if file == null: return false
+	file.store_string(raw)
+	file.flush()
+	var success: bool = file.get_error() == OK
+	file.close()
+	if not success: return false
+	return DirAccess.rename_absolute(ProjectSettings.globalize_path(settings_path + ".tmp"), ProjectSettings.globalize_path(settings_path)) == OK
+
+func reset_practice_settings() -> bool:
+	if web != null:
+		if not bool(web.resetPractice()): return false
+	elif FileAccess.file_exists(settings_path):
+		if DirAccess.remove_absolute(ProjectSettings.globalize_path(settings_path)) != OK: return false
+	settings_writable = true
+	return true

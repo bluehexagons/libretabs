@@ -43,3 +43,12 @@ static func page_count(measures: int, width: float, notation: String) -> int:
 
 static func row_height(notation: String) -> float:
 	return 320.0 if notation == "both" else (190.0 if notation == "staff" else 230.0)
+
+# Note positions are centers, shared by engraving, highlights and live input.
+static func staff_y(pitch: int) -> float:
+	var written: int = pitch + 12
+	var degree: int = [0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6][posmod(written, 12)]
+	return 112.0 - ((written / 12) * 7 + degree - 37) * 4
+
+static func tab_y(string_number: int, notation: String = "both") -> float:
+	return (176.0 if notation == "both" else 80.0) + (string_number - 1) * 21

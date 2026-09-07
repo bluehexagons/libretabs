@@ -33,6 +33,17 @@
       document.addEventListener('visibilitychange', () => { if (document.hidden) callback(); });
       window.addEventListener('pagehide', () => callback());
     },
+    onBlur(callback) { window.addEventListener('blur', () => callback()); },
+    loadPractice() {
+      try { const raw = localStorage.getItem('libretabs.practice.v1') || ''; return raw.length <= 4096 ? raw : '!oversize'; }
+      catch (_) { return '!unavailable'; }
+    },
+    savePractice(raw) {
+      try { localStorage.setItem('libretabs.practice.v1', raw); return true; } catch (_) { return false; }
+    },
+    resetPractice() {
+      try { localStorage.removeItem('libretabs.practice.v1'); return true; } catch (_) { return false; }
+    },
     report(json) {
       if (new URLSearchParams(location.search).has('trace')) window.libretabsEvidence = JSON.parse(json);
     },

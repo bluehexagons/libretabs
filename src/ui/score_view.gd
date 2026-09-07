@@ -5,6 +5,7 @@ extends Control
 var song: SongDocument
 var projection: TabProjection
 var part: int = 0
+var live_notes: Array[Dictionary] = []
 var current_tick: float = 0.0
 var measure_index: int = 0
 var mode: String = "scroll"
@@ -167,16 +168,15 @@ func draw_cursor(surface: Control) -> void:
 			var x: float = origin.x + ScoreLayout.note_x(song, note, index, tile.size.x, mode == "scroll")
 			if notation != "staff" and projection.placements.has(note.id):
 				var placement: Dictionary = projection.placements[note.id]
-				var y: float = origin.y + (176 if notation == "both" else 80) + (int(placement.string) - 1) * 21
-				surface.draw_rect(Rect2(x - 4, y - 14, 32, 28), get_theme_color("accent", "LibreTabs"), false, 2)
+				var y: float = origin.y + ScoreLayout.tab_y(int(placement.string), notation)
+				var half: float = ThemeDB.fallback_font.get_string_size(str(placement.fret), HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x / 2 + 5
+				surface.draw_rect(Rect2(x - half, y - 14, half * 2, 28), get_theme_color("accent", "LibreTabs"), false, 2)
 			if notation != "tab":
-				var pitch: int = int(note.pitch) + 12
-				var degree: int = [0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6][pitch % 12]
-				var step: int = (pitch / 12) * 7 + degree
-				var y: float = origin.y + 112 - (step - 37) * 4
+				var y: float = origin.y + ScoreLayout.staff_y(int(note.pitch))
 				if y >= origin.y + 48 and y <= origin.y + 144:
-					surface.draw_arc(Vector2(x + 3, y), 11, 0, TAU, 20, get_theme_color("accent", "LibreTabs"), 2, true)
+					surface.draw_arc(Vector2(x, y), 11, 0, TAU, 20, get_theme_color("accent", "LibreTabs"), 2, true)
 
+	draw_live(surface)
 	if mode == "scroll":
 		# Fixed reading guide; notes disappear behind it as they pass.
 		surface.draw_rect(Rect2(0, 48, 44, 250), get_theme_color("paper", "LibreTabs"))
@@ -184,3 +184,36 @@ func draw_cursor(surface: Control) -> void:
 		surface.draw_string(ThemeDB.fallback_font, Vector2(17, 132), "8", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, get_theme_color("ink", "LibreTabs"))
 		for string_index: int in range(6):
 			surface.draw_string(ThemeDB.fallback_font, Vector2(14, 182 + string_index * 21), str(string_index + 1), HORIZONTAL_ALIGNMENT_LEFT, -1, 18, get_theme_color("muted", "LibreTabs"))
+
+func set_live(notes: Array[Dictionary]) -> void:
+	live_notes = notes.duplicate(true)
+	if cursor != null: cursor.queue_redraw()
+
+func draw_live(surface: Control) -> void:
+	if live_notes.is_empty() or not tiles.has(measure_index): return
+	var tile: MeasureCanvas = tiles[measure_index]
+	var origin: Vector2 = tile.position + strip.position
+	var bar: Dictionary = song.measures[measure_index]
+	var x: float = playhead_x() if mode == "scroll" else origin.x + 68 + (current_tick - float(bar.start)) / float(bar.end - bar.start) * (tile.size.x - 92)
+	var color: Color = get_theme_color("live", "LibreTabs")
+	var font: Font = ThemeDB.fallback_font
+	for note: Dictionary in live_notes:
+		if notation != "tab":
+			var y: float = origin.y + ScoreLayout.staff_y(int(note.pitch))
+			if y >= origin.y + 48 and y <= origin.y + 144:
+				for ledger: int in range(1, 5):
+					for line_y: float in [origin.y + 112 + ledger * 8, origin.y + 80 - ledger * 8]:
+						if (line_y > origin.y + 112 and y >= line_y) or (line_y < origin.y + 80 and y <= line_y): surface.draw_line(Vector2(x - 11, line_y), Vector2(x + 11, line_y), color, 2)
+				var points: PackedVector2Array = PackedVector2Array([Vector2(x, y - 7), Vector2(x + 9, y), Vector2(x, y + 7), Vector2(x - 9, y), Vector2(x, y - 7)])
+				surface.draw_colored_polygon(points, color)
+				if int(note.pitch) % 12 in [1, 3, 6, 8, 10]: surface.draw_string(preload("res://assets/fonts/Bravura.otf"), Vector2(x - 22, y), String.chr(0xe262), HORIZONTAL_ALIGNMENT_LEFT, -1, 26, color)
+			else:
+				surface.draw_string(font, Vector2(x + 12, origin.y + 60), tr("PITCH_MARKER") % int(note.pitch), HORIZONTAL_ALIGNMENT_LEFT, -1, 16, color)
+		if notation != "staff":
+			var y: float = origin.y + ScoreLayout.tab_y(int(note.get("string", 1)), notation)
+			var text: String = str(note.fret) if note.has("fret") else "!"
+			var half: float = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x / 2
+			surface.draw_style_box(UIAppearance.box(get_theme_color("paper", "LibreTabs"), 0), Rect2(x - half - 5, y - 16, half * 2 + 10, 32))
+			surface.draw_rect(Rect2(x - half - 5, y - 16, half * 2 + 10, 32), color, false, 3)
+			surface.draw_string(font, Vector2(x - half, y + (font.get_ascent(26) - font.get_descent(26)) / 2), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 26, color)
+	surface.draw_string(font, Vector2(48, origin.y + ScoreLayout.row_height(notation) - 16), tr("LIVE_NOTE"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, color)

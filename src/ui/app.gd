@@ -21,6 +21,17 @@ var seek: HSlider
 var loop_from: SpinBox
 var loop_to: SpinBox
 var loop_check: CheckButton
+var count_length: SpinBox
+var speed_dragging: bool = false
+var main_speed: HSlider
+var speed_control: BoxContainer
+var keyboard: KeyboardNotes = KeyboardNotes.new()
+var keyboard_picker: OptionButton
+var octave_picker: SpinBox
+var keyboard_help: Label
+var settings_notice: Label
+var persist_preferences: bool = true
+var preferences_ready: bool = false
 var count_check: CheckButton
 var metro_check: CheckButton
 var mute_check: CheckButton
@@ -46,7 +57,6 @@ var brand_label: Label
 var notice_button: Button
 var tempo_button: Button
 var metro_button: Button
-var playback_button: Button
 var stop_button: Button
 var quick_row: HFlowContainer
 var slower_button: Button
@@ -94,6 +104,7 @@ func _ready() -> void:
 	add_child(host)
 	host.picked.connect(_file_picked)
 	host.hidden.connect(_suspended)
+	host.focus_lost.connect(release_keyboard)
 	audio = PracticeAudio.new()
 	add_child(audio)
 	build_ui()
@@ -102,6 +113,7 @@ func _ready() -> void:
 	host.appearance_changed.connect(apply_appearance)
 	apply_appearance()
 	apply_scale(host.load_scale())
+	load_preferences()
 	host.configure_activity(false)
 	idle_timer = Timer.new()
 	idle_timer.wait_time = 1.0
@@ -121,7 +133,7 @@ func pass_scroll_input(node: Node) -> void:
 func set_status(key: String) -> void:
 	status_key = key
 	status.text = tr(key)
-	status.visible = not (landscape or compact) or key not in ["START_HINT", "STATE_PAUSED", "FOLLOW_HINT"]
+	status.visible = key not in ["START_HINT", "STATE_PAUSED", "FOLLOW_HINT", "COUNTING"]
 
 func label(key: String, font_size: int = 20) -> Label:
 	var item: Label = Label.new()
@@ -141,6 +153,7 @@ func button(key: String, action: Callable) -> Button:
 	item.custom_minimum_size.y = 56
 	item.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	item.mouse_filter = Control.MOUSE_FILTER_PASS
+	item.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	item.pressed.connect(action)
 	return item
 
@@ -150,6 +163,7 @@ func check(key: String, checked: bool) -> CheckButton:
 	item.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	item.tooltip_text = tr(key)
 	item.mouse_filter = Control.MOUSE_FILTER_PASS
+	item.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	item.button_pressed = checked
 	item.custom_minimum_size.y = 56
 	item.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -303,14 +317,33 @@ func build_ui() -> void:
 	transport_row.add_child(play_button)
 	stop_button = button("STOP", stop_practice)
 	transport_row.add_child(stop_button)
-	playback_button = button("PLAYBACK_QUICK", func() -> void: toggle_drawer("TEMPO"))
-	transport_row.add_child(playback_button)
 	quick_row = flow(dock)
 	quick_row.alignment = FlowContainer.ALIGNMENT_CENTER
 	tempo_button = button("TEMPO", func() -> void: toggle_drawer("TEMPO"))
-	quick_row.add_child(tempo_button)
+	speed_control = BoxContainer.new()
+	speed_control.vertical = true
+	speed_control.add_theme_constant_override("separation", 0)
+	speed_control.custom_minimum_size.x = 144
+	quick_row.add_child(speed_control)
+	speed_control.add_child(tempo_button)
+	main_speed = HSlider.new()
+	main_speed.min_value = 25
+	main_speed.max_value = 200
+	main_speed.step = 5
+	main_speed.value = 100
+	main_speed.custom_minimum_size = Vector2(120, 44)
+	main_speed.tooltip_text = tr("SPEED")
+	main_speed.drag_started.connect(func() -> void: speed_dragging = true)
+	main_speed.drag_ended.connect(func(_changed: bool) -> void:
+		speed_dragging = false
+		set_speed(main_speed.value / 100.0))
+	main_speed.value_changed.connect(func(value: float) -> void:
+		if speed_dragging: tempo_button.text = tr("TEMPO_BUTTON") % roundi(value)
+		else: set_speed(value / 100.0))
+	speed_control.add_child(main_speed)
 	metro_button = button("CLICK_ON", func() -> void: set_metronome(not metro_check.button_pressed))
 	metro_button.toggle_mode = true
+	metro_button.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	quick_row.add_child(metro_button)
 	update_metronome()
 
@@ -325,7 +358,7 @@ func section(key: String) -> VBoxContainer:
 
 func build_drawers() -> void:
 	var menu_index: VBoxContainer = section("MENU")
-	for key: String in ["TEMPO", "LOOP_TOOL", "SOUND", "SONG_MENU", "SCORE_VIEW", "HELP", "DETAILS", "DISPLAY"]:
+	for key: String in ["TEMPO", "LOOP_TOOL", "SONG_MENU", "SCORE_VIEW", "SETTINGS", "HELP"]:
 		menu_index.add_child(button(key, func() -> void: toggle_drawer(key)))
 	var views: VBoxContainer = section("SCORE_VIEW")
 	views.add_child(label("VIEW_HELP"))
@@ -366,6 +399,7 @@ func build_drawers() -> void:
 	part_picker.custom_minimum_size.y = 56
 	part_picker.item_selected.connect(select_part)
 	library.add_child(part_picker)
+	library.add_child(button("DETAILS", func() -> void: toggle_drawer("DETAILS")))
 
 	var tempo: VBoxContainer = section("TEMPO")
 	var speed_steps: HFlowContainer = flow(tempo)
@@ -383,6 +417,15 @@ func build_drawers() -> void:
 	count_check = check("COUNT_IN", true)
 	count_check.tooltip_text = tr("COUNT_HELP")
 	tempo.add_child(count_check)
+	count_check.toggled.connect(func(_enabled: bool) -> void: save_preferences())
+	tempo.add_child(label("COUNT_LENGTH", 18))
+	count_length = SpinBox.new()
+	count_length.min_value = 1
+	count_length.max_value = 4
+	count_length.step = 1
+	count_length.custom_minimum_size.y = 56
+	count_length.value_changed.connect(func(_value: float) -> void: save_preferences())
+	tempo.add_child(count_length)
 	tempo.add_child(label("SPEED_PRESETS", 18))
 	speed_picker = OptionButton.new()
 	speed_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
@@ -437,7 +480,39 @@ func build_drawers() -> void:
 	details.add_child(summary)
 	warning = label("PROTOTYPE_LIMIT", 18)
 	details.add_child(warning)
+	var settings: VBoxContainer = section("SETTINGS")
+	for key: String in ["SOUND", "DISPLAY", "KEYBOARD"]: settings.add_child(button(key, func() -> void: toggle_drawer(key)))
+	settings_notice = label("SETTINGS_SAVED", 18)
+	settings.add_child(settings_notice)
+	settings.add_child(button("RESET_PRACTICE", reset_preferences))
+	var keys: VBoxContainer = section("KEYBOARD")
+	keys.add_child(label("KEYBOARD_LAYOUT"))
+	keyboard_picker = OptionButton.new()
+	keyboard_picker.custom_minimum_size.y = 56
+	keyboard_picker.fit_to_longest_item = false
+	for key: String in ["KEYBOARD_LOWER", "KEYBOARD_HOME"]: keyboard_picker.add_item(tr(key))
+	keyboard_picker.item_selected.connect(func(index: int) -> void:
+		release_keyboard()
+		keyboard.layout = ["lower", "home"][index]
+		update_keyboard_help()
+		save_preferences())
+	keys.add_child(keyboard_picker)
+	keys.add_child(label("KEYBOARD_OCTAVE"))
+	octave_picker = SpinBox.new()
+	octave_picker.min_value = 2
+	octave_picker.max_value = 5
+	octave_picker.step = 1
+	octave_picker.custom_minimum_size.y = 56
+	octave_picker.value_changed.connect(func(value: float) -> void:
+		release_keyboard()
+		keyboard.octave = int(value)
+		save_preferences())
+	keys.add_child(octave_picker)
+	keys.add_child(label("KEYBOARD_EXPLAIN", 18))
 	var help: VBoxContainer = section("HELP")
+	keyboard_help = label("KEYBOARD_HELP_LOWER", 18)
+	help.add_child(keyboard_help)
+	help.add_child(button("KEYBOARD", func() -> void: toggle_drawer("KEYBOARD")))
 	for key: String in ["HELP_STRINGS", "HELP_FRETS", "HELP_STAFF", "HELP_TIMING"]:
 		help.add_child(label(key, 20))
 	var display: VBoxContainer = section("DISPLAY")
@@ -483,11 +558,13 @@ func volume_control(parent: Node, key: String, initial: float, instrument: bool)
 	slider.value_changed.connect(func(value: float) -> void:
 		caption.text = tr(key) % roundi(value)
 		slider.tooltip_text = caption.text
-		audio.set_level(instrument, value / 100.0))
+		audio.set_level(instrument, value / 100.0)
+		save_preferences())
 	parent.add_child(slider)
 	return slider
 
 func toggle_drawer(key: String) -> void:
+	release_keyboard()
 	if not menu_overlay.visible: previous_focus = get_viewport().gui_get_focus_owner()
 	menu_back.visible = key != "MENU"
 	opened_drawer = key
@@ -507,6 +584,26 @@ func close_menu() -> void:
 	else: menu_button.grab_focus()
 
 func _input(event: InputEvent) -> void:
+	if event is InputEventKey:
+		var physical: int = event.physical_keycode if event.physical_keycode != 0 else event.keycode
+		if not event.pressed:
+			var note: Dictionary = keyboard.release(physical)
+			if not note.is_empty():
+				audio.live_off(note)
+				update_live_visual()
+				get_viewport().set_input_as_handled()
+		elif not menu_overlay.visible and importer == null and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed:
+			var focus: Control = get_viewport().gui_get_focus_owner()
+			if not focus is LineEdit and not focus is TextEdit:
+				if physical in [KEY_MINUS, KEY_EQUAL] or (keyboard.layout == "home" and physical in [KEY_Z, KEY_X]):
+					octave_picker.value = clampi(keyboard.octave + (-1 if physical in [KEY_MINUS, KEY_Z] else 1), 2, 5)
+					get_viewport().set_input_as_handled()
+				else:
+					var note: Dictionary = keyboard.press(physical)
+					if not note.is_empty():
+						audio.live_on(note)
+						update_live_visual()
+						get_viewport().set_input_as_handled()
 	if not menu_overlay.visible or not event is InputEventKey or not event.pressed: return
 	if event.keycode == KEY_ESCAPE:
 		close_menu()
@@ -562,8 +659,9 @@ func apply_appearance() -> void:
 	drawer.add_theme_stylebox_override("panel", UIAppearance.box(UIAppearance.color("paper", dark_mode), 16))
 	paper.add_theme_stylebox_override("panel", UIAppearance.box(UIAppearance.color("paper", dark_mode), 8))
 	dock_panel.add_theme_stylebox_override("panel", UIAppearance.box(UIAppearance.color("paper", dark_mode), 12))
-	for state_name: String in ["normal", "hover", "pressed"]:
-		play_button.add_theme_stylebox_override(state_name, UIAppearance.box(UIAppearance.color("primary" if state_name == "normal" else "primary_hover", dark_mode)))
+	for state_name: String in ["normal", "hover", "pressed", "hover_pressed"]:
+		play_button.add_theme_stylebox_override(state_name, UIAppearance.primary_style(dark_mode, state_name))
+	play_button.add_theme_color_override("font_hover_pressed_color", Color.WHITE)
 	if score != null:
 		for tile: MeasureCanvas in score.tiles.values(): tile.queue_redraw()
 		score.cursor.queue_redraw()
@@ -587,17 +685,18 @@ func responsive() -> void:
 	root_box.vertical = not landscape
 	header.vertical = landscape
 	header.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN if landscape else Control.SIZE_FILL
-	# Preserve the score at enlarged text sizes; one direct panel replaces the
-	# quick row when four large controls would overwhelm the available space.
+	# Keep direct speed adjustment at every scale. Reduce auxiliary actions
+	# before taking space away from the score.
 	var expanded_controls: bool = theme.default_font_size < 30
-	quick_row.visible = expanded_controls
-	tempo_button.visible = expanded_controls
-	metro_button.visible = expanded_controls
-	playback_button.visible = not expanded_controls
+	quick_row.visible = true
+	tempo_button.visible = true
+	metro_button.visible = expanded_controls and (landscape or size.x >= 360)
 	stop_button.visible = expanded_controls and not landscape
 	dock_panel.add_theme_stylebox_override("panel", UIAppearance.box(UIAppearance.color("paper", dark_mode), 8 if landscape else 12))
 	dock.custom_minimum_size.x = 0
 	if landscape: dock.custom_minimum_size.x = 144 if expanded_controls else 152
+	speed_control.vertical = landscape
+	speed_control.custom_minimum_size.x = (144 if expanded_controls else 152) if speed_control.vertical else (240 if size.x >= 760 else 212)
 	brand_label.visible = not landscape and not compact
 	header.alignment = BoxContainer.ALIGNMENT_BEGIN if landscape else BoxContainer.ALIGNMENT_END
 	song_title.visible = not landscape and not (compact and theme.default_font_size >= 30)
@@ -634,7 +733,7 @@ func adapt_flow(node: Node) -> void:
 		for row: Control in dock.get_children():
 			var row_width: float = 0
 			for item: Control in row.get_children():
-				if item.visible: row_width += item.custom_minimum_size.x + 8
+				if item.visible: row_width += maxf(item.custom_minimum_size.x, item.get_combined_minimum_size().x) + 8
 			row.custom_minimum_size.x = maxf(0, row_width - 8) if not dock.vertical else 0
 			row.size_flags_horizontal = Control.SIZE_SHRINK_CENTER if not dock.vertical else Control.SIZE_FILL
 
@@ -657,6 +756,7 @@ func set_metronome(enabled: bool) -> void:
 	metro_check.set_pressed_no_signal(enabled)
 	audio.set_metronome(enabled)
 	update_metronome()
+	save_preferences()
 
 func update_metronome() -> void:
 	if metro_button == null: return
@@ -696,7 +796,11 @@ func update_tempo() -> void:
 	updating = false
 	tempo_caption.text = tr("PLAYBACK_RATE") % roundi(speed * 100)
 	tempo_caption.tooltip_text = tr("TEMPO_CURRENT") % [base_bpm() * speed, base_bpm(), roundi(speed * 100)]
-	tempo_button.text = tr("TEMPO_SELECTED") % roundi(speed * 100)
+	tempo_button.text = tr("TEMPO_BUTTON") % roundi(speed * 100)
+	main_speed.min_value = minf(25, speed * 100)
+	main_speed.max_value = maxf(200, speed * 100)
+	main_speed.set_value_no_signal(speed * 100)
+	main_speed.tooltip_text = tr("SPEED")
 	var preset: int = -1
 	for index: int in range(SPEEDS.size()):
 		if is_equal_approx(speed, SPEEDS[index]): preset = index
@@ -811,6 +915,7 @@ func toggle_play() -> void:
 		start(count_check.button_pressed and (state != "STATE_PAUSED" or paused_in_count))
 
 func start(count_in: bool) -> void:
+	release_keyboard()
 	if song == null:
 		return
 	var start_tick: float = source_tick
@@ -823,7 +928,7 @@ func start(count_in: bool) -> void:
 			start_tick = loop_start_tick
 	var filtered: Array[int] = muted.duplicate()
 	if mute_check.button_pressed and not filtered.has(part): filtered.append(part)
-	audio.transport.configure(song, start_tick, end_tick, speed, loop_check.button_pressed, count_in, true, filtered, loop_start_tick)
+	audio.transport.configure(song, start_tick, end_tick, speed, loop_check.button_pressed, count_in, true, filtered, loop_start_tick, int(count_length.value))
 	audio.begin()
 	set_activity(true)
 	started_msec = Time.get_ticks_msec()
@@ -831,6 +936,7 @@ func start(count_in: bool) -> void:
 	play_button.text = tr("PAUSE")
 
 func pause() -> void:
+	release_keyboard()
 	if audio != null and audio.playing_practice:
 		paused_in_count = audio.audible_frame() < audio.transport.count_frames
 		source_tick = song.tick_at(audio.transport.seconds_at_frame(audio.audible_frame()))
@@ -882,6 +988,8 @@ func seek_measure(value: float) -> void:
 
 func _suspended() -> void:
 	pause()
+	# A hidden browser may throttle the preview-release timer. Stop its worker now.
+	audio.stop_practice()
 	if status != null: set_status("SUSPENDED")
 
 func _process(_delta: float) -> void:
@@ -899,10 +1007,7 @@ func _process(_delta: float) -> void:
 			set_status("AUDIO_BLOCKED")
 			return
 		source_tick = song.tick_at(audio.transport.seconds_at_frame(frame))
-		if frame < audio.transport.count_frames:
-			set_status("COUNTING")
-		else:
-			set_status("FOLLOW_HINT")
+		set_status("FOLLOW_HINT")
 		if audio.transport.complete(frame):
 			audio.stop_practice()
 			update_position()
@@ -916,7 +1021,7 @@ func report_state() -> void:
 	if song == null: return
 	if host.trace_enabled():
 		var evidence: Dictionary = audio.metrics()
-		evidence.merge({"metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "placed": projection.placed, "eligible": projection.eligible, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
+		evidence.merge({"keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "placed": projection.placed, "eligible": projection.eligible, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
 		host.report(evidence)
 	offline.text = tr("OFFLINE_READY") if host.offline_ready() else tr("OFFLINE_PENDING")
 	if host.offline_ready() and not host.trace_enabled(): idle_timer.stop()
@@ -965,3 +1070,56 @@ func show_notices() -> void:
 	add_child(popup)
 	popup.popup_centered_clamped(Vector2i(700, 550), 0.9)
 	popup.confirmed.connect(popup.queue_free)
+
+func update_live_visual() -> void:
+	var notes: Array[Dictionary] = []
+	for note: Dictionary in keyboard.held.values(): notes.append(note)
+	score.set_live(notes)
+
+func release_keyboard() -> void:
+	keyboard.held.clear()
+	if audio != null: audio.release_live()
+	if score != null: score.set_live([])
+
+func update_keyboard_help() -> void:
+	keyboard_help.text = tr("KEYBOARD_HELP_LOWER" if keyboard.layout == "lower" else "KEYBOARD_HELP_HOME")
+
+func preference_values() -> Dictionary:
+	return {"metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "count_measures": int(count_length.value), "instrument_volume": roundi(instrument_slider.value), "click_volume": roundi(click_slider.value), "keyboard_octave": keyboard.octave, "keyboard_layout": keyboard.layout}
+
+func apply_preferences(values: Dictionary) -> void:
+	preferences_ready = false
+	metro_check.set_pressed_no_signal(values.metronome)
+	audio.set_metronome(values.metronome)
+	update_metronome()
+	count_check.set_pressed_no_signal(values.count_in)
+	count_length.set_value_no_signal(values.count_measures)
+	instrument_slider.value = values.instrument_volume
+	click_slider.value = values.click_volume
+	audio.set_level(true, float(values.instrument_volume) / 100)
+	audio.set_level(false, float(values.click_volume) / 100)
+	keyboard.octave = int(values.keyboard_octave)
+	keyboard.layout = values.keyboard_layout
+	keyboard_picker.select(0 if keyboard.layout == "lower" else 1)
+	octave_picker.set_value_no_signal(keyboard.octave)
+	update_keyboard_help()
+	preferences_ready = true
+
+func load_preferences() -> void:
+	var result: Dictionary = host.load_practice_settings() if persist_preferences else {"values": PracticeSettings.DEFAULTS, "status": "ok"}
+	apply_preferences(result.values)
+	settings_notice.text = tr("SETTINGS_SAVED" if result.status == "ok" else "SETTINGS_RECOVERY")
+
+func save_preferences() -> void:
+	if not preferences_ready or not persist_preferences: return
+	var saved: bool = host.save_practice_settings(preference_values())
+	settings_notice.text = tr("SETTINGS_SAVED" if saved else "SETTINGS_RECOVERY")
+	if not saved: set_status("SETTINGS_RECOVERY")
+
+func reset_preferences() -> void:
+	release_keyboard()
+	if persist_preferences and not host.reset_practice_settings():
+		settings_notice.text = tr("SETTINGS_RECOVERY")
+		return
+	apply_preferences(PracticeSettings.DEFAULTS)
+	settings_notice.text = tr("SETTINGS_SAVED")
