@@ -421,3 +421,10 @@ It adds no clock or mixer. `HostAdapter` owns browser/viewport background change
 Web-only per-pixel transparency enables the WebGL alpha channel at context creation.
 Presentation choices use validated display-setting keys; capture activation and
 imported songs are never persisted. Native capture offers chroma-key margins.
+
+The numeric-field wrapper retains SpinBox as the range/value authority and only
+commits pending text when the user edited it, avoiding stale deferred display
+values during rapid taps. Count-in UI reads pulse boundaries stored alongside the
+transport's existing click schedule; there is no extra UI clock. ScoreView accepts
+font resources shared by its engraving and cursor layers. CaptureView supplies
+isolated 2× font caches and preserves the chosen title font.

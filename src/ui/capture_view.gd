@@ -6,6 +6,7 @@ extends Control
 var score: ScoreView
 var card: PanelContainer
 var heading: Label
+var heading_source: Font
 var symbols: String = "both"
 var background: String = "transparent"
 var show_title: bool = false
@@ -29,11 +30,23 @@ func _ready() -> void:
 	column.add_child(heading)
 	score = ScoreView.new()
 	score.presentation = true
+	# Isolated font resources retain detail at the maximum 2× capture scale.
+	# Ordinary UI/score fonts and their caches remain untouched.
+	var text_font: FontFile = ThemeDB.fallback_font.duplicate() as FontFile
+	text_font.oversampling = 2.0
+	var notation_font: FontFile = preload("res://assets/fonts/Bravura.otf").duplicate() as FontFile
+	notation_font.oversampling = 2.0
+	score.ui_font = text_font
+	score.music_font = notation_font
 	column.add_child(score)
 	resized.connect(arrange)
 	hide()
 
 func configure(source: ScoreView, song_title: String, dark: bool) -> void:
+	var chosen_font: Font = get_theme_font("font", "Label")
+	if chosen_font != heading_source:
+		heading_source = chosen_font
+		heading.add_theme_font_override("font", capture_font(chosen_font))
 	heading.text = song_title
 	heading.visible = show_title
 	card.add_theme_stylebox_override("panel", UIAppearance.box(UIAppearance.color("paper", dark), 8))
@@ -42,6 +55,15 @@ func configure(source: ScoreView, song_title: String, dark: bool) -> void:
 	score.set_document(source.song, source.part, source.projection)
 	score.update_tick(source.current_tick)
 	arrange()
+
+func capture_font(source: Font) -> Font:
+	var result: Font = source.duplicate() as Font
+	if result is FontFile: result.oversampling = 2.0
+	elif result is FontVariation: result.base_font = capture_font(source.base_font)
+	var fallbacks: Array[Font] = []
+	for fallback: Font in source.fallbacks: fallbacks.append(capture_font(fallback))
+	result.fallbacks = fallbacks
+	return result
 
 func arrange() -> void:
 	if card == null: return

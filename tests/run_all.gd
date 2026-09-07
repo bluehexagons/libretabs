@@ -93,6 +93,11 @@ func _initialize() -> void:
 				pulses += 1
 				if event.note.accent: accents += 1
 		check(pulses == bars * 4 and accents == bars, "count-in accents each measure")
+		check(count.count_beat_at(-1) == 0 and count.count_beat_at(0) == 1 and count.count_beat_at(count.count_frames) == 0, "count visual has half-open playback boundaries")
+		for index: int in range(count.count_beats.size()):
+			var at: int = count.count_beats[index]
+			check(count.count_beat_at(at) == index % 4 + 1, "count visual advances at the exact scheduled click")
+			if index > 0: check(count.count_beat_at(at - 1) == (index - 1) % 4 + 1, "count visual never advances before the click")
 	var compound: SongDocument = SongDocument.new()
 	compound.measures.append({"start": 0, "end": 1440, "numerator": 6, "denominator": 8})
 	compound.end_tick = 1440
@@ -103,8 +108,10 @@ func _initialize() -> void:
 	for event: Dictionary in compound_count.schedule:
 		if event.kind == "click" and event.frame < 0: compound_pulses += 1
 	check(compound_pulses == 8, "6/8 count-in uses two dotted-quarter pulses per measure")
+	check(compound_count.count_beat_at(0) == 1 and compound_count.count_beat_at(compound_count.count_beats[1]) == 2 and compound_count.count_beat_at(compound_count.count_beats[2]) == 1, "compound-meter visual uses two pulses per measure")
 	compound_count.configure(compound, 0, 1440, 1, false, false, false, [], -1, 4)
 	check(compound_count.count_frames == 0, "off disables count-in regardless of stored length")
+	check(compound_count.count_beat_at(0) == 0, "count visual resets when count-in is disabled")
 	check(is_equal_approx(song.seconds_at(1920), 2.4), "100 BPM measure")
 	check(song.source.bytes_copy() == bytes, "exact source bytes")
 	var copy: PackedByteArray = song.source.bytes_copy()

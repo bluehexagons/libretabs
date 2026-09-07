@@ -36,6 +36,8 @@ var cue: Label
 var warning: Label
 var offline: Label
 var play_button: Button
+var count_badge: Label
+var play_control_key: String = ""
 var part_picker: OptionButton
 var demo_picker: OptionButton
 var active_demo: int = -1
@@ -213,6 +215,17 @@ func check(key: String, checked: bool) -> CheckButton:
 	item.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	return item
 
+func number_field(parent: Node, field: SpinBox, key: String) -> void:
+	var row: NumberStepper = NumberStepper.new()
+	var less: Button = button("NUMBER_LESS", func() -> void: row.change_by(-1))
+	var more: Button = button("NUMBER_MORE", func() -> void: row.change_by(1))
+	for item: Button in [less, more]:
+		item.text = ""
+		item.custom_minimum_size.x = 56
+		item.tooltip_text = tr("NUMBER_DECREASE" if item == less else "NUMBER_INCREASE") % tr(key)
+	parent.add_child(row)
+	row.configure(field, less, more)
+
 func flow(parent: Node) -> HFlowContainer:
 	var row: HFlowContainer = HFlowContainer.new()
 	row.add_theme_constant_override("h_separation", 8)
@@ -376,6 +389,15 @@ func build_ui() -> void:
 	for mode: String in ["font_color", "font_focus_color", "font_hover_color", "font_pressed_color"]:
 		play_button.add_theme_color_override(mode, Color.WHITE)
 	transport_row.add_child(play_button)
+	count_badge = Label.new()
+	count_badge.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	count_badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	count_badge.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	count_badge.add_theme_font_size_override("font_size", 28)
+	count_badge.add_theme_color_override("font_color", Color.WHITE)
+	count_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	play_button.add_child(count_badge)
+	count_badge.hide()
 	stop_button = button("STOP", stop_practice)
 	transport_row.add_child(stop_button)
 	quick_row = flow(dock)
@@ -507,7 +529,7 @@ func build_drawers() -> void:
 	count_length.step = 1
 	count_length.custom_minimum_size.y = 56
 	count_length.value_changed.connect(func(_value: float) -> void: save_preferences())
-	tempo.add_child(count_length)
+	number_field(tempo, count_length, "COUNT_LENGTH")
 	tempo.add_child(label("SPEED_PRESETS", 18))
 	speed_picker = OptionButton.new()
 	speed_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
@@ -526,7 +548,7 @@ func build_drawers() -> void:
 	bpm_input.step = 1
 	bpm_input.custom_minimum_size.y = 56
 	bpm_input.value_changed.connect(change_bpm)
-	tempo.add_child(bpm_input)
+	number_field(tempo, bpm_input, "BPM_LABEL")
 	tempo.add_child(label("TEMPO_HELP", 18))
 	tempo.add_child(label("CLICK_HELP", 18))
 
@@ -559,8 +581,8 @@ func build_drawers() -> void:
 		item.value = 1 if item == loop_from else 2
 		item.custom_minimum_size.y = 56
 		item.tooltip_text = tr("LOOP_RANGE")
-		item.value_changed.connect(func(_value: float) -> void: loop_changed())
-		loops.add_child(item)
+		item.value_changed.connect(func(_value: float) -> void: loop_changed(item == loop_to))
+		number_field(loops, item, "LOOP_FIRST" if item == loop_from else "LOOP_LAST")
 	loop_check.toggled.connect(func(_pressed: bool) -> void: loop_changed())
 	var endpoints: HFlowContainer = flow(loops)
 	endpoints.add_child(button("LOOP_START_HERE", func() -> void: set_loop_boundary(true)))
@@ -598,7 +620,7 @@ func build_drawers() -> void:
 		release_keyboard()
 		keyboard.octave = int(value)
 		save_preferences())
-	keys.add_child(octave_picker)
+	number_field(keys, octave_picker, "KEYBOARD_OCTAVE")
 	keys.add_child(label("KEYBOARD_EXPLAIN", 18))
 	var help: VBoxContainer = section("HELP")
 	keyboard_help = label("KEYBOARD_HELP_LOWER", 18)
@@ -945,7 +967,7 @@ func responsive() -> void:
 	tempo_button.visible = true
 	metro_button.visible = expanded_controls
 	stop_button.visible = false
-	play_button.text = "" if landscape else tr("PAUSE" if audio.playing_practice else "PLAY")
+	update_play_control()
 	metro_button.text = tr("CLICK_ON" if metro_check.button_pressed else "CLICK_OFF") if landscape or size.x >= 760 else ""
 	metro_button.custom_minimum_size.x = 56
 	update_loop_controls()
@@ -978,7 +1000,7 @@ func adapt_flow(node: Node) -> void:
 			if child is Button:
 				child.clip_text = false
 				if child.text.is_empty():
-					child.custom_minimum_size.x = 56
+					child.custom_minimum_size.x = 120 if child == play_button and not landscape else 56
 					continue
 				var font: Font = child.get_theme_font("font")
 				var font_size: int = roundi(float(child.get_meta("base_font_size", 20)) * theme.default_font_size / 20.0)
@@ -1155,6 +1177,7 @@ func finish_import() -> void:
 	part_picker.select(first)
 	select_part(first)
 	state = "STATE_READY"
+	update_play_control()
 	set_status("START_HINT")
 	if drawer.visible: close_menu()
 	adapt_flow(panel)
@@ -1216,8 +1239,7 @@ func start(count_in: bool) -> void:
 	set_activity(true)
 	started_msec = Time.get_ticks_msec()
 	state = "STATE_PLAYING"
-	play_button.text = "" if landscape else tr("PAUSE")
-	play_button.icon = UIIcons.get_icon("PAUSE")
+	update_play_control()
 
 func pause() -> void:
 	release_keyboard()
@@ -1228,13 +1250,14 @@ func pause() -> void:
 		state = "STATE_PAUSED"
 		update_position()
 	set_activity(importer != null)
-	if play_button != null: play_button.text = "" if landscape else tr("PLAY"); play_button.icon = UIIcons.get_icon("PLAY")
+	if play_button != null: update_play_control()
 	if status != null and state == "STATE_PAUSED": set_status("STATE_PAUSED")
 
 func stop_practice() -> void:
 	pause()
 	source_tick = float(song.measures[int(loop_from.value) - 1].start) if song != null and loop_check.button_pressed else 0.0
 	state = "STATE_READY"
+	update_play_control()
 	set_status("START_HINT")
 	update_position()
 
@@ -1280,14 +1303,36 @@ func update_loop_controls() -> void:
 	loop_button.tooltip_text = tr("TIP_LOOP_ACTIVE") % [int(loop_from.value), int(loop_to.value)] if enabled else tr("TIP_LOOP_TOOL")
 	adapt_flow(dock)
 
-func loop_changed() -> void:
+func loop_changed(end_edited: bool = false) -> void:
 	if updating or song == null:
 		return
 	updating = true
-	if loop_to.value < loop_from.value: loop_to.value = loop_from.value
+	if loop_to.value < loop_from.value:
+		if end_edited: loop_from.value = loop_to.value
+		else: loop_to.value = loop_from.value
 	updating = false
 	update_loop_controls()
 	restart_if_playing()
+
+func update_play_control(frame: int = -1) -> void:
+	if count_badge == null: return
+	var beat: int = 0
+	if audio.playing_practice:
+		beat = audio.transport.count_beat_at(audio.audible_frame() if frame < 0 else frame)
+	var key: String = "COUNT" if beat > 0 else ("PAUSE" if audio.playing_practice else ("REPLAY" if state == "STATE_COMPLETE" else "PLAY"))
+	count_badge.visible = beat > 0
+	if beat > 0:
+		count_badge.text = str(beat)
+		play_button.text = ""
+		play_button.icon = null
+		play_button.tooltip_text = tr("TIP_COUNT_BEAT") % beat
+	else:
+		play_button.text = "" if landscape else tr(key)
+		play_button.icon = UIIcons.get_icon(key)
+		play_button.tooltip_text = tr("TIP_" + key)
+	if key != play_control_key:
+		play_control_key = key
+		adapt_flow(dock)
 
 func seek_measure(value: float) -> void:
 	if updating or song == null:
@@ -1314,6 +1359,7 @@ func _process(_delta: float) -> void:
 		return
 	if audio.playing_practice:
 		var frame: int = audio.audible_frame()
+		update_play_control(frame)
 		if frame == 0 and Time.get_ticks_msec() - started_msec > 2000:
 			pause()
 			set_status("AUDIO_BLOCKED")
@@ -1325,8 +1371,7 @@ func _process(_delta: float) -> void:
 			update_position()
 			set_activity(false)
 			state = "STATE_COMPLETE"
-			play_button.text = "" if landscape else tr("PLAY")
-			play_button.icon = UIIcons.get_icon("PLAY")
+			update_play_control()
 			set_status("STATE_COMPLETE")
 	if audio.playing_practice: update_position()
 
@@ -1334,7 +1379,7 @@ func report_state() -> void:
 	if song == null: return
 	if host.trace_enabled():
 		var evidence: Dictionary = audio.metrics()
-		evidence.merge({"capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "font_style": font_style, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "placed": projection.placed, "eligible": projection.eligible, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
+		evidence.merge({"count_beat": int(count_badge.text) if count_badge.visible else 0, "capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "font_style": font_style, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "placed": projection.placed, "eligible": projection.eligible, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
 		host.report(evidence)
 	offline.text = tr("OFFLINE_READY") if host.offline_ready() else tr("OFFLINE_PENDING")
 	if host.offline_ready() and not host.trace_enabled(): idle_timer.stop()
@@ -1498,7 +1543,7 @@ func build_print_menu() -> void:
 		item.min_value = 1
 		item.max_value = 512
 		item.custom_minimum_size.y = 56
-		menu.add_child(item)
+		number_field(menu, item, "LOOP_FIRST" if item == print_first else "LOOP_LAST")
 	print_prepare = button("PRINT_PREPARE", prepare_print)
 	menu.add_child(print_prepare)
 	print_save = button("PRINT_SAVE", func() -> void: host.export_print(print_html))

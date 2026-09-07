@@ -4,6 +4,8 @@ extends Control
 
 var reduced_motion: bool = false
 var presentation: bool = false
+var ui_font: Font = ThemeDB.fallback_font
+var music_font: Font = preload("res://assets/fonts/Bravura.otf")
 var song: SongDocument
 var projection: TabProjection
 var part: int = 0
@@ -128,6 +130,8 @@ func refresh() -> void:
 			tile.index = index
 			tile.continuous = mode == "scroll" and not reduced_motion
 			tile.notation = notation
+			tile.ui_font = ui_font
+			tile.music_font = music_font
 			tile.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			strip.add_child(tile)
 			tiles[index] = tile
@@ -177,7 +181,7 @@ func draw_cursor(surface: Control) -> void:
 			if notation != "staff" and projection.placements.has(note.id):
 				var placement: Dictionary = projection.placements[note.id]
 				var y: float = origin.y + ScoreLayout.tab_y(int(placement.string), notation)
-				var half: float = ThemeDB.fallback_font.get_string_size(str(placement.fret), HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x / 2 + 5
+				var half: float = ui_font.get_string_size(str(placement.fret), HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x / 2 + 5
 				surface.draw_rect(Rect2(x - half, y - 14, half * 2, 28), get_theme_color("accent", "LibreTabs"), false, 2)
 			if notation != "tab":
 				var y: float = origin.y + ScoreLayout.staff_y(int(note.pitch))
@@ -189,11 +193,11 @@ func draw_cursor(surface: Control) -> void:
 		# Fixed reading guide; notes disappear behind it as they pass.
 		surface.draw_rect(Rect2(0, 48, 44, ScoreLayout.row_height(notation) - 48), get_theme_color("paper", "LibreTabs"))
 		if notation != "tab":
-			surface.draw_string(preload("res://assets/fonts/Bravura.otf"), Vector2(8, 105), String.chr(0xe050), HORIZONTAL_ALIGNMENT_LEFT, -1, 32, get_theme_color("ink", "LibreTabs"))
-			surface.draw_string(ThemeDB.fallback_font, Vector2(17, 132), "8", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, get_theme_color("ink", "LibreTabs"))
+			surface.draw_string(music_font, Vector2(8, 105), String.chr(0xe050), HORIZONTAL_ALIGNMENT_LEFT, -1, 32, get_theme_color("ink", "LibreTabs"))
+			surface.draw_string(ui_font, Vector2(17, 132), "8", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, get_theme_color("ink", "LibreTabs"))
 		if notation != "staff":
 			for string_index: int in range(6):
-				surface.draw_string(ThemeDB.fallback_font, Vector2(14, (182 if notation == "both" else 86) + string_index * 21), str(string_index + 1), HORIZONTAL_ALIGNMENT_LEFT, -1, 18, get_theme_color("muted", "LibreTabs"))
+				surface.draw_string(ui_font, Vector2(14, (182 if notation == "both" else 86) + string_index * 21), str(string_index + 1), HORIZONTAL_ALIGNMENT_LEFT, -1, 18, get_theme_color("muted", "LibreTabs"))
 
 func set_live(notes: Array[Dictionary]) -> void:
 	live_notes = notes.duplicate(true)
@@ -206,7 +210,7 @@ func draw_live(surface: Control) -> void:
 	var bar: Dictionary = song.measures[measure_index]
 	var x: float = playhead_x() if mode == "scroll" and not reduced_motion else origin.x + 68 + (current_tick - float(bar.start)) / float(bar.end - bar.start) * (tile.size.x - 92)
 	var color: Color = get_theme_color("live", "LibreTabs")
-	var font: Font = ThemeDB.fallback_font
+	var font: Font = ui_font
 	for note: Dictionary in live_notes:
 		if notation != "tab":
 			var y: float = origin.y + ScoreLayout.staff_y(int(note.pitch))
@@ -216,7 +220,7 @@ func draw_live(surface: Control) -> void:
 						if (line_y > origin.y + 112 and y >= line_y) or (line_y < origin.y + 80 and y <= line_y): surface.draw_line(Vector2(x - 11, line_y), Vector2(x + 11, line_y), color, 2)
 				var points: PackedVector2Array = PackedVector2Array([Vector2(x, y - 7), Vector2(x + 9, y), Vector2(x, y + 7), Vector2(x - 9, y), Vector2(x, y - 7)])
 				surface.draw_colored_polygon(points, color)
-				if int(note.pitch) % 12 in [1, 3, 6, 8, 10]: surface.draw_string(preload("res://assets/fonts/Bravura.otf"), Vector2(x - 22, y), String.chr(0xe262), HORIZONTAL_ALIGNMENT_LEFT, -1, 26, color)
+				if int(note.pitch) % 12 in [1, 3, 6, 8, 10]: surface.draw_string(music_font, Vector2(x - 22, y), String.chr(0xe262), HORIZONTAL_ALIGNMENT_LEFT, -1, 26, color)
 			else:
 				surface.draw_string(font, Vector2(x + 12, origin.y + 60), tr("PITCH_MARKER") % int(note.pitch), HORIZONTAL_ALIGNMENT_LEFT, -1, 16, color)
 		if notation != "staff":

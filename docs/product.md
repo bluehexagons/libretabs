@@ -272,3 +272,10 @@ optional title, and transparent/green/theme margins; the score card remains opaq
 for readability. F8 enters/leaves; Escape or a tap restores the player. Capture
 uses the existing transport and audio controls. Recording, video editing, remote
 control, and cross-window song synchronization are not part of this slice.
+
+The practice control refinement uses full-height minus/plus buttons alongside
+editable numeric fields for loop/print ranges, count-in, custom BPM and keyboard
+octave. A count-in beat number occupies the existing Play target and follows the
+audio transport's scheduled pulses, including compound meter. Pause and Replay
+have state-specific labels/help. Capture lettering uses separate higher-resolution
+font caches so enlarging the score does not soften text or alter normal UI fonts.

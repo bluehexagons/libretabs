@@ -9,6 +9,8 @@ var start_seconds: float = 0.0
 var end_seconds: float = 1.0
 var repeat: bool = false
 var count_frames: int = 0
+var count_beats: Array[int] = []
+var count_meter: int = 0
 var cycle_frames: int = 1
 var rendered_frames: int = 0
 var schedule: Array[Dictionary] = []
@@ -31,6 +33,8 @@ func configure(document: SongDocument, start_tick: float, end_tick: float, multi
 	initial_frames = cycle_frames
 	loop_start_seconds = start_seconds
 	count_frames = 0
+	count_beats.clear()
+	count_meter = 0
 	loop_schedule.clear()
 	schedule.clear()
 	next_index = 0
@@ -41,9 +45,12 @@ func configure(document: SongDocument, start_tick: float, end_tick: float, multi
 	var pulse_seconds: float = (song.seconds_at(start_tick + 1) - start_seconds) * pulse_ticks
 	var pulses: int = 2 if measure.numerator == 6 and measure.denominator == 8 else int(measure.numerator)
 	if count_in:
+		count_meter = pulses
 		count_frames = roundi(pulse_seconds * pulses * clampi(count_measures, 1, 4) / speed * RATE)
 		for pulse: int in range(pulses * clampi(count_measures, 1, 4)):
-			add_event(roundi(pulse * pulse_seconds / speed * RATE) - count_frames, "click", {"accent": pulse % pulses == 0})
+			var at: int = roundi(pulse * pulse_seconds / speed * RATE)
+			count_beats.append(at)
+			add_event(at - count_frames, "click", {"accent": pulse % pulses == 0})
 	add_event(0, "reset", {})
 	for note: Dictionary in song.notes:
 		if int(note.part) in mute_parts or int(note.channel) == 9 or note.end <= note.start:
@@ -73,6 +80,10 @@ func configure(document: SongDocument, start_tick: float, end_tick: float, multi
 		loop_schedule = repeating.schedule
 		loop_start_seconds = repeating.start_seconds
 		cycle_frames = repeating.cycle_frames
+
+func count_beat_at(frame: int) -> int:
+	if frame < 0 or frame >= count_frames or count_beats.is_empty(): return 0
+	return (count_beats.bsearch(frame, false) - 1) % count_meter + 1
 
 func add_event(frame: int, kind: String, note: Dictionary) -> void:
 	var rank: int = {"reset": 0, "off": 1, "on": 2, "click": 3}[kind]

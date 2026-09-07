@@ -80,12 +80,16 @@ func run() -> void:
 	player.apply_event({"kind": "click", "note": {"accent": true}, "frame": 100})
 	check(player.click_gain > 0, "metronome on restores scheduled pulse without configuring transport")
 	app.call("start", true)
+	app.call("update_play_control", 0)
+	check(app.get("count_badge").visible and app.get("count_badge").text == "1", "count-in appears inside the existing play target")
 	var stream_before: AudioStreamGeneratorPlayback = player.playback
 	var count_before: int = player.transport.count_frames
 	app.call("set_metronome", false)
 	app.get("count_check").button_pressed = false
 	check(player.playback == stream_before and player.playing_practice, "metronome and count-in toggles do not restart the active stream")
 	check(player.transport.count_frames == count_before and count_before > 0, "count-in setting does not truncate the active count-in")
+	app.call("update_play_control", player.transport.count_frames)
+	check(not app.get("count_badge").visible and app.get("play_button").tooltip_text == TranslationServer.translate("TIP_PAUSE"), "pause help replaces the count at the playback boundary")
 	app.call("pause")
 	app.get("count_check").button_pressed = true
 	app.call("set_metronome", true)
@@ -108,6 +112,25 @@ func run() -> void:
 	app.call("set_loop_boundary", false)
 	check(app.get("loop_from").value == 1 and app.get("loop_to").value == 1, "end-here moves a later start backward")
 	check(not player.playing_practice and not app.get("loop_check").button_pressed and app.get("source_tick") == 0, "editing a disabled loop neither enables it nor starts playback")
+	app.get("loop_from").value = 3
+	app.get("loop_to").value = 2
+	check(app.get("loop_from").value == 2 and app.get("loop_to").value == 2, "editing an earlier loop end moves the start rather than rejecting the edit")
+	var stepper: NumberStepper = app.get("loop_from").get_parent()
+	stepper.increase.pressed.emit()
+	check(app.get("loop_from").value == 3 and app.get("loop_to").value == 3, "large plus button updates the selected loop through the same range authority")
+	stepper.field.value = stepper.field.max_value
+	check(stepper.increase.disabled and not stepper.decrease.disabled, "numeric control exposes its upper limit")
+	stepper.field.value = 1
+	check(stepper.decrease.disabled, "numeric control exposes its lower limit")
+	stepper.field.get_line_edit().text = "2"
+	stepper.field.get_line_edit().text_changed.emit("2")
+	stepper.increase.pressed.emit()
+	check(stepper.field.value == 3, "step button commits typed value before incrementing")
+	app.set("state", "STATE_COMPLETE")
+	app.call("update_play_control")
+	check(app.get("play_button").text == TranslationServer.translate("REPLAY") and not app.get("count_badge").visible, "finished playback offers replay")
+	app.call("stop_practice")
+	check(app.get("play_button").text == TranslationServer.translate("PLAY"), "stop restores normal play action")
 	app.call("toggle_drawer", "SOUND")
 	check(app.get("drawer").visible and app.get("drawers")["SOUND"].visible, "sound controls open on demand")
 	app.get("instrument_slider").value = 0
@@ -194,6 +217,11 @@ func run() -> void:
 			check(app.get("play_button").get_global_rect().end.y <= viewport.y and app.get("menu_button").size.y >= 56, "landscape transport and menu remain usable")
 			check(app.get("songs_button").is_visible_in_tree() and app.get("songs_button").size.x >= 56 and app.get("loop_button").is_visible_in_tree() and app.get("loop_button").size.x >= 56, "landscape keeps large song and loop controls directly reachable")
 			check(app.get("menu_button").global_position.y >= 8 and app.get("songs_button").global_position.x >= 8, "landscape header is inset from the screen edges")
+			if viewport.x == 480:
+				app.call("start", true)
+				for _frame: int in range(10): await process_frame
+				check(app.get("count_badge").visible and app.get("root_box").size.y <= viewport.y and app.get("play_button").size.x == 56, "count-in fits the short landscape transport without another row")
+				app.call("pause")
 	app.call("set_status", "ERR_READ")
 	check(app.get("status").visible, "short layout retains actionable errors")
 	app.call("set_status", "START_HINT")
@@ -285,6 +313,7 @@ func run() -> void:
 	check(app.get("capture_active") and not app.get("root_box").visible and not app.get("menu_overlay").visible, "capture hides all player controls")
 	check(capture.score.notation == "tab" and score.notation == "both" and score.mode == "pages", "tab-only capture preserves paired practice and manual page settings")
 	check(capture.score.song == song and capture.score.projection == score.projection, "capture reuses immutable song and derived arrangement")
+	check(capture.score.ui_font != score.ui_font and capture.score.music_font != score.music_font and capture.score.ui_font.oversampling == 2.0, "capture uses separate high-resolution font caches")
 	capture.heading.text = "A long imported title ".repeat(30)
 	check(not player.playing_practice and not app.is_processing(), "entering capture does not start playback or an idle frame loop")
 	app.call("seek_measure", 2)

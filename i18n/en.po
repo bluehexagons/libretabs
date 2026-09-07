@@ -738,3 +738,33 @@ msgstr "Shown"
 
 msgid "CAPTURE_SETUP"
 msgstr "OBS: add this page as a Browser Source, set its width and height (for example, 1920 × 1080), and use Interact to choose your song and enter capture view. That source has its own song and settings. The score stays on a readable card; the margins can be transparent. For window capture or video editing, choose Green screen and remove that color with a chroma-key filter. Use the player’s sound menu to mute instrument or click as needed. Capture mode never starts playback by itself."
+
+msgid "NUMBER_LESS"
+msgstr "Decrease"
+
+msgid "NUMBER_MORE"
+msgstr "Increase"
+
+msgid "NUMBER_DECREASE"
+msgstr "Decrease: %s. You can also type an exact value in the middle field."
+
+msgid "NUMBER_INCREASE"
+msgstr "Increase: %s. You can also type an exact value in the middle field."
+
+msgid "LOOP_FIRST"
+msgstr "First measure"
+
+msgid "LOOP_LAST"
+msgstr "Last measure"
+
+msgid "REPLAY"
+msgstr "Replay"
+
+msgid "TIP_REPLAY"
+msgstr "Play again from the beginning."
+
+msgid "TIP_PAUSE"
+msgstr "Pause here. Press Play or Space to continue."
+
+msgid "TIP_COUNT_BEAT"
+msgstr "Count-in beat %d. Tap to pause."

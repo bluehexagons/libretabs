@@ -43,6 +43,7 @@ static func make_theme(dark: bool, font_size: int, font_style: String = "rounded
 		for state: String in ["font_color", "font_focus_color", "font_hover_color", "font_pressed_color", "font_hover_pressed_color", "caret_color", "icon_normal_color", "icon_hover_color", "icon_pressed_color", "icon_focus_color", "icon_hover_pressed_color"]:
 			result.set_color(state, kind, color("ink", dark))
 		result.set_color("font_disabled_color", kind, color("muted", dark))
+		result.set_color("icon_disabled_color", kind, color("muted", dark))
 		result.set_color("font_uneditable_color", kind, color("muted", dark))
 		result.set_color("selection_color", kind, color("pressed", dark))
 	for kind: String in ["Button", "CheckButton", "OptionButton", "LineEdit", "TextEdit"]:
