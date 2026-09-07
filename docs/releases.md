@@ -137,16 +137,17 @@ force an update that discards the open song.
 
 ## GitHub Pages instructional site
 
+The public guide is live at [bluehexagons.github.io/libretabs](https://bluehexagons.github.io/libretabs/).
+The owner has made the repository public and configured Pages with GitHub Actions.
+
 The site in `site/` has no Godot, JavaScript, npm, external fonts or analytics.
 It covers first practice, downloads, privacy, prototype limitations and feedback.
 Only its generated HTML, CSS and `.nojekyll` are uploaded; the repository itself
 is never used as a Pages artifact. Relative asset links support `/libretabs/`.
 
-1. When the repository is eligible, choose **Settings → Pages → Source → GitHub
-   Actions**. On 2026-09-07, GitHub rejected activation with HTTP 422: the current
-   plan does not support Pages for this private repository. Make it public when
-   ready, or use a plan supporting private-repository Pages; visibility is an
-   owner decision. Pages content itself is public with the normal configuration.
+1. Keep **Settings → Pages → Source → GitHub Actions** selected. Pages publishes
+   only the generated guide. The earlier private-repository plan restriction is
+   resolved; site updates use the workflow below.
 2. Optionally set repository Actions variables `PLAYER_URL` and `ITCH_URL` to
    the final public HTTPS destinations. Empty values omit those buttons. Do not
    put credentials in URLs. Updating variables requires publishing the site again.

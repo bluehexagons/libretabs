@@ -2,6 +2,8 @@
 
 Evaluation prototype, not the completed lesson-based MVP.
 
+[Practice guide and troubleshooting](https://bluehexagons.github.io/libretabs/)
+
 ## Changes
 
 - Describe the behavior a tester can evaluate.

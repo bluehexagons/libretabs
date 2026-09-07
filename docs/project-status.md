@@ -24,9 +24,9 @@ is available on the managed network. It is not a public launch URL.
 - Manual GitHub Actions build pinned web, Windows x86_64 and Linux x86_64
   packages. Desktop packages use official release templates, not the editor.
   Checksums, notices and reviewed release notes accompany versioned releases.
-- GitHub Pages hosts the instructional/download site. Its build rehearsal passed;
-  live activation was rejected by GitHub's current private-repository plan.
-  Enable Pages with GitHub Actions when the repository becomes eligible.
+- The repository is public and the [instructional/download site](https://bluehexagons.github.io/libretabs/)
+  is live on GitHub Pages. Its HTML and stylesheet return successful HTTPS responses.
+  Private vulnerability reporting is enabled in GitHub.
 - The Godot infra-tools manifest and export script support explicit VM
   deployments. The real staged export was tested locally. The production VM,
   public domain, DNS/TLS and actual target deployment remain to be configured.
@@ -41,9 +41,9 @@ See the [release guide](releases.md) for commands and
 1. **Prepare one feedback release.** Follow the [launch checklist](launch-checklist.md),
    record device evidence and known issues, build a new prototype version, and
    test the exact downloaded packages. Export success alone is not a device pass.
-2. **Publish the agreed channels.** The owner confirms the public identity and
-   repository visibility, publishes the reviewed release, configures the target
-   VM and itch page, then enables the instructional site and its player links.
+2. **Publish the remaining channels.** The owner confirms the public identity,
+   publishes the reviewed release, configures the target VM and itch page, then
+   adds their tested URLs to the instructional site.
 3. **Gather first-time-user feedback.** Observe choosing music, finding Play,
    following the next string/fret, changing tempo, looping and recovering from
    an unsuitable MIDI file. Record confusing actions without treating this as
@@ -62,7 +62,7 @@ present placement coverage as the M3 compatibility-corpus result.
 
 The repository is bluehexagons/libretabs; its local checkout is named litetabs.
 Software is Apache-2.0, original documentation/music/fixtures are CC0-1.0, and
-third-party notices remain separate. Name confirmation, private security reporting
-and support ownership need owner attention before publication. Native packages
+third-party notices remain separate. Name confirmation and support ownership
+need owner attention before the first feedback release. Native packages
 are unsigned; signing is future release work. Broader contributor recruitment
 also needs a contribution-conduct policy and repository-protection review.

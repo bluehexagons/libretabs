@@ -6,9 +6,9 @@ untested platforms and known limitations visible in release notes. The
 
 ## Prepare the release
 
-- [ ] Owner confirms the provisional LibreTabs name, public repository visibility
-  and where feedback/security reports will be read. Check private vulnerability
-  reporting after changing visibility; `SECURITY.md` includes a fallback.
+- [x] Repository is public and private vulnerability reporting is enabled.
+- [ ] Owner confirms the provisional LibreTabs name and where feedback/security
+  reports will be read. `SECURITY.md` documents private reporting and its fallback.
 - [ ] Review tracked files/history and notices before publication. Do not include
   private MIDI, credentials or local configuration. Record any newly bundled
   third-party asset's provenance and license.
@@ -41,8 +41,10 @@ audio device, version, result and known issues. Missing hardware is an open chec
   Keep a previous approved artifact available for rollback on later updates.
 - [ ] Configure the VM and itch destinations, deploy the approved version and
   repeat the core browser checks on the real destinations.
-- [ ] Enable GitHub Pages with GitHub Actions when eligible. Set tested HTTPS
-  `PLAYER_URL` and `ITCH_URL` values, then run **Publish project guide**.
+- [x] Enable GitHub Pages with GitHub Actions; the [public guide](https://bluehexagons.github.io/libretabs/)
+  is live and its HTML/CSS load over HTTPS.
+- [ ] Set tested HTTPS `PLAYER_URL` and `ITCH_URL` values, then run
+  **Publish project guide** to add the hosted player links.
 - [ ] Open the public site in a signed-out browser. Check downloads,
   browser play, instructions, issues and security-report links.
 - [ ] Record the release commit, public URLs, remaining limits and feedback owner

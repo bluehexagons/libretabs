@@ -1,5 +1,8 @@
 blank_issues_enabled: true
 contact_links:
+  - name: Practice guide and troubleshooting
+    url: https://bluehexagons.github.io/libretabs/
+    about: Find first-session instructions, downloads, keyboard controls and help with common problems.
   - name: Security reports
     url: https://github.com/bluehexagons/libretabs/blob/main/SECURITY.md
     about: Report vulnerabilities without posting sensitive details publicly.

@@ -1,5 +1,7 @@
 # LibreTabs
 
+[Practice guide and downloads](https://bluehexagons.github.io/libretabs/) · [Report a problem](https://github.com/bluehexagons/libretabs/issues)
+
 LibreTabs is the provisional public name for a free, offline-friendly application that helps a person with no musical background start playing guitar. It will combine short guided lessons with a focused practice player that can turn suitable Standard MIDI Files into synchronized staff notation and E-standard guitar tablature. It is designed primarily for adults and teens; children should use it with a parent, guardian, or teacher. The name may be reconsidered before public alpha; the GitHub repository is `bluehexagons/libretabs`, while the managed checkout directory remains `litetabs`.
 
 This repository contains an evaluation prototype. The practice player runs now; the six-lesson course and several musical/platform validation gates remain incomplete.
@@ -12,9 +14,11 @@ LibreTabs is a non-commercial project: bluehexagons does not plan paid editions,
 
 Download versioned prototype packages from [GitHub Releases](https://github.com/bluehexagons/libretabs/releases) when available. Windows and Linux downloads work offline without a Godot installation. Browser releases will be linked here when the itch.io and website pages are published. Build preparation does not imply a public release exists yet.
 
-GitHub Pages is the instructional/download site; the threaded browser player runs
-on the owner VM or itch.io. The [hosting guide](docs/releases.md#github-pages-instructional-site)
-covers Pages activation and the included infra-tools deployment manifest.
+The [public guide](https://bluehexagons.github.io/libretabs/) covers getting started,
+keyboard controls, printing, offline use and troubleshooting. Hosted player links
+will appear there when the VM and itch.io versions are ready. The
+[hosting guide](docs/releases.md#github-pages-instructional-site) covers site updates
+and the included infra-tools deployment manifest.
 
 Press **Play**, adjust speed with the percentage/slider, and use **Songs** to choose a built-in exercise or import a local format-0/1 MIDI file (prototype limit: 256 KiB). Imports stay on your device. **Menu** contains playback, looping, display, keyboard, printing and capture settings.
 

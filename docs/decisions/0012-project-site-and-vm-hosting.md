@@ -15,7 +15,8 @@ serves it with isolation headers, explicit MIME types and revalidation of fixed
 asset names. Source deployment and exact release-artifact promotion remain
 distinct workflows. This adds no app backend, telemetry or new runtime dependency.
 
-Pages activation is blocked by the current private-repository plan, not by the
-site implementation. Repository visibility, final player URLs and public release
-publication remain owner-controlled. Native device and musical evaluation gates
-remain open. See [release and hosting instructions](../releases.md).
+The initial private-repository plan restriction is resolved: the owner made the
+repository public and activated the [guide site](https://bluehexagons.github.io/libretabs/).
+Final player URLs and public release publication remain owner-controlled. Native
+device and musical evaluation gates remain open. See
+[release and hosting instructions](../releases.md).
