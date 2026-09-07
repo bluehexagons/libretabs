@@ -411,3 +411,13 @@ systems independently of the viewport; PrintRenderer reuses MeasureCanvas in a
 one-shot offscreen viewport. HostAdapter saves/downloads escaped, self-contained
 HTML. The pipeline pauses practice and does not change source data or the shared
 transport. Font and icon provenance are recorded in third_party/README.md.
+
+### Capture presentation adapter
+
+Under [decision 0009](decisions/0009-capture-view.md), `CaptureView` is a second
+`ScoreView` projection fed the app's source tick. Presentation mode may select a
+single notation system without changing ordinary scrolling or manual reading.
+It adds no clock or mixer. `HostAdapter` owns browser/viewport background changes;
+Web-only per-pixel transparency enables the WebGL alpha channel at context creation.
+Presentation choices use validated display-setting keys; capture activation and
+imported songs are never persisted. Native capture offers chroma-key margins.

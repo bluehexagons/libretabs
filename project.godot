@@ -14,6 +14,7 @@ window/size/window_width_override=1100
 window/size/window_height_override=850
 window/stretch/mode="disabled"
 window/stretch/scale_mode="fractional"
+window/per_pixel_transparency/allowed.web=true
 
 [rendering]
 renderer/rendering_method="gl_compatibility"

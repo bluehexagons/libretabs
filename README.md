@@ -91,3 +91,9 @@ PDF. The file is self-contained and works offline; it retains the prototype's
 notation limitations and includes arrangement notes. Exports are limited to
 24 music pages; use shorter ranges for longer songs. See
 [decision 0008](docs/decisions/0008-friendly-player-and-print.md).
+
+For instructional video or streaming, open **Menu → Capture & overlay**. Choose
+what music to show, the score size/position, and transparent, green-screen, or
+solid margins. F8 toggles the view; Escape or a click/tap returns to the player.
+Space continues to play/pause. The title is hidden by default. See
+[the capture decision](docs/decisions/0009-capture-view.md) for OBS setup boundaries.

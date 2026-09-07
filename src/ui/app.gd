@@ -2,6 +2,9 @@
 extends Control
 
 var page_swipe_start: Vector2
+var capture_view: CaptureView
+var capture_active: bool = false
+var capture_choices: Dictionary = {}
 var page_swipe_active: bool = false
 var motion_mode: String = "system"
 var reduced_motion: bool = false
@@ -35,12 +38,20 @@ var offline: Label
 var play_button: Button
 var part_picker: OptionButton
 var demo_picker: OptionButton
+var active_demo: int = -1
+var pending_demo: int = -1
+var library_title: Label
+var songs_button: Button
+var import_button: Button
 var speed_picker: OptionButton
 var scale_picker: OptionButton
 var seek: HSlider
 var loop_from: SpinBox
 var loop_to: SpinBox
 var loop_check: CheckButton
+var loop_button: Button
+var loop_summary: Label
+var loop_toggle: Button
 var count_length: SpinBox
 var speed_dragging: bool = false
 var main_speed: HSlider
@@ -105,6 +116,8 @@ var reading_tools: HFlowContainer
 var menu_back: Button
 var previous_focus: Control
 var header: BoxContainer
+var header_margin: MarginContainer
+var header_actions: HBoxContainer
 var dock_panel: PanelContainer
 var content_margin: MarginContainer
 var view_button: Button
@@ -132,6 +145,8 @@ func _ready() -> void:
 	audio = PracticeAudio.new()
 	add_child(audio)
 	build_ui()
+	capture_view = CaptureView.new()
+	add_child(capture_view)
 	resized.connect(responsive)
 	appearance_mode = host.load_appearance()
 	host.appearance_changed.connect(apply_appearance)
@@ -238,13 +253,24 @@ func build_ui() -> void:
 	panel.add_theme_constant_override("separation", 12)
 	margin.add_child(panel)
 	header = BoxContainer.new()
-	root_box.add_child(header)
-	root_box.move_child(header, 0)
+	header_margin = MarginContainer.new()
+	root_box.add_child(header_margin)
+	root_box.move_child(header_margin, 0)
+	header_margin.add_child(header)
 	brand_label = label("BRAND", 24)
 	brand_label.add_theme_font_override("font", UIAppearance.ui_font(font_style, true))
 	header.add_child(brand_label)
+	header_actions = HBoxContainer.new()
+	header_actions.add_theme_constant_override("separation", 8)
+	header_actions.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header_actions.alignment = BoxContainer.ALIGNMENT_END
+	header.add_child(header_actions)
+	songs_button = button("SONG_MENU", func() -> void: toggle_drawer("SONG_MENU"))
+	header_actions.add_child(songs_button)
+	import_button = button("IMPORT_MIDI", open_midi)
+	header_actions.add_child(import_button)
 	menu_button = button("MENU", func() -> void: toggle_drawer("MENU"))
-	header.add_child(menu_button)
+	header_actions.add_child(menu_button)
 	song_title = label("DEMO_0", 32)
 	song_title.add_theme_font_override("font", UIAppearance.ui_font(font_style, true))
 	panel.add_child(song_title)
@@ -261,7 +287,6 @@ func build_ui() -> void:
 	view_button = button("SCORE_VIEW", func() -> void: toggle_drawer("SCORE_VIEW"))
 	reading_tools = flow(panel)
 	reading_tools.add_child(view_button)
-	reading_tools.add_child(label("PRACTICE_INVITE", 18))
 	notice_button.reparent(reading_tools)
 	menu_overlay = Control.new()
 	menu_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -338,6 +363,8 @@ func build_ui() -> void:
 	dock.add_theme_constant_override("separation", 8)
 	dock_panel.add_child(dock)
 	var transport_row: HFlowContainer = HFlowContainer.new()
+	transport_row.add_theme_constant_override("h_separation", 8)
+	transport_row.add_theme_constant_override("v_separation", 4)
 	transport_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	transport_row.alignment = FlowContainer.ALIGNMENT_CENTER
 	dock.add_child(transport_row)
@@ -380,7 +407,14 @@ func build_ui() -> void:
 	metro_button.toggle_mode = true
 	metro_button.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	transport_row.add_child(metro_button)
+	loop_button = button("LOOP_TOOL", func() -> void: toggle_drawer("LOOP_TOOL"))
+	loop_button.toggle_mode = true
+	# This opens an editor; the pressed appearance reports the loop setting.
+	loop_button.pressed.connect(update_loop_controls)
+	transport_row.add_child(loop_button)
+	transport_row.move_child(loop_button, transport_row.get_children().find(metro_button))
 	update_metronome()
+	update_loop_controls()
 
 
 func section(key: String) -> VBoxContainer:
@@ -393,7 +427,7 @@ func section(key: String) -> VBoxContainer:
 
 func build_drawers() -> void:
 	var menu_index: VBoxContainer = section("MENU")
-	for key: String in ["SONG_MENU", "TEMPO", "SCORE_VIEW", "PRINT", "LOOP_TOOL", "SOUND", "DISPLAY", "KEYBOARD", "HELP"]:
+	for key: String in ["SONG_MENU", "TEMPO", "SCORE_VIEW", "PRINT", "CAPTURE", "LOOP_TOOL", "SOUND", "DISPLAY", "KEYBOARD", "HELP"]:
 		var entry: Button = button(key, func() -> void: toggle_drawer(key))
 		entry.text = tr("CARD_" + key)
 		entry.alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -403,6 +437,7 @@ func build_drawers() -> void:
 	help_text = label("TOUCH_HELP")
 	control_help.add_child(help_text)
 	build_print_menu()
+	build_capture_menu()
 	var views: VBoxContainer = section("SCORE_VIEW")
 	views.add_child(label("VIEW_HELP"))
 	view_picker = OptionButton.new()
@@ -422,7 +457,10 @@ func build_drawers() -> void:
 	views.add_child(notation_picker)
 	views.add_child(button("PRINT", func() -> void: toggle_drawer("PRINT")))
 	var library: VBoxContainer = section("SONG_MENU")
-	library.add_child(button("OPEN", func() -> void: pause(); host.pick()))
+	library.add_child(button("OPEN", open_midi))
+	library.add_child(label("CURRENT_SONG", 18))
+	library_title = label("DEMO_0", 24)
+	library.add_child(library_title)
 	library.add_child(label("DEMOS", 18))
 	demo_picker = OptionButton.new()
 	demo_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
@@ -503,9 +541,15 @@ func build_drawers() -> void:
 
 	var loops: VBoxContainer = section("LOOP_TOOL")
 	loops.add_child(label("LOOP_HELP", 18))
-	loops.add_child(button("REPEAT_MEASURE", repeat_measure))
+	loop_summary = label("LOOP_OFF", 24)
+	loops.add_child(loop_summary)
+	loop_toggle = button("ENABLE_LOOP", func() -> void: loop_check.button_pressed = not loop_check.button_pressed)
+	loops.add_child(loop_toggle)
+	loops.add_child(button("REPEAT_MEASURE", func() -> void: repeat_measure(); close_menu()))
 	loop_check = check("LOOP", false)
 	loops.add_child(loop_check)
+	# The named action above is also available to touch-and-hold help.
+	loop_check.hide()
 	loop_from = SpinBox.new()
 	loop_to = SpinBox.new()
 	for item: SpinBox in [loop_from, loop_to]:
@@ -518,6 +562,9 @@ func build_drawers() -> void:
 		item.value_changed.connect(func(_value: float) -> void: loop_changed())
 		loops.add_child(item)
 	loop_check.toggled.connect(func(_pressed: bool) -> void: loop_changed())
+	var endpoints: HFlowContainer = flow(loops)
+	endpoints.add_child(button("LOOP_START_HERE", func() -> void: set_loop_boundary(true)))
+	endpoints.add_child(button("LOOP_END_HERE", func() -> void: set_loop_boundary(false)))
 
 	var details: VBoxContainer = section("DETAILS")
 	summary = label("ARRANGEMENT")
@@ -633,7 +680,77 @@ func volume_control(parent: Node, key: String, initial: float, instrument: bool)
 	parent.add_child(slider)
 	return slider
 
+func build_capture_menu() -> void:
+	var content: VBoxContainer = section("CAPTURE")
+	content.add_child(label("CAPTURE_HELP", 18))
+	content.add_child(button("CAPTURE_ENTER", enter_capture))
+	var definitions: Dictionary = {
+		"capture_notation": [["both", "tab", "staff"], ["NOTATION_BOTH", "NOTATION_TAB", "NOTATION_STAFF"]],
+		"capture_background": [["transparent", "green", "solid"], ["CAPTURE_TRANSPARENT", "CAPTURE_GREEN", "CAPTURE_SOLID"]],
+		"capture_zoom": [["100", "125", "150", "200"], ["100%", "125%", "150%", "200%"]],
+		"capture_position": [["bottom", "center", "top"], ["CAPTURE_BOTTOM", "CAPTURE_CENTER", "CAPTURE_TOP"]],
+		"capture_title": [["off", "on"], ["CAPTURE_TITLE_OFF", "CAPTURE_TITLE_ON"]]
+	}
+	for key: String in definitions:
+		content.add_child(label(key.to_upper(), 18))
+		var picker: OptionButton = OptionButton.new()
+		picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+		picker.fit_to_longest_item = false
+		picker.custom_minimum_size.y = 56
+		var values: Array[String] = []
+		values.assign(definitions[key][0])
+		for index: int in range(values.size()):
+			picker.add_item(tr("SCALE_VALUE") % int(values[index]) if key == "capture_zoom" else tr(definitions[key][1][index]))
+			picker.set_item_metadata(index, values[index])
+		var selected: String = host.load_display_choice(key, values, str(values[0]))
+		if key == "capture_background" and host.web == null:
+			picker.set_item_disabled(0, true)
+			if selected == "transparent": selected = "green"
+		picker.select(values.find(selected))
+		picker.item_selected.connect(func(index: int) -> void:
+			if persist_preferences and not host.save_display_choice(key, str(values[index])): set_status("STORAGE_SESSION"))
+		capture_choices[key] = picker
+		content.add_child(picker)
+	content.add_child(label("CAPTURE_SETUP", 18))
+
+func capture_choice(key: String) -> String:
+	var picker: OptionButton = capture_choices[key]
+	return str(picker.get_selected_metadata())
+
+func enter_capture() -> void:
+	if song == null or importer != null: return
+	close_menu()
+	release_keyboard()
+	var focus: Control = get_viewport().gui_get_focus_owner()
+	if focus != null: focus.release_focus()
+	capture_view.symbols = capture_choice("capture_notation")
+	capture_view.background = capture_choice("capture_background")
+	capture_view.show_title = capture_choice("capture_title") == "on"
+	capture_view.zoom = float(capture_choice("capture_zoom")) / 100
+	capture_view.placement = capture_choice("capture_position")
+	capture_view.configure(score, title, dark_mode)
+	capture_active = true
+	root_box.hide()
+	capture_view.show()
+	apply_capture_background()
+	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
+
+func leave_capture() -> void:
+	if not capture_active: return
+	capture_active = false
+	capture_view.hide()
+	root_box.show()
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	apply_capture_background()
+	responsive()
+	menu_button.grab_focus()
+
+func apply_capture_background() -> void:
+	var mode: String = capture_view.background if capture_active else "solid"
+	host.apply_capture_background(mode, Color("00ff00") if mode == "green" else UIAppearance.color("background", dark_mode))
+
 func toggle_drawer(key: String) -> void:
+	leave_capture()
 	release_keyboard()
 	if not menu_overlay.visible: previous_focus = get_viewport().gui_get_focus_owner()
 	menu_back.visible = key != "MENU"
@@ -671,8 +788,19 @@ func close_menu() -> void:
 	else: menu_button.grab_focus()
 
 func _input(event: InputEvent) -> void:
+	if capture_active and ((event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT) or event is InputEventScreenTouch):
+		# Consume the whole gesture, including touch's emulated mouse events,
+		# before showing controls that might lie under the pointer.
+		if not event.pressed: leave_capture.call_deferred()
+		get_viewport().set_input_as_handled()
+		return
 	if event is InputEventKey and event.pressed and not event.echo and not event.ctrl_pressed and not event.meta_pressed and not event.alt_pressed:
 		var focused: Control = get_viewport().gui_get_focus_owner()
+		if event.keycode == KEY_F8 or (event.keycode == KEY_ESCAPE and capture_active):
+			if capture_active: leave_capture()
+			else: enter_capture()
+			get_viewport().set_input_as_handled()
+			return
 		if event.keycode == KEY_F1:
 			if focused != null and not focused.tooltip_text.is_empty(): show_control_help(focused.tooltip_text)
 			else: toggle_drawer("HELP")
@@ -684,7 +812,7 @@ func _input(event: InputEvent) -> void:
 				get_viewport().set_input_as_handled()
 				return
 			if event.keycode in [KEY_LEFT, KEY_RIGHT] and not focused is Range:
-				if score.mode == "pages": turn_page(-1 if event.keycode == KEY_LEFT else 1)
+				if score.mode == "pages" and not capture_active: turn_page(-1 if event.keycode == KEY_LEFT else 1)
 				else: seek_measure(clampf(seek.value + (-1 if event.keycode == KEY_LEFT else 1), 1, seek.max_value))
 				get_viewport().set_input_as_handled()
 				return
@@ -775,6 +903,9 @@ func apply_appearance() -> void:
 		for tile: MeasureCanvas in score.tiles.values(): tile.queue_redraw()
 		score.cursor.queue_redraw()
 	responsive()
+	if capture_active:
+		capture_view.configure(score, title, dark_mode)
+		apply_capture_background()
 
 func apply_scale(factor: float) -> void:
 	theme.default_font_size = roundi(20 * factor)
@@ -793,23 +924,37 @@ func responsive() -> void:
 		scroll.scroll_vertical = 0
 	root_box.vertical = not landscape
 	header.vertical = landscape
-	header.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN if landscape else Control.SIZE_FILL
+	header_margin.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN if landscape else Control.SIZE_FILL
+	for side: String in ["left", "right", "top", "bottom"]:
+		header_margin.add_theme_constant_override("margin_" + side, (8 if side in ["left", "right", "top"] else 0) if landscape else (maxi(16, int((size.x - 1280) / 2)) if side in ["left", "right"] else 8))
 	# Keep direct speed adjustment at every scale. Reduce auxiliary actions
 	# before taking space away from the score.
 	if menu_tween != null: menu_tween.kill()
 	drawer.modulate.a = 1
 	var expanded_controls: bool = theme.default_font_size < 30
+	var header_icons: bool = landscape or (not expanded_controls and size.x < 760)
+	for item: Button in [songs_button, import_button, menu_button]:
+		var key: String = "SONG_MENU" if item == songs_button else ("IMPORT_MIDI" if item == import_button else "MENU")
+		item.text = "" if header_icons else tr(key)
+		item.icon = UIIcons.get_icon(key) if header_icons or size.x >= 760 else null
+		item.custom_minimum_size.x = 56 if header_icons else 0
+	import_button.visible = not landscape
+	header_actions.alignment = BoxContainer.ALIGNMENT_CENTER if landscape or size.x < 760 else BoxContainer.ALIGNMENT_END
 	tempo_button.icon = UIIcons.get_icon("TEMPO") if expanded_controls else null
 	quick_row.visible = true
 	tempo_button.visible = true
 	metro_button.visible = expanded_controls
 	stop_button.visible = false
+	play_button.text = "" if landscape else tr("PAUSE" if audio.playing_practice else "PLAY")
+	metro_button.text = tr("CLICK_ON" if metro_check.button_pressed else "CLICK_OFF") if landscape or size.x >= 760 else ""
+	metro_button.custom_minimum_size.x = 56
+	update_loop_controls()
 	dock_panel.add_theme_stylebox_override("panel", UIAppearance.box(UIAppearance.color("paper", dark_mode), 8 if landscape else 12))
 	dock.custom_minimum_size.x = 0
 	if landscape: dock.custom_minimum_size.x = 144 if expanded_controls else 152
 	speed_control.vertical = landscape
 	speed_control.custom_minimum_size.x = (144 if expanded_controls else 152) if speed_control.vertical else (320 if size.x >= 760 else 288)
-	brand_label.visible = not landscape and not compact
+	brand_label.visible = not landscape and size.x >= (760 if expanded_controls else 1100)
 	menu_button.size_flags_horizontal = Control.SIZE_FILL if landscape else Control.SIZE_SHRINK_END
 	header.alignment = BoxContainer.ALIGNMENT_BEGIN if landscape else BoxContainer.ALIGNMENT_END
 	song_title.visible = not landscape and not (compact and theme.default_font_size >= 30)
@@ -832,6 +977,9 @@ func adapt_flow(node: Node) -> void:
 		for child: Node in node.get_children():
 			if child is Button:
 				child.clip_text = false
+				if child.text.is_empty():
+					child.custom_minimum_size.x = 56
+					continue
 				var font: Font = child.get_theme_font("font")
 				var font_size: int = roundi(float(child.get_meta("base_font_size", 20)) * theme.default_font_size / 20.0)
 				var available: float = minf(size.x - 64, 496) if drawer.is_ancestor_of(node) else size.x - 56
@@ -857,6 +1005,7 @@ func scale_labels(node: Node, factor: float) -> void:
 
 func cancel_import() -> void:
 	importer = null
+	update_song_picker()
 	cancel_button.hide()
 	set_status("CANCELLED")
 	set_activity(false)
@@ -874,7 +1023,7 @@ func set_metronome(enabled: bool) -> void:
 func update_metronome() -> void:
 	if metro_button == null: return
 	metro_button.set_pressed_no_signal(metro_check.button_pressed)
-	metro_button.text = tr("CLICK_ON" if metro_check.button_pressed else "CLICK_OFF")
+	metro_button.text = tr("CLICK_ON" if metro_check.button_pressed else "CLICK_OFF") if landscape or size.x >= 760 else ""
 	metro_button.tooltip_text = tr("CLICK_HELP")
 	metro_button.icon = UIIcons.get_icon("CLICK_ON" if metro_check.button_pressed else "CLICK_OFF")
 	adapt_flow(dock)
@@ -933,6 +1082,15 @@ func load_demo(index: int) -> void:
 	pause()
 	var bytes: PackedByteArray = FileAccess.get_file_as_bytes("res://content/fixtures/%s.mid" % fixtures[index])
 	_file_picked(tr("DEMO_%d" % index), bytes, "")
+	pending_demo = index
+
+func open_midi() -> void:
+	pause()
+	host.pick()
+
+func update_song_picker() -> void:
+	demo_picker.select(active_demo)
+	if active_demo < 0: demo_picker.text = tr("CHOOSE_EXERCISE")
 
 func _file_picked(name_value: String, bytes: PackedByteArray, error: String) -> void:
 	if not error.is_empty():
@@ -940,6 +1098,7 @@ func _file_picked(name_value: String, bytes: PackedByteArray, error: String) -> 
 		if drawer.visible: close_menu()
 		return
 	import_name = name_value
+	pending_demo = -1
 	importer = MidiImport.new(bytes)
 	set_activity(true)
 	cancel_button.show()
@@ -949,6 +1108,7 @@ func finish_import() -> void:
 	set_activity(false)
 	cancel_button.hide()
 	if not importer.error.is_empty():
+		update_song_picker()
 		if drawer.visible: close_menu()
 		set_status(importer.error)
 		importer = null
@@ -961,6 +1121,7 @@ func finish_import() -> void:
 			first = index
 			break
 	if first < 0:
+		update_song_picker()
 		if drawer.visible: close_menu()
 		set_status("ERR_EMPTY")
 		return
@@ -970,6 +1131,9 @@ func finish_import() -> void:
 	song = result
 	title = import_name
 	song_title.text = title
+	library_title.text = title
+	active_demo = pending_demo
+	update_song_picker()
 	speed = 1.0
 	speed_picker.select(SPEEDS.find(1.0))
 	update_tempo()
@@ -987,6 +1151,7 @@ func finish_import() -> void:
 	loop_to.value = mini(2, song.measures.size())
 	loop_check.button_pressed = false
 	updating = false
+	update_loop_controls()
 	part_picker.select(first)
 	select_part(first)
 	state = "STATE_READY"
@@ -1051,7 +1216,7 @@ func start(count_in: bool) -> void:
 	set_activity(true)
 	started_msec = Time.get_ticks_msec()
 	state = "STATE_PLAYING"
-	play_button.text = tr("PAUSE")
+	play_button.text = "" if landscape else tr("PAUSE")
 	play_button.icon = UIIcons.get_icon("PAUSE")
 
 func pause() -> void:
@@ -1063,7 +1228,7 @@ func pause() -> void:
 		state = "STATE_PAUSED"
 		update_position()
 	set_activity(importer != null)
-	if play_button != null: play_button.text = tr("PLAY"); play_button.icon = UIIcons.get_icon("PLAY")
+	if play_button != null: play_button.text = "" if landscape else tr("PLAY"); play_button.icon = UIIcons.get_icon("PLAY")
 	if status != null and state == "STATE_PAUSED": set_status("STATE_PAUSED")
 
 func stop_practice() -> void:
@@ -1086,7 +1251,34 @@ func repeat_measure() -> void:
 	loop_to.value = measure
 	loop_check.set_pressed_no_signal(true)
 	updating = false
+	update_loop_controls()
 	seek_measure(measure)
+
+func set_loop_boundary(first: bool) -> void:
+	if song == null: return
+	updating = true
+	var measure: int = song.measure_at(source_tick) + 1
+	if first:
+		loop_from.value = measure
+		loop_to.value = maxf(loop_to.value, measure)
+	else:
+		loop_to.value = measure
+		loop_from.value = minf(loop_from.value, measure)
+	updating = false
+	loop_changed()
+
+func update_loop_controls() -> void:
+	if loop_button == null: return
+	var enabled: bool = loop_check.button_pressed
+	var range_text: String = tr("LOOP_SELECTED") % [int(loop_from.value), int(loop_to.value)]
+	loop_summary.text = (tr("LOOP_ENABLED_RANGE") if enabled else tr("LOOP_DISABLED_RANGE")) % [int(loop_from.value), int(loop_to.value)]
+	loop_toggle.text = tr("DISABLE_LOOP" if enabled else "ENABLE_LOOP")
+	loop_toggle.tooltip_text = tr("TIP_DISABLE_LOOP" if enabled else "TIP_ENABLE_LOOP")
+	loop_button.set_pressed_no_signal(enabled)
+	loop_button.text = "" if landscape or (theme.default_font_size >= 30 and size.x < 760) else (range_text if enabled else tr("LOOP_OFF"))
+	loop_button.icon = UIIcons.get_icon("LOOP_TOOL") if loop_button.text.is_empty() or size.x >= 760 else null
+	loop_button.tooltip_text = tr("TIP_LOOP_ACTIVE") % [int(loop_from.value), int(loop_to.value)] if enabled else tr("TIP_LOOP_TOOL")
+	adapt_flow(dock)
 
 func loop_changed() -> void:
 	if updating or song == null:
@@ -1094,6 +1286,7 @@ func loop_changed() -> void:
 	updating = true
 	if loop_to.value < loop_from.value: loop_to.value = loop_from.value
 	updating = false
+	update_loop_controls()
 	restart_if_playing()
 
 func seek_measure(value: float) -> void:
@@ -1132,7 +1325,7 @@ func _process(_delta: float) -> void:
 			update_position()
 			set_activity(false)
 			state = "STATE_COMPLETE"
-			play_button.text = tr("PLAY")
+			play_button.text = "" if landscape else tr("PLAY")
 			play_button.icon = UIIcons.get_icon("PLAY")
 			set_status("STATE_COMPLETE")
 	if audio.playing_practice: update_position()
@@ -1141,7 +1334,7 @@ func report_state() -> void:
 	if song == null: return
 	if host.trace_enabled():
 		var evidence: Dictionary = audio.metrics()
-		evidence.merge({"reduced_motion": reduced_motion, "motion_mode": motion_mode, "font_style": font_style, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "placed": projection.placed, "eligible": projection.eligible, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
+		evidence.merge({"capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "font_style": font_style, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "placed": projection.placed, "eligible": projection.eligible, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
 		host.report(evidence)
 	offline.text = tr("OFFLINE_READY") if host.offline_ready() else tr("OFFLINE_PENDING")
 	if host.offline_ready() and not host.trace_enabled(): idle_timer.stop()
@@ -1151,6 +1344,7 @@ func update_position() -> void:
 	if song == null:
 		return
 	score.update_tick(source_tick)
+	if capture_active: capture_view.score.update_tick(source_tick)
 	update_page_controls()
 	updating = true
 	seek.value = score.measure_index + 1
@@ -1195,11 +1389,13 @@ func update_live_visual() -> void:
 	var notes: Array[Dictionary] = []
 	for note: Dictionary in keyboard.held.values(): notes.append(note)
 	score.set_live(notes)
+	if capture_active: capture_view.score.set_live(notes)
 
 func release_keyboard() -> void:
 	keyboard.held.clear()
 	if audio != null: audio.release_live()
 	if score != null: score.set_live([])
+	if capture_view != null: capture_view.score.set_live([])
 
 func update_keyboard_help() -> void:
 	keyboard_help.text = tr("KEYBOARD_HELP_LOWER" if keyboard.layout == "lower" else "KEYBOARD_HELP_HOME")
@@ -1259,6 +1455,9 @@ func apply_motion() -> void:
 	apply_button_motion(self)
 	score.reduced_motion = reduced_motion
 	score.invalidate()
+	if capture_active:
+		capture_view.score.reduced_motion = reduced_motion
+		capture_view.score.invalidate()
 	responsive()
 
 func apply_button_motion(node: Node) -> void:

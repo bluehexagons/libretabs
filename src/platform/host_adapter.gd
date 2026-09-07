@@ -142,6 +142,12 @@ func system_dark() -> bool:
 func apply_appearance(dark: bool) -> void:
 	if web != null: web.applyAppearance(dark)
 
+func apply_capture_background(mode: String, color: Color) -> void:
+	# Window capture uses chroma key; only web surfaces promise alpha margins.
+	get_viewport().transparent_bg = mode == "transparent" and web != null
+	RenderingServer.set_default_clear_color(color)
+	if web != null: web.applyCaptureBackground(mode, "#" + color.to_html(false))
+
 func _exit_tree() -> void:
 	if web == null and DisplayServer.is_dark_mode_supported():
 		DisplayServer.set_system_theme_change_callback(Callable())

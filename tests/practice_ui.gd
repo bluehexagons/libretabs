@@ -93,7 +93,21 @@ func run() -> void:
 	app.call("repeat_measure")
 	check(app.get("loop_check").button_pressed and app.get("loop_from").value == 2 and app.get("loop_to").value == 2, "repeat measure selects current passage")
 	check(app.get("source_tick") == song.measures[1].start and not player.playing_practice, "repeat measure seeks to its start without auto-playing")
+	check(app.get("loop_button").button_pressed and "2" in app.get("loop_button").tooltip_text, "player exposes the active loop and its range")
+	app.get("loop_toggle").pressed.emit()
+	check(not app.get("loop_button").button_pressed and app.get("loop_from").value == 2 and app.get("loop_to").value == 2, "turning loop off preserves the selected range")
+	app.get("loop_toggle").pressed.emit()
+	app.call("start", false)
+	check(player.transport.repeat and is_equal_approx(player.transport.loop_start_seconds, song.seconds_at(song.measures[1].start)) and is_equal_approx(player.transport.end_seconds, song.seconds_at(song.measures[1].end)), "loop editor configures the single transport with the selected inclusive range")
+	app.call("pause")
 	app.get("loop_check").button_pressed = false
+	app.call("seek_measure", 3)
+	app.call("set_loop_boundary", true)
+	check(app.get("loop_from").value == 3 and app.get("loop_to").value == 3, "start-here moves an earlier end forward")
+	app.call("seek_measure", 1)
+	app.call("set_loop_boundary", false)
+	check(app.get("loop_from").value == 1 and app.get("loop_to").value == 1, "end-here moves a later start backward")
+	check(not player.playing_practice and not app.get("loop_check").button_pressed and app.get("source_tick") == 0, "editing a disabled loop neither enables it nor starts playback")
 	app.call("toggle_drawer", "SOUND")
 	check(app.get("drawer").visible and app.get("drawers")["SOUND"].visible, "sound controls open on demand")
 	app.get("instrument_slider").value = 0
@@ -108,6 +122,11 @@ func run() -> void:
 	app.call("load_demo", 0)
 	app.call("cancel_import")
 	check(not app.is_processing() and app.get("song") == song, "cancel preserves previous song and stops processing")
+	check(app.get("demo_picker").selected == 1, "cancelled exercise change restores current selection")
+	app.call("_file_picked", "invalid.mid", PackedByteArray([0, 1, 2]), "")
+	for _frame: int in range(30): await process_frame
+	check(app.get("song") == song and app.get("demo_picker").selected == 1 and app.get("library_title").text == app.get("title"), "failed import preserves song context in the song chooser")
+	app.call("set_status", "START_HINT")
 
 	var score: ScoreView = app.get("score")
 	check(score.mode == "scroll" and score.notation == "both", "practice defaults to synchronized scrolling")
@@ -173,6 +192,8 @@ func run() -> void:
 			check(app.get("root_box").size.x <= viewport.x and app.get("root_box").size.y <= viewport.y, "landscape shell fits at %s / %s: %s" % [viewport, factor, app.get("root_box").size])
 			check(app.get("main_speed").is_visible_in_tree(), "playback settings directly reachable at every scale")
 			check(app.get("play_button").get_global_rect().end.y <= viewport.y and app.get("menu_button").size.y >= 56, "landscape transport and menu remain usable")
+			check(app.get("songs_button").is_visible_in_tree() and app.get("songs_button").size.x >= 56 and app.get("loop_button").is_visible_in_tree() and app.get("loop_button").size.x >= 56, "landscape keeps large song and loop controls directly reachable")
+			check(app.get("menu_button").global_position.y >= 8 and app.get("songs_button").global_position.x >= 8, "landscape header is inset from the screen edges")
 	app.call("set_status", "ERR_READ")
 	check(app.get("status").visible, "short layout retains actionable errors")
 	app.call("set_status", "START_HINT")
@@ -186,6 +207,8 @@ func run() -> void:
 	check(not app.get("landscape") and app.get("song_title").visible and app.get("tempo_button").visible, "portrait restores song context and bottom dock")
 	check(app.get("dock_panel").get_parent() == app.get("root_box"), "rotation restores dock parent")
 	check(app.get("menu_button").size.x >= 56 and app.get("menu_button").size.y <= 100, "portrait menu retains a readable shape after rotation")
+	check(app.get("songs_button").is_visible_in_tree() and app.get("import_button").is_visible_in_tree() and app.get("loop_button").is_visible_in_tree(), "phone exposes song switching, import and looping")
+	check(app.get("menu_button").get_global_rect().end.x <= 374 and app.get("menu_button").global_position.y >= 8, "portrait header has comfortable edge spacing")
 
 	var key_down: InputEventKey = InputEventKey.new()
 	key_down.physical_keycode = KEY_Z
@@ -252,6 +275,50 @@ func run() -> void:
 	for _frame: int in range(10): await process_frame
 	check(first_bar >= score.page_start() and first_bar < score.page_start() + score.page_capacity, "page resize retains the passage being read")
 	check(absf(app.get("tempo_button").global_position.y - app.get("play_button").global_position.y) < 2 and absf(app.get("metro_button").global_position.y - app.get("play_button").global_position.y) < 2, "wide dock keeps common controls on one row")
+	var reading_page: int = score.page_index
+	var capture: CaptureView = app.get("capture_view")
+	app.get("capture_choices")["capture_notation"].select(1)
+	app.get("capture_choices")["capture_zoom"].select(3)
+	app.get("capture_choices")["capture_title"].select(1)
+	app.call("enter_capture")
+	for _frame: int in range(10): await process_frame
+	check(app.get("capture_active") and not app.get("root_box").visible and not app.get("menu_overlay").visible, "capture hides all player controls")
+	check(capture.score.notation == "tab" and score.notation == "both" and score.mode == "pages", "tab-only capture preserves paired practice and manual page settings")
+	check(capture.score.song == song and capture.score.projection == score.projection, "capture reuses immutable song and derived arrangement")
+	capture.heading.text = "A long imported title ".repeat(30)
+	check(not player.playing_practice and not app.is_processing(), "entering capture does not start playback or an idle frame loop")
+	app.call("seek_measure", 2)
+	check(capture.score.current_tick == app.get("source_tick"), "capture follows the same source tick when seeking")
+	app.set("motion_mode", "reduced")
+	app.call("apply_motion")
+	check(capture.score.reduced_motion, "device/reduced motion change reaches active capture")
+	for viewport: Vector2i in [Vector2i(1920, 1080), Vector2i(640, 360), Vector2i(390, 844)]:
+		root.size = viewport
+		for _frame: int in range(10): await process_frame
+		var capture_rect: Rect2 = capture.card.get_global_rect()
+		check(capture_rect.position.x >= 0 and capture_rect.position.y >= 0 and capture_rect.end.x <= viewport.x + 1 and capture_rect.end.y <= viewport.y + 1, "capture score fits requested frame %s" % viewport)
+	var escape: InputEventKey = InputEventKey.new()
+	escape.keycode = KEY_ESCAPE
+	escape.pressed = true
+	app.call("_input", escape)
+	check(not app.get("capture_active") and app.get("root_box").visible and Input.mouse_mode == Input.MOUSE_MODE_VISIBLE, "Escape restores player controls and pointer")
+	check(score.mode == "pages" and score.notation == "both", "leaving capture restores reading view")
+	root.size = Vector2i(1440, 900)
+	for _frame: int in range(10): await process_frame
+	check(score.page_index == reading_page, "capture preserves the manually selected page across resize")
+	app.get("capture_choices")["capture_notation"].select(2)
+	app.call("enter_capture")
+	check(capture.score.notation == "staff" and is_equal_approx(capture.score.custom_minimum_size.y, ScoreLayout.row_height("staff")), "staff-only capture uses its own compact height")
+	var tap: InputEventScreenTouch = InputEventScreenTouch.new()
+	tap.pressed = true
+	app.call("_input", tap)
+	check(app.get("capture_active"), "capture consumes pointer press before revealing underlying controls")
+	tap.pressed = false
+	app.call("_input", tap)
+	await process_frame
+	check(not app.get("capture_active") and app.get("root_box").visible, "touch exits capture without needing a small button")
+	app.set("motion_mode", "full")
+	app.call("apply_motion")
 	check(score.playhead_x() <= 180, "wide screens leave room for upcoming music")
 	app.call("apply_scale", 2.0)
 	root.size = Vector2i(360, 740)

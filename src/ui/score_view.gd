@@ -3,6 +3,7 @@ class_name ScoreView
 extends Control
 
 var reduced_motion: bool = false
+var presentation: bool = false
 var song: SongDocument
 var projection: TabProjection
 var part: int = 0
@@ -55,7 +56,7 @@ func invalidate() -> void:
 
 func set_view(value: String, symbols: String) -> void:
 	mode = value
-	notation = "both" if mode == "scroll" else symbols
+	notation = "both" if mode == "scroll" and not presentation else symbols
 	invalidate()
 
 func pages() -> int:
@@ -92,7 +93,7 @@ func refresh() -> void:
 	page_index = clampi(page_index, 0, pages() - 1)
 	var row_height: float = ScoreLayout.row_height(notation)
 	if mode == "scroll":
-		custom_minimum_size.y = 320
+		custom_minimum_size.y = row_height
 		# Reduced motion uses stationary, fitted measures with a partial next
 		# measure; long bars must not disappear beyond a phone's right edge.
 		if reduced_motion:
@@ -132,7 +133,7 @@ func refresh() -> void:
 			tiles[index] = tile
 		var tile: MeasureCanvas = tiles[index]
 		var slot: int = index - page_start()
-		var next_size: Vector2 = Vector2(reduced_width() if reduced_motion else layout.widths[index], 320) if mode == "scroll" else Vector2(size.x / columns, row_height)
+		var next_size: Vector2 = Vector2(reduced_width() if reduced_motion else layout.widths[index], row_height) if mode == "scroll" else Vector2(size.x / columns, row_height)
 		if tile.size != next_size:
 			tile.size = next_size
 			tile.queue_redraw()
@@ -186,11 +187,13 @@ func draw_cursor(surface: Control) -> void:
 	draw_live(surface)
 	if mode == "scroll" and not reduced_motion:
 		# Fixed reading guide; notes disappear behind it as they pass.
-		surface.draw_rect(Rect2(0, 48, 44, 250), get_theme_color("paper", "LibreTabs"))
-		surface.draw_string(preload("res://assets/fonts/Bravura.otf"), Vector2(8, 105), String.chr(0xe050), HORIZONTAL_ALIGNMENT_LEFT, -1, 32, get_theme_color("ink", "LibreTabs"))
-		surface.draw_string(ThemeDB.fallback_font, Vector2(17, 132), "8", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, get_theme_color("ink", "LibreTabs"))
-		for string_index: int in range(6):
-			surface.draw_string(ThemeDB.fallback_font, Vector2(14, 182 + string_index * 21), str(string_index + 1), HORIZONTAL_ALIGNMENT_LEFT, -1, 18, get_theme_color("muted", "LibreTabs"))
+		surface.draw_rect(Rect2(0, 48, 44, ScoreLayout.row_height(notation) - 48), get_theme_color("paper", "LibreTabs"))
+		if notation != "tab":
+			surface.draw_string(preload("res://assets/fonts/Bravura.otf"), Vector2(8, 105), String.chr(0xe050), HORIZONTAL_ALIGNMENT_LEFT, -1, 32, get_theme_color("ink", "LibreTabs"))
+			surface.draw_string(ThemeDB.fallback_font, Vector2(17, 132), "8", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, get_theme_color("ink", "LibreTabs"))
+		if notation != "staff":
+			for string_index: int in range(6):
+				surface.draw_string(ThemeDB.fallback_font, Vector2(14, (182 if notation == "both" else 86) + string_index * 21), str(string_index + 1), HORIZONTAL_ALIGNMENT_LEFT, -1, 18, get_theme_color("muted", "LibreTabs"))
 
 func set_live(notes: Array[Dictionary]) -> void:
 	live_notes = notes.duplicate(true)

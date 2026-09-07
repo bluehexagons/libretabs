@@ -220,3 +220,9 @@ Guitar Pro import, hosted songs, YouTube sync, and automatic audio transcription
 The owner-requested [friendly player and print slice](decisions/0008-friendly-player-and-print.md)
 adds contrast, finite/reduced motion, font choice and a bounded local print export
 to M0 evaluation. This is not completion of M1/M3/M5 or physical-printer validation.
+
+The owner-requested [capture presentation slice](decisions/0009-capture-view.md)
+adds score-only recording/streaming layouts to the evaluation prototype. Validate
+layout, exit paths, shared transport and browser alpha now; actual OBS Browser
+Source, native capture tools, and editor compositing remain platform evidence to
+collect. It does not add recording, a video encoder, or a remote-control service.

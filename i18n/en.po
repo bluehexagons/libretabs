@@ -275,7 +275,7 @@ msgid "UNNAMED_PART"
 msgstr "Pitched part"
 
 msgid "SONG_MENU"
-msgstr "Library"
+msgstr "Songs"
 
 msgid "START_HINT"
 msgstr "Press Play. Follow the highlighted fret numbers."
@@ -496,11 +496,8 @@ msgstr "Keyboard: A S D F G H J K play C D E F G A B C. W E T Y U play the black
 msgid "LIVE_NOTE"
 msgstr "Keyboard"
 
-msgid "PRACTICE_INVITE"
-msgstr "Find your pace. Play a little."
-
 msgid "CARD_SONG_MENU"
-msgstr "Your music\nOpen a MIDI file or try an exercise"
+msgstr "Songs\nImport a MIDI file or choose an exercise"
 
 msgid "CARD_TEMPO"
 msgstr "Playback\nSpeed, count-in and metronome"
@@ -518,13 +515,13 @@ msgid "CARD_SOUND"
 msgstr "Sound & parts\nBalance the instrument and the click"
 
 msgid "CARD_DISPLAY"
-msgstr "Make it yours\nColor, text, font and motion"
+msgstr "Appearance\nColor, text, font and motion"
 
 msgid "CARD_KEYBOARD"
 msgstr "Keyboard notes\nChoose your piano key layout"
 
 msgid "CARD_HELP"
-msgstr "A little help\nReading music and using the player"
+msgstr "Help\nReading music and using the player"
 
 msgid "CONTROL_HELP"
 msgstr "What this does"
@@ -533,7 +530,7 @@ msgid "TOUCH_HELP"
 msgstr "Hold an action button for a moment to see what it does. Move your finger to scroll instead. With a mouse, hover for a hint; with a keyboard, focus a control and press F1."
 
 msgid "PLAYER_SHORTCUTS"
-msgstr "Space plays or pauses. Left and Right move by measure, or turn a reading page. Escape closes a menu. Tab moves between controls. Swipe across a manual reading page to turn it. Piano keys are listed below."
+msgstr "Space plays or pauses. Left and Right move by measure, or turn a reading page. Escape closes a menu or capture view. F8 toggles capture view. Tab moves between controls. Swipe across a manual reading page to turn it. Piano keys are listed below."
 
 msgid "TIP_MENU"
 msgstr "Open music, playback, printing and appearance options."
@@ -636,3 +633,108 @@ msgstr "Choose the matching paper size and turn off browser headers and footers.
 
 msgid "PRINT_NOTES"
 msgstr "About this practice arrangement"
+
+msgid "IMPORT_MIDI"
+msgstr "Import MIDI"
+
+msgid "TIP_IMPORT_MIDI"
+msgstr "Choose a MIDI music file from your device. Playback pauses while you choose."
+
+msgid "TIP_SONG_MENU"
+msgstr "Switch exercises, import a MIDI file, or choose which part to practice."
+
+msgid "CURRENT_SONG"
+msgstr "Current song"
+
+msgid "LOOP_OFF"
+msgstr "Loop off"
+
+msgid "LOOP_SELECTED"
+msgstr "Loop %d–%d"
+
+msgid "LOOP_ENABLED_RANGE"
+msgstr "Repeating measures %d–%d"
+
+msgid "LOOP_DISABLED_RANGE"
+msgstr "Loop off · Selected measures %d–%d"
+
+msgid "ENABLE_LOOP"
+msgstr "Turn loop on"
+
+msgid "DISABLE_LOOP"
+msgstr "Turn loop off"
+
+msgid "TIP_ENABLE_LOOP"
+msgstr "Repeat the selected measures during playback. Press Play when you are ready."
+
+msgid "TIP_DISABLE_LOOP"
+msgstr "Continue past the selected measures. Keep the range for later."
+
+msgid "LOOP_START_HERE"
+msgstr "Start at current measure"
+
+msgid "LOOP_END_HERE"
+msgstr "End at current measure"
+
+msgid "TIP_LOOP_TOOL"
+msgstr "Loop is off. Choose a measure or a range to repeat."
+
+msgid "TIP_LOOP_ACTIVE"
+msgstr "Loop is on for measures %d–%d. Change the range or turn looping off."
+
+msgid "CHOOSE_EXERCISE"
+msgstr "Choose an exercise…"
+
+msgid "CAPTURE"
+msgstr "Capture & overlay"
+
+msgid "CARD_CAPTURE"
+msgstr "Capture & overlay\nA score-only view for recording and streaming"
+
+msgid "CAPTURE_HELP"
+msgstr "Hide controls for recording. Press F8 or Escape, or tap anywhere, to return. Space still plays or pauses."
+
+msgid "CAPTURE_ENTER"
+msgstr "Enter capture view"
+
+msgid "CAPTURE_NOTATION"
+msgstr "Music to show"
+
+msgid "CAPTURE_BACKGROUND"
+msgstr "Background around the score"
+
+msgid "CAPTURE_TRANSPARENT"
+msgstr "Transparent (browser capture)"
+
+msgid "CAPTURE_GREEN"
+msgstr "Green screen (chroma key)"
+
+msgid "CAPTURE_SOLID"
+msgstr "Use current theme"
+
+msgid "CAPTURE_ZOOM"
+msgstr "Score size (shrinks to fit if needed)"
+
+msgid "CAPTURE_POSITION"
+msgstr "Position in the frame"
+
+msgid "CAPTURE_BOTTOM"
+msgstr "Bottom"
+
+msgid "CAPTURE_CENTER"
+msgstr "Center"
+
+msgid "CAPTURE_TOP"
+msgstr "Top"
+
+msgid "CAPTURE_TITLE"
+msgstr "Song title"
+
+msgid "CAPTURE_TITLE_OFF"
+msgstr "Hidden"
+
+msgid "CAPTURE_TITLE_ON"
+msgstr "Shown"
+
+msgid "CAPTURE_SETUP"
+msgstr "OBS: add this page as a Browser Source, set its width and height (for example, 1920 × 1080), and use Interact to choose your song and enter capture view. That source has its own song and settings. The score stays on a readable card; the margins can be transparent. For window capture or video editing, choose Green screen and remove that color with a chroma-key filter. Use the player’s sound menu to mute instrument or click as needed. Capture mode never starts playback by itself."

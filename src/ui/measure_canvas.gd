@@ -50,7 +50,7 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 			var y: float = tab_top + string_index * 21
 			if not continuous: text_at(Vector2(origin.x + 12, y + 5), str(string_index + 1), 13, muted)
 			draw_line(Vector2(left, y), Vector2(right, y), muted, 1, true)
-		text_at(Vector2(origin.x + 8, tab_top - 17), tr("TAB_PRIMARY"), 13)
+		if notation == "both": text_at(Vector2(origin.x + 8, tab_top - 17), tr("TAB_PRIMARY"), 13)
 		if notation != "tab": draw_line(Vector2(right, top), Vector2(right, top + 32), ink, 1.5)
 		draw_line(Vector2(right, tab_top), Vector2(right, tab_top + 105), ink, 1.5)
 	if notation == "staff": draw_line(Vector2(right, top), Vector2(right, top + 32), ink, 1.5)

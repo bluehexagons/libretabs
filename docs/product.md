@@ -263,3 +263,12 @@ following browser settings, font choice, touch explanations, and printable
 A4/Letter pages of tabs, staff or both. Printable HTML is generated locally from
 the selected part/range; the user can print it or use the browser's Save as PDF.
 This does not complete print-grade engraving or change imported music.
+
+### Capture view for instruction
+
+[Decision 0009](decisions/0009-capture-view.md) adds an optional view with only the
+score for video capture and streaming. It exposes notation, score size, placement,
+optional title, and transparent/green/theme margins; the score card remains opaque
+for readability. F8 enters/leaves; Escape or a tap restores the player. Capture
+uses the existing transport and audio controls. Recording, video editing, remote
+control, and cross-window song synchronization are not part of this slice.
