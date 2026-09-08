@@ -66,6 +66,18 @@ reading another page. Imported bytes/events/projection remain untouched.
 
 ## Consequences and validation
 
+### Startup guide preference (2026-09-07)
+
+Quick start opens after the initial exercise is ready, pauses playback when
+reopened, and offers a direct return to the player without autoplay. Menu → Quick
+start and Help both reopen it. Its checkbox is the single control for opting out
+and re-enabling startup help. The existing platform display-choice adapter stores
+`startup_help` as `show` or `hide` (default `show`), under browser key
+`libretabs.startup_help.v1` or the native display-choice configuration. Invalid or
+missing values use the default. Failed saves leave the choice usable for this
+session and display the existing storage-unavailable notice. This is a device
+preference; it neither stores song content nor changes the practice-session schema.
+
 No new dependencies, permissions, microphone/MIDI-device input or platform target.
 The normal device/browser keyboard-ghosting and generated-stream output latency
 limits apply. Native and browser tests must cover settings round trips, corruption,

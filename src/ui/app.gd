@@ -36,6 +36,15 @@ var song: SongDocument
 var projection: TabProjection = TabProjection.new()
 var importer: MidiImport
 var score: ScoreView
+var score_frame: ScoreFrame
+var fitting_layout: bool = false
+var fit_hide_cue: bool = false
+var fit_hide_seek: bool = false
+var startup_help_enabled: bool = true
+var startup_help_pending: bool = true
+var startup_help_check: CheckBox
+var welcome_storage: Label
+var welcome_practice: Button
 var status: Label
 var summary: Label
 var cue: Label
@@ -156,6 +165,8 @@ func _ready() -> void:
 	font_style = host.load_display_choice("font", ["rounded", "simple"], "rounded")
 	control_position = host.load_display_choice("control_position", ["left", "top", "right", "bottom"], "bottom")
 	handedness = host.load_display_choice("handedness", ["left", "right"], "right")
+	startup_help_enabled = host.load_display_choice("startup_help", ["show", "hide"], "show") == "show" if persist_preferences else true
+	startup_help_pending = startup_help_enabled
 	host.motion_changed.connect(apply_motion)
 	host.exported.connect(func(success: bool) -> void: print_status.text = tr("PRINT_SAVED" if success else "PRINT_FAILED"))
 	audio = PracticeAudio.new()
@@ -178,6 +189,8 @@ func _ready() -> void:
 	idle_timer.start()
 	pass_scroll_input(root_box)
 	pass_scroll_input(drawer)
+	for container: Control in [content_margin, header_margin, dock_margin]:
+		container.minimum_size_changed.connect(update_main_scroll)
 	load_demo(0)
 
 func pass_scroll_input(node: Node) -> void:
@@ -345,7 +358,9 @@ func build_ui() -> void:
 	drawer_body.add_theme_constant_override("separation", 14)
 	menu_scroll.add_child(drawer_body)
 	drawer_title = label("MENU", 24)
-	drawer_body.add_child(drawer_title)
+	# Keep the section name visible while its long help/settings content scrolls.
+	menu_column.add_child(drawer_title)
+	menu_column.move_child(drawer_title, 1)
 	build_drawers()
 	notice_button.reparent(drawers["SCORE_VIEW"])
 	drawer.hide()
@@ -355,9 +370,12 @@ func build_ui() -> void:
 	paper.gui_input.connect(page_gesture)
 	paper.add_theme_stylebox_override("panel", surface("ffffff", 8))
 	panel.add_child(paper)
+	score_frame = ScoreFrame.new()
+	paper.add_child(score_frame)
 	score = ScoreView.new()
 	score.seek_requested.connect(seek_tick)
-	paper.add_child(score)
+	score_frame.add_child(score)
+	score_frame.score = score
 	panel.move_child(details, panel.get_children().find(paper) + 1)
 	var navigation: HBoxContainer = HBoxContainer.new()
 	navigation.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -497,14 +515,50 @@ func section(key: String) -> VBoxContainer:
 	content.hide()
 	return content
 
+func build_welcome_menu() -> void:
+	var welcome: VBoxContainer = section("WELCOME")
+	welcome.add_child(label("WELCOME_INTRO"))
+	welcome_practice = button("WELCOME_PRACTICE", func() -> void:
+		close_menu()
+		play_button.grab_focus())
+	welcome.add_child(welcome_practice)
+	for key: String in ["WELCOME_READ", "WELCOME_PLAY", "WELCOME_PACE"]:
+		var card: PanelContainer = PanelContainer.new()
+		card.add_theme_stylebox_override("panel", UIAppearance.role_style("reading", dark_mode, "normal"))
+		card.set_meta("welcome_card", true)
+		card.add_child(label(key, 20))
+		welcome.add_child(card)
+	var actions: HFlowContainer = flow(welcome)
+	actions.add_child(button("SONG_MENU", func() -> void: toggle_drawer("SONG_MENU")))
+	actions.add_child(button("IMPORT_MIDI", open_midi))
+	actions.add_child(button("HELP", func() -> void: toggle_drawer("HELP")))
+	startup_help_check = CheckBox.new()
+	startup_help_check.text = tr("WELCOME_STARTUP")
+	startup_help_check.tooltip_text = tr("WELCOME_STARTUP_HELP")
+	startup_help_check.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	startup_help_check.custom_minimum_size.y = 56
+	startup_help_check.set_pressed_no_signal(startup_help_enabled)
+	startup_help_check.toggled.connect(set_startup_help)
+	welcome.add_child(startup_help_check)
+	welcome.move_child(startup_help_check, 2)
+	welcome_storage = label("STORAGE_SESSION", 18)
+	welcome_storage.hide()
+	welcome.add_child(welcome_storage)
+
+func set_startup_help(enabled: bool) -> void:
+	startup_help_enabled = enabled
+	if persist_preferences:
+		welcome_storage.visible = not host.save_display_choice("startup_help", "show" if enabled else "hide")
+
 func build_drawers() -> void:
 	var menu_index: VBoxContainer = section("MENU")
-	for key: String in ["SONG_MENU", "TEMPO", "SCORE_VIEW", "PRINT", "CAPTURE", "LOOP_TOOL", "SOUND", "DISPLAY", "KEYBOARD", "HELP"]:
+	for key: String in ["WELCOME", "SONG_MENU", "TEMPO", "SCORE_VIEW", "PRINT", "CAPTURE", "LOOP_TOOL", "SOUND", "DISPLAY", "KEYBOARD", "HELP"]:
 		var entry: Button = button(key, func() -> void: toggle_drawer(key))
 		entry.text = tr("CARD_" + key)
 		entry.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		entry.custom_minimum_size.y = 76
 		menu_index.add_child(entry)
+	build_welcome_menu()
 	var control_help: VBoxContainer = section("CONTROL_HELP")
 	help_text = label("TOUCH_HELP")
 	control_help.add_child(help_text)
@@ -672,6 +726,7 @@ func build_drawers() -> void:
 	number_field(keys, octave_picker, "KEYBOARD_OCTAVE")
 	keys.add_child(label("KEYBOARD_EXPLAIN", 18))
 	var help: VBoxContainer = section("HELP")
+	help.add_child(button("WELCOME", func() -> void: toggle_drawer("WELCOME")))
 	keyboard_help = label("KEYBOARD_HELP_LOWER", 18)
 	help.add_child(label("TOUCH_HELP"))
 	help.add_child(label("PLAYER_SHORTCUTS"))
@@ -850,6 +905,7 @@ func apply_capture_background() -> void:
 
 func toggle_drawer(key: String) -> void:
 	leave_capture()
+	if key == "WELCOME": pause()
 	release_keyboard()
 	if not menu_overlay.visible: previous_focus = get_viewport().gui_get_focus_owner()
 	menu_back.visible = key != "MENU"
@@ -862,6 +918,8 @@ func toggle_drawer(key: String) -> void:
 	menu_scroll.scroll_vertical = 0
 	responsive()
 	drawer.get_child(0).get_child(0).get_child(1).grab_focus()
+	if key == "WELCOME": welcome_practice.grab_focus()
+	reset_menu_scroll.call_deferred(key)
 	if key == "PRINT" and song != null:
 		print_first.max_value = song.measures.size()
 		print_last.max_value = song.measures.size()
@@ -875,6 +933,11 @@ func toggle_drawer(key: String) -> void:
 		menu_tween = create_tween().set_parallel()
 		menu_tween.tween_property(drawer, "position", destination, 0.18).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 		menu_tween.tween_property(drawer, "modulate:a", 1.0, 0.18)
+
+func reset_menu_scroll(key: String) -> void:
+	# Initial focus can scroll before wrapped text has its final height.
+	for _frame: int in range(3): await get_tree().process_frame
+	if opened_drawer == key: menu_scroll.scroll_vertical = 0
 
 func close_menu() -> void:
 	if printer != null: printer.cancelled = true
@@ -980,8 +1043,8 @@ func update_page_controls() -> void:
 	page_label.visible = score.mode == "pages"
 	# On very short portrait windows the synchronized score carries the same
 	# current-note information; dropping this duplicate row keeps practice fixed.
-	cue.get_parent().visible = score.mode == "scroll" and not landscape and size.y >= 620
-	seek_navigation.visible = score.mode == "scroll" and not landscape
+	cue.get_parent().visible = score.mode == "scroll" and not landscape and size.y >= 620 and not fit_hide_cue
+	seek_navigation.visible = score.mode == "scroll" and not landscape and not fit_hide_seek
 	page_label.text = tr("PAGE_NUMBER") % [score.page_index + 1, score.pages()]
 	page_navigation.get_child(0).disabled = score.page_index == 0
 	page_navigation.get_child(1).disabled = score.page_index == score.pages() - 1
@@ -998,6 +1061,9 @@ func apply_appearance() -> void:
 	var font_size: int = theme.default_font_size if theme != null else 20
 	theme = UIAppearance.make_theme(dark_mode, font_size, font_style)
 	UIAppearance.apply_roles(self, dark_mode)
+	for child: Node in drawers["WELCOME"].get_children():
+		if child.has_meta("welcome_card"):
+			child.add_theme_stylebox_override("panel", UIAppearance.role_style("reading", dark_mode, "normal"))
 	backdrop.set_palette(dark_mode)
 	brand_label.add_theme_font_override("font", UIAppearance.ui_font(font_style, true))
 	song_title.add_theme_font_override("font", UIAppearance.ui_font(font_style, true))
@@ -1008,8 +1074,11 @@ func apply_appearance() -> void:
 	paper.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 8))
 	dock_panel.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 12))
 	speed_control.add_theme_stylebox_override("panel", UIAppearance.tempo_unit_style(dark_mode))
-	for state_name: String in ["normal", "hover", "pressed", "hover_pressed"]:
-		play_button.add_theme_stylebox_override(state_name, UIAppearance.primary_style(dark_mode, state_name))
+	for action: Button in [play_button, welcome_practice]:
+		for state_name: String in ["normal", "hover", "pressed", "hover_pressed"]:
+			action.add_theme_stylebox_override(state_name, UIAppearance.primary_style(dark_mode, state_name))
+		for token: String in ["font_color", "font_focus_color", "font_hover_color", "font_pressed_color", "font_hover_pressed_color"]:
+			action.add_theme_color_override(token, Color.WHITE)
 	play_button.add_theme_color_override("font_hover_pressed_color", Color.WHITE)
 	for token: String in ["icon_normal_color", "icon_hover_color", "icon_pressed_color", "icon_focus_color", "icon_hover_pressed_color"]: play_button.add_theme_color_override(token, Color.WHITE)
 	if score != null:
@@ -1068,9 +1137,11 @@ func responsive() -> void:
 	update_loop_controls()
 	dock_panel.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 4 if side_dock else 10))
 	speed_control.add_theme_stylebox_override("panel", UIAppearance.tempo_unit_style(dark_mode, 2 if side_dock else 7))
-	paper.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 0 if landscape else (4 if compact else 8)))
+	# Keep score drawing (including the opaque clef gutter) inside the rounded border.
+	paper.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 10))
 	for side: String in ["left", "right", "top", "bottom"]:
 		var inset: int = 8 if side_dock else (12 if side in ["left", "right", "bottom"] else 4)
+		if not side_dock and side in ["left", "right"]: inset = maxi(inset, int((size.x - 1320) / 2))
 		dock_margin.add_theme_constant_override("margin_" + side, inset)
 	dock.custom_minimum_size.x = 0
 	dock.add_theme_constant_override("separation", 4 if side_dock else 8)
@@ -1089,13 +1160,17 @@ func responsive() -> void:
 	reading_tools.visible = not landscape and not compact
 	set_status(status_key)
 	for side: String in ["left", "right", "top", "bottom"]:
-		content_margin.add_theme_constant_override("margin_" + side, 0 if side_dock else (maxi(16, int((size.x - 1280) / 2)) if side in ["left", "right"] else (4 if compact else 10)))
+		content_margin.add_theme_constant_override("margin_" + side, 8 if side_dock else (maxi(16, int((size.x - 1280) / 2)) if side in ["left", "right"] else (4 if compact else 10)))
 	panel.add_theme_constant_override("separation", 4 if landscape or compact else 10)
 	cue.custom_minimum_size.x = minf(size.x - 64, 200 * theme.default_font_size / 20.0)
 	status.custom_minimum_size.y = 0
 	dock.vertical = side_dock or size.x < 900
 	drawer.position = Vector2(0 if handedness == "left" else maxf(0, size.x - 560), 0)
 	drawer.size = Vector2(minf(size.x, 560), size.y)
+	if opened_drawer == "WELCOME":
+		var inset: float = 8 if size.x < 600 else 24
+		drawer.size = Vector2(minf(size.x - inset * 2, 720), minf(size.y - inset * 2, 760))
+		drawer.position = (size - drawer.size) / 2
 	adapt_flow(menu_overlay)
 	adapt_flow(root_box)
 	if score != null: score.refresh(); update_page_controls()
@@ -1127,18 +1202,34 @@ func set_child_order(parent: Node, ordered: Array) -> void:
 		if child != null and child.get_parent() == parent: parent.move_child(child, index)
 
 func update_main_scroll() -> void:
-	if scroll == null or panel == null: return
-	# Visibility and theme changes settle their container minima on the next
-	# frame. Measuring after that pass avoids preserving a stale scrollbar.
-	await get_tree().process_frame
-	# A disabled ScrollContainer contributes its child's full minimum height. Use
-	# the viewport budget rather than its potentially expanded current size when
-	# deciding whether ordinary play actually fits.
-	var side_dock: bool = root_box != null and not root_box.vertical
-	var available: float = size.y if side_dock else maxf(0, size.y - header_margin.get_combined_minimum_size().y - dock_margin.get_combined_minimum_size().y)
-	var overflow: bool = content_margin.get_combined_minimum_size().y > available + 1
-	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO if overflow else ScrollContainer.SCROLL_MODE_DISABLED
-	if not overflow: scroll.scroll_vertical = 0
+	if fitting_layout or score_frame == null or score == null: return
+	fitting_layout = true
+	# Container minima settle after wrapping and reparenting. Begin with all
+	# appropriate context restored, then remove duplicates before scaling music.
+	fit_hide_cue = false
+	fit_hide_seek = false
+	song_title.visible = not landscape and not compact
+	reading_tools.visible = not landscape and not compact
+	update_page_controls()
+	score_frame.fit_height(ScoreLayout.row_height(score.notation))
+	for _frame: int in range(3): await get_tree().process_frame
+	for extra: Control in [cue.get_parent(), reading_tools, song_title, seek_navigation]:
+		if content_margin.get_combined_minimum_size().y <= content_height_budget() + 1: break
+		if not extra.visible: continue
+		extra.hide()
+		if extra == cue.get_parent(): fit_hide_cue = true
+		if extra == seek_navigation: fit_hide_seek = true
+		for _frame: int in range(2): await get_tree().process_frame
+	var other_height: float = content_margin.get_combined_minimum_size().y - score_frame.get_combined_minimum_size().y
+	score_frame.fit_height(content_height_budget() - other_height)
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.scroll_vertical = 0
+	for _frame: int in range(3): await get_tree().process_frame
+	fitting_layout = false
+
+func content_height_budget() -> float:
+	if controls_on_side: return size.y
+	return maxf(0, size.y - header_margin.get_combined_minimum_size().y - dock_margin.get_combined_minimum_size().y)
 
 func adapt_flow(node: Node) -> void:
 	if node is HFlowContainer or (node is BoxContainer and not node.vertical):
@@ -1327,6 +1418,9 @@ func finish_import() -> void:
 	set_status("START_HINT")
 	if drawer.visible: close_menu()
 	adapt_flow(panel)
+	if startup_help_pending:
+		startup_help_pending = false
+		toggle_drawer("WELCOME")
 
 func select_part(index: int) -> void:
 	pause()

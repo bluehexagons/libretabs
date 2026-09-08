@@ -11,6 +11,13 @@ actions and menu edge for comfortable reach while holding an instrument; very
 short landscape screens keep the full score visible by adapting a top or bottom
 choice to the preferred hand side.
 
+A startup Quick start guide explains the string lines, numbered frets, playback,
+and practice controls beside a ready exercise. Its “Show on startup” checkbox is
+saved on the device; Menu → Quick start always opens it again and can re-enable
+it. Starting practice dismisses the guide without automatically playing audio.
+Regular practice fits the paired score into the available screen height, hiding
+secondary context before proportionally reducing the music; menus may scroll.
+
 The app is a teacher-shaped practice aid, not a replacement for a teacher, a full notation editor, or an automatic arranger that claims every MIDI file is playable.
 
 ## Primary learner

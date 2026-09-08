@@ -19,6 +19,16 @@ func run() -> void:
 	root.add_child(app)
 	for _frame: int in range(30): await process_frame
 	check(app.get("song") != null, "initial sample is ready")
+	check(app.get("opened_drawer") == "WELCOME" and app.get("startup_help_check").button_pressed, "first startup opens quick start with the opt-out enabled")
+	app.get("startup_help_check").button_pressed = false
+	check(not app.get("startup_help_enabled"), "startup help can be disabled")
+	app.get("welcome_practice").pressed.emit()
+	check(not app.get("menu_overlay").visible and not app.get("audio").playing_practice, "welcome practice action returns to the player without unexpected audio")
+	app.call("toggle_drawer", "WELCOME")
+	check(not app.get("startup_help_check").button_pressed, "quick start stays accessible after opting out")
+	app.get("startup_help_check").button_pressed = true
+	check(app.get("startup_help_enabled"), "quick start can re-enable itself on startup")
+	app.call("close_menu")
 	check(not app.is_processing(), "ready practice does not process every frame")
 	var before: int = app.get("position_updates")
 	for _frame: int in range(30): await process_frame
@@ -308,7 +318,7 @@ func run() -> void:
 	score.set_view("pages", "both")
 	score.page_to_playback()
 	check(score.tiles.has(1) and score.tiles[1].position.x + score.strip.position.x + 16 < score.size.x, "short landscape pages retain an upcoming note preview")
-	check(score.global_position.y <= 16 and score.global_position.y + 281 < 320, "page navigation does not push landscape tablature below the viewport")
+	check(score.global_position.y <= 24 and (score.get_global_transform() * Vector2(0, 281)).y < 320, "page navigation does not push landscape tablature below the viewport")
 	root.size = Vector2i(390, 844)
 	for _frame: int in range(10): await process_frame
 	score.set_view("scroll", "staff")
@@ -366,7 +376,7 @@ func run() -> void:
 			for _frame: int in range(10): await process_frame
 			check(app.get("landscape"), "short landscape layout selected")
 			check(app.get("scroll").size.y >= viewport.y - 1, "landscape score receives full viewport height")
-			check(score.global_position.y <= 16 and score.global_position.y + 281 < viewport.y, "staff and all six tab lines visible without first scrolling")
+			check(score.global_position.y <= 24 and (score.get_global_transform() * Vector2(0, 281)).y < viewport.y, "staff and all six tab lines visible without first scrolling")
 			check(app.get("root_box").size.x <= viewport.x and app.get("root_box").size.y <= viewport.y, "landscape shell fits at %s / %s: %s" % [viewport, factor, app.get("root_box").size])
 			check(app.get("main_speed").is_visible_in_tree(), "playback settings directly reachable at every scale")
 			check(not app.get("seek_navigation").visible and app.get("scroll").vertical_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "short landscape uses direct score seeking without a duplicate scrollbar")
@@ -441,7 +451,7 @@ func run() -> void:
 	app.call("responsive")
 	for _frame: int in range(10): await process_frame
 	check(app.get("controls_on_side") and app.get("header_margin").get_index() == 0, "short landscape adapts top controls to the preferred left side")
-	check(app.get("scroll").vertical_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED and score.global_position.y <= 16, "adaptive side keeps the full-height music surface")
+	check(app.get("scroll").vertical_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED and score.global_position.y <= 24, "adaptive side keeps the full-height music surface")
 	app.set("handedness", "right")
 	app.call("responsive")
 	for _frame: int in range(10): await process_frame
@@ -495,6 +505,9 @@ func run() -> void:
 	check(settings.save_display_choice("control_position", "left") and settings.load_display_choice("control_position", ["left", "top", "right", "bottom"], "bottom") == "left", "control edge persists through the display adapter")
 	check(settings.save_display_choice("handedness", "left") and settings.load_display_choice("handedness", ["left", "right"], "right") == "left", "handedness persists through the display adapter")
 	check(settings.load_display_choice("control_position", ["top", "right", "bottom"], "bottom") == "bottom", "removed or invalid control choices recover to a safe default")
+	check(settings.load_display_choice("startup_help", ["show", "hide"], "show") == "show", "new installations show startup help")
+	check(settings.save_display_choice("startup_help", "hide") and settings.load_display_choice("startup_help", ["show", "hide"], "show") == "hide", "startup opt-out survives a native settings reload")
+	check(settings.save_display_choice("startup_help", "show") and settings.load_display_choice("startup_help", ["show", "hide"], "hide") == "show", "startup help can be persistently re-enabled")
 	check(not settings.save_appearance("invalid"), "unknown appearance rejected")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(settings.display_path))
 	settings.free()
@@ -591,6 +604,23 @@ func run() -> void:
 	app.call("responsive")
 	for _frame: int in range(10): await process_frame
 	check(app.get("compact") and score.global_position.y < 130, "large text in portrait prioritizes the score")
+	app.set("control_position", "bottom")
+	app.set("handedness", "right")
+	for factor: float in [1.0, 1.5, 2.0]:
+		app.call("apply_scale", factor)
+		for viewport: Vector2i in [Vector2i(1000, 520), Vector2i(1000, 560), Vector2i(760, 500), Vector2i(600, 600), Vector2i(360, 640), Vector2i(480, 320), Vector2i(1440, 540), Vector2i(1920, 1080)]:
+			root.size = viewport
+			app.call("responsive")
+			for _frame: int in range(24): await process_frame
+			var description: String = "%s at %s text scale" % [viewport, factor]
+			check(app.get("scroll").vertical_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED and app.get("scroll").scroll_vertical == 0, "no main scrollbar: " + description)
+			check(app.get("root_box").size.x <= viewport.x + 1 and app.get("root_box").size.y <= viewport.y + 1, "complete shell fits: " + description)
+			check(app.get("content_margin").size.y <= app.get("scroll").size.y + 1, "score and auxiliary controls fit without hidden overflow: " + description)
+			check((score.get_global_transform() * Vector2(0, 300)).y < viewport.y, "complete score stays visible: " + description)
+			check(is_equal_approx(score.scale.x, score.scale.y), "fitted notation keeps its proportions: " + description)
+	app.call("toggle_drawer", "WELCOME")
+	check(app.get("startup_help_check").is_visible_in_tree(), "menu can always reopen startup preference")
+	app.call("close_menu")
 	app.queue_free()
 	await process_frame
 	print("Practice UI: %d checks, %d failures" % [checks, failures])

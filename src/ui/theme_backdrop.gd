@@ -13,7 +13,14 @@ func _ready() -> void:
 	focus_mode = Control.FOCUS_NONE
 	# Broad repeating curves read as a deliberate textile/ribbon motif at every
 	# density; the former field of tiny randomized dashes looked like noise.
-	var svg: String = '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="192" viewBox="0 0 256 192"><g fill="none" stroke="white" stroke-linecap="round"><path opacity=".42" stroke-width="2" d="M-40 42 C12 4 58 80 116 42 S220 4 296 42"/><path opacity=".2" stroke-width="1" d="M-40 52 C12 14 58 90 116 52 S220 14 296 52"/><path opacity=".34" stroke-width="2" d="M-40 138 C12 100 58 176 116 138 S220 100 296 138"/><path opacity=".17" stroke-width="1" d="M-40 148 C12 110 58 186 116 148 S220 110 296 148"/><circle opacity=".32" cx="116" cy="42" r="3"/><circle opacity=".24" cx="116" cy="138" r="3"/></g></svg>'
+	# The value AND tangent match at x=0 and x=256. Overscan keeps line caps
+	# outside the tile, so repeating it cannot leave a cut or kink in a wave.
+	var path: String = 'M-128 48 C-96 8 -32 8 0 48 S96 88 128 48 S224 8 256 48 S352 88 384 48'
+	var svg: String = '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="192"><g fill="none" stroke="white">'
+	for y: int in [0, 96]:
+		svg += '<path opacity=".42" stroke-width="2" transform="translate(0 %d)" d="%s"/>' % [y, path]
+		svg += '<path opacity=".2" stroke-width="1" transform="translate(0 %d)" d="%s"/>' % [y + 8, path]
+	svg += '</g></svg>'
 	var source: Image = Image.new()
 	source.load_svg_from_string(svg)
 	ribbon = ImageTexture.create_from_image(source)

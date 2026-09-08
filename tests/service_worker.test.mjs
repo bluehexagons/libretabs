@@ -62,7 +62,7 @@ function worker(env, release) {
 }
 
 test('web bridge admits every persistent reach setting', () => {
-  for (const key of ['control_position', 'handedness']) {
+  for (const key of ['control_position', 'handedness', 'startup_help']) {
     assert.match(bridge, new RegExp(`loadDisplayChoice[\\s\\S]*${key}`));
     assert.match(bridge, new RegExp(`saveDisplayChoice[\\s\\S]*${key}`));
   }

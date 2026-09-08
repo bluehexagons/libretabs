@@ -121,14 +121,20 @@ static func make_theme(dark: bool, font_size: int, font_style: String = "rounded
 	result.default_font_size = font_size
 	result.default_font = ui_font(font_style)
 	for key: String in LIGHT: result.set_color(key, "LibreTabs", color(key, dark))
-	for kind: String in ["Label", "Button", "CheckButton", "OptionButton", "LineEdit", "SpinBox", "PopupMenu", "TextEdit"]:
+	# The engine's dark unchecked glyph disappears against our dark controls.
+	for checked: bool in [false, true]:
+		var svg: String = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><rect x="2" y="2" width="20" height="20" rx="4" fill="%s" stroke="#%s" stroke-width="2"/>%s</svg>' % ["#" + color("primary", dark).to_html(false) if checked else "none", color("ink", dark).to_html(false), '<path d="m6 12 4 4 8-9" fill="none" stroke="white" stroke-width="3"/>' if checked else ""]
+		var glyph: Image = Image.new()
+		glyph.load_svg_from_string(svg)
+		result.set_icon("checked" if checked else "unchecked", "CheckBox", ImageTexture.create_from_image(glyph))
+	for kind: String in ["Label", "Button", "CheckButton", "CheckBox", "OptionButton", "LineEdit", "SpinBox", "PopupMenu", "TextEdit"]:
 		for state: String in ["font_color", "font_focus_color", "font_hover_color", "font_pressed_color", "font_hover_pressed_color", "caret_color", "icon_normal_color", "icon_hover_color", "icon_pressed_color", "icon_focus_color", "icon_hover_pressed_color"]:
 			result.set_color(state, kind, color("ink", dark))
 		result.set_color("font_disabled_color", kind, color("muted", dark))
 		result.set_color("icon_disabled_color", kind, color("muted", dark))
 		result.set_color("font_uneditable_color", kind, color("muted", dark))
 		result.set_color("selection_color", kind, color("pressed", dark))
-	for kind: String in ["Button", "CheckButton", "OptionButton", "LineEdit", "TextEdit"]:
+	for kind: String in ["Button", "CheckButton", "CheckBox", "OptionButton", "LineEdit", "TextEdit"]:
 		for state: String in ["normal", "hover", "pressed", "disabled", "read_only"]:
 			var token: String = "control" if state == "normal" else ("disabled" if state == "read_only" else state)
 			var style: StyleBoxFlat = box(color(token, dark))

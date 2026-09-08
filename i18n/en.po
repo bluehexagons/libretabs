@@ -538,6 +538,33 @@ msgstr "What this does"
 msgid "TOUCH_HELP"
 msgstr "Hold an action button for a moment to see what it does. Move your finger to scroll instead. With a mouse, hover for a hint; with a keyboard, focus a control and press F1."
 
+msgid "WELCOME"
+msgstr "Quick start"
+
+msgid "CARD_WELCOME"
+msgstr "Quick start · Getting started"
+
+msgid "WELCOME_INTRO"
+msgstr "An exercise is ready. Here is how to play along."
+
+msgid "WELCOME_PRACTICE"
+msgstr "Start practicing"
+
+msgid "WELCOME_READ"
+msgstr "1. Read the six lines\nThe lines are guitar strings, with the thinnest at the top. Press just behind the numbered fret. A 0 means play the open string."
+
+msgid "WELCOME_PLAY"
+msgstr "2. Press Play\nListen to the count-in, then follow the highlighted numbers. Open brackets show the next notes. Space plays or pauses with menus closed."
+
+msgid "WELCOME_PACE"
+msgstr "3. Set a comfortable pace\nSlow down with the percentage slider. The metronome adds a steady beat; use Click to switch it on or off. Loop repeats a section. Tap the music to change position."
+
+msgid "WELCOME_STARTUP"
+msgstr "Show on startup"
+
+msgid "WELCOME_STARTUP_HELP"
+msgstr "Open Menu → Quick start any time to return here or turn startup help back on."
+
 msgid "PLAYER_SHORTCUTS"
 msgstr "Space always plays or pauses while a menu is closed. Left and Right move by measure, or turn a reading page. Focus the position scrubber for beat-by-beat Arrow keys, Page Up/Down by measure, and Home/End. Escape closes a menu or capture view. F8 toggles capture view. Tab moves between controls. Swipe across a manual reading page to turn it. Piano keys are listed below."
 
