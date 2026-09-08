@@ -169,6 +169,12 @@ const BUILT_IN_LIBRARY: Array[Dictionary] = [
 	{"file": "canon_in_d", "title_key": "LIBRARY_CANON_IN_D"},
 	{"file": "twinkle", "title_key": "LIBRARY_TWINKLE"},
 	{"file": "the_entertainer", "title_key": "LIBRARY_THE_ENTERTAINER"},
+	{"file": "mary_had_a_little_lamb", "title_key": "LIBRARY_MARY_HAD_A_LITTLE_LAMB"},
+	{"file": "frere_jacques", "title_key": "LIBRARY_FRERE_JACQUES"},
+	{"file": "auld_lang_syne", "title_key": "LIBRARY_AULD_LANG_SYNE"},
+	{"file": "yankee_doodle", "title_key": "LIBRARY_YANKEE_DOODLE"},
+	{"file": "brahms_lullaby", "title_key": "LIBRARY_BRAHMS_LULLABY"},
+	{"file": "minuet_in_g", "title_key": "LIBRARY_MINUET_IN_G"},
 ]
 
 func _ready() -> void:
@@ -618,6 +624,7 @@ func build_drawers() -> void:
 	library_title = label("LIBRARY_ODE_TO_JOY", 24)
 	library.add_child(library_title)
 	library.add_child(label("CLASSICS", 18))
+	library.add_child(label("BEGINNER_LIBRARY_NOTE", 14))
 	library_picker = OptionButton.new()
 	library_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	library_picker.fit_to_longest_item = false

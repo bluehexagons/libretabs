@@ -320,3 +320,29 @@ or third-party song search. Use the sources above in a curator/build pipeline:
 
 This approach can expand the available music substantially without changing the
 MVP's canonical MIDI contract, offline promise, or licensing boundary.
+
+## Beginner-first follow-up (2026-09-08)
+
+The first default set intentionally mixed recognizable themes with pieces of
+different difficulty. A follow-up review prioritized repertoire that a first-time
+guitar learner can approach immediately: one melodic line, a compact pitch range,
+mostly stepwise motion, common meter, and a melody recognizable without a long
+introduction. The additions are project-authored MIDI rather than downloaded
+performances or score encodings. The app marks them “Starter” so learners can
+choose an easier path without hiding the broader Classics set.
+
+| Added item | Why it fits an early learner | Rights/provenance check |
+| --- | --- | --- |
+| “Mary Had a Little Lamb” | U.S.-origin nursery melody with a three-note opening and very small range | The [Library of Congress record](https://www.loc.gov/item/2016766456/) places a notated version in a public-domain sheet-music collection; [historical notes](https://en.wikisource.org/wiki/Mary_Had_a_Little_Lamb) identify the 1830 publication history. |
+| “Frère Jacques” | Repeated four-note phrases make pulse and memorization approachable; its round form can support future ensemble lessons | [Wikisource provides public-domain French editions](https://fr.wikisource.org/wiki/Fr%C3%A8re_Jacques); the traditional melody is not copied from a modern arrangement. |
+| “Auld Lang Syne” | A globally familiar tune with a compact range and short, repeated phrases | [IMSLP identifies it as a traditional Scottish melody first published in 1799](https://imslp.org/wiki/Auld_lang_syne_%28Anonymous%29); the [Library of Congress overview](https://blogs.loc.gov/music/2018/12/auld-lang-syne-sharing-a-cup-of-kindness-with-old-friends/) documents its traditional tune history. |
+| “Yankee Doodle” | Adds a U.S.-familiar melody using short repeated phrases and a simple C-major teaching version | The [Library of Congress 1881 sheet-music record](https://www.loc.gov/item/2023841819/) states that its collection is public domain and free to use and reuse. |
+| Brahms, “Lullaby” (*Wiegenlied*, Op.49 No.4) | A familiar classical song in a gentle 3/4 pulse with a small melodic span | [IMSLP lists the work and public-domain score records](https://imslp.org/wiki/Wiegenlied_%28Brahms%2C_Johannes%29). |
+| Petzold, “Minuet in G,” BWV Anh.114 | A widely taught first classical piece with clear 3/4 phrasing; the author is labeled Petzold rather than repeating the historical Bach misattribution | [IMSLP identifies Christian Petzold and public-domain source scores](https://imslp.org/wiki/Minuet_in_G_Major_%28Pezold%2C_Christian%29); beginner pedagogy sources also describe its compact binary form and early-study use. |
+
+These choices are a teaching-oriented selection, not a claim that any song is
+literally liked by every listener. Religious, militaristic, seasonal, or
+historically sensitive items were not needed for this batch, so they were left
+out even when their underlying music may be public domain. The generated files
+remain CC0 project-authored data, and the source links above document the
+underlying work only; no third-party MIDI file is redistributed.

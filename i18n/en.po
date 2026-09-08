@@ -22,6 +22,9 @@ msgstr "Choose a built-in example"
 msgid "CLASSICS"
 msgstr "Classical & familiar melodies"
 
+msgid "BEGINNER_LIBRARY_NOTE"
+msgstr "Short starter pieces are marked “Starter”."
+
 msgid "CHOOSE_CLASSIC"
 msgstr "Choose a classic…"
 
@@ -42,6 +45,24 @@ msgstr "Twinkle, Twinkle Little Star · traditional"
 
 msgid "LIBRARY_THE_ENTERTAINER"
 msgstr "The Entertainer · Scott Joplin"
+
+msgid "LIBRARY_MARY_HAD_A_LITTLE_LAMB"
+msgstr "Starter · Mary Had a Little Lamb · American traditional"
+
+msgid "LIBRARY_FRERE_JACQUES"
+msgstr "Starter · Frère Jacques · French traditional"
+
+msgid "LIBRARY_AULD_LANG_SYNE"
+msgstr "Starter · Auld Lang Syne · Scottish traditional"
+
+msgid "LIBRARY_YANKEE_DOODLE"
+msgstr "Starter · Yankee Doodle · American traditional"
+
+msgid "LIBRARY_BRAHMS_LULLABY"
+msgstr "Starter · Lullaby · Johannes Brahms"
+
+msgid "LIBRARY_MINUET_IN_G"
+msgstr "Starter · Minuet in G · Christian Petzold"
 
 msgid "DEMO_0"
 msgstr "First melody"

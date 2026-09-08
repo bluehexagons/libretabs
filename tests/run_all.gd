@@ -87,13 +87,17 @@ func _initialize() -> void:
 	var song: SongDocument = imported.document
 	check(song.parts.size() == 2 and song.notes.size() == 19, "two pitched parts, nineteen notes")
 	check(song.measures.size() == 4, "four measures")
-	for name: String in ["ode_to_joy", "fur_elise", "spring", "canon_in_d", "twinkle", "the_entertainer"]:
+	for name: String in ["ode_to_joy", "fur_elise", "spring", "canon_in_d", "twinkle", "the_entertainer", "mary_had_a_little_lamb", "frere_jacques", "auld_lang_syne", "yankee_doodle", "brahms_lullaby", "minuet_in_g"]:
 		var library_import: MidiImport = parse(library_file(name))
 		check(library_import.error.is_empty(), "%s default library MIDI imports" % name)
 		check(library_import.document.parts.size() == 1 and library_import.document.notes.size() >= 8, "%s is a single-line practice excerpt" % name)
 		var library_projection: TabProjection = TabProjection.new()
 		library_projection.build(library_import.document, 0)
 		check(library_projection.placed == library_projection.eligible, "%s stays within the default guitar range" % name)
+	var auld_lang_syne: SongDocument = parse(library_file("auld_lang_syne")).document
+	check(auld_lang_syne.measures[0].numerator == 2 and auld_lang_syne.measures[0].denominator == 4, "Auld Lang Syne keeps its 2/4 meter")
+	var brahms_lullaby: SongDocument = parse(library_file("brahms_lullaby")).document
+	check(brahms_lullaby.measures[0].numerator == 3 and brahms_lullaby.measures[0].denominator == 4, "Brahms Lullaby keeps its 3/4 meter")
 	var score_layout: ScoreLayout = ScoreLayout.new()
 	score_layout.build(song)
 	var final_grid_note: Dictionary = {"start": song.measures[0].end - song.division / 4}
