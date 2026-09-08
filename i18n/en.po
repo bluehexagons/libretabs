@@ -403,6 +403,9 @@ msgstr "Next page"
 msgid "PAGE_NUMBER"
 msgstr "Page %d of %d"
 
+msgid "PAGE_NUMBER_COMPACT"
+msgstr "%d / %d"
+
 msgid "PAGE_PLAYBACK"
 msgstr "Go to playing page"
 

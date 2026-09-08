@@ -38,6 +38,7 @@ var importer: MidiImport
 var score: ScoreView
 var score_frame: ScoreFrame
 var fitting_layout: bool = false
+var tight_controls: bool = false
 var fit_hide_cue: bool = false
 var fit_hide_seek: bool = false
 var startup_help_enabled: bool = true
@@ -118,13 +119,17 @@ var menu_overlay: Control
 var menu_button: Button
 var menu_scroll: ScrollContainer
 var page_label: Label
-var page_navigation: HFlowContainer
+var page_navigation: HBoxContainer
+var page_previous: Button
+var page_next: Button
+var page_follow: Button
 var seek_navigation: HBoxContainer
 var view_picker: OptionButton
 var notation_picker: OptionButton
 var drawer: PanelContainer
 var drawer_body: VBoxContainer
 var drawer_title: Label
+var menu_close: Button
 var drawers: Dictionary = {}
 var opened_drawer: String = ""
 var scroll: ScrollContainer
@@ -194,7 +199,9 @@ func _ready() -> void:
 	load_demo(0)
 
 func pass_scroll_input(node: Node) -> void:
-	if node is OptionButton: node.clip_text = true
+	if node is OptionButton:
+		node.clip_text = true
+		node.add_child(OptionMenuFit.new())
 	if node is Control and not node is ScrollContainer and not node is Range and not node is LineEdit:
 		if node.mouse_filter == Control.MOUSE_FILTER_STOP: node.mouse_filter = Control.MOUSE_FILTER_PASS
 	for child: Node in node.get_children(): pass_scroll_input(child)
@@ -347,7 +354,8 @@ func build_ui() -> void:
 	var drawer_header: HFlowContainer = flow(menu_column)
 	menu_back = button("MENU_BACK", func() -> void: toggle_drawer("MENU"))
 	drawer_header.add_child(menu_back)
-	drawer_header.add_child(button("CLOSE", close_menu))
+	menu_close = button("CLOSE", close_menu)
+	drawer_header.add_child(menu_close)
 	menu_scroll = ScrollContainer.new()
 	menu_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	menu_scroll.follow_focus = true
@@ -406,15 +414,24 @@ func build_ui() -> void:
 	seek_label.tooltip_text = tr("SEEK_CONTINUOUS")
 	navigation.add_child(seek_label)
 
-	page_navigation = flow(panel)
-	page_navigation.add_child(button("PAGE_PREVIOUS", func() -> void: turn_page(-1)))
-	page_label = label("PAGE_NUMBER")
-	panel.add_child(page_label)
-	page_navigation.add_child(button("PAGE_NEXT", func() -> void: turn_page(1)))
-	var follow_button: Button = button("PAGE_FOLLOW", toggle_page_follow)
-	follow_button.toggle_mode = true
-	page_navigation.add_child(follow_button)
-	page_label.reparent(page_navigation)
+	page_navigation = HBoxContainer.new()
+	page_navigation.add_theme_constant_override("separation", 8)
+	panel.add_child(page_navigation)
+	page_previous = button("PAGE_PREVIOUS", func() -> void: turn_page(-1))
+	page_previous.icon = UIIcons.get_icon("PREVIOUS")
+	page_navigation.add_child(page_previous)
+	page_label = label("PAGE_NUMBER", 16)
+	page_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	page_label.clip_text = true
+	page_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	page_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	page_navigation.add_child(page_label)
+	page_next = button("PAGE_NEXT", func() -> void: turn_page(1))
+	page_next.icon = UIIcons.get_icon("NEXT")
+	page_navigation.add_child(page_next)
+	page_follow = button("PAGE_FOLLOW", toggle_page_follow)
+	page_follow.toggle_mode = true
+	page_navigation.add_child(page_follow)
 	page_navigation.hide()
 	# Keep play/pause reachable while the score and settings scroll on phones.
 	dock_margin = MarginContainer.new()
@@ -467,6 +484,7 @@ func build_ui() -> void:
 	speed_unit_layout.add_theme_constant_override("separation", 6)
 	speed_control.add_child(speed_unit_layout)
 	tempo_button = button("TEMPO", func() -> void: toggle_drawer("TEMPO"))
+	tempo_button.autowrap_mode = TextServer.AUTOWRAP_OFF
 	tempo_button.remove_meta("color_role")
 	tempo_button.theme_type_variation = "TempoDisplayButton"
 	tempo_button.custom_minimum_size.y = 48
@@ -917,7 +935,7 @@ func toggle_drawer(key: String) -> void:
 	drawer_title.text = tr(key)
 	menu_scroll.scroll_vertical = 0
 	responsive()
-	drawer.get_child(0).get_child(0).get_child(1).grab_focus()
+	menu_close.grab_focus()
 	if key == "WELCOME": welcome_practice.grab_focus()
 	reset_menu_scroll.call_deferred(key)
 	if key == "PRINT" and song != null:
@@ -1045,11 +1063,19 @@ func update_page_controls() -> void:
 	# current-note information; dropping this duplicate row keeps practice fixed.
 	cue.get_parent().visible = score.mode == "scroll" and not landscape and size.y >= 620 and not fit_hide_cue
 	seek_navigation.visible = score.mode == "scroll" and not landscape and not fit_hide_seek
-	page_label.text = tr("PAGE_NUMBER") % [score.page_index + 1, score.pages()]
-	page_navigation.get_child(0).disabled = score.page_index == 0
-	page_navigation.get_child(1).disabled = score.page_index == score.pages() - 1
-	page_navigation.get_child(2).set_pressed_no_signal(score.follow_pages)
-	page_navigation.get_child(2).text = tr("PAGE_FOLLOW_ACTIVE" if score.follow_pages else "PAGE_FOLLOW")
+	var small_navigation: bool = compact or controls_on_side or size.x < 900
+	page_label.text = tr("PAGE_NUMBER_COMPACT" if small_navigation else "PAGE_NUMBER") % [score.page_index + 1, score.pages()]
+	page_label.tooltip_text = tr("PAGE_NUMBER") % [score.page_index + 1, score.pages()]
+	for item: Button in [page_previous, page_next]:
+		item.text = "" if small_navigation else tr("PAGE_PREVIOUS" if item == page_previous else "PAGE_NEXT")
+		item.custom_minimum_size.x = 56
+		item.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	page_previous.disabled = score.page_index == 0
+	page_next.disabled = score.page_index == score.pages() - 1
+	# Follow playback remains available in Score view when vertical space is tight.
+	page_follow.visible = not small_navigation
+	page_follow.set_pressed_no_signal(score.follow_pages)
+	page_follow.text = tr("PAGE_FOLLOW_ACTIVE" if score.follow_pages else "PAGE_FOLLOW")
 
 func change_appearance(index: int) -> void:
 	appearance_mode = ["system", "light", "dark"][index]
@@ -1095,6 +1121,13 @@ func apply_scale(factor: float) -> void:
 	scale_labels(menu_overlay, factor)
 	scale_picker.select(0 if factor < 1.5 else (1 if factor < 2.0 else 2))
 	responsive()
+	if opened_drawer == "DISPLAY": reveal_scale_choice.call_deferred()
+
+func reveal_scale_choice() -> void:
+	# Wrapped explanations above the field change height with the font. Keep
+	# the selected size in view so the user can immediately adjust it again.
+	for _frame: int in range(3): await get_tree().process_frame
+	if scale_picker.is_visible_in_tree(): menu_scroll.ensure_control_visible(scale_picker)
 
 func responsive() -> void:
 	compact = size.y < 780 or (theme.default_font_size >= 30 and size.y < 1000)
@@ -1107,6 +1140,7 @@ func responsive() -> void:
 		effective_position = "bottom"
 	var side_dock: bool = effective_position in ["left", "right"]
 	controls_on_side = side_dock
+	tight_controls = not side_dock and size.y < 440
 	root_box.vertical = not side_dock
 	header.vertical = side_dock
 	apply_control_layout(effective_position)
@@ -1118,7 +1152,7 @@ func responsive() -> void:
 	if menu_tween != null: menu_tween.kill()
 	drawer.modulate.a = 1
 	var expanded_controls: bool = theme.default_font_size < 30
-	var header_icons: bool = side_dock or (not expanded_controls and size.x < 760)
+	var header_icons: bool = side_dock or size.x < 360 or (not expanded_controls and size.x < 760)
 	for item: Button in [songs_button, import_button, menu_button]:
 		var key: String = "SONG_MENU" if item == songs_button else ("IMPORT_MIDI" if item == import_button else "MENU")
 		item.text = "" if header_icons else tr(key)
@@ -1127,9 +1161,11 @@ func responsive() -> void:
 	import_button.visible = not side_dock
 	header_actions.alignment = BoxContainer.ALIGNMENT_CENTER if side_dock or size.x < 760 else (BoxContainer.ALIGNMENT_BEGIN if handedness == "left" else BoxContainer.ALIGNMENT_END)
 	tempo_button.icon = UIIcons.get_icon("TEMPO")
+	if tight_controls: tempo_button.icon = null
 	quick_row.visible = true
 	tempo_button.visible = true
-	metro_button.visible = expanded_controls
+	metro_button.visible = expanded_controls and not tight_controls and (not side_dock or size.y >= 320)
+	loop_button.visible = not tight_controls
 	stop_button.visible = false
 	update_play_control()
 	metro_button.text = tr("CLICK_ON" if metro_check.button_pressed else "CLICK_OFF") if side_dock or size.x >= 760 else ""
@@ -1150,7 +1186,10 @@ func responsive() -> void:
 	speed_unit_layout.add_theme_constant_override("separation", 0 if side_dock else 6)
 	speed_control.custom_minimum_size.x = (144 if expanded_controls else 152) if side_dock else (320 if size.x >= 760 else minf(288, size.x - 48))
 	speed_control.custom_minimum_size.y = 88 if side_dock else 64
-	main_speed.custom_minimum_size = Vector2(112 if side_dock else (176 if size.x >= 760 else 140), 40 if side_dock else 48)
+	main_speed.custom_minimum_size = Vector2(112 if side_dock else (176 if size.x >= 760 else minf(140, maxf(64, size.x - 220))), 40 if side_dock else 48)
+	if tight_controls:
+		speed_control.custom_minimum_size.x = 0
+		main_speed.custom_minimum_size.x = 64
 	tempo_button.custom_minimum_size.x = 0 if side_dock else 104
 	tempo_button.custom_minimum_size.y = 44 if side_dock else 48
 	brand_label.visible = not side_dock and size.x >= (760 if expanded_controls else 1100)
@@ -1164,13 +1203,16 @@ func responsive() -> void:
 	panel.add_theme_constant_override("separation", 4 if landscape or compact else 10)
 	cue.custom_minimum_size.x = minf(size.x - 64, 200 * theme.default_font_size / 20.0)
 	status.custom_minimum_size.y = 0
-	dock.vertical = side_dock or size.x < 900
+	dock.vertical = side_dock or (size.x < 900 and not tight_controls)
 	drawer.position = Vector2(0 if handedness == "left" else maxf(0, size.x - 560), 0)
 	drawer.size = Vector2(minf(size.x, 560), size.y)
 	if opened_drawer == "WELCOME":
 		var inset: float = 8 if size.x < 600 else 24
 		drawer.size = Vector2(minf(size.x - inset * 2, 720), minf(size.y - inset * 2, 760))
 		drawer.position = (size - drawer.size) / 2
+	var small_menu_header: bool = theme.default_font_size >= 30 and (size.x < 600 or size.y < 500)
+	menu_back.text = "" if small_menu_header else tr("MENU_BACK")
+	menu_close.text = "" if small_menu_header else tr("CLOSE")
 	adapt_flow(menu_overlay)
 	adapt_flow(root_box)
 	if score != null: score.refresh(); update_page_controls()
@@ -1232,12 +1274,12 @@ func content_height_budget() -> float:
 	return maxf(0, size.y - header_margin.get_combined_minimum_size().y - dock_margin.get_combined_minimum_size().y)
 
 func adapt_flow(node: Node) -> void:
-	if node is HFlowContainer or (node is BoxContainer and not node.vertical):
+	if node != page_navigation and (node is HFlowContainer or (node is BoxContainer and not node.vertical)):
 		for child: Node in node.get_children():
 			if child is Button:
 				child.clip_text = false
 				if child.text.is_empty():
-					child.custom_minimum_size.x = 120 if child == play_button and not controls_on_side else 56
+					child.custom_minimum_size.x = 120 if child == play_button and not controls_on_side and not tight_controls else 56
 					continue
 				var font: Font = child.get_theme_font("font")
 				var font_size: int = roundi(float(child.get_meta("base_font_size", 20)) * theme.default_font_size / 20.0)
@@ -1567,7 +1609,7 @@ func update_play_control(frame: int = -1) -> void:
 		play_button.icon = null
 		play_button.tooltip_text = tr("TIP_COUNT_BEAT") % beat
 	else:
-		play_button.text = "" if controls_on_side else tr(key)
+		play_button.text = "" if controls_on_side or tight_controls else tr(key)
 		play_button.icon = UIIcons.get_icon(key)
 		play_button.tooltip_text = tr("TIP_" + key)
 	if key != play_control_key:
@@ -1738,12 +1780,14 @@ func show_notices() -> void:
 	var text: TextEdit = TextEdit.new()
 	text.editable = false
 	text.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
-	text.custom_minimum_size = Vector2(270, 350)
+	text.custom_minimum_size = Vector2(160, 80)
 	text.text = "LibreTabs software: Apache-2.0\nOriginal music: CC0-1.0\n\n" + Engine.get_license_text() + "\n\n" + JSON.stringify(Engine.get_copyright_info(), "  ") + "\n\n" + JSON.stringify(Engine.get_license_info(), "  ") + "\n\n" + FileAccess.get_file_as_string("res://assets/fonts/Bravura-LICENSE.txt") + "\n\n" + FileAccess.get_file_as_string("res://assets/fonts/Nunito-LICENSE.txt")
 	popup.add_child(text)
 	add_child(popup)
 	popup.popup_centered_clamped(Vector2i(700, 550), 0.9)
+	get_viewport().size_changed.connect(popup.popup_centered_clamped.bind(Vector2i(700, 550), 0.9))
 	popup.confirmed.connect(popup.queue_free)
+	popup.close_requested.connect(popup.queue_free)
 
 func update_live_visual() -> void:
 	var notes: Array[Dictionary] = []

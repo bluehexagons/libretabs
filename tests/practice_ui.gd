@@ -14,6 +14,8 @@ func _initialize() -> void:
 	call_deferred("run")
 
 func run() -> void:
+	# Script-mode headless windows otherwise begin at an artificial 64×64.
+	root.size = Vector2i(1100, 850)
 	var app: Control = load("res://src/ui/main.tscn").instantiate() as Control
 	app.set("persist_preferences", false)
 	root.add_child(app)

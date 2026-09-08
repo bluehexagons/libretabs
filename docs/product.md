@@ -17,6 +17,9 @@ saved on the device; Menu → Quick start always opens it again and can re-enabl
 it. Starting practice dismisses the guide without automatically playing audio.
 Regular practice fits the paired score into the available screen height, hiding
 secondary context before proportionally reducing the music; menus may scroll.
+Compact manual pages use large previous/next arrows and a page counter on one
+row. Follow playback stays available in Score view. Very short windows retain
+Play and the tempo unit while secondary controls remain available in menus.
 
 The app is a teacher-shaped practice aid, not a replacement for a teacher, a full notation editor, or an automatic arranger that claims every MIDI file is playable.
 

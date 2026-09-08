@@ -12,7 +12,7 @@ func configure(input: SpinBox, less: Button, more: Button) -> void:
 	field = input
 	decrease = less
 	increase = more
-	add_theme_constant_override("separation", 8)
+	add_theme_constant_override("separation", 6)
 	field.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	field.custom_minimum_size = Vector2(80, 56)
 	# Replace the engine's small stacked arrows with two full-height targets.
