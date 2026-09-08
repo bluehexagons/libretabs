@@ -22,6 +22,9 @@ func parse(bytes: PackedByteArray) -> MidiImport:
 func fixture(name: String) -> PackedByteArray:
 	return FileAccess.get_file_as_bytes("res://content/fixtures/%s.mid" % name)
 
+func library_file(name: String) -> PackedByteArray:
+	return FileAccess.get_file_as_bytes("res://content/library/%s.mid" % name)
+
 func _initialize() -> void:
 	if "--self-test-failure" in OS.get_cmdline_user_args():
 		check(false, "intentional test-runner failure")
@@ -84,6 +87,13 @@ func _initialize() -> void:
 	var song: SongDocument = imported.document
 	check(song.parts.size() == 2 and song.notes.size() == 19, "two pitched parts, nineteen notes")
 	check(song.measures.size() == 4, "four measures")
+	for name: String in ["ode_to_joy", "fur_elise", "spring", "canon_in_d", "twinkle", "the_entertainer"]:
+		var library_import: MidiImport = parse(library_file(name))
+		check(library_import.error.is_empty(), "%s default library MIDI imports" % name)
+		check(library_import.document.parts.size() == 1 and library_import.document.notes.size() >= 8, "%s is a single-line practice excerpt" % name)
+		var library_projection: TabProjection = TabProjection.new()
+		library_projection.build(library_import.document, 0)
+		check(library_projection.placed == library_projection.eligible, "%s stays within the default guitar range" % name)
 	var score_layout: ScoreLayout = ScoreLayout.new()
 	score_layout.build(song)
 	var final_grid_note: Dictionary = {"start": song.measures[0].end - song.division / 4}

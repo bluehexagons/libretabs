@@ -56,8 +56,11 @@ var count_badge: Label
 var play_control_key: String = ""
 var part_picker: OptionButton
 var demo_picker: OptionButton
+var library_picker: OptionButton
 var active_demo: int = -1
 var pending_demo: int = -1
+var active_library: int = -1
+var pending_library: int = -1
 var library_title: Label
 var songs_button: Button
 var import_button: Button
@@ -159,6 +162,14 @@ var position_updates: int = 0
 var instrument_slider: HSlider
 var click_slider: HSlider
 var fixtures: Array[String] = ["first_melody", "changing_tempo", "format0", "held_notes", "dense_chord"]
+const BUILT_IN_LIBRARY: Array[Dictionary] = [
+	{"file": "ode_to_joy", "title_key": "LIBRARY_ODE_TO_JOY"},
+	{"file": "fur_elise", "title_key": "LIBRARY_FUR_ELISE"},
+	{"file": "spring", "title_key": "LIBRARY_SPRING"},
+	{"file": "canon_in_d", "title_key": "LIBRARY_CANON_IN_D"},
+	{"file": "twinkle", "title_key": "LIBRARY_TWINKLE"},
+	{"file": "the_entertainer", "title_key": "LIBRARY_THE_ENTERTAINER"},
+]
 
 func _ready() -> void:
 	host = HostAdapter.new()
@@ -196,7 +207,7 @@ func _ready() -> void:
 	pass_scroll_input(drawer)
 	for container: Control in [content_margin, header_margin, dock_margin]:
 		container.minimum_size_changed.connect(update_main_scroll)
-	load_demo(0)
+	load_library_item(0)
 
 func pass_scroll_input(node: Node) -> void:
 	if node is OptionButton:
@@ -604,8 +615,18 @@ func build_drawers() -> void:
 	var library: VBoxContainer = section("SONG_MENU")
 	library.add_child(button("OPEN", open_midi))
 	library.add_child(label("CURRENT_SONG", 18))
-	library_title = label("DEMO_0", 24)
+	library_title = label("LIBRARY_ODE_TO_JOY", 24)
 	library.add_child(library_title)
+	library.add_child(label("CLASSICS", 18))
+	library_picker = OptionButton.new()
+	library_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	library_picker.fit_to_longest_item = false
+	library_picker.clip_text = true
+	library_picker.custom_minimum_size.y = 56
+	for item: Dictionary in BUILT_IN_LIBRARY:
+		library_picker.add_item(tr(String(item.title_key)))
+	library_picker.item_selected.connect(load_library_item)
+	library.add_child(library_picker)
 	library.add_child(label("DEMOS", 18))
 	demo_picker = OptionButton.new()
 	demo_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
@@ -1381,17 +1402,37 @@ func set_activity(active: bool) -> void:
 
 func load_demo(index: int) -> void:
 	pause()
+	pending_demo = index
+	pending_library = -1
 	var bytes: PackedByteArray = FileAccess.get_file_as_bytes("res://content/fixtures/%s.mid" % fixtures[index])
 	_file_picked(tr("DEMO_%d" % index), bytes, "")
-	pending_demo = index
+
+func load_library_item(index: int) -> void:
+	if index < 0 or index >= BUILT_IN_LIBRARY.size(): return
+	pause()
+	pending_demo = -1
+	pending_library = index
+	var item: Dictionary = BUILT_IN_LIBRARY[index]
+	var bytes: PackedByteArray = FileAccess.get_file_as_bytes("res://content/library/%s.mid" % item.file)
+	_file_picked(tr(String(item.title_key)), bytes, "")
 
 func open_midi() -> void:
 	pause()
+	pending_demo = -1
+	pending_library = -1
 	host.pick()
 
 func update_song_picker() -> void:
-	demo_picker.select(active_demo)
-	if active_demo < 0: demo_picker.text = tr("CHOOSE_EXERCISE")
+	if active_demo >= 0:
+		demo_picker.select(active_demo)
+	else:
+		demo_picker.select(-1)
+		demo_picker.text = tr("CHOOSE_EXERCISE")
+	if active_library >= 0:
+		library_picker.select(active_library)
+	else:
+		library_picker.select(-1)
+		library_picker.text = tr("CHOOSE_CLASSIC")
 
 func _file_picked(name_value: String, bytes: PackedByteArray, error: String) -> void:
 	if not error.is_empty():
@@ -1399,7 +1440,6 @@ func _file_picked(name_value: String, bytes: PackedByteArray, error: String) -> 
 		if drawer.visible: close_menu()
 		return
 	import_name = name_value
-	pending_demo = -1
 	importer = MidiImport.new(bytes)
 	set_activity(true)
 	cancel_button.show()
@@ -1434,6 +1474,7 @@ func finish_import() -> void:
 	song_title.text = title
 	library_title.text = title
 	active_demo = pending_demo
+	active_library = pending_library
 	update_song_picker()
 	speed = 1.0
 	speed_picker.select(SPEEDS.find(1.0))

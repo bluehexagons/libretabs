@@ -19,6 +19,30 @@ msgstr "Open MIDI file"
 msgid "DEMOS"
 msgstr "Choose a built-in example"
 
+msgid "CLASSICS"
+msgstr "Classical & familiar melodies"
+
+msgid "CHOOSE_CLASSIC"
+msgstr "Choose a classic…"
+
+msgid "LIBRARY_ODE_TO_JOY"
+msgstr "Ode to Joy · Beethoven"
+
+msgid "LIBRARY_FUR_ELISE"
+msgstr "Für Elise · Beethoven"
+
+msgid "LIBRARY_SPRING"
+msgstr "Spring · Vivaldi"
+
+msgid "LIBRARY_CANON_IN_D"
+msgstr "Canon in D · Pachelbel"
+
+msgid "LIBRARY_TWINKLE"
+msgstr "Twinkle, Twinkle Little Star · traditional"
+
+msgid "LIBRARY_THE_ENTERTAINER"
+msgstr "The Entertainer · Scott Joplin"
+
 msgid "DEMO_0"
 msgstr "First melody"
 

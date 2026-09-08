@@ -5,6 +5,13 @@ from pathlib import Path
 import struct
 ROOT = Path(__file__).resolve().parents[1] / 'content' / 'fixtures'
 
+
+def meta(kind, text):
+    value = text.encode('ascii')
+    if len(value) >= 128:
+        raise ValueError('metadata text must fit the one-byte fixture VLQ')
+    return bytes([0xff, kind, len(value)]) + value
+
 def vlq(n):
     result = [n & 127]
     n >>= 7
@@ -22,6 +29,27 @@ def track(events, end=7680):
 
 def midi(tracks, fmt=1):
     return b'MThd'+struct.pack('>IHHH',6,fmt,len(tracks),480)+b''.join(tracks)
+
+
+def authored_melody(title, composer, pitches, durations, tempo=100):
+    if len(pitches) != len(durations):
+        raise ValueError(f'{title}: pitch and duration counts differ')
+    microseconds = round(60_000_000 / tempo)
+    conductor = [
+        (0, b'\xff\x51\x03' + microseconds.to_bytes(3, 'big')),
+        (0, b'\xff\x58\x04\x04\x02\x18\x08'),
+        (0, meta(0x03, title)),
+        (0, meta(0x01, composer)),
+    ]
+    events = []
+    cursor = 0
+    for pitch, duration in zip(pitches, durations):
+        events.extend([
+            (cursor, bytes([0x90, pitch, 88])),
+            (cursor + duration, bytes([0x80, pitch, 0])),
+        ])
+        cursor += duration
+    return midi([track(conductor + events, max(cursor, 1920))], 0)
 
 def melody(channel=0):
     pitches=[64,64,67,69,67,66,64,62,64,67,71,69,67,66,64]
@@ -52,3 +80,29 @@ if __name__=='__main__':
     (ROOT/'dense_chord.mid').write_bytes(midi([track(conductor+dense,3840)],0))
     (ROOT/'invalid_text.mid').write_bytes(midi([track([(0,b'\xff\x03\x03\x00\xffA')]+melody())],0))
     (ROOT/'short_header.mid').write_bytes(b'MTh')
+
+    library = ROOT.parent / 'library'
+    library.mkdir(parents=True, exist_ok=True)
+    library_songs = [
+        ('ode_to_joy', 'Ode to Joy - Beethoven', 'Beethoven',
+         [64, 64, 65, 67, 67, 65, 64, 62, 60, 60, 62, 64, 64, 62, 62],
+         [480, 480, 480, 480, 480, 480, 480, 480, 480, 480, 480, 480, 720, 240, 960]),
+        ('fur_elise', 'Fur Elise - Beethoven', 'Beethoven',
+         [76, 75, 76, 75, 76, 71, 74, 72, 69, 60, 64, 69, 71, 60, 64, 71, 72, 64,
+          76, 75, 76, 75, 76, 71, 74, 72, 69],
+         [240] * 27),
+        ('spring', 'Spring - Vivaldi', 'Vivaldi',
+         [64, 64, 64, 62, 64, 67, 69, 69, 69, 67, 69, 72, 71, 69, 67, 64],
+         [240, 240, 480, 240, 240, 480, 240, 240, 480, 240, 240, 480, 240, 240, 240, 960]),
+        ('canon_in_d', 'Canon in D - Pachelbel', 'Pachelbel',
+         [66, 69, 67, 66, 64, 62, 64, 66, 67, 69, 71, 69, 67, 66, 64, 62],
+         [480] * 15 + [960]),
+        ('twinkle', 'Twinkle Twinkle Little Star - traditional', 'Traditional',
+         [60, 60, 67, 67, 69, 69, 67, 65, 65, 64, 64, 62, 62, 60],
+         [480, 480, 480, 480, 480, 480, 960, 480, 480, 480, 480, 480, 480, 960]),
+        ('the_entertainer', 'The Entertainer - Scott Joplin', 'Scott Joplin',
+         [63, 64, 72, 69, 69, 72, 75, 76, 72, 69, 67, 69, 72, 69, 64, 63, 64],
+         [240, 240, 480, 480, 240, 240, 480, 480, 240, 240, 480, 480, 240, 240, 480, 240, 960]),
+    ]
+    for filename, title, composer, pitches, durations in library_songs:
+        (library / f'{filename}.mid').write_bytes(authored_melody(title, composer, pitches, durations))

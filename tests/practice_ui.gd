@@ -21,6 +21,8 @@ func run() -> void:
 	root.add_child(app)
 	for _frame: int in range(30): await process_frame
 	check(app.get("song") != null, "initial sample is ready")
+	check(app.get("library_picker").item_count == 6 and app.get("library_picker").selected == 0, "default classics library is visible and selected")
+	check(app.get("title") == TranslationServer.translate("LIBRARY_ODE_TO_JOY"), "default library opens with Ode to Joy")
 	check(app.get("opened_drawer") == "WELCOME" and app.get("startup_help_check").button_pressed, "first startup opens quick start with the opt-out enabled")
 	app.get("startup_help_check").button_pressed = false
 	check(not app.get("startup_help_enabled"), "startup help can be disabled")

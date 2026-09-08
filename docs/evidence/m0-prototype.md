@@ -8,15 +8,15 @@ Date: 2026-09-07. Scope: a testable Godot feasibility slice; **final M0 gate ope
 
 ## Try it
 
-[Managed browser preview](https://192.168.0.44:8443/games/agent/libretabs-prototype/) requires access to the managed network. A fresh load installs its offline worker before opening the app. Wait for the explicit cached message before disconnecting; clearing all site storage requires reconnecting. MIDI files are read locally and are not uploaded or saved as a library.
+[Managed browser preview](https://192.168.0.44:8443/games/agent/libretabs-prototype/) requires access to the managed network. A fresh load installs its offline worker before opening the app. Wait for the explicit cached message before disconnecting; clearing all site storage requires reconnecting. User-imported MIDI files are read locally and are not uploaded or persisted; the bundled Classics library is project-authored content shipped with the app.
 
-1. Press **Play** on First melody. Listen to the count-in, then follow the outlined tab numbers. A number tells you the fret; zero means an open string. The upper staff is a pitch/rhythm reference. Pause and resume, then Stop.
+1. Press **Play** on the default **Ode to Joy** melody. Listen to the count-in, then follow the outlined tab numbers. A number tells you the fret; zero means an open string. The upper staff is a pitch/rhythm reference. Pause and resume, then Stop. The Songs drawer contains six familiar Classics excerpts and the technical examples.
 2. Select **Speed 60%**. Pitch should stay the same while the phrase slows. Enable **Loop measures**, From 1 Through 2. Pause mid-loop and resume; subsequent repetitions should include both full measures. Try the measure slider and mute controls.
 3. Choose **Changing tempo**, then Reload example, to hear a source tempo change. Choose **Held notes** to inspect overlapping notes and incomplete tab placement. Unplaced notes remain audible and receive a visible `!`; the tab is a diagnosed approximation.
 4. Open an authored format-0 or format-1 `.mid` from `content/fixtures`. Opening `short_header.mid` should show an actionable error and preserve the previous song. The size limit is 256 KiB; richer controller/percussion playback is explicitly deferred.
 5. Try a narrow window, keyboard Tab/Space, Controls 200%, and Test long labels. Help and notices are below the score. Record confusing labels, lost focus, clipping, musical inconsistencies, and sound/cursor mismatch. Reset labels by toggling the same button and scale through its menu.
 
-The five selectable demonstrations are original evaluation data, not reviewed lessons. Source timing is preserved; the displayed rhythm and low-fret guitar assignment are simplified. See [decision 0002](../decisions/0002-m0-evaluation-build.md) for limits and exceptions to the future release contract.
+The five selectable demonstrations are original evaluation data, not reviewed lessons. The six bundled Classics entries are also project-authored MIDI excerpts of public-domain works; they are familiar repertoire samples, not musician-reviewed lessons or authoritative editions. Source timing is preserved; the displayed rhythm and low-fret guitar assignment are simplified. See [decision 0002](../decisions/0002-m0-evaluation-build.md) for limits and exceptions to the future release contract.
 
 ## Reproduce locally
 
