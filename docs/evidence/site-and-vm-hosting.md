@@ -3,6 +3,10 @@
 Date: 2026-09-07. This extends release preparation; it does not close M5 device,
 musical-review or learner gates.
 
+This is a pre-publication snapshot. The repository, GitHub release and Pages
+status changed afterward; see the [current project handoff](../project-status.md)
+and [Pages evidence](pages-player.md) for the later state.
+
 - LibreTabs `scripts/verify.py` passed: pinned engine/import/editor, core and UI
   checks (363 UI assertions), worker tests, Python tooling tests and app boot.
 - The new VM export helper installed the locked toolchain, exported real web

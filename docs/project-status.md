@@ -2,6 +2,9 @@
 
 Snapshot date: 2026-09-08. Current phase: evaluating public **prototype releases**.
 
+The [evidence records](evidence/README.md) are dated snapshots. This handoff is
+the current summary; older measurements remain useful for their stated scope.
+
 ## Current outcome
 
 LibreTabs has a runnable Godot practice player: local MIDI import, project-authored

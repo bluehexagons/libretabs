@@ -2,6 +2,10 @@
 
 Date: 2026-09-07
 
+This is a pre-publication snapshot. The first public prototype release and
+Pages publication happened afterward; see the [current project handoff](../project-status.md)
+for the present distribution status.
+
 Upstream latest stable actions were checked through GitHub's release API:
 checkout and upload-artifact 7.0.1, both using Node 24. Workflows use the resolved
 commit pins; actionlint 1.7.12 found no workflow errors. Monthly Dependabot checks
