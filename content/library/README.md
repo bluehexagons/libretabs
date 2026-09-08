@@ -1,4 +1,4 @@
-# Default Classics library
+# Default music library
 
 The MIDI files in this directory are project-authored, single-line teaching
 excerpts dedicated to the public domain under CC0-1.0. They are not downloaded
@@ -15,6 +15,12 @@ any item beginner-ready.
 Items marked “Starter” in the app are deliberately short, single-line excerpts
 with a narrow pitch range and simple rhythms. They are intended as first songs,
 not as authoritative complete arrangements of the underlying works.
+
+Musicians who contribute an original work for this library should include a
+readable note list or generator recipe, intended learner level, tuning/meter and
+range, and a statement that they own the material and dedicate it to CC0-1.0.
+Public-domain source works and any new arrangement should be identified
+separately. See [CONTRIBUTING.md](../../CONTRIBUTING.md) for the review path.
 
 | File | Work / composer | Source and public-domain basis | Practice treatment |
 | --- | --- | --- | --- |

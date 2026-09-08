@@ -1,6 +1,6 @@
 # Comparable projects and technical research
 
-Research date: 2026-09-05. “High quality” below means the public project shows a coherent feature set, current maintenance/release evidence, and a usable product direction; it is not a security or full code-quality audit. Licenses and capabilities must be rechecked at the exact revision before reuse.
+Research dates: 2026-09-05 to 2026-09-08. “High quality” below means the public project shows a coherent feature set, current maintenance/release evidence, and a usable product direction; it is not a security or full code-quality audit. Licenses and capabilities must be rechecked at the exact revision before reuse.
 
 ## Provisional-name decision and collision check
 

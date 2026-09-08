@@ -1,6 +1,6 @@
 # MVP roadmap
 
-Status: Godot retained; evaluation prototype and technical validation continue, updated 2026-09-07
+Status: Godot retained; evaluation prototype and technical validation continue, updated 2026-09-08
 
 ## Delivery strategy
 
@@ -11,6 +11,11 @@ Effort labels are relative: **S** is a focused issue, **M** is a multi-issue sli
 The [M0 evidence record](evidence/m0-prototype.md) distinguishes implemented experiments from remaining exit gates. A runnable slice does not mark all M0 issues complete.
 
 The [navigation update](decisions/0004-score-navigation.md) adds default scrolling, manual screen pages and density-aware mobile coordinates. The owner has retained Godot under [decision 0005](decisions/0005-godot-and-appearance.md). Screen-reader integration is deferred and no longer blocks UI/product work; physical-device timing and platform evidence remain outstanding.
+
+The prototype now includes a small project-authored music library with 12
+public-domain or traditional excerpts, six marked Starter. This is useful for
+evaluation and contribution review, but it is not the frozen compatibility
+corpus or musician-reviewed repertoire required by later milestones.
 
 ## M0 — validate the retained Godot implementation
 

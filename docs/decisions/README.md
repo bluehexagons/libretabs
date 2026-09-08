@@ -16,7 +16,17 @@ Copy `0000-template.md` to the next four-digit number and a short kebab-case tit
 
 [0006 — Player preferences and keyboard notes](0006-player-preferences-and-keyboard.md) defines the minimal navigation, device-preference schema, configurable count-in and both computer-keyboard layouts.
 
-[0010 — Control placement and handed layouts](0010-control-placement-and-handedness.md) defines persistent player-control edges, mirrored reach order and the short-landscape adaptation that preserves the complete score.
+[0007 — Complete offline releases and refresh updates](0007-offline-release-updates.md) defines the project-owned service-worker update and cache-validation path.
+
+[0008 — Friendly practice UI, motion preferences and printable music](0008-friendly-player-and-print.md) records the visual, motion, font and bounded print slice.
+
+[0009 — Capture view for instruction and streaming](0009-capture-view.md) defines the score-only presentation view and its shared transport boundary.
+
+[0010 — Control placement and handed layouts](0010-control-placement-and-handedness.md) records persistent control edges and handed reach order.
 
 [0011 — Prototype releases](0011-prototype-releases.md) defines manual packaging,
 initial distribution targets, versioned artifacts and separate promotion.
+
+[0012 — Instructional Pages site and VM player hosting](0012-project-site-and-vm-hosting.md) records the guide, managed player hosting and separate deployment paths.
+
+[0013 — Publish the web player on GitHub Pages](0013-pages-player.md) records the threaded Pages player and single-thread compatibility fallback.

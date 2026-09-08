@@ -1,31 +1,41 @@
 # LibreTabs
 
-[Play on GitHub Pages](https://bluehexagons.github.io/libretabs/play/) · [Practice guide and downloads](https://bluehexagons.github.io/libretabs/) · [Report a problem](https://github.com/bluehexagons/libretabs/issues)
+[Play on GitHub Pages](https://bluehexagons.github.io/libretabs/play/) · [Guide and downloads](https://bluehexagons.github.io/libretabs/) · [Report a problem](https://github.com/bluehexagons/libretabs/issues)
 
-LibreTabs is the provisional public name for a free, offline-friendly application that helps a person with no musical background start playing guitar. It will combine short guided lessons with a focused practice player that can turn suitable Standard MIDI Files into synchronized staff notation and E-standard guitar tablature. It is designed primarily for adults and teens; children should use it with a parent, guardian, or teacher. The name may be reconsidered before public alpha; the GitHub repository is `bluehexagons/libretabs`, while the managed checkout directory remains `litetabs`.
+LibreTabs is free software for learning guitar with short guided exercises and
+MIDI-based practice. It shows a selected melody as synchronized staff notation
+and E-standard guitar tablature. The current repository contains an evaluation
+prototype; the six-lesson course and several musical, timing, accessibility and
+device checks are still in progress.
 
-This repository contains an evaluation prototype. The practice player runs now; the six-lesson course and several musical/platform validation gates remain incomplete.
+The project is maintained by **bluehexagons**. It is operated without paid
+editions, subscriptions, advertising or data monetization. That describes the
+project's operation; the Apache-2.0 license still permits downstream commercial
+use and redistribution.
 
-The project is stewarded by **bluehexagons**.
+## Try the prototype
 
-LibreTabs is a non-commercial project: bluehexagons does not plan paid editions, subscriptions, advertising, or data monetization. This is a project policy, not a restriction on downstream users; the Apache-2.0 license continues to permit commercial use and redistribution.
+Versioned packages are published through [GitHub Releases](https://github.com/bluehexagons/libretabs/releases)
+when available. The [public guide](https://bluehexagons.github.io/libretabs/)
+contains the Pages players. A browser build may reload once while it prepares
+offline files and cross-origin isolation. The guide and release pages are the
+public entry points; the managed preview used during development is not a public
+launch URL.
 
-## Evaluate the prototype
+The Songs drawer includes 12 project-authored MIDI excerpts based on familiar
+public-domain works and traditional melodies. Six are marked **Starter** for
+shorter ranges and simpler rhythms. It also includes technical examples and
+opens local Standard MIDI File format 0 or 1 files. Imported files are read on
+the device and are not uploaded or saved by the prototype.
 
-Download versioned prototype packages from [GitHub Releases](https://github.com/bluehexagons/libretabs/releases) when available. Windows and Linux downloads work offline without a Godot installation. Browser releases will be linked here when the itch.io and website pages are published. Build preparation does not imply a public release exists yet.
+The player currently supports generated practice sound, basic guitar placement,
+staff/tab display, count-in, tempo, seeking, looping, keyboard reference notes,
+printing and a capture layout. Arrangements are simplified projections, not
+authoritative editions, and the built-in repertoire has not yet had musician
+review. The [M0 evidence record](docs/evidence/m0-prototype.md) lists measured
+results and open checks.
 
-The [public guide](https://bluehexagons.github.io/libretabs/) includes a threaded
-Pages player and a more broadly compatible single-thread fallback. The first visit
-may reload once while the service worker prepares cross-origin isolation and offline
-files. VM and itch.io links will appear when those versions are ready. The
-[hosting guide](docs/releases.md#github-pages-instructional-site) covers site updates
-and the included infra-tools deployment manifest.
-
-Press **Play**, adjust speed with the percentage/slider, and use **Songs** to choose one of the six familiar Classics excerpts, a technical example, or a local format-0/1 MIDI file (prototype limit: 256 KiB). User imports stay on your device. **Menu** contains playback, looping, display, keyboard, printing and capture settings.
-
-This is a technical evaluation: procedural sound, basic guitar placement, and a simplified staff reference. It does not yet include the six lessons or musician-reviewed arrangements; the Classics are project-authored repertoire samples. The [feedback update](docs/evidence/practice-feedback.md) adds a simpler phone-friendly view, larger text, separate volume sliders, and reduced idle work. Choose **Menu → Settings → Appearance & text** for Device setting, Light or Dark appearance and larger text. The [navigation update](docs/evidence/score-navigation.md) adds default smooth scrolling, manual pages (**Score view**), a clearer menu, and a fix for tiny controls on high-density phones. See [evaluation steps, measured results, and remaining gates](docs/evidence/m0-prototype.md).
-
-The [player foundation update](docs/evidence/player-foundation.md) adds saved practice preferences, clearer button feedback and centered score symbols. Use **Z X C V B N M ,** for piano-style white keys; **Help** lists accidentals and octave shortcuts. **Settings → Keyboard notes** offers the alternate A row. Held notes sound and appear at the playhead without recording or grading.
+## Run locally
 
 With the pinned Godot `4.7.2.stable.official.ed1daf0bf` installed:
 
@@ -34,75 +44,61 @@ python3 scripts/verify.py
 godot --path .
 ```
 
-For versioned web, Windows and Linux packages, follow the [release guide](docs/releases.md). It covers the pinned toolchain, manual build workflow, checksums, launch instructions, itch.io uploads and HTTPS website hosting. Release exports happen only when explicitly requested.
+For release packages, use the [release guide](docs/releases.md). For agent
+workflows and managed web exports, see [agentic development](docs/agentic-development.md).
 
-Please report bugs and confusing interactions through [GitHub Issues](https://github.com/bluehexagons/libretabs/issues), including the prototype version, device/browser, and reproduction steps. See [privacy](docs/privacy.md) and [private security reporting](SECURITY.md).
+## Contribute
 
-## Proposed MVP
+Start with a small, reviewable change. Read [Contributing](CONTRIBUTING.md),
+the [product specification](docs/product.md), and the [architecture](docs/architecture.md)
+before changing code or bundled content. Keep changes within a bounded roadmap
+issue, add focused tests when behavior changes, and describe what you checked.
 
-- Learn guitar and notation vocabulary through six short built-in lessons.
-- Import Standard MIDI File format 0 or 1 from the user's device.
-- Choose one pitched part (a MIDI track/channel pair) for guitar while retaining other parts as backing.
-- Produce a readable, non-destructive notation projection in treble or bass clef, always visible as a reference.
-- Generate primary E-standard tablature with explicit warnings for simplified or unplayable passages.
-- Listen, count in, slow down, seek, mute/solo, and loop measures while the score follows playback.
-- Run locally in a browser and as Godot desktop exports, without an account or server.
+### Contribute an original CC0 work
 
-Live microphone assessment, a non-grading volume-impulse step mode, a tuner, score editing, Guitar Pro/MusicXML import, alternate tunings, and full engraving are intentionally after MVP. The impulse mode is the first input feature to evaluate after the core release.
+Musicians may contribute original melodies, exercises or arrangements to the
+default library when they own the material and are willing to dedicate the
+submitted material to [CC0 1.0](LICENSES/CC0-1.0.txt). A useful submission
+includes:
 
-## Why Godot
+- the title, contributor credit, intended use, tuning, meter, pitch range and a
+  short difficulty note;
+- the MIDI plus a readable note/measure description or generator recipe, so the
+  material can be regenerated and reviewed;
+- a clear statement that the contributor owns the submitted music and any
+  arrangement, or has authority to dedicate it to CC0;
+- a provenance note in [the library record](content/library/README.md), with
+  source and license details for anything not entirely project-authored; and
+- the applicable import, guitar-placement and UI checks from
+  `python3 scripts/verify.py`.
 
-Godot is retained by [owner decision 0005](docs/decisions/0005-godot-and-appearance.md) for the custom practice UI and web/desktop delivery. Screen-reader integration is deferred; the remaining platform, audio and timing checks are still open. See [Architecture](docs/architecture.md) for the design and validation gates.
+Public-domain source music may be arranged for LibreTabs, but a downloaded MIDI,
+modern arrangement, recording, tab or score is not automatically CC0. Keep
+third-party material out of the default bundle until its exact license,
+attribution and modifications are recorded in [third-party provenance](third_party/README.md).
+Credit is welcome for CC0 contributions even when it is not required.
 
-## Planning documents
+## Project documents
 
+- [Project status](docs/project-status.md) — current prototype state and next work
 - [Product and MVP specification](docs/product.md)
 - [Technical architecture](docs/architecture.md)
-- [MVP roadmap and acceptance criteria](docs/mvp-roadmap.md)
-- [Agentic development workflow](docs/agentic-development.md)
-- [Comparable projects and technical research](docs/research.md)
-- [Planning handoff and readiness review](docs/project-status.md)
-- [MVP musical interpretation decisions](docs/decisions/0001-mvp-musical-contracts.md)
-- [Contribution guide](CONTRIBUTING.md)
+- [MVP roadmap](docs/mvp-roadmap.md)
+- [Research and source review](docs/research.md)
+- [Default music provenance](content/library/README.md)
+- [Release and hosting guide](docs/releases.md)
+- [Privacy in the prototype](docs/privacy.md)
+- [Decision records](docs/decisions/README.md)
 - [License scope](LICENSES/README.md)
-- [Instructions for coding agents](AGENTS.md)
+- [Security reporting](SECURITY.md)
 
-## Project values
+## License scope
 
-- Beginner language before expert shorthand.
-- Local-first and private by default.
-- Explain transformations and limitations instead of presenting guesses as facts.
-- One authoritative musical timeline shared by notation, tablature, audio, and the cursor.
-- Accessible, scalable, keyboard-operable UI with localization built into component boundaries.
-- Small permissively licensed dependencies with recorded provenance.
+- LibreTabs software, tests, scripts and configuration are licensed under the
+  [Apache License 2.0](LICENSE).
+- Project-authored documentation, lessons, illustrations, original music and
+  MIDI fixtures are dedicated under [CC0 1.0](LICENSES/CC0-1.0.txt).
+- Third-party work keeps its own license and provenance record; it is not
+  relicensed by being included in this repository.
 
-## Licensing
-
-LibreTabs uses a simple split:
-
-- Software and software configuration written for LibreTabs are licensed under the [Apache License 2.0](LICENSE).
-- Project-authored documentation, lesson text, illustrations, music, and test MIDI fixtures are dedicated under [CC0 1.0 Universal](LICENSES/CC0-1.0.txt). They may be reused without permission or attribution.
-- Third-party work keeps its own license and must be recorded before it is added.
-
-Copyright 2026 bluehexagons applies to the Apache-licensed software. Apache-2.0 grants everyone broad rights to use, modify, distribute, sublicense, and sell the software. “Non-commercial project” describes how bluehexagons operates LibreTabs; it does not add a non-commercial license condition. See [license scope](LICENSES/README.md) for the path-level policy.
-
-
-The player now offers warm/light and dark palettes, rounded or standard lettering,
-large icon-and-text controls, touch hold explanations, and finite transitions.
-**Menu → Make it yours** controls appearance, text and reduced motion; motion
-follows the browser setting until you override it. Hold an action button for help,
-use F1 on a focused control, or open Help for the keyboard and swipe shortcuts.
-
-**Menu → Print your music** creates A4 or US Letter pages of the selected part,
-with tabs, staff, or both and an optional measure range. Choose Prepare pages,
-then Save printable file. Open `libretabs-score.html` and choose Print / Save as
-PDF. The file is self-contained and works offline; it retains the prototype's
-notation limitations and includes arrangement notes. Exports are limited to
-24 music pages; use shorter ranges for longer songs. See
-[decision 0008](docs/decisions/0008-friendly-player-and-print.md).
-
-For instructional video or streaming, open **Menu → Capture & overlay**. Choose
-what music to show, the score size/position, and transparent, green-screen, or
-solid margins. F8 toggles the view; Escape or a click/tap returns to the player.
-Space continues to play/pause. The title is hidden by default. See
-[the capture decision](docs/decisions/0009-capture-view.md) for OBS setup boundaries.
+See [LICENSES/README.md](LICENSES/README.md) for the path-level policy.

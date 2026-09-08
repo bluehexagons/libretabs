@@ -22,6 +22,20 @@ A normal clone with the pinned toolchain is sufficient. Managed VM/worktree inst
 - Keep controls keyboard-operable, responsive, translatable, and understandable without prior music vocabulary.
 - Record new dependencies and assets in `third_party/README.md` before merge.
 
+## Music contributions
+
+Original melodies, exercises and arrangements are welcome for the default
+library. Include a readable source recipe or note list as well as the MIDI,
+identify the tuning, meter, range and intended learner level, and state that you
+own the submitted material and dedicate it to CC0-1.0. Add the source and
+license note to `content/library/README.md`.
+
+If the work is based on public-domain music, describe the source work and the
+new arrangement separately. Do not submit a downloaded MIDI, modern score,
+recording or tab just because it is easy to access. Third-party material needs
+an exact license, attribution, modification record and a row in
+`third_party/README.md`; it may not belong in the default CC0 library.
+
 Run the checks applicable to the change. Documentation-only work uses `git diff --check` and link/consistency review. The local and CI baseline for implementation is:
 
 ```bash
@@ -39,7 +53,7 @@ By contributing material you have the right to submit, you agree that:
 - software source, test source, scripts, and software configuration are provided under Apache-2.0; and
 - project-authored documentation, lesson text, illustrations, original music, and MIDI lesson/test data are dedicated under CC0-1.0.
 
-Put a file-specific notice on intentional exceptions and disclose all third-party origins, versions, modifications, licenses, and attribution requirements. Unknown-license and copyrighted commercial songs, tabs, samples, and MIDI files are not acceptable fixtures or examples. See `LICENSES/README.md` for the full path-level policy.
+Put a file-specific notice on intentional exceptions and disclose all third-party origins, versions, modifications, licenses, and attribution requirements. Unknown-license and copyrighted commercial songs, tabs, samples, and MIDI files are not acceptable fixtures or examples. See `LICENSES/README.md` for the full path-level policy. CC0 does not require credit, but a contributor name or source note is welcome when it helps learners or future maintainers understand the material.
 
 ## Review
 
