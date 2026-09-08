@@ -14,9 +14,10 @@ and updates the GitHub Pages guide and both browser players.
    version only when deliberately changing the version sequence. Keep **publish
    release** and **deploy Pages** enabled for the normal release.
 4. Wait for the workflow. Its release job verifies the source, exports every
-   package, uploads them to a draft, and publishes the prerelease only after all
-   assets upload. Its Pages job exports the threaded and compatibility players and
-   deploys the guide that names and links to that same version.
+   package, and retains the artifact. A separate write-scoped job uploads the
+   complete prerelease to a draft and publishes it only after all assets upload.
+   Its Pages job then exports the threaded and compatibility players and deploys
+   the guide that names and links to that same version.
 5. Open the published release and the [guide](https://bluehexagons.github.io/libretabs/)
    in a fresh browser profile. Check `/play/`, `/play-compatible/`, audio, reload,
    and one downloaded desktop package before sharing the version.
@@ -30,6 +31,10 @@ GitHub draft before choosing whether to retry with a new version.
 For a package-only review run, turn off both **publish release** and **deploy
 Pages**. The artifact is still built and retained, but no public release or
 versioned Pages link is created.
+
+The release job checks GitHub tags and draft or published releases before it
+downloads templates. An automatically selected version skips an interrupted
+draft's number; an entered occupied version stops immediately.
 
 ## Release notes
 

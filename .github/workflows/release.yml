@@ -39,13 +39,15 @@ jobs:
           persist-credentials: false
       - id: request
         name: Select version and release notes
-        run: python3 scripts/validate_release_request.py "${{ inputs.version }}" --notes-output "$RUNNER_TEMP/release-notes.md" --github-output "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/validate_release_request.py "${{ inputs.version }}" --repository "${{ github.repository }}" --notes-output "$RUNNER_TEMP/release-notes.md" --github-output "$GITHUB_OUTPUT"
   package:
     needs: prepare
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
-      contents: write
+      contents: read
     env:
       RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
     steps:
@@ -54,7 +56,9 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - name: Resolve release notes
-        run: python3 scripts/validate_release_request.py "$RELEASE_VERSION" --notes-output "$RUNNER_TEMP/release-notes.md"
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/validate_release_request.py "$RELEASE_VERSION" --repository "${{ github.repository }}" --notes-output "$RUNNER_TEMP/release-notes.md"
       - name: Install locked engine and release templates
         run: python3 scripts/install_toolchain.py --directory "$RUNNER_TEMP/godot" --templates
       - name: Verify release source
@@ -72,13 +76,34 @@ jobs:
           if-no-files-found: error
           compression-level: 0
           retention-days: 7
+  publish:
+    needs: [prepare, package]
+    if: inputs.publish_release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: libretabs-${{ needs.prepare.outputs.version }}
+          path: dist/${{ needs.prepare.outputs.version }}/
+      - name: Resolve release notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/validate_release_request.py "$RELEASE_VERSION" --repository "${{ github.repository }}" --notes-output "$RUNNER_TEMP/release-notes.md"
       - name: Publish GitHub prerelease
-        if: inputs.publish_release
         env:
           GH_TOKEN: ${{ github.token }}
         run: python3 scripts/publish_release.py github "dist/$RELEASE_VERSION" --notes "$RUNNER_TEMP/release-notes.md" --publish --execute
   pages:
-    needs: [prepare, package]
+    needs: [prepare, package, publish]
     if: inputs.deploy_pages && inputs.publish_release
     uses: ./.github/workflows/pages.yml
     with:

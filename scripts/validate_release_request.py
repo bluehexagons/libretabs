@@ -3,6 +3,7 @@
 """Resolve a prototype version and release notes before a release build."""
 import argparse
 from pathlib import Path
+import re
 import subprocess
 
 from release import ROOT, VERSION
@@ -36,6 +37,33 @@ def next_version(tags):
         return '0.0.1-prototype.1'
     latest, _ = max(tags)
     return f'{latest[0]}.{latest[1]}.{latest[2]}-prototype.{latest[3] + 1}'
+
+
+def next_available_version(tags, occupied_versions=()):
+    occupied = set(occupied_versions)
+    keys = [key for key, _ in tags] + [version_key(version) for version in occupied]
+    if keys:
+        latest = max(keys)
+        candidate = f'{latest[0]}.{latest[1]}.{latest[2]}-prototype.{latest[3] + 1}'
+    else:
+        candidate = '0.0.1-prototype.1'
+    while candidate in occupied:
+        candidate = next_version([(version_key(candidate), 'v' + candidate)])
+    return candidate
+
+
+def github_release_versions(repository):
+    if not re.fullmatch(r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', repository):
+        raise ValueError('GitHub repository must use OWNER/REPOSITORY')
+    result = subprocess.run(
+        ['gh', 'api', '--paginate', f'repos/{repository}/releases?per_page=100',
+         '--jq', '.[].tag_name'], text=True, stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
+    if result.returncode:
+        raise ValueError('Could not check existing GitHub releases before building')
+    return {tag[1:] for tag in result.stdout.splitlines()
+            if tag.startswith('v') and VERSION.fullmatch(tag[1:])}
 
 
 def generated_notes(version, root=ROOT):
@@ -87,10 +115,13 @@ MIDI reproductions and remove private filenames and personal details.
 '''
 
 
-def resolve(version='', root=ROOT):
+def resolve(version='', root=ROOT, occupied_versions=()):
     tags = release_tags(root)
-    resolved_version = version or next_version(tags)
+    occupied = set(occupied_versions) | {tag[1:] for _, tag in tags}
+    resolved_version = version or next_available_version(tags, occupied)
     version_key(resolved_version)
+    if resolved_version in occupied:
+        raise ValueError(f'Prototype version {resolved_version} already has a GitHub release or tag; choose a new version.')
     note_path = Path(root) / 'release' / 'notes' / f'{resolved_version}.md'
     if note_path.is_file() and not note_path.is_symlink():
         return resolved_version, note_path.read_text(), 'committed'
@@ -100,11 +131,13 @@ def resolve(version='', root=ROOT):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('version', nargs='?', default='', help='optional MAJOR.MINOR.PATCH-prototype.NUMBER')
+    parser.add_argument('--repository', help='check GitHub releases for this OWNER/REPOSITORY before building')
     parser.add_argument('--notes-output', type=Path, help='write the resolved Markdown notes here')
     parser.add_argument('--github-output', type=Path, help='append version and notes source for GitHub Actions')
     args = parser.parse_args()
     try:
-        version, notes, source = resolve(args.version)
+        occupied = github_release_versions(args.repository) if args.repository else set()
+        version, notes, source = resolve(args.version, occupied_versions=occupied)
     except (ValueError, subprocess.CalledProcessError) as error:
         parser.error(str(error))
     if args.notes_output:

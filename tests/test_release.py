@@ -74,6 +74,14 @@ class ReleaseTests(unittest.TestCase):
         ]
         self.assertEqual(release_request.next_version(tags), '0.1.0-prototype.3')
 
+    def test_automatic_release_version_skips_existing_drafts_and_tags(self):
+        tags = [(release_request.version_key('0.0.1-prototype.4'), 'v0.0.1-prototype.4')]
+        self.assertEqual(release_request.next_available_version(
+            tags, {'0.0.1-prototype.4', '0.0.1-prototype.5'}),
+            '0.0.1-prototype.6')
+        with self.assertRaisesRegex(ValueError, 'already has a GitHub release or tag'):
+            release_request.resolve('0.0.1-prototype.4', occupied_versions={'0.0.1-prototype.4'})
+
     def test_archive_layout_permissions_and_repeatability(self):
         with tempfile.TemporaryDirectory() as temporary:
             base = Path(temporary)
@@ -187,6 +195,11 @@ class ReleaseTests(unittest.TestCase):
         workflow = (ROOT / '.github/workflows/release.yml').read_text()
         self.assertIn('if: inputs.deploy_pages && inputs.publish_release', workflow)
         self.assertIn('uses: ./.github/workflows/pages.yml', workflow)
+        self.assertIn('--repository "${{ github.repository }}"', workflow)
+        package, publish = workflow.split('  publish:', 1)
+        self.assertIn('contents: read', package)
+        self.assertIn('contents: write', publish)
+        self.assertIn('actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c', publish)
 
     def test_promotion_rejects_inconsistent_inventory_and_symlinks(self):
         for case in ('extra', 'missing', 'duplicate', 'malformed', 'symlink', 'boolean_size', 'unknown_target'):

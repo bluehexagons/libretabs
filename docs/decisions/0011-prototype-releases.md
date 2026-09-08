@@ -17,12 +17,13 @@ current stable commit pins and monthly update proposals.
 Build scripts snapshot tracked committed files into an isolated project; stamp its
 version; use native release templates; attach complete license notices, source
 commit, toolchain identity and SHA-256 checksums; and refuse output replacement.
-Publishing reuses those packages. The normal one-action path uploads the complete
-release to a draft and then publishes its GitHub prerelease after all assets pass.
-It also invokes the Pages workflow to deploy the guide and both browser players
-for that version. Turning off both publication and Pages deployment leaves only a
-seven-day artifact for package review. itch.io and VM promotion remain separate
-operator actions.
+Publishing reuses those packages. The normal one-action path builds with a
+read-only token, then uses a separate write-scoped job to upload the complete
+release to a draft and publish its GitHub prerelease after all assets pass. It also
+invokes the Pages workflow to deploy the guide and both browser players for that
+version. Turning off both publication and Pages deployment leaves only a seven-day
+artifact for package review. itch.io and VM promotion remain separate operator
+actions.
 
 Retain threaded web audio for the evaluated performance characteristics. Website
 hosting must provide HTTPS and COOP/COEP; itch.io must enable SharedArrayBuffer and
