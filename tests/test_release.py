@@ -183,6 +183,11 @@ class ReleaseTests(unittest.TestCase):
         self.assertIn('window.location.reload();', shell)
         self.assertIn('progressive_web_app/ensure_cross_origin_isolation_headers=true', presets)
 
+    def test_package_only_release_cannot_deploy_an_unpublished_pages_link(self):
+        workflow = (ROOT / '.github/workflows/release.yml').read_text()
+        self.assertIn('if: inputs.deploy_pages && inputs.publish_release', workflow)
+        self.assertIn('uses: ./.github/workflows/pages.yml', workflow)
+
     def test_promotion_rejects_inconsistent_inventory_and_symlinks(self):
         for case in ('extra', 'missing', 'duplicate', 'malformed', 'symlink', 'boolean_size', 'unknown_target'):
             with self.subTest(case=case), tempfile.TemporaryDirectory() as temporary:

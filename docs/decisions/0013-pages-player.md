@@ -15,11 +15,13 @@ less consistent for audio response. It is a supported launch fallback, not the
 reference timing build. Both use separate service-worker scopes and local storage
 origins. Neither embeds third-party content or adds application networking.
 
-The manual Pages workflow builds both exports from the checksum-locked Godot
-toolchain, then publishes them with the static guide. It does not run on ordinary
-pushes, tags or schedules. A complete Pages artifact contains only the guide and
-the two validated exports. VM and itch.io builds remain useful alternate hosts;
-server-supplied isolation headers avoid the first-visit worker bootstrap.
+The reusable Pages workflow builds both exports from the checksum-locked Godot
+toolchain, then publishes them with the static guide. **Release LibreTabs** calls
+it for a normal release; **Deploy GitHub Pages** can run it on its own for a
+guide/player refresh. It does not run on ordinary pushes, tags, or schedules. A
+complete Pages artifact contains only the guide and the two validated exports. VM
+and itch.io builds remain useful alternate hosts; server-supplied isolation headers
+avoid the first-visit worker bootstrap.
 
 Test a fresh browser profile, first-load reload, `crossOriginIsolated`, update,
 offline restart, both player variants, mobile browsers and audio latency on the

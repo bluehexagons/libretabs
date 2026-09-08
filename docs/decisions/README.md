@@ -25,7 +25,8 @@ Copy `0000-template.md` to the next four-digit number and a short kebab-case tit
 [0010 — Control placement and handed layouts](0010-control-placement-and-handedness.md) records persistent control edges and handed reach order.
 
 [0011 — Prototype releases](0011-prototype-releases.md) defines manual packaging,
-initial distribution targets, versioned artifacts and separate promotion.
+initial distribution targets, versioned artifacts, GitHub prerelease publication,
+and the linked Pages deployment.
 
 [0012 — Instructional Pages site and VM player hosting](0012-project-site-and-vm-hosting.md) records the guide, managed player hosting and separate deployment paths.
 

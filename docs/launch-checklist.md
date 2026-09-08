@@ -12,12 +12,13 @@ untested platforms and known limitations visible in release notes. The
 - [ ] Review tracked files/history and notices before publication. Do not include
   private MIDI, credentials or local configuration. Record any newly bundled
   third-party asset's provenance and license.
-- [x] Choose a fresh `MAJOR.MINOR.PATCH-prototype.NUMBER`, complete its release
-  notes, and pass `python3 scripts/verify.py` on the committed source.
-- [ ] Build through the manual release workflow. For device evaluation before
-  publication, choose `build-only` or `create-draft`, then download and checksum
-  the exact artifacts. Choose `publish-prerelease` only when the documented known
-  limits and available evidence are ready to be public.
+- [x] Commit the intended `main` revision and pass `python3 scripts/verify.py`.
+  A curated `release/notes/VERSION.md` is optional; without one the release
+  workflow generates notes from commits since the preceding prototype tag.
+- [ ] Run **Actions → Release LibreTabs** with the version blank for the next
+  prototype number. Keep publication and Pages deployment enabled for a normal
+  public release. For package-only device evaluation, turn off both and download
+  the retained artifact to verify its checksums.
 
 ## Evaluate the core journey
 
@@ -39,9 +40,9 @@ audio device, version, result and known issues. Missing hardware is an open chec
 
 ## Publish and verify links
 
-- [x] Publish the reviewed GitHub prerelease with its matching notes and checksums,
-  either through the workflow's `publish-prerelease` action or by publishing its
-  draft in GitHub. Keep a previous approved artifact available for rollback.
+- [x] Publish the reviewed GitHub prerelease with matching notes and checksums
+  through **Release LibreTabs**. Keep a previous approved artifact available for
+  rollback.
 - [ ] Configure the VM and itch destinations, deploy the approved version and
   repeat the core browser checks on the real destinations.
 - [x] Enable GitHub Pages with GitHub Actions; the [public guide](https://bluehexagons.github.io/libretabs/)
@@ -49,7 +50,8 @@ audio device, version, result and known issues. Missing hardware is an open chec
 - [ ] Test the Pages threaded and compatibility players in a fresh profile,
   including first-load reload, audio, `crossOriginIsolated` and offline restart.
 - [ ] Set tested HTTPS `PLAYER_URL` and `ITCH_URL` values, then run
-  **Publish project guide** to add the hosted player links.
+  **Deploy GitHub Pages** to add the hosted-player links without making another
+  package release.
 - [ ] Open the public site in a signed-out browser. Check downloads,
   browser play, instructions, issues and security-report links.
 - [ ] Record the release commit, public URLs, remaining limits and feedback owner

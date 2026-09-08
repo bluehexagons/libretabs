@@ -15,7 +15,7 @@ on:
         default: true
         type: boolean
       deploy_pages:
-        description: 'Build and deploy the guide and both browser players to GitHub Pages'
+        description: 'Build and deploy the guide and both browser players to GitHub Pages (requires publishing the release)'
         required: true
         default: true
         type: boolean
@@ -79,7 +79,7 @@ jobs:
         run: python3 scripts/publish_release.py github "dist/$RELEASE_VERSION" --notes "$RUNNER_TEMP/release-notes.md" --publish --execute
   pages:
     needs: [prepare, package]
-    if: inputs.deploy_pages
+    if: inputs.deploy_pages && inputs.publish_release
     uses: ./.github/workflows/pages.yml
     with:
       release_version: ${{ needs.prepare.outputs.version }}

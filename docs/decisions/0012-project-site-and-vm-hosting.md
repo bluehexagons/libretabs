@@ -7,7 +7,8 @@ It links to the owner-operated VM player and itch.io once their public URLs are
 available. The original decision kept the threaded Godot export on hosts that
 supply COOP/COEP directly. [Decision 0013](0013-pages-player.md) now also publishes
 it on Pages using the existing PWA service worker, with a single-thread fallback.
-Site deployment remains manual and independent of release-package builds.
+Normal Pages deployment is now invoked by the release workflow; **Deploy GitHub
+Pages** remains available for a guide/player refresh without a package release.
 
 LibreTabs declares an additive infra-tools version-1 `godot-web` component. Its
 application-owned export script pins the engine/templates and works from staged

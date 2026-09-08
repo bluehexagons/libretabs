@@ -22,8 +22,14 @@ and updates the GitHub Pages guide and both browser players.
    and one downloaded desktop package before sharing the version.
 
 The workflow creates downloadable workflow artifacts for seven days. A failed job
-does not overwrite a package or published release; inspect any resulting GitHub
-draft before choosing whether to retry with a new version.
+does not overwrite a package or published release. If Pages fails after the
+prerelease is public, the previous Pages deployment remains live; fix the failure
+and run **Deploy GitHub Pages** with that published version. Inspect any resulting
+GitHub draft before choosing whether to retry with a new version.
+
+For a package-only review run, turn off both **publish release** and **deploy
+Pages**. The artifact is still built and retained, but no public release or
+versioned Pages link is created.
 
 ## Release notes
 
