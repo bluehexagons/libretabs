@@ -25,7 +25,7 @@ is available on the managed network. It is not a public launch URL.
   packages. Desktop packages use official release templates, not the editor.
   Checksums, notices and reviewed release notes accompany versioned releases.
 - The first public evaluation prerelease,
-  [`0.0.1-prototype.2`](https://github.com/bluehexagons/libretabs/releases/tag/v0.0.1-prototype.2),
+  [`0.0.1-prototype.3`](https://github.com/bluehexagons/libretabs/releases/tag/v0.0.1-prototype.3),
   was built and published by the manual workflow. Its public web, Windows, Linux,
   manifest, and checksum assets were downloaded and their SHA-256 values verified.
 - The repository is public. The [instructional/download site](https://bluehexagons.github.io/libretabs/)

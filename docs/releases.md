@@ -55,7 +55,7 @@ Before dispatch, choose an unused version and copy `release/notes/TEMPLATE.md` t
 `release/notes/VERSION.md`, replacing `VERSION` with that exact value. Edit the
 notes with actual changes/test evidence and commit. Supply the same version in
 the workflow: use `MAJOR.MINOR.PATCH-prototype.NUMBER`, with no leading `v`.
-`0.0.1-prototype.2` is already published; a subsequent build needs a new number
+`0.0.1-prototype.3` is already published; a subsequent build needs a new number
 and its own committed notes. Choose `build-only` for a
 seven-day CI artifact, `create-draft` for a private GitHub draft, or
 `publish-prerelease` to publish publicly after the build and uploads pass. Public
