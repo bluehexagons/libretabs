@@ -1,12 +1,30 @@
 # SPDX-License-Identifier: Apache-2.0
-name: Publish project guide
+name: Deploy GitHub Pages
 on:
+  workflow_call:
+    inputs:
+      release_version:
+        description: 'Version displayed in the guide and linked from downloads'
+        required: false
+        default: ''
+        type: string
+      deploy:
+        description: 'Deploy after building the Pages artifact'
+        required: false
+        default: true
+        type: boolean
   workflow_dispatch:
     inputs:
-      publish:
-        description: 'Deploy the guide to Pages (off builds a preview artifact only)'
-        type: boolean
+      release_version:
+        description: 'Optional published prototype version shown in the guide'
+        required: false
+        default: ''
+        type: string
+      deploy:
+        description: 'Deploy the guide and players (off builds a preview artifact only)'
+        required: true
         default: true
+        type: boolean
 permissions:
   contents: read
 concurrency:
@@ -33,6 +51,7 @@ jobs:
         env:
           PLAYER_URL: ${{ vars.PLAYER_URL }}
           ITCH_URL: ${{ vars.ITCH_URL }}
+          RELEASE_VERSION: ${{ inputs.release_version }}
         run: |
           python3 scripts/build_site.py \
             --threaded-player "$RUNNER_TEMP/pages-threaded" \
@@ -42,7 +61,7 @@ jobs:
           path: dist/site
           retention-days: 1
   deploy:
-    if: inputs.publish
+    if: inputs.deploy
     needs: build
     runs-on: ubuntu-24.04
     timeout-minutes: 5

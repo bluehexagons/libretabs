@@ -5,12 +5,14 @@ from pathlib import Path
 import argparse
 import html
 import os
+import re
 import shutil
 import stat
 import tempfile
 from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
+VERSION = re.compile(r'\d+\.\d+\.\d+-prototype\.\d+\Z')
 
 
 def player_link(url, label):
@@ -43,7 +45,16 @@ def copy_player(source, destination):
     shutil.copytree(source, destination)
 
 
-def build(output, player_url='', itch_url='', threaded_player=None, compatibility_player=None):
+def release_download_url(version):
+    if not version:
+        return 'https://github.com/bluehexagons/libretabs/releases'
+    if not VERSION.fullmatch(version):
+        raise ValueError('Release version must use MAJOR.MINOR.PATCH-prototype.NUMBER')
+    return f'https://github.com/bluehexagons/libretabs/releases/tag/v{version}'
+
+
+def build(output, player_url='', itch_url='', threaded_player=None, compatibility_player=None,
+          release_version=''):
     output = output.absolute()
     if output.exists() or output.is_symlink():
         raise FileExistsError(f'Refusing to replace existing site: {output}')
@@ -54,6 +65,9 @@ def build(output, player_url='', itch_url='', threaded_player=None, compatibilit
                                    or source.resolve() in output.resolve().parents):
             raise ValueError('Site output cannot be inside a player export')
     page = (ROOT / 'site/index.html').read_text()
+    version_label = release_version or 'current source build'
+    page = page.replace('{{RELEASE_VERSION}}', html.escape(version_label))
+    page = page.replace('{{RELEASE_DOWNLOAD_URL}}', release_download_url(release_version))
     bundled = threaded_player is not None
     page = page.replace('{{PAGES_NAV}}', '<a href="play/">Play</a>' if bundled else '')
     page = page.replace('{{PAGES_PLAYER_LINK}}', '<a class="button" href="play/">Play on GitHub Pages</a>' if bundled else '')
@@ -95,7 +109,8 @@ if __name__ == '__main__':
     parser.add_argument('--output', type=Path, default=ROOT / 'dist/site')
     parser.add_argument('--threaded-player', type=Path)
     parser.add_argument('--compatibility-player', type=Path)
+    parser.add_argument('--release-version', default=os.environ.get('RELEASE_VERSION', ''))
     args = parser.parse_args()
     build(args.output, os.environ.get('PLAYER_URL', ''), os.environ.get('ITCH_URL', ''),
-          args.threaded_player, args.compatibility_player)
+          args.threaded_player, args.compatibility_player, args.release_version)
     print(args.output)

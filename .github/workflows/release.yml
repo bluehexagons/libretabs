@@ -1,42 +1,60 @@
 # SPDX-License-Identifier: Apache-2.0
-name: Prepare prototype release
-run-name: Prepare LibreTabs ${{ inputs.version }}
+name: Release LibreTabs
+run-name: Release LibreTabs ${{ inputs.version || 'next prototype' }}
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'MAJOR.MINOR.PATCH-prototype.NUMBER (no leading v)'
-        required: true
+        description: 'Optional MAJOR.MINOR.PATCH-prototype.NUMBER; blank selects the next prototype version'
+        required: false
+        default: ''
         type: string
-      release_action:
-        description: 'After a successful build'
+      publish_release:
+        description: 'Publish the GitHub prerelease after all packages upload'
         required: true
-        default: build-only
-        type: choice
-        options:
-          - build-only
-          - create-draft
-          - publish-prerelease
+        default: true
+        type: boolean
+      deploy_pages:
+        description: 'Build and deploy the guide and both browser players to GitHub Pages'
+        required: true
+        default: true
+        type: boolean
 permissions:
   contents: read
 concurrency:
-  group: prepare-prototype-release
+  group: release-libretabs
   cancel-in-progress: false
 jobs:
-  package:
+  prepare:
     if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.request.outputs.version }}
+      notes_source: ${{ steps.request.outputs.notes_source }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - id: request
+        name: Select version and release notes
+        run: python3 scripts/validate_release_request.py "${{ inputs.version }}" --notes-output "$RUNNER_TEMP/release-notes.md" --github-output "$GITHUB_OUTPUT"
+  package:
+    needs: prepare
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
       contents: write
     env:
-      RELEASE_VERSION: ${{ inputs.version }}
+      RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
-      - name: Validate version before downloading tools
-        run: python3 scripts/validate_release_request.py "$RELEASE_VERSION"
+      - name: Resolve release notes
+        run: python3 scripts/validate_release_request.py "$RELEASE_VERSION" --notes-output "$RUNNER_TEMP/release-notes.md"
       - name: Install locked engine and release templates
         run: python3 scripts/install_toolchain.py --directory "$RUNNER_TEMP/godot" --templates
       - name: Verify release source
@@ -49,18 +67,24 @@ jobs:
         run: python3 scripts/release.py --version "$RELEASE_VERSION"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: libretabs-${{ inputs.version }}
-          path: dist/${{ inputs.version }}/
+          name: libretabs-${{ needs.prepare.outputs.version }}
+          path: dist/${{ needs.prepare.outputs.version }}/
           if-no-files-found: error
           compression-level: 0
           retention-days: 7
-      - name: Create draft GitHub prerelease
-        if: inputs.release_action == 'create-draft'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: python3 scripts/publish_release.py github "dist/$RELEASE_VERSION" --notes "release/notes/$RELEASE_VERSION.md" --execute
       - name: Publish GitHub prerelease
-        if: inputs.release_action == 'publish-prerelease'
+        if: inputs.publish_release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 scripts/publish_release.py github "dist/$RELEASE_VERSION" --notes "release/notes/$RELEASE_VERSION.md" --publish --execute
+        run: python3 scripts/publish_release.py github "dist/$RELEASE_VERSION" --notes "$RUNNER_TEMP/release-notes.md" --publish --execute
+  pages:
+    needs: [prepare, package]
+    if: inputs.deploy_pages
+    uses: ./.github/workflows/pages.yml
+    with:
+      release_version: ${{ needs.prepare.outputs.version }}
+      deploy: true
+    permissions:
+      contents: read
+      pages: write
+      id-token: write

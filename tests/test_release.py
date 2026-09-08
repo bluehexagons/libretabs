@@ -20,6 +20,8 @@ release = module('release')
 publish = module('publish_release')
 installer = module('install_toolchain')
 prepare_export = module('prepare_export')
+sys.modules['release'] = release
+release_request = module('validate_release_request')
 
 class ReleaseTests(unittest.TestCase):
     def test_export_presets_embed_the_source_bridge(self):
@@ -38,7 +40,7 @@ class ReleaseTests(unittest.TestCase):
             self.assertIsNone(release.VERSION.fullmatch(version))
         self.assertIsNotNone(release.VERSION.fullmatch('0.1.0-prototype.1'))
 
-    def test_release_request_reports_actionable_version_and_notes_errors(self):
+    def test_release_request_resolves_versions_and_generates_missing_notes(self):
         script = ROOT / 'scripts' / 'validate_release_request.py'
         invalid = subprocess.run(
             [sys.executable, script, 'v0.1.0'], text=True,
@@ -48,19 +50,29 @@ class ReleaseTests(unittest.TestCase):
         self.assertIn("no leading 'v'", invalid.stdout)
         self.assertIn('0.0.1-prototype.1', invalid.stdout)
 
-        missing = subprocess.run(
-            [sys.executable, script, '99.99.99-prototype.99'], text=True,
-            stdout=subprocess.PIPE, stderr=subprocess.STDOUT
-        )
-        self.assertNotEqual(missing.returncode, 0)
-        self.assertIn('Missing release notes:', missing.stdout)
+        with tempfile.TemporaryDirectory() as temporary:
+            generated = Path(temporary) / 'notes.md'
+            missing = subprocess.run(
+                [sys.executable, script, '99.99.99-prototype.99', '--notes-output', generated], text=True,
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+            )
+            self.assertEqual(missing.returncode, 0, missing.stdout)
+            self.assertIn('using generated release notes', missing.stdout)
+            self.assertIn('# LibreTabs 99.99.99-prototype.99', generated.read_text())
 
         valid = subprocess.run(
             [sys.executable, script, '0.0.1-prototype.1'], text=True,
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT
         )
         self.assertEqual(valid.returncode, 0, valid.stdout)
-        self.assertIn('Release request is valid', valid.stdout)
+        self.assertIn('using committed release notes', valid.stdout)
+
+    def test_next_release_version_advances_the_latest_prototype_tag(self):
+        tags = [
+            (release_request.version_key('0.0.1-prototype.3'), 'v0.0.1-prototype.3'),
+            (release_request.version_key('0.1.0-prototype.2'), 'v0.1.0-prototype.2'),
+        ]
+        self.assertEqual(release_request.next_version(tags), '0.1.0-prototype.3')
 
     def test_archive_layout_permissions_and_repeatability(self):
         with tempfile.TemporaryDirectory() as temporary:

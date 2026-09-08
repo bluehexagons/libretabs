@@ -5,7 +5,7 @@ import tempfile
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
-from build_site import build, copy_player, player_link
+from build_site import build, copy_player, player_link, release_download_url
 
 
 class SiteTests(unittest.TestCase):
@@ -18,8 +18,21 @@ class SiteTests(unittest.TestCase):
             self.assertNotIn('{{', text)
             self.assertNotIn('href=""', text)
             self.assertIn('Evaluation prototype', text)
+            self.assertIn('current source build', text)
             with self.assertRaises(FileExistsError):
                 build(output)
+
+            versioned = Path(temp) / 'versioned'
+            build(versioned, release_version='0.0.1-prototype.4')
+            page = (versioned / 'index.html').read_text()
+            self.assertIn('Evaluation prototype 0.0.1-prototype.4', page)
+            self.assertIn('releases/tag/v0.0.1-prototype.4', page)
+
+    def test_release_link_is_versioned_and_validated(self):
+        self.assertEqual(release_download_url('0.0.1-prototype.4'),
+                         'https://github.com/bluehexagons/libretabs/releases/tag/v0.0.1-prototype.4')
+        with self.assertRaises(ValueError):
+            release_download_url('version four')
 
     def test_optional_links_are_validated_and_escaped(self):
         for url in ('javascript:alert(1)', 'http://example.com', 'https://a:b@example.com',

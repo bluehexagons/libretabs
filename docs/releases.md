@@ -1,20 +1,68 @@
-# Prototype builds and releases
+# Releasing a prototype
 
-The initial distribution targets are browser play on itch.io and an owner-operated
-HTTPS website, plus unsigned Windows/Linux x86_64 downloads on GitHub Releases and
-itch.io. GitHub hosts source and downloadable web ZIPs. GitHub Pages hosts the
-guide, a threaded PWA player, and a single-thread compatibility player. Direct
-hosts still provide the most robust COOP/COEP setup for the threaded build.
-Android and additional architectures remain future targets, not advertised support.
+LibreTabs releases are manual so ordinary commits do not pay for multi-platform
+exports. The standard path is one GitHub Actions run: it tests the source, builds
+the web, Windows x86_64, and Linux x86_64 packages, publishes a GitHub prerelease,
+and updates the GitHub Pages guide and both browser players.
 
-## Build inputs
+## Release from GitHub Actions
 
-`release/toolchain.json` pins the engine and official template archive by SHA-256.
-`scripts/install_toolchain.py` verifies downloads before extraction and installs
-only the templates named by `release/targets.json`. It currently bootstraps a Linux
-x86_64 build host with Python 3.11+, Git, Node 24 and ZIP support. Ubuntu 24.04 is the
-CI host. The complete template download is about 1.3 GB; allow 5 GB working space.
-Native exports use release templates, never the Godot editor as a shipped runtime.
+1. Commit and push the intended `main` revision. Check that the normal verification
+   workflow is green.
+2. Open **Actions → Release LibreTabs → Run workflow** and select `main`.
+3. Leave **version** empty to select the next prototype version. Enter a
+   version only when deliberately changing the version sequence. Keep **publish
+   release** and **deploy Pages** enabled for the normal release.
+4. Wait for the workflow. Its release job verifies the source, exports every
+   package, uploads them to a draft, and publishes the prerelease only after all
+   assets upload. Its Pages job exports the threaded and compatibility players and
+   deploys the guide that names and links to that same version.
+5. Open the published release and the [guide](https://bluehexagons.github.io/libretabs/)
+   in a fresh browser profile. Check `/play/`, `/play-compatible/`, audio, reload,
+   and one downloaded desktop package before sharing the version.
+
+The workflow creates downloadable workflow artifacts for seven days. A failed job
+does not overwrite a package or published release; inspect any resulting GitHub
+draft before choosing whether to retry with a new version.
+
+## Release notes
+
+For a curated public explanation, commit
+`release/notes/MAJOR.MINOR.PATCH-prototype.NUMBER.md` before dispatching. The
+workflow uses that file unchanged. When no file exists, it creates a concise note
+from commit subjects since the preceding prototype tag, then uses it for the
+GitHub release. Generated notes are appropriate for a routine evaluation build;
+add a curated note when testers need specific upgrade, evidence, or known-limit
+guidance.
+
+To preview the selection locally:
+
+```sh
+python3 scripts/validate_release_request.py
+python3 scripts/validate_release_request.py 0.0.1-prototype.4 \
+  --notes-output /tmp/libretabs-release-notes.md
+```
+
+The first command prints the automatically selected next version. The second
+writes either the committed note or generated Markdown without changing the
+working tree.
+
+## Refresh Pages without a release
+
+Use **Actions → Deploy GitHub Pages → Run workflow** on `main` only when a guide
+or hosted-player refresh is needed without publishing packages. Enter the already
+published version if the guide should link directly to it; leave it blank for a
+source-build guide. Leave **deploy** enabled for the normal update. This workflow
+only exports web builds and does not create a GitHub release.
+
+GitHub Pages can host both players because their exports use the configured
+isolation support. `/play/` is the threaded build; `/play-compatible/` avoids
+threads for browsers that cannot run the primary player and may have less
+consistent performance or audio timing.
+
+## Local builds and other hosts
+
+Use a clean checkout and the locked toolchain for a local package build:
 
 ```sh
 python3 scripts/install_toolchain.py --directory "$PWD/.tools/godot" --templates
@@ -23,240 +71,15 @@ python3 scripts/verify.py
 python3 scripts/generate_fixtures.py
 python3 scripts/prepare_export.py
 git diff --exit-code
-python3 scripts/release.py --version 0.0.1-prototype.1
+python3 scripts/release.py --version 0.0.1-prototype.4
 ```
 
-Use a clean committed checkout. The build copies only `git archive HEAD` into an
-isolated temporary project, sets the version there, imports resources, exports,
-and checks the offline asset manifest. Ignored local MIDI, research, credentials,
-editor caches, and old exports cannot enter the snapshot. Export filters additionally
-exclude build/evidence directories. Outputs appear only after every requested target
-passes. Existing version directories are never overwritten. `--targets web` or
-`--targets linux-x86_64 windows-x86_64` permits a focused local build.
+Each output directory includes ZIPs, `manifest.json`, and `SHA256SUMS`. Publish
+an already verified local package only with `scripts/publish_release.py`; it stages
+a GitHub draft before making it public. See `--help` for GitHub and itch.io
+arguments. The web ZIP needs HTTPS and COOP/COEP isolation headers; verify a VM
+deployment with `python3 scripts/check_web_release.py https://YOUR_HOST/`.
 
-Each version directory contains ZIPs, `manifest.json` (commit, engine, toolchain,
-targets, sizes, hashes), and `SHA256SUMS` covering the manifest and ZIPs. ZIPs include
-`BUILD.json`, launch instructions, Apache/CC0/OFL/MIT and Godot dependency notices.
-ZIP entry order, timestamps and executable permissions are stable. Engine exports
-may contain nondeterministic data: this is a pinned, traceable build process, not
-a claim of bit-identical Godot binaries across hosts. Checksums detect corruption;
-they are not code signatures or independent authenticity proof.
-
-## Low-cost CI
-
-Prototype checks run on main pushes and pull requests, with stale runs cancelled.
-They download only the editor and retain no artifacts. Release builds run **only**
-through **Actions → Prepare prototype release → Run workflow** on `main`; no push,
-tag, schedule, or pull request triggers them. One Ubuntu job verifies once and
-exports all targets. Artifacts expire after seven days and are not recompressed.
-Monthly grouped Dependabot proposals maintain commit-pinned GitHub Actions.
-
-Before dispatch, choose an unused version and copy `release/notes/TEMPLATE.md` to
-`release/notes/VERSION.md`, replacing `VERSION` with that exact value. Edit the
-notes with actual changes/test evidence and commit. Supply the same version in
-the workflow: use `MAJOR.MINOR.PATCH-prototype.NUMBER`, with no leading `v`.
-`0.0.1-prototype.3` is already published; a subsequent build needs a new number
-and its own committed notes. Choose `build-only` for a
-seven-day CI artifact, `create-draft` for a private GitHub draft, or
-`publish-prerelease` to publish publicly after the build and uploads pass. Public
-mode first uploads every file to a draft and only then publishes it, so an upload
-failure leaves a private draft rather than a partial public release. A duplicate
-tag, draft release, or output version is refused. There are no automatic live itch.io or website
-deployments and no deployment secrets in the build job.
-
-The release job's contents-write token is used only for an explicitly selected
-GitHub draft or public prerelease; checkout does not persist credentials. Public
-pull requests have read-only verification and cannot enter the dispatch-only release
-workflow. Never use `pull_request_target` to execute contributed code with release
-credentials.
-
-If an upload or publication fails, inspect the draft in GitHub before retrying.
-The helper checks tags and the authenticated, paginated release listing, including
-drafts; it does not append files to an interrupted release. Verify a complete
-draft's assets against the saved checksums before publishing it in GitHub, or
-prepare a fresh version. Never replace an already published asset.
-
-## Review and publish the same packages
-
-Download the workflow artifact before expiry; unzip the outer Actions artifact.
-Verify on Linux with `sha256sum -c SHA256SUMS`; on Windows compare
-`Get-FileHash .\libretabs-VERSION-windows-x86_64.zip -Algorithm SHA256` to SHA256SUMS.
-Unzip and test native files on actual Windows/Linux: launch without Godot installed,
-file import/cancel, keyboard notes, play/seek/loop/count-in, settings restart and
-operation with networking disabled. Linux ZIPs preserve executable mode; if an
-extractor loses it, run `chmod +x libretabs.x86_64`. Windows builds are unsigned;
-report SmartScreen/antivirus blocks without telling testers to disable protection.
-
-The publishing helper validates package checksums and prints commands by default:
-
-```sh
-python3 scripts/publish_release.py github dist/0.0.1-prototype.1 \
-  --notes release/notes/0.0.1-prototype.1.md
-# Add --execute to create a draft prerelease after authenticating gh.
-# Add --publish --execute to stage the assets, then publish the prerelease.
-python3 scripts/publish_release.py itch dist/0.0.1-prototype.1 \
-  --itch-project YOUR_ACCOUNT/YOUR_PROJECT
-# Add --execute after reviewing the destination; this updates itch channels.
-```
-
-GitHub: review the draft assets, version/commit, notes, licenses and device evidence;
-publish it explicitly in the GitHub UI when ready. Do not mark prototypes as the
-stable latest release. Never replace a released asset in place: fix and increment
-the prototype number. The repository's visibility is a separate owner-controlled
-GitHub setting; preparing this pipeline does not change it.
-
-itch.io: create an HTML project; upload the web ZIP with `index.html` at the ZIP
-root, mark it playable in browser, enable **SharedArrayBuffer support**, and use
-click-to-launch/fullscreen with scrollbars disabled. Add Windows/Linux ZIPs as
-separate downloads. Test the actual itch iframe before advertising mobile support:
-embedding, storage, file dialogs, audio unlocking and offline service workers can
-behave differently from the standalone website. Offline native downloads are the
-reliable alternative when iframe storage is unavailable. The script uses authenticated
-[butler push](https://itch.io/docs/butler/pushing.html) with `html5`,
-`windows-prototype` and `linux-prototype` channels and the manifest version.
-Install butler from itch.io, authenticate locally, and keep its token outside Git.
-The script does not create or configure the itch page. See
-[HTML upload requirements](https://itch.io/docs/creators/html5) and
-[itch.io's isolation support](https://itch.io/t/2025776/experimental-sharedarraybuffer-support).
-
-Website: unpack the exact web ZIP into a version directory outside the live root;
-configure HTTPS, correct JavaScript/WASM MIME types and both headers below on every
-asset. Use `release/nginx.conf.example` as a starting point. Stage and validate, then
-atomically switch the server's `current` symlink to the complete directory. Keep the
-previous directory for rollback. Do not copy individual files into a live release.
-HTML/service workers and fixed-name assets must revalidate (`Cache-Control: no-cache`);
-avoid a CDN rule that serves mixed old/new assets. Serve native ZIP download links
-with their matching checksums from the same approved release.
-
-```text
-Cross-Origin-Opener-Policy: same-origin
-Cross-Origin-Embedder-Policy: require-corp
-```
-
-```sh
-python3 scripts/check_web_release.py https://YOUR_DOMAIN/libretabs/
-```
-
-This checker verifies TLS, headers, MIME and offline manifest hashes. It does not
-replace browser tests: check `crossOriginIsolated`, click-to-unlock audio, import,
-reload/update with an open song, completed-cache offline restart, and responsive
-portrait/landscape behavior. An HTTPS archive cannot run by double-clicking
-`index.html`. Third-party assets and framing must comply with isolation policy.
-
-Rollback switches the website directory or re-pushes the previous verified itch
-packages, without rebuilding. Keep the old GitHub release available. Existing open
-browser documents stay pinned to their cached release until reload; imported MIDI
-is session-only. Confirm settings-schema compatibility before rollback and never
-force an update that discards the open song.
-
-## GitHub Pages instructional site
-
-The public guide is live at [bluehexagons.github.io/libretabs](https://bluehexagons.github.io/libretabs/),
-with the primary player at [`/play/`](https://bluehexagons.github.io/libretabs/play/).
-The owner has made the repository public and configured Pages with GitHub Actions.
-
-The guide source in `site/` has no JavaScript, npm, external fonts or analytics.
-The generated Pages artifact contains only that guide and two validated Godot
-exports. Site assembly stages the complete output before renaming it into place;
-failed validation or copying leaves no partial site directory. The repository
-itself is never published as the artifact. Relative asset
-links and separate service-worker scopes support `/libretabs/play/` and
-`/libretabs/play-compatible/`.
-
-1. Keep **Settings → Pages → Source → GitHub Actions** selected. The earlier
-   private-repository plan restriction is resolved; site updates use the workflow below.
-2. Optionally set repository Actions variables `PLAYER_URL` and `ITCH_URL` to
-   the final public HTTPS destinations. Empty values omit those buttons. Do not
-   put credentials in URLs. Updating variables requires publishing the site again.
-3. Run **Actions → Publish project guide** on main. Leave **publish** enabled to
-   deploy, or turn it off for a one-day preview artifact. The manual workflow
-   downloads the locked engine/templates and exports threaded and single-thread
-   players; ordinary pushes do not pay this build cost.
-4. In a fresh browser profile, open `/play/`; allow the one-time reload, verify
-   `crossOriginIsolated`, audio and offline restart. Test `/play-compatible/` on
-   browsers that cannot start the primary player. The fallback avoids threads but
-   can have lower performance or less consistent audio response.
-5. Check the guide URL, keyboard navigation and phone layout. Until a release
-   is published, the downloads link leads to the release listing without promising
-   a package exists. Prereleases are linked through the listing, not `/latest`.
-
-Local preview (use a fresh output directory each build):
-
-```sh
-python3 scripts/build_site.py --output dist/site-preview
-python3 -m http.server 8769 --bind 127.0.0.1 --directory dist/site-preview
-```
-
-See [GitHub's custom workflow instructions](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages)
-and [Pages availability](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages).
-
-## infra-tools VM deployment
-
-Use an infra-tools version containing the `godot-web` manifest component.
-LibreTabs' root `infra.json` serves the player at the domain root; change its
-`path` to `/libretabs/` for a subpath. The guide is deployed separately through
-Pages. On your orchestration host, with access to the target VM:
-
-```sh
-infra-tools setup server_web YOUR_VM deploy \
-  --ssl --ssl-email YOUR_EMAIL \
-  --deploy YOUR_PUBLIC_DOMAIN https://github.com/bluehexagons/libretabs.git
-```
-
-First add `--dry-run` to validate configuration and source access. The real
-deployment builds with `scripts/export_web.py` as a non-root account in staged
-source; it does not require `.git`. With no `GODOT` override, the script installs
-the checksum-locked Linux x86_64 engine and templates in that account's persistent
-home. Python 3.11+, outbound HTTPS and about 5 GB free working space are required.
-The installer still downloads the full official template archive, but VM builds
-extract only web templates using `--templates --targets web`. Desktop build
-templates are not installed for that path. This is an explicit VM deployment
-cost, not an automatic CI job.
-An operator-provisioned `GODOT` must match the lock and have matching web templates.
-
-The output is checked before activation, with correct MIME, isolation and cache
-headers supplied by infra-tools. A failed export leaves the active tree intact.
-Only `exports/web` is served. Nginx configuration activation follows infra-tools'
-existing setup transaction; it is not a coordinated zero-downtime switch of all
-files and routes. The legacy webhook deployer does not read this manifest; use
-the documented setup/patch path. Do not configure automatic builds inadvertently.
-
-This source deployment rebuilds the selected source and retains its project
-version; it is not promotion of a GitHub release ZIP. For exact release promotion,
-use the version-directory hosting instructions above or a dedicated prebuilt
-export repository with a `godot-web` manifest and no build command. Retain the
-previous approved package or commit for rollback.
-
-After deployment, run `scripts/check_web_release.py` against the HTTPS URL and
-perform the browser checks above before linking it from Pages. No production VM
-or public domain was supplied during implementation, so target-specific DNS,
-certificate issuance, permissions and live deployment remain to be validated.
-
-## Adding platforms
-
-Add a named preset and a registry entry (entry executable, required files, exact
-release-template names, itch channel). Extend toolchain installation and runner jobs
-only when needed by that platform. Android requires separately pinned SDK/JDK/build
-tools, application identity, signing keys in a protected release environment and
-actual device tests; never commit keystores. Signing and store submission are distinct
-promotion steps. No Android SDK, macOS runner, signing secret or scheduled build is
-paid for before that target is implemented.
-
-## Public prototype checklist
-
-Use the [first-launch checklist](launch-checklist.md) to record package testing,
-publication order and checks on the actual public URLs.
-
-The publishing helper requires SHA256SUMS to cover exactly the manifest and its
-declared packages, rejects duplicate entries and symlinked inputs, and checks
-artifact sizes and hashes before running any publishing command.
-
-- Keep README, release notes and platform evidence honest about missing lessons,
-  simplified notation, unreviewed arrangements and unsigned builds.
-- Complete the project-name checkpoint before a public alpha identity launch.
-- Review tracked files and Git history for secrets/private inputs; use GitHub secret
-  scanning once available and rotate any discovered credential before publication.
-- Preserve all license notices; use project-authored MIDI reproductions in issues.
-- Configure private vulnerability reporting in GitHub and enable issue templates.
-- Run the package/device checks above; record gaps rather than marking exports as
-  platform passes. Prototype distribution does not complete the M5 MVP gates.
+Desktop packages are unsigned evaluation builds. Do not replace published assets:
+fix the issue and release a new prototype version. Android, signing, stores, and
+additional architectures remain future work.
