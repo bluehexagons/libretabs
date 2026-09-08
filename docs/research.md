@@ -157,3 +157,166 @@ Sources: [Godot internationalization overview](https://docs.godotengine.org/en/s
 - Clef parser/synth correctness, allocation behavior, web export, and exact transitive asset/license surface.
 - Bravura metrics/anchors as imported by Godot and cross-platform glyph consistency.
 - A musician-approved cost fixture set for comfortable E-standard fingering.
+
+## Public-domain repertoire and open content sources
+
+Research date: 2026-09-07. This is a sourcing and engineering shortlist, not a
+legal opinion. “Public domain” must be checked for the target distribution
+countries and for every edition, arrangement, transcription, recording, lyric,
+and embedded asset. A public-domain composition and a particular recording are
+separate works, and an old composition can still appear in a newly copyrighted
+edition.
+
+### Recommended first repertoire pass
+
+The best first additions are short, recognizable, mostly single-line pieces or
+guitar-native studies. They let LibreTabs demonstrate its beginner path without
+pretending that a dense piano or orchestral score is a playable guitar part.
+The source pages below are discovery and provenance starting points; selected
+files still need to be downloaded, hashed, inspected, and recorded in the
+content manifest before bundling.
+
+| Candidate | Learner value | Initial treatment | Source/provenance lead |
+| --- | --- | --- | --- |
+| Sor, *Introduction à l'étude de la guitare*, Op. 60, Lessons 1, 4, 5, and 20 | Guitar-native progression, short studies, and technique practice | Prefer the original guitar notation or a freshly made MIDI transcription; label each lesson by skill rather than by an unverified grade | [IMSLP work page](https://imslp.org/wiki/Introduction_%C3%A0_l%27%C3%A9tude_de_la_guitare%2C_Op.60_%28Sor%2C_Fernando%29) |
+| Carcassi, *25 Etudes*, Op. 60, Nos. 1–3, 5, and 19 | Short guitar studies with a useful progression in keys, melody, and accompaniment | Start with one voice or a bounded two-voice projection; preserve the original notes and expose difficult chords | [IMSLP work page](https://imslp.org/wiki/Etudes%2C_Op.60_%28Carcassi%2C_Matteo%29) |
+| Giuliani, *Studio per la chitarra*, Op. 1 | Open-string arpeggio, left-hand, and articulation exercises | Use selected one- or two-bar patterns as new practice exercises; do not import the whole method as a beginner song | [IMSLP work page](https://imslp.org/wiki/Studio_per_la_Chitarra%2C_Op.1_%28Giuliani%2C_Mauro%29) |
+| Carcassi, *Méthode complète pour la guitare*, Op. 59; Sor, *Méthode complète* | Historical method material and many short examples | Use as research for new lessons; reproduce only a verified public-domain source or a new project-authored transcription, not a modern translation or editorial fingering | [Carcassi](https://imslp.org/wiki/M%C3%A9thode_compl%C3%A8te_pour_la_guitare%2C_Op.59_%28Carcassi%2C_Matteo%29), [Sor](https://imslp.org/wiki/M%C3%A9thode_compl%C3%A8te_pour_la_guitare_%28Sor%2C_Fernando%29) |
+| Tárrega, *Lágrima* and *Adelita* | Recognizable guitar repertoire for a later beginner/intermediate tier | Treat as optional repertoire after basic position changes; use an old score or a new project arrangement, never an unreviewed modern edition | [Lágrima](https://imslp.org/wiki/L%C3%A1grima_%28T%C3%A1rrega%2C_Francisco%29), [Adelita](https://imslp.org/wiki/Adelita_%28T%C3%A1rrega%2C_Francisco%29) |
+| Beethoven, “Ode to Joy” theme and *Für Elise* opening | Very recognizable melodies; good motivation and note-reading practice | Ship melody excerpts first, not full orchestral/piano reductions; make the guitar arrangement explicitly project-authored | [Symphony No. 9](https://imslp.org/wiki/Symphony_No.9_-_An_die_Freude_%28Beethoven,_Ludwig_van%29), [Für Elise](https://imslp.org/wiki/Fur_elise) |
+| Pezold, *Minuet in G major*, BWV Anh. 114 | Short, memorable phrase in a comfortable tonal setting | Correct the attribution in metadata: it is now generally catalogued as Christian Pezold, not Bach; begin with the melody and add accompaniment only after fingering review | [IMSLP work page](https://imslp.org/wiki/Minuet_in_G_Major_%28Pezold%2C_Christian%29) |
+| Bach, *Prelude and Fugue in C major*, BWV 846, Prelude only | Repeating arpeggio pattern, steady pulse, and a clear looping exercise | Use a short excerpt or simplified-density practice projection; the complete prelude is not an early-beginner piece and the fugue is outside the MVP one-voice contract | [IMSLP work page](https://imslp.org/wiki/Prelude_and_Fugue_in_C_major%2C_BWV_846_%28Bach%2C_Johann_Sebastian%29) |
+| Mozart, Piano Sonata K. 545, first theme or Andante | Familiar classical phrasing and clean meter | Extract a melody or bounded section; do not present a piano reduction as if it were an original guitar part | [IMSLP work page](https://imslp.org/wiki/Piano_Sonata_K.545_%28Mozart%2C_Wolfgang_Amadeus%29) |
+| Schumann, *Album für die Jugend*, Op. 68, Nos. 1, 5, and 10 | Short pedagogical pieces with a natural lesson-to-song bridge | Use No. 1 “Melody” and No. 10 “The Happy Farmer” as candidates for separate melody and accompaniment exercises | [IMSLP collection page](https://imslp.org/wiki/Album_f%C3%BCr_die_Jugend_Op.68_%28Schumann%2C_Robert%29) |
+| Satie, *Gymnopédie No. 1* | Slow pulse, phrasing, and chord-plus-melody listening | Later-beginner/early-intermediate optional piece; its sustained accompaniment needs careful guitar placement | [IMSLP collection page](https://imslp.org/wiki/Gymnopedie_no._1_%28Satie%2C_Erik_Alfred_Leslie%29) |
+
+This list should become a curated pilot of roughly 10–15 short arrangements,
+not a promise that every listed full work will be playable. Each entry needs a
+difficulty note based on the actual generated fingering, a source edition, a
+musician review, and a visible distinction between the original work and the
+LibreTabs arrangement.
+
+### MIDI-specific source finding
+
+The earlier “no MIDI” constraint is not a reason to exclude MIDI sources from
+this research. MIDI can be a useful acquisition format, especially when it
+comes with a clear license and source provenance. It is still not automatically
+safe to redistribute: the composition, a particular edition or arrangement,
+the MIDI sequence itself, and any recording made from it are separate rights
+questions. Keep the downloaded bytes and source metadata immutable in the
+curation workspace, and make the bundled arrangement a traceable derived
+asset.
+
+The practical change is to prioritize rights-cleared MIDI where it exists,
+instead of converting every candidate from a scan before it can be evaluated.
+The MVP remains local-first and does not gain a live third-party catalog as a
+result of this research.
+
+| MIDI source | What is available | Rights and operational caveat | Suggested use |
+| --- | --- | --- | --- |
+| [Mutopia Project](https://www.mutopiaproject.org/) | The site currently lists more than 2,000 pieces and publishes generated MIDI alongside LilyPond source and PDF | Each contribution identifies its own Public Domain, CC BY, CC BY-SA, or MutopiaBSD terms. The site permits modification and redistribution, but the exact contribution notice must travel with the asset; there is no documented JSON content API | **Best first build-time MIDI source.** Select guitar-native studies and simple themes, pin the contribution page and MIDI hash, then run arrangement review |
+| [OpenScore Lieder](https://github.com/OpenScore/Lieder) | CC0 MuseScore source for more than 1,200 nineteenth-century songs; the repository documents deterministic conversion to `.mid` and other formats | CC0 corpus and versioned source, with a request for credit. Vocal range, accompaniment density, lyrics, and transcription quality still require selection and review | **Best melody expansion source.** Generate MIDI at build time, retain the CC0 source link, and create guitar-focused melody exercises |
+| [TiMauzi/imslp-midi-cc0-1.0](https://huggingface.co/datasets/TiMauzi/imslp-midi-cc0-1.0) | A community dataset containing 1,113 raw MIDI files from an IMSLP crawl, with source URLs, metadata, and a CC0/public-domain-only version | The dataset is a secondary crawl rather than an authoritative IMSLP release. Its README says the CC0 version filtered out incompatible licenses, but every selected file should still be checked against its original IMSLP file page and uploader terms | **Useful for offline candidate mining and parser tests**, not a blind bundle or runtime dependency |
+| [PDMX](https://github.com/pnlong/PDMX) / [Zenodo release](https://zenodo.org/records/15571083) | A large public-domain score corpus with PDF, MusicXML/MXL, and MIDI archives; the release includes a dedicated MIDI archive | The maintainers report public/internal license conflicts affecting 12.29% of records. Restrict use to the documented valid/no-conflict subset, preserve attribution, and validate each selected file; this is a large offline dataset, not a content API | Research and batch-candidate source. It can widen discovery substantially, but is too broad and heavy for direct MVP bundling |
+| [Classical Archives PRS free MIDI](https://www.classicalarchives.com/prs/free.html) | A small hand-curated list of downloadable sequences including Bach, Sor, and other classical themes | The page grants free commercial and non-commercial use with a required credit notice and asks users to copy files to their own server rather than deep-link them. This is permissive source-specific permission, not a blanket public-domain claim | Possible supplement for a few reviewed practice files; preserve the exact notice and do not automate against the broader commercial archive |
+| [ChoralWiki/CPDL](https://www.cpdl.org/wiki/index.php/ChoralWiki%3ACopyrights) | Many vocal/choral entries expose MIDI alongside score files and editable notation | The default CPDL license is a copyleft-style edition license, and linked third-party editions can have different terms. Individual pages control the actual notice | Future vocal-melody source only after a separate license-aware content-pack decision; not a first guitar corpus |
+
+There is no strong evidence of a stable, general-purpose API that returns
+rights-cleared classical MIDI ready for redistribution. The API-capable
+services found here are mainly discovery and metadata layers: [IMSLP's
+API](https://imslp.org/wiki/IMSLP:API) exposes work/person lists rather than a
+simple license-safe file feed; [Open Opus](https://openopus.org/) provides
+public-domain work metadata; the [Library of Congress JSON
+API](https://www.loc.gov/apis/json-and-yaml/), [Europeana
+APIs](https://api.europeana.eu/en), [Wikimedia Commons
+API](https://commons.wikimedia.org/wiki/Commons:API), and [Internet Archive
+APIs](https://archive.org/developers/) provide discovery, rights metadata, or
+file links with per-item checks; and [MusicBrainz](https://musicbrainz.org/doc/MusicBrainz_API)
+provides catalog relationships but no score or MIDI rights. Treat these APIs
+as build-time search aids. Fetch only a selected item, record its exact
+rights/provenance, and mirror or convert it into a pinned project-owned pack
+when permitted.
+
+### Sources that can expand the corpus
+
+| Source | What it provides | Access and rights finding | Recommendation |
+| --- | --- | --- | --- |
+| [OpenScore Lieder](https://github.com/OpenScore/Lieder) | Over 1,200 nineteenth-century songs in MuseScore source format, with associated data; the project documents MusicXML, MIDI, PDF, and MP3 conversion paths | The corpus is CC0. The repository is versioned and reproducible, and the project asks for credit even though credit is not a CC0 condition | **Best next source.** Extract a reviewed vocal line or short melody, then create a guitar arrangement. Do not automatically ship every accompaniment or lyric without checking the item metadata. |
+| [OpenScore String Quartets](https://github.com/OpenScore/StringQuartets) | Roughly 200 nineteenth-century quartets / hundreds of movements in uncompressed MuseScore format | Scores are CC0, with direct repository files and documented batch conversion to MusicXML/MIDI | Good for future “listen to the theme” or backing experiments; too dense for the first guitar corpus without a main-line selection pass. |
+| [OpenScore Orchestra / Hauptstimme](https://zenodo.org/records/15425749) | About 100 transcribed orchestral movements plus main-theme annotations | Scores are CC0; annotations are CC BY-SA and code is MIT | Useful as a research corpus for finding themes, not as a direct beginner-song feed. Keep annotations separate from CC0 project content. |
+| [Mutopia Project](https://www.ibiblio.org/mutopia/legal.html) | LilyPond source, engraved PDF, and generated MIDI for many classical and pedagogical works | Each contribution declares Public Domain, CC BY, CC BY-SA, or the older MutopiaBSD terms. The project explicitly allows modification and redistribution, but the exact contribution license and attribution must be retained | **Strong source for build-time curation.** Prefer Public Domain or CC BY files; retain CC BY-SA files in a separately noticed content set if used. It has an archive/FTP and search pages, not a documented JSON content API. |
+| [IMSLP API and public-domain guidance](https://imslp.org/wiki/IMSLP:API) | Work/person lists and a very large score/recording discovery site | The documented API exposes worklists, not a simple license-safe file feed. IMSLP warns that status varies by country and by file, and does not guarantee legal accuracy | Use for human curation and provenance lookup. Download only a specific, reviewed score file; do not crawl the site from the app. |
+| [PDMX](https://github.com/pnlong/PDMX) / [Zenodo release](https://zenodo.org/records/15571083) | A large public-domain MusicXML corpus with associated MXL, PDF, and MIDI archives | Very useful for mining candidates, but the maintainers report internal/public license conflicts affecting 12.29% of records. Use only the documented `no_license_conflict`/valid subset and preserve dataset attribution; the release is a multi-gigabyte offline dataset, not a runtime API | Research and batch-candidate source, not an MVP dependency or direct online catalog. Validate every selected file independently. |
+| [Library of Congress JSON API](https://www.loc.gov/apis/json-and-yaml/) | Structured search and item/resource metadata, including a `notated-music` endpoint | No API key is required, but requests are rate-limited; item rights and resource links still need to be checked | Good for finding historical sheet music and method books, especially when a human curator needs the scan. It is not a MIDI source. |
+| [Europeana Search/Record APIs](https://api.europeana.eu/en) | Cross-institution metadata and media/IIIF links | Requires a free API key. Metadata is CC0; the linked object is governed by its `edm:rights` value. `reusability=open` includes Public Domain Mark, CC0, CC BY, and CC BY-SA, so it is not a public-domain-only filter | Useful for discovery and rights-aware links. Use exact rights filtering and keep provider media separate from bundled content until reviewed. |
+| [Wikimedia Commons MediaWiki API](https://commons.wikimedia.org/wiki/Commons:API) | Searchable file metadata and downloadable score images/PDFs/MIDI where contributors have uploaded them | No special API key is needed. File rights are stated per description page; structured file metadata is CC0 but the file itself can have another license | Good for individual public-domain scans and metadata, not a guarantee of machine-readable notation. Check “do not use or index” markers and the file page. |
+| [Internet Archive developer APIs](https://archive.org/developers/) | Advanced search, item metadata, and file downloads across digitized collections | The Archive explicitly does not guarantee uploader-provided rights metadata; the item’s rights and the underlying source must be independently checked | Use as a fallback for a known scan or historical method, not as an unattended public-domain feed. |
+| [Open Opus](https://openopus.org/) | Classical composer/work/genre metadata and a no-auth JSON REST API; the data is public domain | It supplies discovery metadata, not sheet music, MIDI, or recordings | Good for a future browse/filter layer or build-time composer metadata; do not treat it as a content source. |
+| [MusicBrainz API](https://musicbrainz.org/doc/MusicBrainz_API) | Open classical-aware catalog metadata and work/recording relationships | Free for non-commercial use without a key, but clients must identify themselves and stay within the one-call-per-second rule | Optional metadata enrichment only. It does not grant rights to any audio or score. |
+| [Musopen](https://musopen.org/faq/) | Public-domain-oriented classical recordings, scores, textbooks, and educational material | Musopen itself warns that it does not guarantee the status of every user-uploaded item and recommends independent checking; no documented public content API was found | Human discovery/linking source. Do not bundle a recording or score merely because it is downloadable. |
+
+### Sources deliberately not selected for automatic ingestion
+
+- Generic MuseScore.com community content is not a safe blanket source: the
+  site has mixed user licenses, official/publisher content, and a separate
+  API-key-based developer surface. OpenScore repositories are preferable because
+  their corpus license and revision history are explicit.
+- [abcnotation.com](https://abcnotation.com/) is valuable for discovering
+  traditional melodies and explains a useful copyright policy, but it warns
+  against copying the site and does not present a general content API. Treat it
+  as a link/reference source unless a collection owner grants a suitable
+  machine-readable license.
+- TheSession-derived datasets are technically convenient, but the current data
+  dump is ODbL, says individual tune contents can have separate rights, and
+  includes additional use restrictions. It should not enter the LibreTabs
+  bundle without a dedicated rights review and an explicit decision about the
+  database share-alike obligations.
+- [music21's corpus](https://music21.org/music21docs/moduleReference/moduleCorpus.html)
+  is useful for local experimentation, but music21 says it does not own most
+  corpus music and that rights vary by item and country. It is not a blanket
+  redistribution license.
+
+### Learning resources
+
+The safest path is to write new, localized LibreTabs explanations and exercises
+using the public-domain Sor and Carcassi methods as historical source material.
+That gives the project control over beginner language, accessibility, and
+licensing while preserving links to the scans for learners who want more depth.
+
+- [Open Music Theory](https://openmusictheory.github.io/about.html) is a strong
+  reference for rhythm, notation, scales, and aural skills. It is CC BY-SA, so
+  adapted text must retain attribution and share-alike; use it as an external
+  reference or keep adapted modules in a separately licensed content path.
+- [OpenLearn's introduction to music theory](https://www.open.edu/openlearn/history-the-arts/music/an-introduction-music-theory)
+  has beginner-friendly material on pitch and rhythm. OpenLearn generally uses
+  CC BY-NC-SA and includes third-party acknowledgements, so link to it or obtain
+  permission rather than bundling adapted pages in the Apache/CC0 project
+  defaults.
+- Mutopia's LilyPond sources and the public-domain guitar methods can supply
+  short, deterministic exercises for pulse, open strings, first position,
+  arpeggios, melody plus accompaniment, and reading staff/tab together. Every
+  exercise should be a project-authored, source-linked asset with a review note,
+  not a copied modern teaching paragraph.
+
+### Integration recommendation
+
+Do not add a live third-party song catalog to the MVP. The product currently
+promises local-first operation and explicitly has no backend, account, catalog,
+or third-party song search. Use the sources above in a curator/build pipeline:
+
+1. Query metadata or clone a pinned corpus at build time.
+2. Select a small number of works and record title, composer, source URL,
+   revision/checksum, source edition, composition-rights basis, encoding/arrangement
+   license, attribution, and any restrictions.
+3. Convert MusicXML/MuseScore/LilyPond to a project-owned MIDI or canonical score
+   only where the source license permits it. Keep the original source immutable
+   and link derived MIDI back to it.
+4. Run the existing bounded import, fingering, notation, and timing tests, then
+   obtain musician review before calling a piece beginner-ready.
+5. Bundle a small reviewed “Classics” pack or publish a separately versioned
+   optional pack. If a future online catalog is added, the client should fetch a
+   project-controlled, signed/hashed manifest and content pack rather than
+   trusting arbitrary third-party URLs.
+
+This approach can expand the available music substantially without changing the
+MVP's canonical MIDI contract, offline promise, or licensing boundary.
