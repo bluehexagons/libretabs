@@ -19,8 +19,20 @@ def module(name):
 release = module('release')
 publish = module('publish_release')
 installer = module('install_toolchain')
+prepare_export = module('prepare_export')
 
 class ReleaseTests(unittest.TestCase):
+    def test_export_presets_embed_the_source_bridge(self):
+        source = (ROOT / 'src/platform/bridge.js').read_text()
+        expected = '<script>\n' + source + '\n</script>'
+        includes = []
+        for line in (ROOT / 'export_presets.cfg').read_text().splitlines():
+            if line.startswith('html/head_include='):
+                includes.append(json.loads(line.split('=', 1)[1]))
+        self.assertEqual(len(includes), 2)
+        self.assertTrue(all(value == expected for value in includes))
+        self.assertEqual(prepare_export.prepare(), len(includes))
+
     def test_version_refuses_paths_and_shell_input(self):
         for version in ['../escape', 'v1.0', '1.0.0', '1.0.0-prototype.1;echo bad', '1.0.0-prototype.1\n']:
             self.assertIsNone(release.VERSION.fullmatch(version))

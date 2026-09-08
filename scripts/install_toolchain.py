@@ -13,15 +13,21 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 LOCK = json.loads((ROOT / 'release/toolchain.json').read_text())
 
+
+def digest(path):
+    with path.open('rb') as source:
+        return hashlib.file_digest(source, 'sha256').hexdigest()
+
+
 def download(kind, cache):
     item = LOCK[kind]
     path = cache / item['file']
-    if not path.exists() or hashlib.file_digest(path.open('rb'), 'sha256').hexdigest() != item['sha256']:
+    if not path.exists() or digest(path) != item['sha256']:
         temporary = path.with_suffix('.download')
         url = f"https://github.com/godotengine/godot-builds/releases/download/{LOCK['release']}/{item['file']}"
         with urllib.request.urlopen(url, timeout=120) as source, temporary.open('wb') as target:
             shutil.copyfileobj(source, target)
-        if hashlib.file_digest(temporary.open('rb'), 'sha256').hexdigest() != item['sha256']:
+        if digest(temporary) != item['sha256']:
             temporary.unlink()
             raise SystemExit(f'Checksum mismatch: {kind}')
         temporary.replace(path)

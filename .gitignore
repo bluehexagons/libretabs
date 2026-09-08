@@ -15,7 +15,7 @@ Thumbs.db
 *.tmp
 *.log
 
-# Local inputs and research downloads (fixtures belong under tests/fixtures)
+# Local inputs and research downloads (project fixtures belong under content/fixtures)
 /user-midi/
 /research-downloads/
 

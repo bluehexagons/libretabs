@@ -2,6 +2,10 @@
 
 Date: 2026-09-07
 
+This is a dated review snapshot. Its check counts and deployment observations
+describe that review run; see the [current project status](../project-status.md)
+and the latest verification run before treating them as current results.
+
 Reviewed MIDI ingestion, song and transport boundaries, audio lifecycle, player
 state, host persistence, site assembly, and release preparation/publishing.
 
