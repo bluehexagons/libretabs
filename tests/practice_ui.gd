@@ -152,6 +152,11 @@ func run() -> void:
 	check(player.instrument_level == 0 and is_equal_approx(player.metronome_level, 0.9), "volume controls independently reach mixer")
 	app.call("toggle_drawer", "HELP")
 	check(not app.get("drawers")["SOUND"].visible and app.get("drawers")["HELP"].visible, "only requested settings group is visible")
+	app.call("toggle_drawer", "ABOUT")
+	check(app.get("drawers")["ABOUT"].visible, "about section is available from the menu")
+	var about: VBoxContainer = app.get("drawers")["ABOUT"]
+	check("Apache License 2.0" in (about.get_child(0) as Label).text and "CC0 1.0" in (about.get_child(0) as Label).text, "about section explains the software and content licenses")
+	check(about.get_child_count() == 4 and (about.get_child(1) as Button).text == TranslationServer.translate("OPEN_SOURCE") and (about.get_child(2) as Button).text == TranslationServer.translate("REPORT_ISSUE") and (about.get_child(3) as Button).text == TranslationServer.translate("REPORT_SECURITY"), "about section offers source, problem-reporting and private-security links")
 	app.call("seek_measure", 2)
 	before = app.get("position_updates")
 	for _frame: int in range(10): await process_frame

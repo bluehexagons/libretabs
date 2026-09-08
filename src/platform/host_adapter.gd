@@ -81,6 +81,11 @@ func report(data: Dictionary) -> void:
 	if web != null:
 		web.report(JSON.stringify(data))
 
+func open_url(url: String) -> bool:
+	if not (url.begins_with("https://") or url.begins_with("http://")):
+		return false
+	return OS.shell_open(url) == OK
+
 func offline_ready() -> bool:
 	return web != null and bool(web.offlineReady)
 

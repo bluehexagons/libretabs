@@ -208,6 +208,21 @@ msgstr "Test long labels"
 msgid "NOTICES"
 msgstr "Licenses & notices"
 
+msgid "CARD_ABOUT"
+msgstr "About LibreTabs"
+
+msgid "ABOUT_TEXT"
+msgstr "LibreTabs is free software for learning guitar, maintained by bluehexagons.\n\nThe software, tests, scripts and configuration use the Apache License 2.0. Project-authored lessons, documentation, illustrations, original music and MIDI fixtures are dedicated to CC0 1.0. Third-party material keeps its own license and notice.\n\nUse the links below to view the source, report a problem, or privately report a security vulnerability."
+
+msgid "OPEN_SOURCE"
+msgstr "View source code"
+
+msgid "REPORT_ISSUE"
+msgstr "Report a problem"
+
+msgid "REPORT_SECURITY"
+msgstr "Report a security issue privately"
+
 msgid "STORAGE_SESSION"
 msgstr "Display setting changed for this session. Settings could not be saved on this device."
 

@@ -587,7 +587,7 @@ func set_startup_help(enabled: bool) -> void:
 
 func build_drawers() -> void:
 	var menu_index: VBoxContainer = section("MENU")
-	for key: String in ["WELCOME", "SONG_MENU", "TEMPO", "SCORE_VIEW", "PRINT", "CAPTURE", "LOOP_TOOL", "SOUND", "DISPLAY", "KEYBOARD", "HELP"]:
+	for key: String in ["WELCOME", "SONG_MENU", "TEMPO", "SCORE_VIEW", "PRINT", "CAPTURE", "LOOP_TOOL", "SOUND", "DISPLAY", "KEYBOARD", "HELP", "ABOUT"]:
 		var entry: Button = button(key, func() -> void: toggle_drawer(key))
 		entry.text = tr("CARD_" + key)
 		entry.alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -780,6 +780,11 @@ func build_drawers() -> void:
 	help.add_child(button("KEYBOARD", func() -> void: toggle_drawer("KEYBOARD")))
 	for key: String in ["HELP_HIGHLIGHTS", "VIEW_HELP", "HELP_STRINGS", "HELP_FRETS", "HELP_STAFF", "HELP_TIMING"]:
 		help.add_child(label(key, 20))
+	var about: VBoxContainer = section("ABOUT")
+	about.add_child(label("ABOUT_TEXT", 18))
+	about.add_child(button("OPEN_SOURCE", func() -> void: host.open_url("https://github.com/bluehexagons/libretabs")))
+	about.add_child(button("REPORT_ISSUE", func() -> void: host.open_url("https://github.com/bluehexagons/libretabs/issues")))
+	about.add_child(button("REPORT_SECURITY", func() -> void: host.open_url("https://github.com/bluehexagons/libretabs/security/advisories/new")))
 	var display: VBoxContainer = section("DISPLAY")
 	display.add_child(label("APPEARANCE"))
 	appearance_picker = OptionButton.new()
