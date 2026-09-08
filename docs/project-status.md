@@ -25,13 +25,15 @@ is available on the managed network. It is not a public launch URL.
 
 ## Distribution readiness
 
-- Manual GitHub Actions build pinned web, Windows x86_64 and Linux x86_64
-  packages. Desktop packages use official release templates, not the editor.
-  Checksums, notices and reviewed release notes accompany versioned releases.
-- The first public evaluation prerelease,
-  [`0.0.1-prototype.3`](https://github.com/bluehexagons/libretabs/releases/tag/v0.0.1-prototype.3),
-  was built and published by the manual workflow. Its public web, Windows, Linux,
-  manifest, and checksum assets were downloaded and their SHA-256 values verified.
+- A one-action GitHub Actions release verifies source, builds pinned web, Windows
+  x86_64 and Linux x86_64 packages, publishes the prerelease, and deploys GitHub
+  Pages. Desktop packages use official release templates, not the editor.
+  Checksums, notices, and curated or generated release notes accompany releases.
+- The latest public evaluation prerelease,
+  [`0.0.1-prototype.4`](https://github.com/bluehexagons/libretabs/releases/tag/v0.0.1-prototype.4),
+  was built and published by that workflow. Its web, Windows, Linux, manifest,
+  and checksum assets are public, and the Pages guide now identifies and links to
+  that same version.
 - The repository is public. The [instructional/download site](https://bluehexagons.github.io/libretabs/)
   now links to live threaded and compatibility players on Pages. Public Chromium
   confirmed both builds render; the threaded build remains isolated on an offline
