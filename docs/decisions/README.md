@@ -31,3 +31,5 @@ and the linked Pages deployment.
 [0012 — Instructional Pages site and VM player hosting](0012-project-site-and-vm-hosting.md) records the guide, managed player hosting and separate deployment paths.
 
 [0013 — Publish the web player on GitHub Pages](0013-pages-player.md) records the threaded Pages player and single-thread compatibility fallback.
+
+[0014 — Pick-friendly derived arrangements](0014-pick-friendly-arrangements.md) records the optional procedural strum projection, explicit mute notation and the boundary between imported-song generation and musician-authored variants.

@@ -118,8 +118,24 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 				var half: float = ui_font.get_string_size(fret, HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x / 2
 				draw_rect(Rect2(x - half - 4, tab_y - 13, half * 2 + 8, 26), get_theme_color("paper", "LibreTabs"))
 				text_at(Vector2(x - half, tab_y + (ui_font.get_ascent(26) - ui_font.get_descent(26)) / 2), fret, 26, color)
-			else:
+			elif not projection.omitted.has(note.id):
 				text_at(Vector2(x, tab_top + 31), "!", 22, accent)
+	if notation != "staff":
+		for strum: Dictionary in projection.strums:
+			if float(strum.tick) < start or float(strum.tick) >= finish: continue
+			var marker: Dictionary = {"start": strum.tick}
+			var x: float = origin.x + ScoreLayout.note_x(song, marker, index, width, continuous)
+			var first_y: float = origin.y + ScoreLayout.tab_y(int(strum.first_string), notation)
+			var last_y: float = origin.y + ScoreLayout.tab_y(int(strum.last_string), notation)
+			var bracket_x: float = x - 18
+			draw_line(Vector2(bracket_x, first_y - 8), Vector2(bracket_x, last_y + 8), accent, 2, true)
+			draw_line(Vector2(bracket_x, first_y - 8), Vector2(bracket_x + 6, first_y - 8), accent, 2, true)
+			draw_line(Vector2(bracket_x, last_y + 8), Vector2(bracket_x + 6, last_y + 8), accent, 2, true)
+			for string_number: int in strum.mutes:
+				var y: float = origin.y + ScoreLayout.tab_y(string_number, notation)
+				var half: float = ui_font.get_string_size("X", HORIZONTAL_ALIGNMENT_LEFT, -1, 22).x / 2
+				draw_rect(Rect2(x - half - 3, y - 12, half * 2 + 6, 24), get_theme_color("paper", "LibreTabs"))
+				text_at(Vector2(x - half, y + (ui_font.get_ascent(22) - ui_font.get_descent(22)) / 2), "X", 22, accent)
 	# Quarter rests are only claimed for completely empty quarter intervals.
 	if notation == "tab": return
 	var pulse: float = start

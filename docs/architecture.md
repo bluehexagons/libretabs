@@ -252,6 +252,22 @@ Segment at long rests and explicit phrase/measure boundaries to control memory, 
 
 Diagnostics distinguish source out of instrument range, too many simultaneous pitches, physically excessive span, optimizer budget exceeded, and supported-but-difficult. A later UI can expose alternate solutions because source-to-candidate links remain intact.
 
+### Pick-friendly projection
+
+The optional pick-friendly view is another derived projection, never a rewrite
+of `SongDocument`. For arbitrary imports, a bounded deterministic search works
+per exact source onset: maximize retained source-note links, require distinct
+strings and the configured fret span, then prefer fewer unused strings and lower
+frets. Its output includes one continuous string range, explicit interior mute
+marks and the IDs of source notes omitted from the tab. Staff and playback still
+consume the canonical song, so the UI must report that difference.
+
+This onset-level procedure is suitable only for the evaluation prototype. The
+M3 optimizer must account for held intervals and movement across a phrase.
+Musician-authored lesson/repertoire variants remain content data and may choose
+intentional chord substitutions; do not encode title-specific exceptions in the
+import algorithm. See [decision 0014](decisions/0014-pick-friendly-arrangements.md).
+
 ## Transport and procedural audio
 
 ### One transport

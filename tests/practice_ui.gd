@@ -28,6 +28,14 @@ func run() -> void:
 	check(not app.get("startup_help_enabled"), "startup help can be disabled")
 	app.get("welcome_practice").pressed.emit()
 	check(not app.get("menu_overlay").visible and not app.get("audio").playing_practice, "welcome practice action returns to the player without unexpected audio")
+	app.call("toggle_drawer", "DETAILS")
+	var pick_option: CheckButton = app.get("pick_arrangement_check")
+	check(pick_option.text == TranslationServer.translate("PICK_ARRANGEMENT") and not pick_option.button_pressed, "arrangement details expose an off-by-default pick option")
+	pick_option.button_pressed = true
+	check(app.get("projection").style == TabProjection.PICK and "Pick-friendly" in app.get("summary").text, "pick option rebuilds the derived tab with an honest summary")
+	pick_option.button_pressed = false
+	check(app.get("projection").style == TabProjection.BASIC, "pick option returns to the unchanged basic projection")
+	app.call("close_menu")
 	app.call("toggle_drawer", "WELCOME")
 	check(not app.get("startup_help_check").button_pressed, "quick start stays accessible after opting out")
 	app.get("startup_help_check").button_pressed = true

@@ -109,6 +109,21 @@ msgstr "Basic practice arrangement"
 msgid "COVERAGE"
 msgstr "Basic tab: %d of %d notes placed · E standard · guitar treble"
 
+msgid "PICK_ARRANGEMENT"
+msgstr "Make chords easy to strum with a pick"
+
+msgid "PICK_ARRANGEMENT_HELP"
+msgstr "This makes a separate, pick-friendly tab. A bracket marks the strings to strum. X means touch that string lightly so it does not ring. For crowded chords, the tab may leave out notes; the staff and playback still keep the original music."
+
+msgid "PICK_COVERAGE"
+msgstr "Pick-friendly tab: %d of %d source notes included · %d muted-string marks (X)"
+
+msgid "PICK_LIMIT"
+msgstr "Procedural preview: each chord shape can be swept across one continuous string range. This has not been reviewed by a guitar teacher. Source pitches, timing, staff notation and audio are unchanged."
+
+msgid "PICK_OMITTED"
+msgstr "△ %d source notes are left out of the pick-friendly tab where the full chord cannot fit. They remain visible on the staff and audible."
+
 msgid "PROTOTYPE_LIMIT"
 msgstr "Evaluation prototype: basic low-fret placement and rounded rhythm display, not a reviewed arrangement. Audio keeps the original timing. Controllers, pitch bend and drums are not reproduced yet."
 
@@ -171,6 +186,9 @@ msgstr "String %d · fret %d"
 
 msgid "CUE_UNPLACED"
 msgstr "! Listen — this note has no tab placement"
+
+msgid "CUE_PICK_OMITTED"
+msgstr "△ Listen — the pick-friendly tab leaves out this source note"
 
 msgid "MEASURE_TITLE"
 msgstr "MEASURE %d / %d"
@@ -351,6 +369,9 @@ msgstr "Press Play. Follow the highlighted fret numbers."
 
 msgid "ARRANGEMENT_SHORT"
 msgstr "Basic tab"
+
+msgid "PICK_SHORT"
+msgstr "Pick-friendly tab · %d notes simplified"
 
 msgid "DETAILS"
 msgstr "About this arrangement"

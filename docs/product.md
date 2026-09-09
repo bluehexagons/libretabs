@@ -145,6 +145,12 @@ Import is cancellable and transactional: a failed or cancelled replacement leave
 - Report placed notes divided by all positive-duration pitched source notes in the selected part, unplaced notes and reasons, maximum fret, maximum span, and a heuristic difficulty estimate. Never present the estimate as a teacher-validated skill level.
 - Unplaced notes retain a visible warning marker and source playback; there is no automatic deletion, octave shifting, or shortening to improve the coverage figure. Preliminary range coverage in import review is distinct from final valid placement coverage.
 - Never rewrite source pitches in MVP. Out-of-range or impossible passages remain visible as diagnostics instead of being silently octave-shifted.
+- Offer an optional pick-friendly tab as a reversible derived variant. Every
+  displayed chord shape spans a continuous set of strings, with `X` mute marks
+  for strings that should not ring. If a source chord cannot fit, report every
+  omitted source note and keep it visible on the staff and audible; do not
+  invent or octave-shift pitches. Procedural import variants are not a substitute
+  for musician-designed lesson arrangements.
 
 ### Playback and practice controls
 
@@ -295,3 +301,13 @@ octave. A count-in beat number occupies the existing Play target and follows the
 audio transport's scheduled pulses, including compound meter. Pause and Replay
 have state-specific labels/help. Capture lettering uses separate higher-resolution
 font caches so enlarging the score does not soften text or alter normal UI fonts.
+
+### Pick-friendly arrangement option
+
+[Decision 0014](decisions/0014-pick-friendly-arrangements.md) adds an optional,
+session-only tab projection for strumming with a pick. Brackets show the string
+range to sweep and `X` means a string is touched lightly so it does not ring.
+The evaluation algorithm may omit reported chord tones but never changes source
+MIDI, staff notation or playback. Imported songs use a bounded procedural
+projection; original teaching material should use musician-designed variants
+when the curriculum needs deliberate harmony or technique.

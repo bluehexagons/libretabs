@@ -50,6 +50,7 @@ var status: Label
 var summary: Label
 var cue: Label
 var warning: Label
+var pick_arrangement_check: CheckButton
 var offline: Label
 var play_button: Button
 var count_badge: Label
@@ -738,6 +739,11 @@ func build_drawers() -> void:
 	endpoints.add_child(button("LOOP_END_HERE", func() -> void: set_loop_boundary(false)))
 
 	var details: VBoxContainer = section("DETAILS")
+	pick_arrangement_check = check("PICK_ARRANGEMENT", false)
+	pick_arrangement_check.tooltip_text = tr("PICK_ARRANGEMENT_HELP")
+	pick_arrangement_check.toggled.connect(set_pick_arrangement)
+	details.add_child(pick_arrangement_check)
+	details.add_child(label("PICK_ARRANGEMENT_HELP", 18))
 	summary = label("ARRANGEMENT")
 	details.add_child(summary)
 	warning = label("PROTOTYPE_LIMIT", 18)
@@ -1523,15 +1529,7 @@ func select_part(index: int) -> void:
 	print_save.disabled = true
 	part = index
 	source_tick = 0.0
-	projection.build(song, part)
-	score.set_document(song, part, projection)
-	notice_button.text = tr("ARRANGEMENT_SHORT") if projection.placed == projection.eligible else tr("UNPLACED_SHORT") % (projection.eligible - projection.placed)
-	summary.text = tr("COVERAGE") % [projection.placed, projection.eligible]
-	warning.text = tr("PROTOTYPE_LIMIT")
-	if projection.placed < projection.eligible:
-		warning.text += "\n" + tr("WARN_UNPLACED")
-	for diagnostic: String in song.diagnostics:
-		warning.text += "\n" + tr(diagnostic)
+	update_arrangement()
 	for child: Node in backing_box.get_children():
 		child.queue_free()
 	for part_index: int in range(song.parts.size()):
@@ -1545,6 +1543,30 @@ func select_part(index: int) -> void:
 			restart_if_playing())
 		backing_box.add_child(item)
 	update_position()
+
+func set_pick_arrangement(_enabled: bool) -> void:
+	if song == null: return
+	pause()
+	print_html = ""
+	print_save.disabled = true
+	update_arrangement()
+	update_position()
+
+func update_arrangement() -> void:
+	var style: String = TabProjection.PICK if pick_arrangement_check.button_pressed else TabProjection.BASIC
+	projection.build(song, part, style)
+	score.set_document(song, part, projection)
+	if style == TabProjection.PICK:
+		notice_button.text = tr("PICK_SHORT") % projection.omitted.size()
+		summary.text = tr("PICK_COVERAGE") % [projection.placed, projection.eligible, projection.mute_marks]
+		warning.text = tr("PICK_LIMIT")
+		if not projection.omitted.is_empty(): warning.text += "\n" + tr("PICK_OMITTED") % projection.omitted.size()
+	else:
+		notice_button.text = tr("ARRANGEMENT_SHORT") if projection.placed == projection.eligible else tr("UNPLACED_SHORT") % (projection.eligible - projection.placed)
+		summary.text = tr("COVERAGE") % [projection.placed, projection.eligible]
+		warning.text = tr("PROTOTYPE_LIMIT")
+		if projection.placed < projection.eligible: warning.text += "\n" + tr("WARN_UNPLACED")
+	for diagnostic: String in song.diagnostics: warning.text += "\n" + tr(diagnostic)
 
 func toggle_play() -> void:
 	if song == null or importer != null:
@@ -1795,7 +1817,7 @@ func report_state() -> void:
 	if song == null: return
 	if host.trace_enabled():
 		var evidence: Dictionary = audio.metrics()
-		evidence.merge({"follow_pages": score.follow_pages, "upcoming_tick": score.upcoming_tick, "count_beat": int(count_badge.text) if count_badge.visible else 0, "capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "font_style": font_style, "control_position": control_position, "handedness": handedness, "controls_on_side": controls_on_side, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "placed": projection.placed, "eligible": projection.eligible, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
+		evidence.merge({"follow_pages": score.follow_pages, "upcoming_tick": score.upcoming_tick, "count_beat": int(count_badge.text) if count_badge.visible else 0, "capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "font_style": font_style, "control_position": control_position, "handedness": handedness, "controls_on_side": controls_on_side, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "arrangement_style": projection.style, "placed": projection.placed, "eligible": projection.eligible, "omitted": projection.omitted.size(), "mute_marks": projection.mute_marks, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
 		host.report(evidence)
 	offline.text = tr("OFFLINE_READY") if host.offline_ready() else tr("OFFLINE_PENDING")
 	if host.offline_ready() and not host.trace_enabled(): idle_timer.stop()
@@ -1821,6 +1843,8 @@ func update_position() -> void:
 			if projection.placements.has(note.id):
 				var placement: Dictionary = projection.placements[note.id]
 				cue.text = tr("CUE_NOTE") % [placement.string, placement.fret]
+			elif projection.omitted.has(note.id):
+				cue.text = tr("CUE_PICK_OMITTED")
 			else:
 				cue.text = tr("CUE_UNPLACED")
 			break

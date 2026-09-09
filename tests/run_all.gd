@@ -152,6 +152,8 @@ func _initialize() -> void:
 	var projection: TabProjection = TabProjection.new()
 	projection.build(song, 0)
 	check(projection.placed == 15 and projection.eligible == 15, "fixture placement coverage")
+	projection.build(song, 0, TabProjection.PICK)
+	check(projection.placed == 15 and projection.placements.has(song.notes[0].id), "pick variant preserves imported stable string note IDs")
 	var held: SongDocument = parse(fixture("held_notes")).document
 	projection.build(held, 0)
 	check(projection.eligible == 3 and projection.placed == 2, "unplaced note stays in denominator")
@@ -160,6 +162,34 @@ func _initialize() -> void:
 		if projection.placements.has(note.id):
 			var p: Dictionary = projection.placements[note.id]
 			check(TabProjection.TUNING[6 - int(p.string)] + int(p.fret) == int(note.pitch), "fret reproduces source pitch")
+	var pick_song: SongDocument = SongDocument.new()
+	pick_song.notes = []
+	var chord_pitches: Array[int] = [40, 45, 50, 55, 59, 64, 67]
+	for index: int in range(chord_pitches.size()):
+		pick_song.notes.append({"id": 100 + index, "part": 0, "pitch": chord_pitches[index], "start": 0, "end": 480})
+	var source_notes: Array[Dictionary] = pick_song.notes.duplicate(true)
+	projection.build(pick_song, 0, TabProjection.PICK)
+	check(projection.eligible == 7 and projection.placed == 6 and projection.omitted.size() == 1, "pick variant simplifies a chord that exceeds six strings")
+	check(pick_song.notes == source_notes, "pick variant never mutates source notes")
+	for id: Variant in projection.placements:
+		var note: Dictionary = pick_song.notes[int(id) - 100]
+		var p: Dictionary = projection.placements[id]
+		check(TabProjection.TUNING[6 - int(p.string)] + int(p.fret) == int(note.pitch), "pick fret reproduces its retained source pitch")
+	for strum: Dictionary in projection.strums:
+		var occupied: Array[int] = []
+		for id: Variant in projection.placements:
+			if int(pick_song.notes[int(id) - 100].start) == int(strum.tick): occupied.append(int(projection.placements[id].string))
+		for string_number: int in range(int(strum.first_string), int(strum.last_string) + 1):
+			check(occupied.has(string_number) or strum.mutes.has(string_number), "pick strum has a fret or mute on every swept string")
+	var mute_song: SongDocument = SongDocument.new()
+	mute_song.notes = [
+		{"id": 200, "part": 0, "pitch": 40, "start": 0, "end": 480},
+		{"id": 201, "part": 0, "pitch": 66, "start": 0, "end": 480},
+	]
+	projection.build(mute_song, 0, TabProjection.PICK)
+	check(projection.placed == 2 and projection.strums.size() == 1 and projection.mute_marks > 0, "pick variant marks skipped strings with mutes")
+	projection.build(mute_song, 0)
+	check(projection.style == TabProjection.BASIC and projection.omitted.is_empty() and projection.strums.is_empty(), "basic tab remains the default and clears pick annotations")
 	for length: int in range(bytes.size()):
 		check(not parse(bytes.slice(0, length)).error.is_empty(), "every truncation rejected")
 	check(parse(fixture("short_header")).error == "ERR_LENGTH", "short tag is rejected without Unicode errors")
