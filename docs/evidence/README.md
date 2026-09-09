@@ -7,3 +7,5 @@ counts and unresolved issues; they are not a live status dashboard.
 For the current state and next work, see the [project handoff](../project-status.md).
 When a later record supersedes an earlier one, keep the earlier record for
 history and identify the newer record or current handoff.
+
+Current focused review: [arrangement techniques](arrangement-techniques-review.md).

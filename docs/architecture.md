@@ -252,21 +252,32 @@ Segment at long rests and explicit phrase/measure boundaries to control memory, 
 
 Diagnostics distinguish source out of instrument range, too many simultaneous pitches, physically excessive span, optimizer budget exceeded, and supported-but-difficult. A later UI can expose alternate solutions because source-to-candidate links remain intact.
 
-### Pick-friendly projection
+### Technique-friendly projections
 
-The optional pick-friendly view is another derived projection, never a rewrite
-of `SongDocument`. For arbitrary imports, a bounded deterministic search works
-per exact source onset: maximize retained source-note links, require distinct
-strings and the configured fret span, then prefer fewer unused strings and lower
-frets. Its output includes one continuous string range, explicit interior mute
-marks and the IDs of source notes omitted from the tab. Staff and playback still
-consume the canonical song, so the UI must report that difference.
+The optional strumming and fingerpicking views are derived projections, never a
+rewrite of `SongDocument`. For arbitrary imports, a bounded deterministic search
+works per exact source onset: maximize retained source-note links, require
+distinct strings and the configured fret span, then apply an explicit comfort
+cost that strongly penalizes high frets, wide spans and string gaps. Strumming
+output includes one continuous string range, explicit interior mute marks and
+omitted source IDs. Fingerpicking output limits each onset to the conventional
+thumb/index/middle/ring string roles and prefers retaining the outside voices.
+Both carry semantic annotations rather than localized display letters.
+
+A barre annotation is inferred only when two or more notes share a nonzero fret
+and every intervening sounding string is fretted at or above it. When nested
+possibilities exist, the prototype reports only the widest candidate to avoid
+claiming a more specific left-hand choice. Staff and playback still consume the
+canonical song, so the UI must report all simplification.
 
 This onset-level procedure is suitable only for the evaluation prototype. The
 M3 optimizer must account for held intervals and movement across a phrase.
 Musician-authored lesson/repertoire variants remain content data and may choose
-intentional chord substitutions; do not encode title-specific exceptions in the
-import algorithm. See [decision 0014](decisions/0014-pick-friendly-arrangements.md).
+intentional chord substitutions or technique notation. Pick direction,
+left-hand fingers, hammer-ons, pull-offs, slides, bends, harmonics, palm muting,
+let-ring spans, chord names and capo instructions require authored or richer
+source data; do not guess them from note-on/off MIDI or encode title-specific
+exceptions in the import algorithm. See [decision 0014](decisions/0014-pick-friendly-arrangements.md).
 
 ## Transport and procedural audio
 

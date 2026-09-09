@@ -188,8 +188,35 @@ func _initialize() -> void:
 	]
 	projection.build(mute_song, 0, TabProjection.PICK)
 	check(projection.placed == 2 and projection.strums.size() == 1 and projection.mute_marks > 0, "pick variant marks skipped strings with mutes")
+	check(int(projection.placements[201].fret) == 2, "pick comfort scoring avoids an unnecessary high-fret voicing")
+	var finger_song: SongDocument = SongDocument.new()
+	finger_song.notes = []
+	var finger_pitches: Array[int] = [40, 48, 55, 60, 64]
+	for index: int in range(finger_pitches.size()):
+		finger_song.notes.append({"id": 300 + index, "part": 0, "pitch": finger_pitches[index], "start": 0, "end": 480})
+	var finger_source: Array[Dictionary] = finger_song.notes.duplicate(true)
+	projection.build(finger_song, 0, TabProjection.FINGER)
+	check(projection.placed == 4 and projection.omitted.size() == 1 and projection.strums.is_empty(), "fingerpick variant limits a chord to four distinct picking roles")
+	check(projection.placements.has(300) and projection.placements.has(304), "fingerpick simplification retains the outside voices")
+	var roles: Array = projection.right_hand.values()
+	check(roles.size() == 4 and roles.duplicate().all(func(role: Variant) -> bool: return role in ["thumb", "index", "middle", "ring"]), "fingerpick placements carry known semantic picking roles")
+	var unique_roles: Dictionary = {}
+	for role: Variant in roles: unique_roles[role] = true
+	check(unique_roles.size() == roles.size(), "fingerpick assigns each right-hand role once per onset")
+	check(finger_song.notes == finger_source, "fingerpick variant never mutates source notes")
+	var first_finger_placements: Dictionary = projection.placements.duplicate(true)
+	var first_finger_roles: Dictionary = projection.right_hand.duplicate(true)
+	projection.build(finger_song, 0, TabProjection.FINGER)
+	check(projection.placements == first_finger_placements and projection.right_hand == first_finger_roles, "fingerpick projection is deterministic")
+	var barre_song: SongDocument = SongDocument.new()
+	barre_song.notes = []
+	var barre_pitches: Array[int] = [41, 48, 53, 57, 60, 65]
+	for index: int in range(barre_pitches.size()):
+		barre_song.notes.append({"id": 400 + index, "part": 0, "pitch": barre_pitches[index], "start": 0, "end": 480})
+	projection.build(barre_song, 0, TabProjection.PICK)
+	check(projection.barres.size() == 1 and projection.barres[0].fret == 1 and projection.barres[0].first_string == 1 and projection.barres[0].last_string == 6, "safe repeated frets produce an inferred full-barre mark")
 	projection.build(mute_song, 0)
-	check(projection.style == TabProjection.BASIC and projection.omitted.is_empty() and projection.strums.is_empty(), "basic tab remains the default and clears pick annotations")
+	check(projection.style == TabProjection.BASIC and projection.omitted.is_empty() and projection.strums.is_empty() and projection.right_hand.is_empty() and projection.barres.is_empty(), "basic tab remains the default and clears technique annotations")
 	for length: int in range(bytes.size()):
 		check(not parse(bytes.slice(0, length)).error.is_empty(), "every truncation rejected")
 	check(parse(fixture("short_header")).error == "ERR_LENGTH", "short tag is rejected without Unicode errors")

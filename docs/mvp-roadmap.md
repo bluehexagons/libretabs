@@ -87,9 +87,11 @@ Goal: the selected part becomes a synchronized, testable practice projection wit
 - **M3.6 Layout engine (L, split by semantic item):** measures, staff primitives, glyph metrics, spacing, line/system wrapping, tab alignment.
 - **M3.7 Score canvas (M):** painting, resize, current/selected state, note-name option, semantic debug overlay.
 - **M3.8 Arrangement review (S):** clef/quantization/highest fret/coverage/warning summary before practice, unplaced-note markers, and the always-reachable beginner Help summary.
-- **M3.9 Pick-friendly projection (M):** replace the evaluation onset search
-  with phrase-aware strum voicing, explicit mute/omission diagnostics and
-  musician review; keep original staff, playback and source links intact.
+- **M3.9 Technique-friendly projections (M):** replace the evaluation onset
+  search with phrase-aware strum and fingerpicking voicing, explicit
+  mute/barre/right-hand/omission diagnostics and musician review; add authored
+  technique data where plain MIDI cannot support an honest inference, while
+  keeping original staff, playback and source links intact.
 
 ### Exit criteria
 
@@ -235,10 +237,11 @@ layout, exit paths, shared transport and browser alpha now; actual OBS Browser
 Source, native capture tools, and editor compositing remain platform evidence to
 collect. It does not add recording, a video encoder, or a remote-control service.
 
-The owner-requested [pick-friendly arrangement slice](decisions/0014-pick-friendly-arrangements.md)
-adds a reversible procedural tab variant with bracketed strum ranges and mute
-marks. It is evaluation work toward M3.9, not the phrase optimizer or musician
-review required for production arrangements.
+The owner-requested [technique-friendly arrangement slice](decisions/0014-pick-friendly-arrangements.md)
+adds reversible procedural strum and fingerpicking tabs with bracketed strum
+ranges, mute marks, right-hand roles and conservative barre marks. It is
+evaluation work toward M3.9, not the phrase optimizer, authored technique model,
+or musician review required for production arrangements.
 
 ## Prototype distribution preparation
 

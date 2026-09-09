@@ -118,6 +118,9 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 				var half: float = ui_font.get_string_size(fret, HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x / 2
 				draw_rect(Rect2(x - half - 4, tab_y - 13, half * 2 + 8, 26), get_theme_color("paper", "LibreTabs"))
 				text_at(Vector2(x - half, tab_y + (ui_font.get_ascent(26) - ui_font.get_descent(26)) / 2), fret, 26, color)
+				if projection.right_hand.has(note.id):
+					var role_key: String = "FINGER_%s_MARK" % String(projection.right_hand[note.id]).to_upper()
+					text_at(Vector2(x + half + 5, tab_y - 5), tr(role_key), 12, accent)
 			elif not projection.omitted.has(note.id):
 				text_at(Vector2(x, tab_top + 31), "!", 22, accent)
 	if notation != "staff":
@@ -136,6 +139,16 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 				var half: float = ui_font.get_string_size("X", HORIZONTAL_ALIGNMENT_LEFT, -1, 22).x / 2
 				draw_rect(Rect2(x - half - 3, y - 12, half * 2 + 6, 24), get_theme_color("paper", "LibreTabs"))
 				text_at(Vector2(x - half, y + (ui_font.get_ascent(22) - ui_font.get_descent(22)) / 2), "X", 22, accent)
+		for barre: Dictionary in projection.barres:
+			if float(barre.tick) < start or float(barre.tick) >= finish: continue
+			var marker: Dictionary = {"start": barre.tick}
+			var x: float = origin.x + ScoreLayout.note_x(song, marker, index, width, continuous) + 19
+			var first_y: float = origin.y + ScoreLayout.tab_y(int(barre.first_string), notation)
+			var last_y: float = origin.y + ScoreLayout.tab_y(int(barre.last_string), notation)
+			draw_line(Vector2(x, first_y), Vector2(x, last_y), accent, 2, true)
+			draw_line(Vector2(x - 4, first_y), Vector2(x + 4, first_y), accent, 2, true)
+			draw_line(Vector2(x - 4, last_y), Vector2(x + 4, last_y), accent, 2, true)
+			text_at(Vector2(x + 4, first_y + 4), tr("BARRE_MARK"), 12, accent)
 	# Quarter rests are only claimed for completely empty quarter intervals.
 	if notation == "tab": return
 	var pulse: float = start

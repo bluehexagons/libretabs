@@ -145,12 +145,14 @@ Import is cancellable and transactional: a failed or cancelled replacement leave
 - Report placed notes divided by all positive-duration pitched source notes in the selected part, unplaced notes and reasons, maximum fret, maximum span, and a heuristic difficulty estimate. Never present the estimate as a teacher-validated skill level.
 - Unplaced notes retain a visible warning marker and source playback; there is no automatic deletion, octave shifting, or shortening to improve the coverage figure. Preliminary range coverage in import review is distinct from final valid placement coverage.
 - Never rewrite source pitches in MVP. Out-of-range or impossible passages remain visible as diagnostics instead of being silently octave-shifted.
-- Offer an optional pick-friendly tab as a reversible derived variant. Every
-  displayed chord shape spans a continuous set of strings, with `X` mute marks
-  for strings that should not ring. If a source chord cannot fit, report every
-  omitted source note and keep it visible on the staff and audible; do not
-  invent or octave-shift pitches. Procedural import variants are not a substitute
-  for musician-designed lesson arrangements.
+- Offer optional strumming and fingerpicking tabs as reversible derived variants.
+  A strum shape spans a continuous set of strings, with `X` mute marks for
+  strings that should not ring. Fingerpicking assigns at most one sounding
+  string to each displayed right-hand role (`T`, `I`, `M`, `R`). Conservatively
+  inferred barres use a visible `B` and a beginner definition. If a source chord
+  cannot fit, report every omitted source note and keep it visible on the staff
+  and audible; do not invent or octave-shift pitches. Procedural import variants
+  are not a substitute for musician-designed lesson arrangements.
 
 ### Playback and practice controls
 
@@ -230,7 +232,9 @@ Godot canvas applications do not automatically inherit the semantic accessibilit
 - Score/tab editing, direct vector PDF export, or MIDI export. Basic printable pages are included under decision 0008.
 - MusicXML, Guitar Pro, ABC, or audio-file import.
 - Alternate/capo/custom tuning UI, bass guitar, left-handed diagrams, or instruments other than guitar.
-- Guitar techniques not represented by plain MIDI, such as bend choice, hammer-on, pull-off, slide, palm mute, fingering fingers, or pick direction.
+- Authoritative guitar techniques not represented by plain MIDI, such as bend
+  choice, hammer-on, pull-off, slide, palm mute, left-hand fingering, or pick
+  direction. A derived view may make clearly labeled procedural suggestions.
 - Tuplet/swing-perfect engraving, multiple notation voices, lyrics, repeats, codas, or print-grade page layout.
 - Accounts, social features, hosted song catalog, YouTube sync, or copyrighted song distribution.
 - Mobile-native store releases. Responsive web is tested; native mobile packaging follows desktop stability.
@@ -302,12 +306,13 @@ audio transport's scheduled pulses, including compound meter. Pause and Replay
 have state-specific labels/help. Capture lettering uses separate higher-resolution
 font caches so enlarging the score does not soften text or alter normal UI fonts.
 
-### Pick-friendly arrangement option
+### Technique-friendly arrangement options
 
-[Decision 0014](decisions/0014-pick-friendly-arrangements.md) adds an optional,
-session-only tab projection for strumming with a pick. Brackets show the string
-range to sweep and `X` means a string is touched lightly so it does not ring.
-The evaluation algorithm may omit reported chord tones but never changes source
-MIDI, staff notation or playback. Imported songs use a bounded procedural
-projection; original teaching material should use musician-designed variants
-when the curriculum needs deliberate harmony or technique.
+[Decision 0014](decisions/0014-pick-friendly-arrangements.md) adds optional,
+session-only tab projections for strumming and fingerpicking. Brackets and `X`
+marks explain a strum; `T`, `I`, `M`, and `R` suggest picking-hand roles; and a
+conservatively inferred `B` explains a barre. The evaluation algorithm may omit
+reported chord tones but never changes source MIDI, staff notation or playback.
+Imported songs use a bounded procedural projection; original teaching material
+should use musician-designed variants when the curriculum needs deliberate
+harmony, stroke direction, articulation, or a learning progression.

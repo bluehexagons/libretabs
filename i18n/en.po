@@ -109,8 +109,20 @@ msgstr "Basic practice arrangement"
 msgid "COVERAGE"
 msgstr "Basic tab: %d of %d notes placed · E standard · guitar treble"
 
-msgid "PICK_ARRANGEMENT"
-msgstr "Make chords easy to strum with a pick"
+msgid "ARRANGEMENT_STYLE"
+msgstr "How do you want to play?"
+
+msgid "ARRANGEMENT_BASIC"
+msgstr "Basic tab"
+
+msgid "ARRANGEMENT_STRUM"
+msgstr "Strum with a pick"
+
+msgid "ARRANGEMENT_FINGER"
+msgstr "Fingerpick"
+
+msgid "BASIC_ARRANGEMENT_HELP"
+msgstr "This keeps the prototype's direct, low-fret guitar placement. It does not claim that every chord can be strummed or assigned comfortably to picking fingers."
 
 msgid "PICK_ARRANGEMENT_HELP"
 msgstr "This makes a separate, pick-friendly tab. A bracket marks the strings to strum. X means touch that string lightly so it does not ring. For crowded chords, the tab may leave out notes; the staff and playback still keep the original music."
@@ -123,6 +135,36 @@ msgstr "Procedural preview: each chord shape can be swept across one continuous 
 
 msgid "PICK_OMITTED"
 msgstr "△ %d source notes are left out of the pick-friendly tab where the full chord cannot fit. They remain visible on the staff and audible."
+
+msgid "FINGER_ARRANGEMENT_HELP"
+msgstr "This makes a separate fingerpicking tab. T means thumb; I, M, and R mean index, middle, and ring fingers. One finger is suggested per sounding string. Crowded chords may leave out notes; the staff and playback still keep the original music."
+
+msgid "FINGER_COVERAGE"
+msgstr "Fingerpicking tab: %d of %d source notes included"
+
+msgid "FINGER_LIMIT"
+msgstr "Procedural preview: each onset uses at most four distinct picking roles and is not turned into an arpeggio. This has not been reviewed by a guitar teacher. Source pitches, timing, staff notation and audio are unchanged."
+
+msgid "FINGER_OMITTED"
+msgstr "△ %d source notes are left out of the fingerpicking tab where the full chord cannot fit. They remain visible on the staff and audible."
+
+msgid "BARRE_FOUND"
+msgstr "Possible barres marked B: %d. A barre means one fretting finger presses more than one string at the same fret."
+
+msgid "BARRE_MARK"
+msgstr "B"
+
+msgid "FINGER_THUMB_MARK"
+msgstr "T"
+
+msgid "FINGER_INDEX_MARK"
+msgstr "I"
+
+msgid "FINGER_MIDDLE_MARK"
+msgstr "M"
+
+msgid "FINGER_RING_MARK"
+msgstr "R"
 
 msgid "PROTOTYPE_LIMIT"
 msgstr "Evaluation prototype: basic low-fret placement and rounded rhythm display, not a reviewed arrangement. Audio keeps the original timing. Controllers, pitch bend and drums are not reproduced yet."
@@ -373,6 +415,9 @@ msgstr "Basic tab"
 msgid "PICK_SHORT"
 msgstr "Pick-friendly tab · %d notes simplified"
 
+msgid "FINGER_SHORT"
+msgstr "Fingerpicking tab · %d notes simplified"
+
 msgid "DETAILS"
 msgstr "About this arrangement"
 
@@ -438,6 +483,9 @@ msgstr "3. The smaller staff above is a pitch and rhythm reference. Higher notes
 
 msgid "HELP_TIMING"
 msgstr "4. Press Play and count with the clicks. Point at the music to preview a position, or click/tap to seek there. Outlined numbers show sounding notes. A ! means a note has no guitar placement. Slow down with Playback or repeat a phrase with Loop."
+
+msgid "HELP_TECHNIQUES"
+msgstr "5. In a strumming tab, a bracket shows all strings to sweep and X means touch a string lightly so it stays quiet. B marks a barre: one fretting finger holds several strings at one fret. In a fingerpicking tab, T is thumb and I, M, R are index, middle, and ring. These are procedural suggestions, not instructions found in the MIDI file."
 
 msgid "FOLLOW_HINT"
 msgstr "Follow the outlined fret numbers."

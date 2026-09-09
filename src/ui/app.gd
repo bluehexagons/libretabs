@@ -50,7 +50,8 @@ var status: Label
 var summary: Label
 var cue: Label
 var warning: Label
-var pick_arrangement_check: CheckButton
+var arrangement_picker: OptionButton
+var arrangement_help: Label
 var offline: Label
 var play_button: Button
 var count_badge: Label
@@ -739,11 +740,15 @@ func build_drawers() -> void:
 	endpoints.add_child(button("LOOP_END_HERE", func() -> void: set_loop_boundary(false)))
 
 	var details: VBoxContainer = section("DETAILS")
-	pick_arrangement_check = check("PICK_ARRANGEMENT", false)
-	pick_arrangement_check.tooltip_text = tr("PICK_ARRANGEMENT_HELP")
-	pick_arrangement_check.toggled.connect(set_pick_arrangement)
-	details.add_child(pick_arrangement_check)
-	details.add_child(label("PICK_ARRANGEMENT_HELP", 18))
+	details.add_child(label("ARRANGEMENT_STYLE", 18))
+	arrangement_picker = OptionButton.new()
+	arrangement_picker.custom_minimum_size.y = 56
+	arrangement_picker.fit_to_longest_item = false
+	for key: String in ["ARRANGEMENT_BASIC", "ARRANGEMENT_STRUM", "ARRANGEMENT_FINGER"]: arrangement_picker.add_item(tr(key))
+	arrangement_picker.item_selected.connect(set_arrangement_style)
+	details.add_child(arrangement_picker)
+	arrangement_help = label("BASIC_ARRANGEMENT_HELP", 18)
+	details.add_child(arrangement_help)
 	summary = label("ARRANGEMENT")
 	details.add_child(summary)
 	warning = label("PROTOTYPE_LIMIT", 18)
@@ -784,7 +789,7 @@ func build_drawers() -> void:
 	help.add_child(label("PLAYER_SHORTCUTS"))
 	help.add_child(keyboard_help)
 	help.add_child(button("KEYBOARD", func() -> void: toggle_drawer("KEYBOARD")))
-	for key: String in ["HELP_HIGHLIGHTS", "VIEW_HELP", "HELP_STRINGS", "HELP_FRETS", "HELP_STAFF", "HELP_TIMING"]:
+	for key: String in ["HELP_HIGHLIGHTS", "VIEW_HELP", "HELP_STRINGS", "HELP_FRETS", "HELP_STAFF", "HELP_TIMING", "HELP_TECHNIQUES"]:
 		help.add_child(label(key, 20))
 	var about: VBoxContainer = section("ABOUT")
 	about.add_child(label("ABOUT_TEXT", 18))
@@ -1544,7 +1549,7 @@ func select_part(index: int) -> void:
 		backing_box.add_child(item)
 	update_position()
 
-func set_pick_arrangement(_enabled: bool) -> void:
+func set_arrangement_style(_index: int) -> void:
 	if song == null: return
 	pause()
 	print_html = ""
@@ -1553,19 +1558,26 @@ func set_pick_arrangement(_enabled: bool) -> void:
 	update_position()
 
 func update_arrangement() -> void:
-	var style: String = TabProjection.PICK if pick_arrangement_check.button_pressed else TabProjection.BASIC
+	var style: String = [TabProjection.BASIC, TabProjection.PICK, TabProjection.FINGER][arrangement_picker.selected]
 	projection.build(song, part, style)
 	score.set_document(song, part, projection)
+	arrangement_help.text = tr(["BASIC_ARRANGEMENT_HELP", "PICK_ARRANGEMENT_HELP", "FINGER_ARRANGEMENT_HELP"][arrangement_picker.selected])
 	if style == TabProjection.PICK:
 		notice_button.text = tr("PICK_SHORT") % projection.omitted.size()
 		summary.text = tr("PICK_COVERAGE") % [projection.placed, projection.eligible, projection.mute_marks]
 		warning.text = tr("PICK_LIMIT")
 		if not projection.omitted.is_empty(): warning.text += "\n" + tr("PICK_OMITTED") % projection.omitted.size()
+	elif style == TabProjection.FINGER:
+		notice_button.text = tr("FINGER_SHORT") % projection.omitted.size()
+		summary.text = tr("FINGER_COVERAGE") % [projection.placed, projection.eligible]
+		warning.text = tr("FINGER_LIMIT")
+		if not projection.omitted.is_empty(): warning.text += "\n" + tr("FINGER_OMITTED") % projection.omitted.size()
 	else:
 		notice_button.text = tr("ARRANGEMENT_SHORT") if projection.placed == projection.eligible else tr("UNPLACED_SHORT") % (projection.eligible - projection.placed)
 		summary.text = tr("COVERAGE") % [projection.placed, projection.eligible]
 		warning.text = tr("PROTOTYPE_LIMIT")
 		if projection.placed < projection.eligible: warning.text += "\n" + tr("WARN_UNPLACED")
+	if not projection.barres.is_empty(): warning.text += "\n" + tr("BARRE_FOUND") % projection.barres.size()
 	for diagnostic: String in song.diagnostics: warning.text += "\n" + tr(diagnostic)
 
 func toggle_play() -> void:
