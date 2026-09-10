@@ -1050,3 +1050,42 @@ msgstr "Following"
 
 msgid "CARD_SETTINGS"
 msgstr "Settings\nPlayback, score, sound and appearance"
+
+msgid "TV_VIEW"
+msgstr "TV & large screen"
+
+msgid "CARD_TV_VIEW"
+msgstr "TV & large screen\nLarger music for screen mirroring"
+
+msgid "TV_INTRO"
+msgstr "Make the music easier to read across the room. Large notes fill the available space; More music shows a wider passage with smaller notes. Your usual player settings stay unchanged."
+
+msgid "TV_ENTER"
+msgstr "Open large-screen view"
+
+msgid "TV_SETUP"
+msgstr "1. Turn your phone sideways.\n2. Use your phone’s screen-mirroring controls to connect to a compatible TV. On iPhone or iPad, use Screen Mirroring in Control Center; on Android, use your device’s casting controls or Google Home.\n3. Return here and open large-screen view. Press Play when you are ready.\n\nMirroring shows the same picture on your phone and TV. LibreTabs does not connect to a TV itself. Keep this app visible; switching away pauses practice. Use your browser’s full-screen option if available."
+
+msgid "TV_TIMING"
+msgstr "Wireless mirroring can delay the picture and sound. Check them together before practising in time. A cable may work better for your setup."
+
+msgid "TV_APPLE_HELP"
+msgstr "Apple mirroring help (opens browser)"
+
+msgid "TV_ANDROID_HELP"
+msgstr "Google casting help (opens browser)"
+
+msgid "TV_MORE_MUSIC"
+msgstr "More music"
+
+msgid "TV_LARGE_NOTES"
+msgstr "Larger notes"
+
+msgid "TV_EXIT"
+msgstr "Exit TV view"
+
+msgid "TV_PROGRESS"
+msgstr "Measure %d / %d · Speed %d%%"
+
+msgid "TV_READY"
+msgstr "Press Play when you are ready."

@@ -12,6 +12,9 @@ var background: String = "transparent"
 var show_title: bool = false
 var zoom: float = 1.0
 var placement: String = "bottom"
+var large_screen: bool = false
+var bottom_inset: float = 0.0
+var right_inset: float = 0.0
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -39,6 +42,7 @@ func _ready() -> void:
 	score.ui_font = text_font
 	score.music_font = notation_font
 	column.add_child(score)
+	score.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	resized.connect(arrange)
 	hide()
 
@@ -68,10 +72,12 @@ func capture_font(source: Font) -> Font:
 func arrange() -> void:
 	if card == null: return
 	var natural_height: float = ScoreLayout.row_height(symbols) + 16 + (40 if show_title else 0)
-	var factor: float = minf(zoom, maxf(0.1, minf((size.y - 32) / natural_height, (size.x - 32) / 256)))
+	var available_height: float = maxf(48, size.y - bottom_inset - 32)
+	var desired_zoom: float = minf(2.0, available_height / natural_height) if large_screen else zoom
+	var factor: float = minf(desired_zoom, maxf(0.1, minf(available_height / natural_height, (size.x - right_inset - 32) / 256)))
 	card.scale = Vector2.ONE * factor
-	card.size = Vector2(maxf(256, (size.x - 32) / factor), natural_height)
+	card.size = Vector2(maxf(256, (size.x - right_inset - 32) / factor), natural_height)
 	var y: float = 16
-	if placement == "bottom": y = size.y - natural_height * factor - 16
-	elif placement == "center": y = (size.y - natural_height * factor) / 2
+	if placement == "bottom": y = size.y - bottom_inset - natural_height * factor - 16
+	elif placement == "center": y = (size.y - bottom_inset - natural_height * factor) / 2
 	card.position = Vector2(16, maxf(0, y))

@@ -28,6 +28,14 @@ one- or two-finger horizontal swipes and a horizontal mouse wheel. Page gestures
 never seek audio; a single tap on the music still seeks. Help describes these
 optional shortcuts alongside the visible page arrows.
 
+Menu → TV & large screen provides a mirroring-friendly presentation with larger
+paired notation, a solid background, and a compact playback/status bar. Rotate
+the phone sideways and connect using the device's screen-mirroring controls.
+More music trades note size for a wider passage. Exit TV view restores the
+ordinary player; presentation changes do not overwrite practice preferences.
+This view does not establish a TV connection or provide a separate remote screen.
+See [decision 0016](decisions/0016-large-screen-mirroring.md).
+
 The app is a teacher-shaped practice aid, not a replacement for a teacher, a full notation editor, or an automatic arranger that claims every MIDI file is playable.
 
 ## Primary learner

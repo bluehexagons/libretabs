@@ -4,6 +4,14 @@ extends Control
 var page_swipe_start: Vector2
 var capture_view: CaptureView
 var capture_active: bool = false
+var tv_active: bool = false
+var tv_bar: PanelContainer
+var tv_play: Button
+var tv_density: Button
+var tv_progress: Label
+var tv_status: Label
+var arranging_tv: bool = false
+var tv_actions: HFlowContainer
 var backdrop: ThemeBackdrop
 var capture_choices: Dictionary = {}
 var page_swipe_active: bool = false
@@ -207,6 +215,7 @@ func _ready() -> void:
 	build_ui()
 	capture_view = CaptureView.new()
 	add_child(capture_view)
+	build_tv_controls()
 	resized.connect(responsive)
 	appearance_mode = host.load_appearance()
 	host.appearance_changed.connect(apply_appearance)
@@ -238,6 +247,7 @@ func set_status(key: String) -> void:
 	status_key = key
 	status.text = tr(key)
 	status.visible = key not in ["START_HINT", "STATE_PAUSED", "FOLLOW_HINT", "COUNTING"]
+	update_tv()
 
 func label(key: String, font_size: int = 20) -> Label:
 	var item: Label = Label.new()
@@ -600,7 +610,7 @@ func set_startup_help(enabled: bool) -> void:
 
 func build_drawers() -> void:
 	var menu_index: VBoxContainer = section("MENU")
-	for key: String in ["WELCOME", "SETTINGS", "SONG_MENU", "TEMPO", "SCORE_VIEW", "PRINT", "CAPTURE", "LOOP_TOOL", "SOUND", "DISPLAY", "KEYBOARD", "HELP", "ABOUT"]:
+	for key: String in ["WELCOME", "SETTINGS", "TV_VIEW", "SONG_MENU", "TEMPO", "SCORE_VIEW", "PRINT", "CAPTURE", "LOOP_TOOL", "SOUND", "DISPLAY", "KEYBOARD", "HELP", "ABOUT"]:
 		var entry: Button = button(key, func() -> void: toggle_drawer(key))
 		entry.text = tr("CARD_" + key)
 		entry.alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -612,6 +622,7 @@ func build_drawers() -> void:
 	control_help.add_child(help_text)
 	build_print_menu()
 	build_capture_menu()
+	build_tv_menu()
 	var views: VBoxContainer = section("SCORE_VIEW")
 	view_picker = OptionButton.new()
 	view_picker.tooltip_text = tr("VIEW_HELP")
@@ -778,7 +789,7 @@ func build_drawers() -> void:
 	warning = label("PROTOTYPE_LIMIT", 18)
 	details.add_child(warning)
 	var settings: VBoxContainer = section("SETTINGS")
-	for key: String in ["TEMPO", "SCORE_VIEW", "LOOP_TOOL", "SOUND", "DISPLAY", "KEYBOARD"]: settings.add_child(button(key, func() -> void: toggle_drawer(key)))
+	for key: String in ["TEMPO", "SCORE_VIEW", "LOOP_TOOL", "SOUND", "DISPLAY", "KEYBOARD", "TV_VIEW"]: settings.add_child(button(key, func() -> void: toggle_drawer(key)))
 	settings_notice = label("SETTINGS_SAVED", 18)
 	settings.add_child(settings_notice)
 	settings.add_child(button("RESET_PRACTICE", reset_preferences))
@@ -920,6 +931,103 @@ func volume_control(parent: Node, key: String, initial: float, instrument: bool)
 	parent.add_child(slider)
 	return slider
 
+func build_tv_menu() -> void:
+	var content: VBoxContainer = section("TV_VIEW")
+	content.add_child(label("TV_INTRO", 18))
+	content.add_child(button("TV_ENTER", enter_tv))
+	content.add_child(label("TV_SETUP", 18))
+	content.add_child(button("TV_APPLE_HELP", func() -> void: host.open_url("https://support.apple.com/102661")))
+	content.add_child(button("TV_ANDROID_HELP", func() -> void: host.open_url("https://support.google.com/googlehome/answer/7169790")))
+	content.add_child(label("TV_TIMING", 18))
+
+func build_tv_controls() -> void:
+	tv_bar = PanelContainer.new()
+	add_child(tv_bar)
+	var column: VBoxContainer = VBoxContainer.new()
+	tv_bar.add_child(column)
+	tv_progress = label("TV_PROGRESS", 20)
+	tv_progress.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	column.add_child(tv_progress)
+	tv_status = label("TV_READY", 18)
+	tv_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	column.add_child(tv_status)
+	tv_actions = flow(column)
+	tv_actions.alignment = FlowContainer.ALIGNMENT_CENTER
+	tv_play = button("PLAY", toggle_play)
+	tv_actions.add_child(tv_play)
+	tv_density = button("TV_MORE_MUSIC", toggle_tv_density)
+	tv_actions.add_child(tv_density)
+	tv_actions.add_child(button("HELP", func() -> void: toggle_drawer("HELP")))
+	tv_actions.add_child(button("TV_EXIT", leave_capture))
+	tv_bar.minimum_size_changed.connect(arrange_tv)
+	resized.connect(arrange_tv)
+	tv_bar.hide()
+
+func enter_tv() -> void:
+	if song == null or importer != null: return
+	enter_capture()
+	tv_active = true
+	capture_view.large_screen = true
+	capture_view.symbols = "both"
+	capture_view.background = "solid"
+	capture_view.show_title = true
+	capture_view.placement = "center"
+	capture_view.configure(score, title, dark_mode)
+	tv_density.text = tr("TV_MORE_MUSIC")
+	tv_density.tooltip_text = tv_density.text
+	tv_bar.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 8))
+	tv_bar.show()
+	arrange_tv()
+	update_tv()
+	apply_capture_background()
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	tv_play.grab_focus()
+
+func toggle_tv_density() -> void:
+	capture_view.large_screen = not capture_view.large_screen
+	capture_view.zoom = 0.85
+	tv_density.text = tr("TV_MORE_MUSIC" if capture_view.large_screen else "TV_LARGE_NOTES")
+	tv_density.tooltip_text = tv_density.text
+	arrange_tv()
+
+func arrange_tv() -> void:
+	if not tv_active or arranging_tv: return
+	arranging_tv = true
+	var side: bool = size.y < 500 and size.x >= 650 and theme.default_font_size < 30
+	tv_bar.size.x = 220 if side else maxf(240, size.x - 32)
+	adapt_flow(tv_bar)
+	if side:
+		for action: Control in tv_actions.get_children(): action.custom_minimum_size.x = 204
+	capture_view.show_title = not side
+	capture_view.heading.visible = not side
+	update_tv_status(side)
+	tv_bar.size.y = tv_bar.get_combined_minimum_size().y
+	tv_bar.position = Vector2(size.x - 236, maxf(16, (size.y - tv_bar.size.y) / 2)) if side else Vector2(16, maxf(0, size.y - tv_bar.size.y - 16))
+	capture_view.bottom_inset = 0 if side else tv_bar.size.y + 16
+	capture_view.right_inset = 236 if side else 0
+	capture_view.arrange()
+	arranging_tv = false
+
+func update_tv_status(side: bool) -> void:
+	var alert: bool = status_key in ["AUDIO_BLOCKED", "SUSPENDED"]
+	tv_density.visible = not (side and alert)
+	tv_status.visible = not side or alert or count_badge.visible
+	tv_progress.visible = not side or not tv_status.visible
+	tv_status.text = status.text
+	if count_badge.visible: tv_status.text = tr("TIP_COUNT_BEAT") % int(count_badge.text)
+
+func update_tv() -> void:
+	if not tv_active or song == null: return
+	tv_progress.text = tr("TV_PROGRESS") % [score.measure_index + 1, song.measures.size(), roundi(speed * 100)]
+	update_tv_status(size.y < 500 and size.x >= 650 and theme.default_font_size < 30)
+	var action: String = tr("PAUSE" if audio.playing_practice else ("REPLAY" if state == "STATE_COMPLETE" else "PLAY"))
+	var changed: bool = tv_play.text != action
+	tv_play.text = action
+	tv_play.icon = UIIcons.get_icon("PAUSE" if audio.playing_practice else "PLAY")
+	tv_play.tooltip_text = tr("TIP_PAUSE" if audio.playing_practice else "TIP_PLAY")
+	if count_badge.visible: tv_status.text = tr("TIP_COUNT_BEAT") % int(count_badge.text)
+	if changed: arrange_tv()
+
 func build_capture_menu() -> void:
 	var content: VBoxContainer = section("CAPTURE")
 	content.add_child(label("CAPTURE_HELP", 18))
@@ -959,6 +1067,10 @@ func capture_choice(key: String) -> String:
 
 func enter_capture() -> void:
 	if song == null or importer != null: return
+	leave_capture()
+	capture_view.large_screen = false
+	capture_view.bottom_inset = 0
+	capture_view.right_inset = 0
 	close_menu()
 	release_keyboard()
 	var focus: Control = get_viewport().gui_get_focus_owner()
@@ -978,6 +1090,11 @@ func enter_capture() -> void:
 func leave_capture() -> void:
 	if not capture_active: return
 	capture_active = false
+	tv_active = false
+	tv_bar.hide()
+	capture_view.large_screen = false
+	capture_view.bottom_inset = 0
+	capture_view.right_inset = 0
 	capture_view.hide()
 	root_box.show()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
@@ -1061,13 +1178,13 @@ func close_menu() -> void:
 	else: menu_button.grab_focus()
 
 func _input(event: InputEvent) -> void:
-	if capture_active and ((event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT) or event is InputEventScreenTouch):
+	if capture_active and not tv_active and ((event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT) or event is InputEventScreenTouch):
 		# Consume the whole gesture, including touch's emulated mouse events,
 		# before showing controls that might lie under the pointer.
 		if not event.pressed: leave_capture.call_deferred()
 		get_viewport().set_input_as_handled()
 		return
-	if not menu_overlay.visible and (event is InputEventScreenTouch or event is InputEventScreenDrag):
+	if not capture_active and not menu_overlay.visible and (event is InputEventScreenTouch or event is InputEventScreenDrag):
 		var local_event: InputEvent = event.xformed_by(score.get_global_transform_with_canvas().affine_inverse())
 		if not score.touch_origins.is_empty() or (event is InputEventScreenTouch and event.pressed and score.get_global_rect().has_point(event.position)):
 			score.touch_input(local_event)
@@ -1302,6 +1419,7 @@ func apply_appearance() -> void:
 	drawer.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 16))
 	paper.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 8))
 	dock_panel.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 12))
+	if tv_bar != null: tv_bar.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 8))
 	speed_control.add_theme_stylebox_override("panel", UIAppearance.tempo_unit_style(dark_mode))
 	for action: Button in [play_button, welcome_practice]:
 		for state_name: String in ["normal", "hover", "pressed", "hover_pressed"]:
@@ -1859,6 +1977,7 @@ func update_play_control(frame: int = -1) -> void:
 		play_button.text = "" if controls_on_side or tight_controls else tr(key)
 		play_button.icon = UIIcons.get_icon(key)
 		play_button.tooltip_text = tr("TIP_" + key)
+	update_tv()
 	if key != play_control_key:
 		play_control_key = key
 		adapt_flow(dock)
@@ -1989,7 +2108,7 @@ func report_state() -> void:
 	if song == null: return
 	if host.trace_enabled():
 		var evidence: Dictionary = audio.metrics()
-		evidence.merge({"follow_pages": score.follow_pages, "upcoming_tick": score.upcoming_tick, "count_beat": int(count_badge.text) if count_badge.visible else 0, "capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "font_style": font_style, "control_position": control_position, "handedness": handedness, "controls_on_side": controls_on_side, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "notation_rows": notation_rows, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "arrangement_style": projection.style, "placed": projection.placed, "eligible": projection.eligible, "omitted": projection.omitted.size(), "mute_marks": projection.mute_marks, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
+		evidence.merge({"tv_active": tv_active, "tv_large_notes": capture_view.large_screen, "tv_scale": capture_view.card.scale.x, "follow_pages": score.follow_pages, "upcoming_tick": score.upcoming_tick, "count_beat": int(count_badge.text) if count_badge.visible else 0, "capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "font_style": font_style, "control_position": control_position, "handedness": handedness, "controls_on_side": controls_on_side, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "notation_rows": notation_rows, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "arrangement_style": projection.style, "placed": projection.placed, "eligible": projection.eligible, "omitted": projection.omitted.size(), "mute_marks": projection.mute_marks, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
 		host.report(evidence)
 	offline.text = tr("OFFLINE_READY") if host.offline_ready() else tr("OFFLINE_PENDING")
 	if host.offline_ready() and not host.trace_enabled(): idle_timer.stop()
@@ -2004,6 +2123,7 @@ func update_position() -> void:
 		capture_view.score.effects_playing = score.effects_playing
 		capture_view.score.update_tick(source_tick)
 	update_page_controls()
+	update_tv()
 	updating = true
 	seek.value = source_tick
 	updating = false

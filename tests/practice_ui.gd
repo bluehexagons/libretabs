@@ -673,6 +673,49 @@ func run() -> void:
 	app.call("_input", tap)
 	await process_frame
 	check(not app.get("capture_active") and app.get("root_box").visible, "touch exits capture without needing a small button")
+	var tv_tick: float = app.get("source_tick")
+	var tv_rows: Array = score.notation_rows.duplicate(true)
+	var capture_preference: String = app.call("capture_choice", "capture_notation")
+	app.call("enter_tv")
+	check(app.get("tv_active") and app.get("capture_active") and app.get("tv_bar").visible, "TV view exposes its playback and exit controls")
+	check(capture.background == "solid" and capture.symbols == "both" and capture.large_screen, "TV view starts with an opaque paired score and larger notes")
+	check(not player.playing_practice and app.get("source_tick") == tv_tick, "entering TV view never starts or seeks playback")
+	app.call("change_appearance", 2)
+	check(app.get("tv_bar").get_theme_stylebox("panel").bg_color == UIAppearance.panel_style(true, 8).bg_color, "TV toolbar follows a dark appearance change")
+	app.call("change_appearance", 0)
+	for viewport: Vector2i in [Vector2i(1920, 1080), Vector2i(844, 390), Vector2i(390, 844), Vector2i(1280, 720)]:
+		root.size = viewport
+		for _frame: int in range(12): await process_frame
+		var tv_card: Rect2 = capture.card.get_global_rect()
+		var tv_controls: Rect2 = app.get("tv_bar").get_global_rect()
+		check(tv_card.position.x >= 0 and tv_card.end.x <= viewport.x + 1 and (tv_card.end.y <= tv_controls.position.y or tv_card.end.x <= tv_controls.position.x), "TV score fits clear of controls at %s" % viewport)
+		check(tv_controls.end.x <= viewport.x + 1 and tv_controls.end.y <= viewport.y, "TV controls fit at %s" % viewport)
+	app.call("apply_scale", 2.0)
+	root.size = Vector2i(844, 390)
+	for _frame: int in range(12): await process_frame
+	var enlarged_controls: Rect2 = app.get("tv_bar").get_global_rect()
+	check(enlarged_controls.end.x <= 844 and enlarged_controls.end.y <= 390, "TV controls remain reachable with enlarged text in landscape")
+	app.call("apply_scale", 1.0)
+	root.size = Vector2i(844, 390)
+	app.call("set_status", "AUDIO_BLOCKED")
+	for _frame: int in range(12): await process_frame
+	check(app.get("tv_status").visible and app.get("tv_bar").get_global_rect().end.y <= 390, "short TV layout retains blocked-audio recovery without clipping controls")
+	app.call("set_status", "START_HINT")
+	root.size = Vector2i(1920, 1080)
+	for _frame: int in range(12): await process_frame
+	var large_factor: float = capture.card.scale.x
+	app.call("toggle_tv_density")
+	for _frame: int in range(4): await process_frame
+	check(capture.card.scale.x < large_factor and capture.score.current_tick == tv_tick, "More music reduces score scale while preserving the transport")
+	app.call("set_status", "AUDIO_BLOCKED")
+	check(app.get("tv_status").text == TranslationServer.translate("AUDIO_BLOCKED"), "TV view exposes blocked audio recovery")
+	app.call("toggle_drawer", "HELP")
+	check(not app.get("tv_active") and app.get("opened_drawer") == "HELP", "TV Help returns to reachable reading guidance")
+	check(score.notation_rows == tv_rows and app.call("capture_choice", "capture_notation") == capture_preference, "TV view preserves normal notation and capture preferences")
+	app.call("close_menu")
+	app.call("enter_capture")
+	check(not capture.large_screen and capture.bottom_inset == 0 and not app.get("tv_bar").visible, "ordinary capture does not inherit TV controls or sizing")
+	app.call("leave_capture")
 	app.set("motion_mode", "full")
 	app.call("apply_motion")
 	check(score.playhead_x() <= score.size.x * 0.4 and score.playhead_x() <= 360, "playhead leaves most width for upcoming music and more trailing context")
