@@ -16,7 +16,10 @@ The piano row is a presentation of the pitches sounding at the shared source
 tick, including simultaneous source notes and held computer-keyboard notes. It
 does not introduce a transport, change source timing, record input, or grade the
 learner. Highlighted keys also have an outline and a textual sounding-note list,
-so the state is not communicated by color alone.
+so the state is not communicated by color alone. The keyboard covers the
+standard 88-key piano range, A0 through C8. Because its horizontal axis is pitch
+rather than time, piano rows neither accept horizontal seeking nor receive the
+timeline playhead or hover preview.
 
 Rows may repeat and can be reordered. At least one row is retained. Heights are
 validated from 96 through 480 logical pixels, and stored layouts are bounded to
@@ -43,4 +46,5 @@ capture presentation retain their existing notation choices.
 This slice does not add score editing, a full piano-roll history, alternate
 instruments, fingering changes, or a new audio/input system. Verification covers
 schema recovery, default compatibility, repeat/order/height behavior, responsive
-fitting, source-tick pitch selection, web persistence, and browser rendering.
+fitting, source-tick pitch selection, non-timeline piano interaction, web
+persistence, and browser rendering.

@@ -24,3 +24,23 @@ Godot import/editor/application boot, the deliberate failure-path check, and
 whitespace validation. The remaining platform and learner validation gates in
 the M0 roadmap are unchanged. Screenshots are private managed-browser evidence
 and are not committed.
+
+## Follow-up review — 2026-09-10
+
+Review expanded the piano to the full 88-key A0–C8 range, so standard-guitar low
+notes and the ends of a piano are represented. It also made the piano explicitly
+non-timeline: hover and playhead markers stop at its boundaries, and clicking a
+piano key does not seek. The sounding-note text continues to identify every
+active pitch.
+
+A narrow-viewport interaction pass found that rebuilding the row editor could
+squeeze action labels into unreadable slivers. Order controls and height/removal
+controls now occupy two stable flow lines per row. The managed browser follow-up
+at 390×844 confirmed readable controls after adding and reordering a piano row,
+unchanged transport position after clicking the piano, segmented timeline
+markers, and zero console errors.
+
+The follow-up `python3 scripts/verify.py` gate passed 6,369 core checks, 512
+practice UI checks, 468 layout checks, 19 Python tests, five JavaScript tests,
+Godot import/editor/application boot, the deliberate failure-path check, and
+whitespace validation.

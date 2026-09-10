@@ -4,6 +4,9 @@ extends Control
 
 signal seek_requested(tick: float)
 
+const PIANO_FIRST_PITCH: int = 21
+const PIANO_LAST_PITCH: int = 108
+
 var reduced_motion: bool = false
 var presentation: bool = false
 var follow_pages: bool = false
@@ -53,9 +56,11 @@ func _ready() -> void:
 	add_child(cursor)
 	resized.connect(refresh)
 	gui_input.connect(pointer_input)
-	mouse_entered.connect(func() -> void: pointer_hovered = true; cursor.queue_redraw())
+	mouse_entered.connect(func() -> void: update_pointer_region(get_local_mouse_position()))
 	mouse_exited.connect(func() -> void:
 		pointer_hovered = false
+		mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		tooltip_text = tr("TIP_SCORE_INTERACTION")
 		if not pointer_pressed: cursor.queue_redraw())
 
 func set_document(document: SongDocument, selection: int, tab: TabProjection) -> void:
@@ -217,10 +222,8 @@ func pointer_input(event: InputEvent) -> void:
 		else:
 			finish_pointer(event.position)
 	elif event is InputEventMouseMotion:
-		pointer_position = event.position
-		pointer_hovered = true
+		update_pointer_region(event.position)
 		if pointer_pressed and pointer_position.distance_to(pointer_origin) > 14: pointer_moved = true
-		cursor.queue_redraw()
 	elif event is InputEventScreenTouch:
 		if event.pressed: begin_pointer(event.position)
 		else: finish_pointer(event.position)
@@ -230,6 +233,9 @@ func pointer_input(event: InputEvent) -> void:
 		cursor.queue_redraw()
 
 func begin_pointer(position: Vector2) -> void:
+	if not is_timeline_position(position):
+		cancel_pointer()
+		return
 	pointer_pressed = true
 	pointer_moved = false
 	pointer_origin = position
@@ -239,10 +245,25 @@ func begin_pointer(position: Vector2) -> void:
 func finish_pointer(position: Vector2) -> void:
 	if not pointer_pressed: return
 	pointer_position = position
-	var should_seek: bool = not pointer_moved and position.distance_to(pointer_origin) <= 14
+	var should_seek: bool = is_timeline_position(position) and not pointer_moved and position.distance_to(pointer_origin) <= 14
 	pointer_pressed = false
 	cursor.queue_redraw()
 	if should_seek: seek_requested.emit(tick_at_position(position))
+
+func is_timeline_position(position: Vector2) -> bool:
+	if notation_rows.is_empty(): return true
+	for index: int in range(notation_rows.size()):
+		var top: float = NotationRows.row_top(notation_rows, index)
+		if position.y >= top and position.y < top + float(notation_rows[index].height):
+			return notation_rows[index].type != "piano"
+	return false
+
+func update_pointer_region(position: Vector2) -> void:
+	pointer_position = position
+	pointer_hovered = is_timeline_position(position)
+	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if pointer_hovered else Control.CURSOR_ARROW
+	tooltip_text = tr("TIP_SCORE_INTERACTION") if pointer_hovered else ""
+	if cursor != null: cursor.queue_redraw()
 
 func cancel_pointer() -> void:
 	if not pointer_pressed: return
@@ -272,14 +293,12 @@ func draw_cursor(surface: Control) -> void:
 		preview_color.a = 0.7 if pointer_pressed else 0.42
 		var wash: Color = preview_color
 		wash.a = 0.12 if pointer_pressed else 0.055
-		surface.draw_rect(Rect2(preview_x - (15 if pointer_pressed else 10), 48, 30 if pointer_pressed else 20, content_height() - 70), wash)
-		surface.draw_line(Vector2(preview_x, 48), Vector2(preview_x, content_height() - 22), preview_color, 3 if pointer_pressed else 2, true)
-		surface.draw_circle(Vector2(preview_x, 48), 7 if pointer_pressed else 5, preview_color, false, 2, true)
+		draw_timeline_indicator(surface, preview_x, preview_color, 3 if pointer_pressed else 2, wash, 30 if pointer_pressed else 20)
 	if tiles.has(measure_index):
 		var tile: NotationMeasureStack = tiles[measure_index]
 		var origin: Vector2 = tile.position + strip.position
 		var x: float = layout.timeline_x(current_tick) - view_offset
-		surface.draw_line(Vector2(x, origin.y + 60), Vector2(x, origin.y + content_height() - 22), get_theme_color("accent", "LibreTabs"), 2, true)
+		draw_timeline_indicator(surface, x, get_theme_color("accent", "LibreTabs"), 2, Color.TRANSPARENT, 0, origin.y)
 	for note: Dictionary in song.notes:
 		if int(note.part) != part: continue
 		var upcoming: bool = float(note.start) == upcoming_tick
@@ -313,6 +332,27 @@ func draw_cursor(surface: Control) -> void:
 	# Fixed reading guide; notes disappear behind it as they pass.
 	surface.draw_rect(Rect2(0, 48, 44, content_height() - 48), get_theme_color("paper", "LibreTabs"))
 	for row: Dictionary in visual_rows(): draw_reading_guide(surface, row)
+
+func draw_timeline_indicator(surface: Control, x: float, color: Color, width: float, wash: Color, wash_width: float, origin_y: float = 0) -> void:
+	var marked_start: bool = false
+	for segment: Vector2 in timeline_segments(origin_y):
+		if wash_width > 0: surface.draw_rect(Rect2(x - wash_width / 2, segment.x, wash_width, segment.y - segment.x), wash)
+		surface.draw_line(Vector2(x, segment.x), Vector2(x, segment.y), color, width, true)
+		if wash_width > 0 and not marked_start:
+			surface.draw_circle(Vector2(x, segment.x), 7 if pointer_pressed else 5, color, false, 2, true)
+			marked_start = true
+
+func timeline_segments(origin_y: float = 0) -> Array[Vector2]:
+	if notation_rows.is_empty(): return [Vector2(origin_y + 48, origin_y + content_height() - 22)]
+	var result: Array[Vector2] = []
+	for index: int in range(notation_rows.size()):
+		if notation_rows[index].type == "piano": continue
+		var top: float = origin_y + NotationRows.row_top(notation_rows, index)
+		var height: float = float(notation_rows[index].height)
+		var start: float = top + minf(48, height * 0.25)
+		var finish: float = top + height - minf(22, height * 0.12)
+		result.append(Vector2(start, finish))
+	return result
 
 func set_live(notes: Array[Dictionary]) -> void:
 	live_notes = notes.duplicate(true)
@@ -391,9 +431,8 @@ func draw_piano(surface: Control, row_index: int) -> void:
 	var right: float = maxf(left + 40, size.x - 10)
 	var key_top: float = top + 28
 	var key_bottom: float = top + height - 18
-	var first_pitch: int = 48
 	var white_pitches: Array[int] = []
-	for pitch: int in range(first_pitch, 85):
+	for pitch: int in range(PIANO_FIRST_PITCH, PIANO_LAST_PITCH + 1):
 		if posmod(pitch, 12) not in [1, 3, 6, 8, 10]: white_pitches.append(pitch)
 	var white_width: float = (right - left) / white_pitches.size()
 	var active: Array[int] = active_pitches()
@@ -404,7 +443,7 @@ func draw_piano(surface: Control, row_index: int) -> void:
 		surface.draw_rect(rect, get_theme_color("ink", "LibreTabs"), false, 1)
 		if pitch % 12 == 0 and white_width >= 18:
 			surface.draw_string(ui_font, Vector2(rect.position.x + 3, key_bottom - 5), "C%d" % (pitch / 12 - 1), HORIZONTAL_ALIGNMENT_LEFT, -1, 11, get_theme_color("ink", "LibreTabs"))
-	for pitch: int in range(first_pitch, 85):
+	for pitch: int in range(PIANO_FIRST_PITCH, PIANO_LAST_PITCH + 1):
 		if posmod(pitch, 12) not in [1, 3, 6, 8, 10]: continue
 		var preceding: int = 0
 		for white_pitch: int in white_pitches:
@@ -414,8 +453,7 @@ func draw_piano(surface: Control, row_index: int) -> void:
 		surface.draw_rect(rect, get_theme_color("accent", "LibreTabs") if active.has(pitch) else get_theme_color("ink", "LibreTabs"))
 		if active.has(pitch): surface.draw_rect(rect, get_theme_color("ink", "LibreTabs"), false, 2)
 	var names: Array[String] = []
-	for pitch: int in active:
-		if pitch >= first_pitch and pitch <= 84: names.append(pitch_name(pitch))
+	for pitch: int in active: names.append(pitch_name(pitch))
 	var caption: String = tr("PIANO_CURRENT_NONE") if names.is_empty() else tr("PIANO_CURRENT") % ", ".join(names)
 	surface.draw_string(ui_font, Vector2(left, top + 20), caption, HORIZONTAL_ALIGNMENT_LEFT, right - left, 15, get_theme_color("ink", "LibreTabs"))
 

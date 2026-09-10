@@ -652,6 +652,10 @@ func run() -> void:
 	app.call("add_notation_row", "staff")
 	check(score.notation_rows.size() == 4 and score.notation_rows[1].type == "piano", "custom rows support repeats and arbitrary order")
 	check(score.notation_rows[0].height == 240 and score.content_height() == 720, "custom row heights independently prioritize the score")
+	check(not score.is_timeline_position(Vector2(100, 300)) and score.is_timeline_position(Vector2(100, 450)), "piano rows do not act like horizontal seek timelines")
+	var timeline_segments: Array[Vector2] = score.timeline_segments()
+	check(timeline_segments.size() == 3 and timeline_segments[0].y < 240 and timeline_segments[1].x > 400, "timeline markers break around piano rows")
+	check(ScoreView.PIANO_FIRST_PITCH <= 40 and ScoreView.PIANO_LAST_PITCH >= 108 and score.pitch_name(40) == "E2", "piano covers low standard-guitar notes through the top piano key")
 	score.update_tick(float(song.notes[0].start))
 	check(score.active_pitches().has(int(song.notes[0].pitch)), "piano row reads sounding pitches from the shared source tick")
 	await process_frame

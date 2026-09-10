@@ -1136,18 +1136,25 @@ func rebuild_notation_rows_editor() -> void:
 			notation_rows[index].type = NotationRows.TYPES[selected]
 			apply_notation_rows())
 		header.add_child(type)
-		var actions: HFlowContainer = HFlowContainer.new()
-		actions.add_theme_constant_override("h_separation", 8)
-		actions.add_theme_constant_override("v_separation", 8)
+		var actions: VBoxContainer = VBoxContainer.new()
+		actions.add_theme_constant_override("separation", 8)
 		row.add_child(actions)
+		var order_actions: HFlowContainer = HFlowContainer.new()
+		order_actions.add_theme_constant_override("h_separation", 8)
+		order_actions.add_theme_constant_override("v_separation", 8)
+		actions.add_child(order_actions)
 		var up: Button = button("MOVE_ROW_UP", func() -> void: move_notation_row(index, -1))
 		var down: Button = button("MOVE_ROW_DOWN", func() -> void: move_notation_row(index, 1))
 		up.text = tr("ROW_UP")
 		down.text = tr("ROW_DOWN")
 		up.disabled = index == 0
 		down.disabled = index == notation_rows.size() - 1
-		actions.add_child(up)
-		actions.add_child(down)
+		order_actions.add_child(up)
+		order_actions.add_child(down)
+		var size_actions: HFlowContainer = HFlowContainer.new()
+		size_actions.add_theme_constant_override("h_separation", 8)
+		size_actions.add_theme_constant_override("v_separation", 8)
+		actions.add_child(size_actions)
 		var height: SpinBox = SpinBox.new()
 		height.min_value = NotationRows.MIN_HEIGHT
 		height.max_value = NotationRows.MAX_HEIGHT
@@ -1156,11 +1163,11 @@ func rebuild_notation_rows_editor() -> void:
 		height.suffix = tr("PIXELS_SHORT")
 		height.tooltip_text = tr("NOTATION_ROW_HEIGHT")
 		height.value_changed.connect(func(value: float) -> void: update_notation_height(index, int(value)))
-		number_field(actions, height, "NOTATION_ROW_HEIGHT")
+		number_field(size_actions, height, "NOTATION_ROW_HEIGHT")
 		var remove: Button = button("REMOVE_NOTATION_ROW", func() -> void: remove_notation_row(index))
 		remove.text = tr("REMOVE")
 		remove.disabled = notation_rows.size() == 1
-		actions.add_child(remove)
+		size_actions.add_child(remove)
 
 func add_notation_row(type: String) -> void:
 	if notation_rows.size() >= NotationRows.MAX_ROWS: return
