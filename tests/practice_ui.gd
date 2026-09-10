@@ -46,6 +46,20 @@ func run() -> void:
 	app.get("startup_help_check").button_pressed = true
 	check(app.get("startup_help_enabled"), "quick start can re-enable itself on startup")
 	app.call("close_menu")
+	app.call("toggle_drawer", "MENU")
+	for _frame: int in range(5): await process_frame
+	app.get("menu_scroll").scroll_vertical = 180
+	var saved_scroll: int = app.get("menu_scroll").scroll_vertical
+	app.call("toggle_drawer", "SETTINGS")
+	app.call("toggle_drawer", "DISPLAY")
+	app.call("go_back")
+	for _frame: int in range(6): await process_frame
+	check(app.get("opened_drawer") == "SETTINGS", "Back returns to Settings rather than the menu root")
+	app.call("go_back")
+	for _frame: int in range(6): await process_frame
+	check(app.get("opened_drawer") == "MENU" and app.get("menu_scroll").scroll_vertical == saved_scroll, "Back restores the menu scroll position")
+	app.call("close_menu")
+	check(app.get("drawer_history").is_empty(), "closing a menu clears navigation history")
 	check(not app.is_processing(), "ready practice does not process every frame")
 	var before: int = app.get("position_updates")
 	for _frame: int in range(30): await process_frame
@@ -305,6 +319,51 @@ func run() -> void:
 	score.finish_pointer(score.pointer_position)
 	check(app.get("source_tick") == before_score_drag, "dragging across the music remains a scroll gesture rather than seeking")
 	score.set_view("pages", "both")
+	var gesture_tick: float = app.get("source_tick")
+	var gesture_page: int = score.page_index
+	for index: int in range(2):
+		var finger: InputEventScreenTouch = InputEventScreenTouch.new()
+		finger.index = index
+		finger.position = Vector2(260, 100 + index * 35)
+		finger.pressed = true
+		score.touch_input(finger)
+	for index: int in range(2):
+		var finger: InputEventScreenTouch = InputEventScreenTouch.new()
+		finger.index = index
+		finger.position = Vector2(150, 100 + index * 35)
+		score.touch_input(finger)
+	check(score.page_index == gesture_page + 1 and app.get("source_tick") == gesture_tick, "two-finger swipe turns one page without seeking")
+	var emulated_swipe: InputEventMouseButton = InputEventMouseButton.new()
+	emulated_swipe.device = InputEvent.DEVICE_ID_EMULATION
+	emulated_swipe.button_index = MOUSE_BUTTON_LEFT
+	emulated_swipe.pressed = true
+	emulated_swipe.position = Vector2(260, 120)
+	app.call("page_gesture", emulated_swipe)
+	emulated_swipe.pressed = false
+	emulated_swipe.position = Vector2(150, 120)
+	app.call("page_gesture", emulated_swipe)
+	check(score.page_index == gesture_page + 1, "touch's emulated mouse pair cannot turn a second page")
+	score.turn_page(-1)
+	for index: int in range(2):
+		var finger: InputEventScreenTouch = InputEventScreenTouch.new()
+		finger.index = index
+		finger.position = Vector2(240, 100 + index * 35)
+		finger.pressed = true
+		score.touch_input(finger)
+	for index: int in range(2):
+		var finger: InputEventScreenTouch = InputEventScreenTouch.new()
+		finger.index = index
+		finger.position = Vector2(240 + (-100 if index == 0 else 100), 100 + index * 35)
+		score.touch_input(finger)
+	check(score.page_index == gesture_page and app.get("source_tick") == gesture_tick, "pinch neither turns pages nor seeks")
+	var cancelled_touch: InputEventScreenTouch = InputEventScreenTouch.new()
+	cancelled_touch.position = score_seek_position
+	cancelled_touch.pressed = true
+	score.touch_input(cancelled_touch)
+	cancelled_touch.pressed = false
+	cancelled_touch.canceled = true
+	score.touch_input(cancelled_touch)
+	check(app.get("source_tick") == gesture_tick and not score.pointer_pressed, "cancelled touch cannot seek or leave a pressed cursor")
 	var original_tick: float = app.get("source_tick")
 	var original_frame: int = player.transport.rendered_frames
 	score.turn_page(1)

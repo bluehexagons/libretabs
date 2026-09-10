@@ -21,6 +21,13 @@ Compact manual pages use large previous/next arrows and a page counter on one
 row. Follow playback stays available in Score view. Very short windows retain
 Play and the tempo unit while secondary controls remain available in menus.
 
+Menu includes a compact Settings index for playback, score view, loops, sound,
+appearance and keyboard preferences. Back restores the previous section and its
+scroll position; Close returns directly to practice. Manual pages support
+one- or two-finger horizontal swipes and a horizontal mouse wheel. Page gestures
+never seek audio; a single tap on the music still seeks. Help describes these
+optional shortcuts alongside the visible page arrows.
+
 The app is a teacher-shaped practice aid, not a replacement for a teacher, a full notation editor, or an automatic arranger that claims every MIDI file is playable.
 
 ## Primary learner

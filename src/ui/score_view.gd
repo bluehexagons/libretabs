@@ -3,6 +3,7 @@ class_name ScoreView
 extends Control
 
 signal seek_requested(tick: float)
+signal page_turn_requested(direction: int)
 
 const PIANO_FIRST_PITCH: int = 21
 const PIANO_LAST_PITCH: int = 108
@@ -40,6 +41,10 @@ var pointer_pressed: bool = false
 var pointer_origin: Vector2
 var pointer_position: Vector2
 var pointer_moved: bool = false
+var touch_origins: Dictionary = {}
+var touch_positions: Dictionary = {}
+var touch_released: Dictionary = {}
+var touch_cancelled: bool = false
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(240, 320)
@@ -216,7 +221,12 @@ func tick_at_position(local_position: Vector2) -> float:
 
 func pointer_input(event: InputEvent) -> void:
 	if song == null: return
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+	if (event is InputEventMouseButton or event is InputEventMouseMotion) and event.device == InputEvent.DEVICE_ID_EMULATION:
+		return
+	if event is InputEventMouseButton and event.pressed and mode == "pages" and event.button_index in [MOUSE_BUTTON_WHEEL_LEFT, MOUSE_BUTTON_WHEEL_RIGHT]:
+		page_turn_requested.emit(1 if event.button_index == MOUSE_BUTTON_WHEEL_RIGHT else -1)
+		accept_event()
+	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
 			begin_pointer(event.position)
 		else:
@@ -224,13 +234,60 @@ func pointer_input(event: InputEvent) -> void:
 	elif event is InputEventMouseMotion:
 		update_pointer_region(event.position)
 		if pointer_pressed and pointer_position.distance_to(pointer_origin) > 14: pointer_moved = true
-	elif event is InputEventScreenTouch:
-		if event.pressed: begin_pointer(event.position)
-		else: finish_pointer(event.position)
-	elif event is InputEventScreenDrag:
+	elif event is InputEventScreenTouch or event is InputEventScreenDrag:
+		touch_input(event)
+
+func touch_input(event: InputEvent) -> void:
+	if event is InputEventScreenTouch:
+		if event.pressed:
+			if touch_origins.is_empty():
+				touch_cancelled = false
+				begin_pointer(event.position)
+			touch_origins[event.index] = event.position
+			touch_positions[event.index] = event.position
+			if touch_origins.size() > 1:
+				cancel_pointer()
+			if touch_origins.size() > 2: touch_cancelled = true
+		elif touch_origins.has(event.index):
+			touch_positions[event.index] = event.position
+			touch_released[event.index] = true
+			if event.canceled: touch_cancelled = true
+			if touch_released.size() == touch_origins.size():
+				finish_touch()
+	elif event is InputEventScreenDrag and touch_origins.has(event.index):
+		touch_positions[event.index] = event.position
 		pointer_position = event.position
 		if pointer_position.distance_to(pointer_origin) > 14: pointer_moved = true
 		cursor.queue_redraw()
+
+func finish_touch() -> void:
+	var direction: int = 0
+	if not touch_cancelled:
+		if mode == "pages":
+			for index: int in touch_origins:
+				var delta: Vector2 = touch_positions[index] - touch_origins[index]
+				var swipe: int = (1 if delta.x < 0 else -1) if absf(delta.x) > 70 and absf(delta.x) > absf(delta.y) * 2 else 0
+				if swipe == 0 or (direction != 0 and direction != swipe):
+					direction = 0
+					break
+				direction = swipe
+		if direction != 0:
+			cancel_pointer()
+			page_turn_requested.emit(direction)
+		elif touch_origins.size() == 1:
+			finish_pointer(touch_positions.values()[0])
+	else:
+		cancel_pointer()
+	touch_origins.clear()
+	touch_positions.clear()
+	touch_released.clear()
+
+func cancel_touch() -> void:
+	cancel_pointer()
+	touch_origins.clear()
+	touch_positions.clear()
+	touch_released.clear()
+	touch_cancelled = true
 
 func begin_pointer(position: Vector2) -> void:
 	if not is_timeline_position(position):
@@ -273,7 +330,7 @@ func cancel_pointer() -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_SCROLL_BEGIN or what == NOTIFICATION_APPLICATION_FOCUS_OUT:
-		if is_instance_valid(cursor): cancel_pointer()
+		if is_instance_valid(cursor): cancel_touch()
 
 func _draw() -> void:
 	draw_count += 1

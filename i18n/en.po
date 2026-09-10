@@ -203,7 +203,7 @@ msgid "SEEK_POSITION"
 msgstr "Measure %d · %d:%02d"
 
 msgid "TIP_SCORE_INTERACTION"
-msgstr "Point to preview a position. Click or tap to seek; drag to scroll or turn a page."
+msgstr "Point to preview a position. Click or tap to seek; drag to scroll or turn a page. In page view, swipe with two fingers or use a horizontal mouse wheel to turn pages without moving playback."
 
 msgid "LOOP"
 msgstr "Loop measures"
@@ -737,7 +737,7 @@ msgid "CONTROL_HELP"
 msgstr "What this does"
 
 msgid "TOUCH_HELP"
-msgstr "Hold an action button for a moment to see what it does. Move your finger to scroll instead. With a mouse, hover for a hint; with a keyboard, focus a control and press F1."
+msgstr "Hold an action button for a moment to see what it does. Move your finger to scroll instead. In page view, swipe left or right with two fingers to turn pages without moving playback. With a mouse, use the horizontal wheel to turn pages, or hover for a hint; with a keyboard, focus a control and press F1."
 
 msgid "WELCOME"
 msgstr "Quick start"
@@ -1047,3 +1047,6 @@ msgstr "Turn pages with the music. Turn off to read at your own pace. Swiping or
 
 msgid "PAGE_FOLLOW_ACTIVE"
 msgstr "Following"
+
+msgid "CARD_SETTINGS"
+msgstr "Settings\nPlayback, score, sound and appearance"

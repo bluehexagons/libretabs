@@ -147,6 +147,8 @@ var dark_mode: bool = false
 var appearance_picker: OptionButton
 var paper: PanelContainer
 var reading_tools: HFlowContainer
+var drawer_history: Array[Dictionary] = []
+var drawer_navigation: int = 0
 var menu_back: Button
 var previous_focus: Control
 var header: BoxContainer
@@ -378,7 +380,7 @@ func build_ui() -> void:
 	var menu_column: VBoxContainer = VBoxContainer.new()
 	drawer.add_child(menu_column)
 	var drawer_header: HFlowContainer = flow(menu_column)
-	menu_back = button("MENU_BACK", func() -> void: toggle_drawer("MENU"))
+	menu_back = button("MENU_BACK", go_back)
 	drawer_header.add_child(menu_back)
 	menu_close = button("CLOSE", close_menu)
 	drawer_header.add_child(menu_close)
@@ -409,6 +411,7 @@ func build_ui() -> void:
 	score = ScoreView.new()
 	score.set_notation_rows(notation_rows)
 	score.seek_requested.connect(seek_tick)
+	score.page_turn_requested.connect(turn_page)
 	score_frame.add_child(score)
 	score_frame.score = score
 	panel.move_child(details, panel.get_children().find(paper) + 1)
@@ -597,7 +600,7 @@ func set_startup_help(enabled: bool) -> void:
 
 func build_drawers() -> void:
 	var menu_index: VBoxContainer = section("MENU")
-	for key: String in ["WELCOME", "SONG_MENU", "TEMPO", "SCORE_VIEW", "PRINT", "CAPTURE", "LOOP_TOOL", "SOUND", "DISPLAY", "KEYBOARD", "HELP", "ABOUT"]:
+	for key: String in ["WELCOME", "SETTINGS", "SONG_MENU", "TEMPO", "SCORE_VIEW", "PRINT", "CAPTURE", "LOOP_TOOL", "SOUND", "DISPLAY", "KEYBOARD", "HELP", "ABOUT"]:
 		var entry: Button = button(key, func() -> void: toggle_drawer(key))
 		entry.text = tr("CARD_" + key)
 		entry.alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -775,7 +778,7 @@ func build_drawers() -> void:
 	warning = label("PROTOTYPE_LIMIT", 18)
 	details.add_child(warning)
 	var settings: VBoxContainer = section("SETTINGS")
-	for key: String in ["SOUND", "DISPLAY", "KEYBOARD"]: settings.add_child(button(key, func() -> void: toggle_drawer(key)))
+	for key: String in ["TEMPO", "SCORE_VIEW", "LOOP_TOOL", "SOUND", "DISPLAY", "KEYBOARD"]: settings.add_child(button(key, func() -> void: toggle_drawer(key)))
 	settings_notice = label("SETTINGS_SAVED", 18)
 	settings.add_child(settings_notice)
 	settings.add_child(button("RESET_PRACTICE", reset_preferences))
@@ -986,8 +989,29 @@ func apply_capture_background() -> void:
 	var mode: String = capture_view.background if capture_active else "solid"
 	host.apply_capture_background(mode, Color("00ff00") if mode == "green" else UIAppearance.color("background", dark_mode))
 
-func toggle_drawer(key: String) -> void:
+func go_back() -> void:
+	if drawer_history.is_empty():
+		toggle_drawer("MENU", false)
+		return
+	var destination: Dictionary = drawer_history.pop_back()
+	toggle_drawer(destination.key, false)
+	restore_drawer.call_deferred(drawer_navigation, destination)
+
+func restore_drawer(navigation: int, destination: Dictionary) -> void:
+	for _frame: int in range(4): await get_tree().process_frame
+	if navigation != drawer_navigation or not menu_overlay.visible: return
+	var focus: Control = destination.focus.get_ref() if destination.focus != null else null
+	if is_instance_valid(focus) and focus.is_visible_in_tree(): focus.grab_focus()
+	menu_scroll.scroll_vertical = destination.scroll
+
+func toggle_drawer(key: String, remember: bool = true) -> void:
+	if menu_overlay.visible and opened_drawer == key: return
+	if remember and menu_overlay.visible:
+		var focus: Control = get_viewport().gui_get_focus_owner()
+		drawer_history.append({"key": opened_drawer, "scroll": menu_scroll.scroll_vertical, "focus": weakref(focus) if focus != null else null})
+	drawer_navigation += 1
 	leave_capture()
+	score.cancel_touch()
 	if key == "WELCOME": pause()
 	release_keyboard()
 	if not menu_overlay.visible: previous_focus = get_viewport().gui_get_focus_owner()
@@ -1018,11 +1042,15 @@ func toggle_drawer(key: String) -> void:
 		menu_tween.tween_property(drawer, "modulate:a", 1.0, 0.18)
 
 func reset_menu_scroll(key: String) -> void:
+	var navigation: int = drawer_navigation
 	# Initial focus can scroll before wrapped text has its final height.
 	for _frame: int in range(3): await get_tree().process_frame
-	if opened_drawer == key: menu_scroll.scroll_vertical = 0
+	if opened_drawer == key and navigation == drawer_navigation: menu_scroll.scroll_vertical = 0
 
 func close_menu() -> void:
+	drawer_history.clear()
+	drawer_navigation += 1
+	score.cancel_touch()
 	if printer != null: printer.cancelled = true
 	if menu_tween != null: menu_tween.kill()
 	drawer.modulate.a = 1
@@ -1039,6 +1067,12 @@ func _input(event: InputEvent) -> void:
 		if not event.pressed: leave_capture.call_deferred()
 		get_viewport().set_input_as_handled()
 		return
+	if not menu_overlay.visible and (event is InputEventScreenTouch or event is InputEventScreenDrag):
+		var local_event: InputEvent = event.xformed_by(score.get_global_transform_with_canvas().affine_inverse())
+		if not score.touch_origins.is_empty() or (event is InputEventScreenTouch and event.pressed and score.get_global_rect().has_point(event.position)):
+			score.touch_input(local_event)
+			get_viewport().set_input_as_handled()
+			return
 	if event is InputEventKey and event.pressed and not event.echo and not event.ctrl_pressed and not event.meta_pressed and not event.alt_pressed:
 		var focused: Control = get_viewport().gui_get_focus_owner()
 		if event.keycode == KEY_F8 or (event.keycode == KEY_ESCAPE and capture_active):
@@ -2165,7 +2199,12 @@ func prepare_print() -> void:
 
 func page_gesture(event: InputEvent) -> void:
 	if score.mode != "pages": return
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+	# Touch is handled directly; its synthesized mouse pair must not turn twice.
+	if event is InputEventMouseButton and event.device == InputEvent.DEVICE_ID_EMULATION: return
+	if event is InputEventScreenTouch and event.canceled:
+		page_swipe_active = false
+		return
+	if (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT) or (event is InputEventScreenTouch and event.index == 0):
 		if event.pressed:
 			page_swipe_start = event.position
 			page_swipe_active = true
