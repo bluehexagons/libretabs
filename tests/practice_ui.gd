@@ -267,6 +267,7 @@ func run() -> void:
 
 	var score: ScoreView = app.get("score")
 	check(score.mode == "scroll" and score.notation == "both", "practice defaults to synchronized scrolling")
+	check(app.get("notation_rows") == NotationRows.defaults() and score.content_height() == 320, "default row layout retains staff above larger tab at the existing height")
 	root.size = Vector2i(390, 844)
 	for _frame: int in range(10): await process_frame
 	var boundary: float = song.measures[1].start
@@ -530,6 +531,8 @@ func run() -> void:
 	check(settings.load_display_choice("startup_help", ["show", "hide"], "show") == "show", "new installations show startup help")
 	check(settings.save_display_choice("startup_help", "hide") and settings.load_display_choice("startup_help", ["show", "hide"], "show") == "hide", "startup opt-out survives a native settings reload")
 	check(settings.save_display_choice("startup_help", "show") and settings.load_display_choice("startup_help", ["show", "hide"], "hide") == "show", "startup help can be persistently re-enabled")
+	var saved_rows: Array[Dictionary] = [{"type": "piano", "height": 200}, {"type": "tab", "height": 320}]
+	check(settings.save_notation_rows(saved_rows) and settings.load_notation_rows().rows == saved_rows, "notation row order and heights persist through the platform adapter")
 	check(not settings.save_appearance("invalid"), "unknown appearance rejected")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(settings.display_path))
 	settings.free()
@@ -643,6 +646,15 @@ func run() -> void:
 	app.call("toggle_drawer", "WELCOME")
 	check(app.get("startup_help_check").is_visible_in_tree(), "menu can always reopen startup preference")
 	app.call("close_menu")
+	app.call("add_notation_row", "piano")
+	app.call("update_notation_height", 0, 240)
+	app.call("move_notation_row", 2, -1)
+	app.call("add_notation_row", "staff")
+	check(score.notation_rows.size() == 4 and score.notation_rows[1].type == "piano", "custom rows support repeats and arbitrary order")
+	check(score.notation_rows[0].height == 240 and score.content_height() == 720, "custom row heights independently prioritize the score")
+	score.update_tick(float(song.notes[0].start))
+	check(score.active_pitches().has(int(song.notes[0].pitch)), "piano row reads sounding pitches from the shared source tick")
+	await process_frame
 	app.queue_free()
 	await process_frame
 	print("Practice UI: %d checks, %d failures" % [checks, failures])

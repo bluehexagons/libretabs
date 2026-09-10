@@ -316,3 +316,12 @@ reported chord tones but never changes source MIDI, staff notation or playback.
 Imported songs use a bounded procedural projection; original teaching material
 should use musician-designed variants when the curriculum needs deliberate
 harmony, stroke direction, articulation, or a learning progression.
+
+### Custom practice rows
+
+[Decision 0015](decisions/0015-custom-notation-rows.md) lets a learner compose the
+practice score from repeatable staff, tab, and current-note piano rows in any
+order, with an individual height for each row. The existing staff-above-tab
+layout remains the default. Heights prioritize limited screen space; all rows
+still use the one shared transport tick, and the piano is a visualization rather
+than recorded input or a second musical timeline.

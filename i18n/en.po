@@ -514,6 +514,75 @@ msgstr "Manual pages"
 msgid "PAGE_NOTATION"
 msgstr "Show on pages"
 
+msgid "NOTATION_ROWS_HELP"
+msgstr "Build the score from any number of rows. Put them in the order you want, and give more height to the view you are learning from. The default remains sheet music above a larger tab row."
+
+msgid "NOTATION_ROW_NUMBER"
+msgstr "Row %d"
+
+msgid "NOTATION_ROW_TYPE"
+msgstr "Choose what this row shows."
+
+msgid "NOTATION_STAFF_ROW"
+msgstr "Sheet music"
+
+msgid "NOTATION_TAB_ROW"
+msgstr "Guitar tabs"
+
+msgid "NOTATION_PIANO_ROW"
+msgstr "Piano · sounding notes"
+
+msgid "NOTATION_ROW_HEIGHT"
+msgstr "Height of this row. A taller row gets more of the available score area."
+
+msgid "PIXELS_SHORT"
+msgstr "px"
+
+msgid "ADD_STAFF_ROW"
+msgstr "Add sheet music"
+
+msgid "ADD_TAB_ROW"
+msgstr "Add guitar tabs"
+
+msgid "ADD_PIANO_ROW"
+msgstr "Add piano"
+
+msgid "RESTORE_NOTATION_ROWS"
+msgstr "Restore default rows"
+
+msgid "MOVE_ROW_UP"
+msgstr "Move row up"
+
+msgid "MOVE_ROW_DOWN"
+msgstr "Move row down"
+
+msgid "ROW_UP"
+msgstr "Up"
+
+msgid "ROW_DOWN"
+msgstr "Down"
+
+msgid "REMOVE_NOTATION_ROW"
+msgstr "Remove notation row"
+
+msgid "REMOVE"
+msgstr "Remove"
+
+msgid "NOTATION_ROWS_SAVED"
+msgstr "This row layout is saved on this device."
+
+msgid "NOTATION_ROWS_SESSION"
+msgstr "This row layout works for this session, but device storage is unavailable."
+
+msgid "NOTATION_ROWS_RECOVERED"
+msgstr "The saved row layout could not be read, so the default rows were restored."
+
+msgid "PIANO_CURRENT"
+msgstr "Sounding: %s"
+
+msgid "PIANO_CURRENT_NONE"
+msgstr "Sounding: none"
+
 msgid "NOTATION_BOTH"
 msgstr "Both"
 

@@ -13,12 +13,12 @@ func _ready() -> void:
 
 func fit_height(available: float) -> void:
 	if score == null: return
-	custom_minimum_size.y = minf(ScoreLayout.row_height(score.notation), maxf(48, available))
+	custom_minimum_size.y = minf(score.content_height(), maxf(48, available))
 	arrange.call_deferred()
 
 func arrange() -> void:
 	if score == null or not is_instance_valid(score): return
-	var height: float = ScoreLayout.row_height(score.notation)
+	var height: float = score.content_height()
 	var factor: float = minf(1, size.y / height)
 	if factor <= 0: return
 	score.scale = Vector2.ONE * factor

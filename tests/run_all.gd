@@ -67,6 +67,13 @@ func _initialize() -> void:
 	defaults = PracticeSettings.DEFAULTS.duplicate()
 	defaults["song_name"] = "private"
 	check(not PracticeSettings.encode(defaults).contains("private"), "preference allow-list excludes song data")
+	var notation_defaults: Array[Dictionary] = NotationRows.defaults()
+	check(NotationRows.decode(NotationRows.encode(notation_defaults)).rows == notation_defaults, "notation row schema round trip")
+	var custom_rows: Array[Dictionary] = [{"type": "piano", "height": 160}, {"type": "staff", "height": 240}, {"type": "tab", "height": 112}, {"type": "staff", "height": 144}]
+	check(NotationRows.valid(custom_rows) and NotationRows.total_height(custom_rows) == 656, "notation rows allow repeats, arbitrary order and individual heights")
+	check(NotationRows.decode('{"version":2,"rows":[]}').status == "unsupported", "future notation row schema protected")
+	check(NotationRows.decode('{"version":1,"rows":[{"type":"video","height":160}]}').status == "corrupt", "unknown notation row type recovers safely")
+	check(NotationRows.encode([{"type": "piano", "height": 20}]).is_empty(), "unsafe notation height rejected")
 	var keys: KeyboardNotes = KeyboardNotes.new()
 	check(keys.press(KEY_Z).pitch == 60, "default lower row starts at middle C")
 	check(keys.press(KEY_Z).is_empty(), "held key does not retrigger")

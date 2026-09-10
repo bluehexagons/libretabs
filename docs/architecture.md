@@ -472,6 +472,21 @@ layer; paused/count-in/reduced-motion views have no particle animation. Print
 geometry, the canonical song, and persistence contracts are unchanged. See
 [decision 0004](decisions/0004-score-navigation.md) and [evidence](evidence/reading-flow.md).
 
+### Custom notation rows
+
+Under [decision 0015](decisions/0015-custom-notation-rows.md), `NotationRows` is a
+validated, scene-independent display model containing ordered row types and
+logical heights. `ScoreView` retains one timeline strip and source tick, while a
+visible-measure stack projects that geometry into any repeated staff/tab rows.
+Current-note piano rows are drawn from source intervals and held keyboard notes
+in the transport-driven cursor layer; they do not own musical time.
+
+The platform adapter stores only the versioned row description. It bounds row
+count, height and serialized size, restores the paired default on invalid data,
+and never includes song or source-event state. The complete row stack is scaled
+uniformly by `ScoreFrame` when screen height is constrained, preserving each
+row's configured relative priority.
+
 ## Prototype release boundary
 
 [Decision 0011](decisions/0011-prototype-releases.md) defines manually triggered,

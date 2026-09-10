@@ -131,6 +131,10 @@ var page_follow: Button
 var seek_navigation: HBoxContainer
 var view_picker: OptionButton
 var notation_picker: OptionButton
+var notation_rows: Array[Dictionary] = NotationRows.defaults()
+var notation_rows_box: VBoxContainer
+var notation_rows_notice: Label
+var notation_rows_load_status: String = "ok"
 var drawer: PanelContainer
 var drawer_body: VBoxContainer
 var drawer_title: Label
@@ -190,6 +194,9 @@ func _ready() -> void:
 	control_position = host.load_display_choice("control_position", ["left", "top", "right", "bottom"], "bottom")
 	handedness = host.load_display_choice("handedness", ["left", "right"], "right")
 	startup_help_enabled = host.load_display_choice("startup_help", ["show", "hide"], "show") == "show" if persist_preferences else true
+	var notation_result: Dictionary = host.load_notation_rows() if persist_preferences else {"rows": NotationRows.defaults(), "status": "ok"}
+	notation_rows.assign(notation_result.rows)
+	notation_rows_load_status = str(notation_result.status)
 	startup_help_pending = startup_help_enabled
 	host.motion_changed.connect(apply_motion)
 	host.exported.connect(func(success: bool) -> void: print_status.text = tr("PRINT_SAVED" if success else "PRINT_FAILED"))
@@ -400,6 +407,7 @@ func build_ui() -> void:
 	score_frame = ScoreFrame.new()
 	paper.add_child(score_frame)
 	score = ScoreView.new()
+	score.set_notation_rows(notation_rows)
 	score.seek_requested.connect(seek_tick)
 	score_frame.add_child(score)
 	score_frame.score = score
@@ -611,14 +619,27 @@ func build_drawers() -> void:
 	view_picker.add_item(tr("VIEW_FOLLOW_PAGES"))
 	view_picker.item_selected.connect(func(_index: int) -> void: change_view())
 	views.add_child(view_picker)
-	views.add_child(label("PAGE_NOTATION"))
 	notation_picker = OptionButton.new()
 	notation_picker.custom_minimum_size.y = 56
 	notation_picker.fit_to_longest_item = false
 	for key: String in ["NOTATION_BOTH", "NOTATION_TAB", "NOTATION_STAFF"]: notation_picker.add_item(tr(key))
 	notation_picker.disabled = true
+	notation_picker.hide()
 	notation_picker.item_selected.connect(func(_index: int) -> void: change_view())
 	views.add_child(notation_picker)
+	views.add_child(label("NOTATION_ROWS_HELP", 18))
+	notation_rows_box = VBoxContainer.new()
+	notation_rows_box.add_theme_constant_override("separation", 8)
+	views.add_child(notation_rows_box)
+	var row_actions: HFlowContainer = flow(views)
+	row_actions.add_child(button("ADD_STAFF_ROW", func() -> void: add_notation_row("staff")))
+	row_actions.add_child(button("ADD_TAB_ROW", func() -> void: add_notation_row("tab")))
+	row_actions.add_child(button("ADD_PIANO_ROW", func() -> void: add_notation_row("piano")))
+	views.add_child(button("RESTORE_NOTATION_ROWS", restore_notation_rows))
+	notation_rows_notice = label("NOTATION_ROWS_SAVED", 16)
+	if notation_rows_load_status != "ok": notation_rows_notice.text = tr("NOTATION_ROWS_RECOVERED")
+	views.add_child(notation_rows_notice)
+	rebuild_notation_rows_editor()
 	views.add_child(button("PRINT", func() -> void: toggle_drawer("PRINT")))
 	var library: VBoxContainer = section("SONG_MENU")
 	library.add_child(button("OPEN", open_midi))
@@ -1079,12 +1100,109 @@ func menu_focusable(node: Node, controls: Array[Control]) -> void:
 	for child: Node in node.get_children(): menu_focusable(child, controls)
 
 func change_view() -> void:
-	notation_picker.disabled = view_picker.selected == 0
+	notation_picker.disabled = true
 	score.follow_pages = view_picker.selected == 2
 	score.set_view("scroll" if view_picker.selected == 0 else "pages", ["both", "tab", "staff"][notation_picker.selected])
 	if score.follow_pages: score.page_to_playback()
 	update_page_controls()
 	scroll.scroll_vertical = 0
+
+func rebuild_notation_rows_editor() -> void:
+	if notation_rows_box == null: return
+	for child: Node in notation_rows_box.get_children():
+		notation_rows_box.remove_child(child)
+		child.queue_free()
+	for index: int in range(notation_rows.size()):
+		var row: VBoxContainer = VBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+		notation_rows_box.add_child(row)
+		var header: HFlowContainer = HFlowContainer.new()
+		header.add_theme_constant_override("h_separation", 8)
+		header.add_theme_constant_override("v_separation", 8)
+		row.add_child(header)
+		var order: Label = label("NOTATION_ROW_NUMBER", 18)
+		order.text = tr("NOTATION_ROW_NUMBER") % (index + 1)
+		order.custom_minimum_size.x = 72
+		order.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+		header.add_child(order)
+		var type: OptionButton = OptionButton.new()
+		type.custom_minimum_size = Vector2(150, 56)
+		type.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		type.fit_to_longest_item = false
+		for key: String in ["NOTATION_STAFF_ROW", "NOTATION_TAB_ROW", "NOTATION_PIANO_ROW"]: type.add_item(tr(key))
+		type.select(NotationRows.TYPES.find(str(notation_rows[index].type)))
+		type.tooltip_text = tr("NOTATION_ROW_TYPE")
+		type.item_selected.connect(func(selected: int) -> void:
+			notation_rows[index].type = NotationRows.TYPES[selected]
+			apply_notation_rows())
+		header.add_child(type)
+		var actions: HFlowContainer = HFlowContainer.new()
+		actions.add_theme_constant_override("h_separation", 8)
+		actions.add_theme_constant_override("v_separation", 8)
+		row.add_child(actions)
+		var up: Button = button("MOVE_ROW_UP", func() -> void: move_notation_row(index, -1))
+		var down: Button = button("MOVE_ROW_DOWN", func() -> void: move_notation_row(index, 1))
+		up.text = tr("ROW_UP")
+		down.text = tr("ROW_DOWN")
+		up.disabled = index == 0
+		down.disabled = index == notation_rows.size() - 1
+		actions.add_child(up)
+		actions.add_child(down)
+		var height: SpinBox = SpinBox.new()
+		height.min_value = NotationRows.MIN_HEIGHT
+		height.max_value = NotationRows.MAX_HEIGHT
+		height.step = 8
+		height.value = int(notation_rows[index].height)
+		height.suffix = tr("PIXELS_SHORT")
+		height.tooltip_text = tr("NOTATION_ROW_HEIGHT")
+		height.value_changed.connect(func(value: float) -> void: update_notation_height(index, int(value)))
+		number_field(actions, height, "NOTATION_ROW_HEIGHT")
+		var remove: Button = button("REMOVE_NOTATION_ROW", func() -> void: remove_notation_row(index))
+		remove.text = tr("REMOVE")
+		remove.disabled = notation_rows.size() == 1
+		actions.add_child(remove)
+
+func add_notation_row(type: String) -> void:
+	if notation_rows.size() >= NotationRows.MAX_ROWS: return
+	notation_rows.append({"type": type, "height": 160 if type == "piano" else (144 if type == "staff" else 176)})
+	apply_notation_rows()
+	rebuild_notation_rows_editor()
+
+func remove_notation_row(index: int) -> void:
+	if notation_rows.size() <= 1 or index < 0 or index >= notation_rows.size(): return
+	notation_rows.remove_at(index)
+	apply_notation_rows()
+	rebuild_notation_rows_editor()
+
+func move_notation_row(index: int, direction: int) -> void:
+	var destination: int = index + direction
+	if index < 0 or destination < 0 or index >= notation_rows.size() or destination >= notation_rows.size(): return
+	var moved: Dictionary = notation_rows[index]
+	notation_rows[index] = notation_rows[destination]
+	notation_rows[destination] = moved
+	apply_notation_rows()
+	rebuild_notation_rows_editor()
+
+func update_notation_height(index: int, height: int) -> void:
+	if index < 0 or index >= notation_rows.size(): return
+	notation_rows[index].height = clampi(height, NotationRows.MIN_HEIGHT, NotationRows.MAX_HEIGHT)
+	apply_notation_rows()
+
+func restore_notation_rows() -> void:
+	notation_rows = NotationRows.defaults()
+	notation_picker.select(0)
+	apply_notation_rows()
+	rebuild_notation_rows_editor()
+
+func apply_notation_rows() -> void:
+	notation_rows = NotationRows.clean(notation_rows)
+	if score != null:
+		score.set_notation_rows(notation_rows)
+		update_main_scroll.call_deferred()
+	if persist_preferences and not host.save_notation_rows(notation_rows):
+		if notation_rows_notice != null: notation_rows_notice.text = tr("NOTATION_ROWS_SESSION")
+	elif notation_rows_notice != null:
+		notation_rows_notice.text = tr("NOTATION_ROWS_SAVED")
 
 func turn_page(direction: int) -> void:
 	score.turn_page(direction)
@@ -1152,7 +1270,8 @@ func apply_appearance() -> void:
 	play_button.add_theme_color_override("font_hover_pressed_color", Color.WHITE)
 	for token: String in ["icon_normal_color", "icon_hover_color", "icon_pressed_color", "icon_focus_color", "icon_hover_pressed_color"]: play_button.add_theme_color_override(token, Color.WHITE)
 	if score != null:
-		for tile: MeasureCanvas in score.tiles.values(): tile.queue_redraw()
+		for tile: NotationMeasureStack in score.tiles.values():
+			for canvas: MeasureCanvas in tile.canvases: canvas.queue_redraw()
 		score.cursor.queue_redraw()
 	responsive()
 	if capture_active:
@@ -1297,7 +1416,7 @@ func update_main_scroll() -> void:
 	song_title.visible = not landscape and not compact
 	reading_tools.visible = not landscape and not compact
 	update_page_controls()
-	score_frame.fit_height(ScoreLayout.row_height(score.notation))
+	score_frame.fit_height(score.content_height())
 	for _frame: int in range(3): await get_tree().process_frame
 	for extra: Control in [cue.get_parent(), reading_tools, song_title, seek_navigation]:
 		if content_margin.get_combined_minimum_size().y <= content_height_budget() + 1: break
@@ -1829,7 +1948,7 @@ func report_state() -> void:
 	if song == null: return
 	if host.trace_enabled():
 		var evidence: Dictionary = audio.metrics()
-		evidence.merge({"follow_pages": score.follow_pages, "upcoming_tick": score.upcoming_tick, "count_beat": int(count_badge.text) if count_badge.visible else 0, "capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "font_style": font_style, "control_position": control_position, "handedness": handedness, "controls_on_side": controls_on_side, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "arrangement_style": projection.style, "placed": projection.placed, "eligible": projection.eligible, "omitted": projection.omitted.size(), "mute_marks": projection.mute_marks, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
+		evidence.merge({"follow_pages": score.follow_pages, "upcoming_tick": score.upcoming_tick, "count_beat": int(count_badge.text) if count_badge.visible else 0, "capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "font_style": font_style, "control_position": control_position, "handedness": handedness, "controls_on_side": controls_on_side, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "notation_rows": notation_rows, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "arrangement_style": projection.style, "placed": projection.placed, "eligible": projection.eligible, "omitted": projection.omitted.size(), "mute_marks": projection.mute_marks, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
 		host.report(evidence)
 	offline.text = tr("OFFLINE_READY") if host.offline_ready() else tr("OFFLINE_PENDING")
 	if host.offline_ready() and not host.trace_enabled(): idle_timer.stop()

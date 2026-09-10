@@ -218,6 +218,24 @@ func save_display_choice(key: String, value: String) -> bool:
 	config.set_value("display", key, value)
 	return config.save(display_path) == OK
 
+func load_notation_rows() -> Dictionary:
+	var raw: String = ""
+	if web != null:
+		raw = str(web.loadDisplayChoice("notation_rows", ""))
+	else:
+		var config: ConfigFile = ConfigFile.new()
+		if config.load(display_path) == OK: raw = str(config.get_value("display", "notation_rows", ""))
+	return NotationRows.decode(raw)
+
+func save_notation_rows(rows: Array) -> bool:
+	var raw: String = NotationRows.encode(rows)
+	if raw.is_empty() or raw.length() > NotationRows.MAX_BYTES: return false
+	if web != null: return bool(web.saveDisplayChoice("notation_rows", raw))
+	var config: ConfigFile = ConfigFile.new()
+	config.load(display_path)
+	config.set_value("display", "notation_rows", raw)
+	return config.save(display_path) == OK
+
 func system_reduced_motion() -> bool:
 	return web != null and bool(web.prefersReducedMotion())
 

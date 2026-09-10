@@ -33,3 +33,5 @@ and the linked Pages deployment.
 [0013 — Publish the web player on GitHub Pages](0013-pages-player.md) records the threaded Pages player and single-thread compatibility fallback.
 
 [0014 — Pick-friendly derived arrangements](0014-pick-friendly-arrangements.md) records the optional procedural strum projection, explicit mute notation and the boundary between imported-song generation and musician-authored variants.
+
+[0015 — Custom notation and visualization rows](0015-custom-notation-rows.md) records ordered, repeatable staff/tab/piano rows, individual row heights, shared-tick piano highlights, and bounded device-local layout storage.

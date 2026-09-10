@@ -13,6 +13,8 @@ var part: int = 0
 var index: int = 0
 var continuous: bool = true
 var notation: String = "both"
+var tab_y_offset: float = 0
+var show_measure_title: bool = true
 var draw_count: int = 0
 
 func _draw() -> void:
@@ -33,10 +35,10 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 	var left: float = origin.x if continuous else origin.x + 44
 	var right: float = origin.x + width if continuous else origin.x + width - 12
 	var top: float = origin.y + 80
-	var tab_top: float = origin.y + (176 if notation == "both" else 80)
+	var tab_top: float = origin.y + (176 if notation == "both" else 80) + tab_y_offset
 	var start: float = float(bar.start)
 	var finish: float = float(bar.end)
-	text_at(origin + Vector2(8, 22), tr("MEASURE_TITLE") % [index + 1, song.measures.size()], 16)
+	if show_measure_title: text_at(origin + Vector2(8, 22), tr("MEASURE_TITLE") % [index + 1, song.measures.size()], 16)
 	if notation != "tab":
 		for line: int in range(5):
 			draw_line(Vector2(left, top + line * 8), Vector2(right, top + line * 8), muted, 1.0, true)
@@ -113,7 +115,7 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 		if notation != "staff":
 			if projection.placements.has(note.id):
 				var placement: Dictionary = projection.placements[note.id]
-				var tab_y: float = origin.y + ScoreLayout.tab_y(int(placement.string), notation)
+				var tab_y: float = origin.y + ScoreLayout.tab_y(int(placement.string), notation) + tab_y_offset
 				var fret: String = str(placement.fret)
 				var half: float = ui_font.get_string_size(fret, HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x / 2
 				draw_rect(Rect2(x - half - 4, tab_y - 13, half * 2 + 8, 26), get_theme_color("paper", "LibreTabs"))
@@ -128,14 +130,14 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 			if float(strum.tick) < start or float(strum.tick) >= finish: continue
 			var marker: Dictionary = {"start": strum.tick}
 			var x: float = origin.x + ScoreLayout.note_x(song, marker, index, width, continuous)
-			var first_y: float = origin.y + ScoreLayout.tab_y(int(strum.first_string), notation)
-			var last_y: float = origin.y + ScoreLayout.tab_y(int(strum.last_string), notation)
+			var first_y: float = origin.y + ScoreLayout.tab_y(int(strum.first_string), notation) + tab_y_offset
+			var last_y: float = origin.y + ScoreLayout.tab_y(int(strum.last_string), notation) + tab_y_offset
 			var bracket_x: float = x - 18
 			draw_line(Vector2(bracket_x, first_y - 8), Vector2(bracket_x, last_y + 8), accent, 2, true)
 			draw_line(Vector2(bracket_x, first_y - 8), Vector2(bracket_x + 6, first_y - 8), accent, 2, true)
 			draw_line(Vector2(bracket_x, last_y + 8), Vector2(bracket_x + 6, last_y + 8), accent, 2, true)
 			for string_number: int in strum.mutes:
-				var y: float = origin.y + ScoreLayout.tab_y(string_number, notation)
+				var y: float = origin.y + ScoreLayout.tab_y(string_number, notation) + tab_y_offset
 				var half: float = ui_font.get_string_size("X", HORIZONTAL_ALIGNMENT_LEFT, -1, 22).x / 2
 				draw_rect(Rect2(x - half - 3, y - 12, half * 2 + 6, 24), get_theme_color("paper", "LibreTabs"))
 				text_at(Vector2(x - half, y + (ui_font.get_ascent(22) - ui_font.get_descent(22)) / 2), "X", 22, accent)
@@ -143,8 +145,8 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 			if float(barre.tick) < start or float(barre.tick) >= finish: continue
 			var marker: Dictionary = {"start": barre.tick}
 			var x: float = origin.x + ScoreLayout.note_x(song, marker, index, width, continuous) + 19
-			var first_y: float = origin.y + ScoreLayout.tab_y(int(barre.first_string), notation)
-			var last_y: float = origin.y + ScoreLayout.tab_y(int(barre.last_string), notation)
+			var first_y: float = origin.y + ScoreLayout.tab_y(int(barre.first_string), notation) + tab_y_offset
+			var last_y: float = origin.y + ScoreLayout.tab_y(int(barre.last_string), notation) + tab_y_offset
 			draw_line(Vector2(x, first_y), Vector2(x, last_y), accent, 2, true)
 			draw_line(Vector2(x - 4, first_y), Vector2(x + 4, first_y), accent, 2, true)
 			draw_line(Vector2(x - 4, last_y), Vector2(x + 4, last_y), accent, 2, true)
