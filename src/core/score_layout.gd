@@ -3,6 +3,10 @@ class_name ScoreLayout
 extends RefCounted
 
 const BEAT_WIDTH: float = 84.0
+const STAFF_TOP: float = 56.0
+const STAFF_BOTTOM: float = 108.0
+const STAFF_SPACE: float = 13.0
+const STAFF_FONT: int = 52
 var song: SongDocument
 var offsets: Array[float] = []
 var widths: Array[float] = []
@@ -48,7 +52,7 @@ static func row_height(notation: String) -> float:
 static func staff_y(pitch: int) -> float:
 	var written: int = pitch + 12
 	var degree: int = [0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6][posmod(written, 12)]
-	return 112.0 - ((written / 12) * 7 + degree - 37) * 4
+	return STAFF_BOTTOM - ((written / 12) * 7 + degree - 37) * STAFF_SPACE / 2.0
 
 static func tab_y(string_number: int, notation: String = "both") -> float:
 	return (176.0 if notation == "both" else 80.0) + (string_number - 1) * 21

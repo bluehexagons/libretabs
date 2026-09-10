@@ -26,6 +26,9 @@ var measure_index: int = 0
 var mode: String = "scroll"
 var notation: String = "both"
 var notation_rows: Array[Dictionary] = []
+var fitted_rows: Array[Dictionary] = []
+var note_spacing: float = 1.0
+var page_preview: bool = true
 var page_index: int = 0
 var page_capacity: int = 0
 var layout: ScoreLayout = ScoreLayout.new()
@@ -88,6 +91,7 @@ func invalidate() -> void:
 	refresh()
 
 func set_view(value: String, symbols: String) -> void:
+	fitted_rows.clear()
 	var enter_pages: bool = mode != "pages" and value == "pages"
 	mode = value
 	notation = "custom" if not notation_rows.is_empty() else ("both" if mode == "scroll" and not presentation else symbols)
@@ -95,6 +99,7 @@ func set_view(value: String, symbols: String) -> void:
 	invalidate()
 
 func set_notation_rows(rows: Array) -> void:
+	fitted_rows.clear()
 	if NotationRows.is_default(rows): notation_rows.clear()
 	else: notation_rows.assign(NotationRows.clean(rows))
 	notation = "both" if notation_rows.is_empty() else "custom"
@@ -102,6 +107,37 @@ func set_notation_rows(rows: Array) -> void:
 
 func content_height() -> float:
 	return ScoreLayout.row_height(notation) if notation_rows.is_empty() else NotationRows.total_height(notation_rows)
+
+func drawing_rows() -> Array[Dictionary]:
+	return fitted_rows if not fitted_rows.is_empty() else notation_rows
+
+func drawing_notation() -> String:
+	return "custom" if not fitted_rows.is_empty() else notation
+
+func drawing_height() -> float:
+	return NotationRows.total_height(fitted_rows) if not fitted_rows.is_empty() else content_height()
+
+func fit_rows(height: float, staff_height: float) -> void:
+	var rows: Array[Dictionary] = notation_rows.duplicate(true)
+	if rows.is_empty():
+		if notation != "tab": rows.append({"type": "staff", "height": 144})
+		if notation != "staff": rows.append({"type": "tab", "height": 176})
+	var weight: float = 0
+	for row: Dictionary in rows: weight += float(row.height) * (staff_height if row.type == "staff" else 1.0)
+	for row: Dictionary in rows:
+		row.height = clampi(roundi(height * float(row.height) * (staff_height if row.type == "staff" else 1.0) / weight), NotationRows.MIN_HEIGHT, NotationRows.MAX_HEIGHT)
+	set_fitted_rows(rows)
+
+func set_fitted_rows(rows: Array[Dictionary]) -> void:
+	if rows == fitted_rows: return
+	fitted_rows = rows.duplicate(true)
+	invalidate()
+
+func set_note_spacing(value: float) -> void:
+	if is_equal_approx(note_spacing, value): return
+	note_spacing = value
+	geometry_width = -1
+	refresh()
 
 func pages() -> int:
 	return page_starts.size()
@@ -145,7 +181,7 @@ func rebuild_geometry() -> void:
 	var offset: float = 0
 	var available: float = maxf(144, size.x - 100)
 	for index: int in range(layout.widths.size()):
-		layout.widths[index] = minf(layout.widths[index], available)
+		layout.widths[index] = minf(layout.widths[index] * note_spacing, available)
 		layout.offsets[index] = offset
 		offset += layout.widths[index]
 		if used > 0 and used + layout.widths[index] > available:
@@ -159,7 +195,7 @@ func refresh() -> void:
 	rebuild_geometry()
 	page_index = clampi(page_index, 0, pages() - 1)
 	page_capacity = (page_starts[page_index + 1] if page_index + 1 < pages() else song.measures.size()) - page_start()
-	var row_height: float = content_height()
+	var row_height: float = drawing_height()
 	custom_minimum_size.y = row_height
 	# Functional scrolling stays continuous even with decorative motion disabled.
 	# Paged reading uses exactly the same geometry, with a partial next page.
@@ -168,6 +204,7 @@ func refresh() -> void:
 	var wanted: Array[int] = []
 	for index: int in range(song.measures.size()):
 		if mode == "pages" and index < page_start(): continue
+		if mode == "pages" and not page_preview and index >= page_start() + page_capacity: continue
 		if layout.offsets[index] + layout.widths[index] >= view_offset and layout.offsets[index] <= view_offset + size.x: wanted.append(index)
 	for index: int in tiles.keys():
 		if not wanted.has(index):
@@ -184,8 +221,8 @@ func refresh() -> void:
 			tile.projection = projection
 			tile.index = index
 			tile.continuous = true
-			tile.notation = notation
-			tile.notation_rows = notation_rows
+			tile.notation = drawing_notation()
+			tile.notation_rows = drawing_rows()
 			tile.ui_font = ui_font
 			tile.music_font = music_font
 			tile.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -215,6 +252,7 @@ func tick_at_position(local_position: Vector2) -> float:
 	for candidate: int in range(layout.offsets.size()):
 		if timeline_position >= layout.offsets[candidate]: index = candidate
 		else: break
+	if mode == "pages" and not page_preview: index = clampi(index, page_start(), page_start() + page_capacity - 1)
 	var bar: Dictionary = song.measures[index]
 	var fraction: float = clampf((timeline_position - layout.offsets[index] - 16.0) / layout.widths[index], 0.0, 1.0)
 	return lerpf(float(bar.start), float(bar.end), fraction)
@@ -308,11 +346,11 @@ func finish_pointer(position: Vector2) -> void:
 	if should_seek: seek_requested.emit(tick_at_position(position))
 
 func is_timeline_position(position: Vector2) -> bool:
-	if notation_rows.is_empty(): return true
-	for index: int in range(notation_rows.size()):
-		var top: float = NotationRows.row_top(notation_rows, index)
-		if position.y >= top and position.y < top + float(notation_rows[index].height):
-			return notation_rows[index].type != "piano"
+	if drawing_rows().is_empty(): return true
+	for index: int in range(drawing_rows().size()):
+		var top: float = NotationRows.row_top(drawing_rows(), index)
+		if position.y >= top and position.y < top + float(drawing_rows()[index].height):
+			return drawing_rows()[index].type != "piano"
 	return false
 
 func update_pointer_region(position: Vector2) -> void:
@@ -371,23 +409,23 @@ func draw_cursor(surface: Control) -> void:
 				var row_index: int = int(row.index)
 				if type == "tab" and projection.placements.has(note.id):
 					var placement: Dictionary = projection.placements[note.id]
-					var y: float = origin.y + mapped_row_y(row_index, ScoreLayout.tab_y(int(placement.string), notation))
-					var half: float = ui_font.get_string_size(str(placement.fret), HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x / 2 + 5
-					draw_note_mark(surface, Vector2(x, y), half, upcoming, note)
+					var y: float = origin.y + mapped_row_y(row_index, ScoreLayout.tab_y(int(placement.string), drawing_notation()))
+					var half: float = ui_font.get_string_size(str(placement.fret), HORIZONTAL_ALIGNMENT_LEFT, -1, row_text_size(row_index, 26)).x / 2 + 4
+					draw_note_mark(surface, Vector2(x, y), half, upcoming, note, minf(14, mapped_row_distance(row_index, 14)))
 				elif type == "staff":
 					var y: float = origin.y + mapped_row_y(row_index, ScoreLayout.staff_y(int(note.pitch)))
-					var top: float = origin.y + mapped_row_y(row_index, 48)
-					var bottom: float = origin.y + mapped_row_y(row_index, 144)
+					var top: float = origin.y + mapped_row_y(row_index, 12)
+					var bottom: float = origin.y + mapped_row_y(row_index, 172)
 					if y >= top and y <= bottom:
-						if upcoming: draw_note_mark(surface, Vector2(x, y), 10, true, note)
+						if upcoming: draw_note_mark(surface, Vector2(x, y), maxf(10, mapped_row_distance(row_index, 8)), true, note)
 						else:
-							surface.draw_arc(Vector2(x, y), 11, 0, TAU, 20, get_theme_color("accent", "LibreTabs"), 2, true)
+							surface.draw_arc(Vector2(x, y), maxf(11, mapped_row_distance(row_index, 8)), 0, TAU, 20, get_theme_color("accent", "LibreTabs"), 2, true)
 							draw_particles(surface, Vector2(x, y), note)
 
 	draw_live(surface)
 	draw_piano_rows(surface)
 	# Fixed reading guide; notes disappear behind it as they pass.
-	surface.draw_rect(Rect2(0, 48, 44, content_height() - 48), get_theme_color("paper", "LibreTabs"))
+	surface.draw_rect(Rect2(0, 48, 44, drawing_height() - 48), get_theme_color("paper", "LibreTabs"))
 	for row: Dictionary in visual_rows(): draw_reading_guide(surface, row)
 
 func draw_timeline_indicator(surface: Control, x: float, color: Color, width: float, wash: Color, wash_width: float, origin_y: float = 0) -> void:
@@ -400,12 +438,12 @@ func draw_timeline_indicator(surface: Control, x: float, color: Color, width: fl
 			marked_start = true
 
 func timeline_segments(origin_y: float = 0) -> Array[Vector2]:
-	if notation_rows.is_empty(): return [Vector2(origin_y + 48, origin_y + content_height() - 22)]
+	if drawing_rows().is_empty(): return [Vector2(origin_y + 48, origin_y + drawing_height() - 22)]
 	var result: Array[Vector2] = []
-	for index: int in range(notation_rows.size()):
-		if notation_rows[index].type == "piano": continue
-		var top: float = origin_y + NotationRows.row_top(notation_rows, index)
-		var height: float = float(notation_rows[index].height)
+	for index: int in range(drawing_rows().size()):
+		if drawing_rows()[index].type == "piano": continue
+		var top: float = origin_y + NotationRows.row_top(drawing_rows(), index)
+		var height: float = float(drawing_rows()[index].height)
 		var start: float = top + minf(48, height * 0.25)
 		var finish: float = top + height - minf(22, height * 0.12)
 		result.append(Vector2(start, finish))
@@ -427,21 +465,21 @@ func draw_live(surface: Control) -> void:
 			var row_index: int = int(row.index)
 			if row.type == "staff": draw_live_staff(surface, note, x, origin.y, row_index, color)
 			elif row.type == "tab":
-				var y: float = origin.y + mapped_row_y(row_index, ScoreLayout.tab_y(int(note.get("string", 1)), notation))
+				var y: float = origin.y + mapped_row_y(row_index, ScoreLayout.tab_y(int(note.get("string", 1)), drawing_notation()))
 				var text: String = str(note.fret) if note.has("fret") else "!"
 				var half: float = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x / 2
 				surface.draw_style_box(UIAppearance.box(get_theme_color("paper", "LibreTabs"), 0), Rect2(x - half - 5, y - 16, half * 2 + 10, 32))
 				surface.draw_rect(Rect2(x - half - 5, y - 16, half * 2 + 10, 32), color, false, 3)
 				surface.draw_string(font, Vector2(x - half, y + (font.get_ascent(26) - font.get_descent(26)) / 2), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 26, color)
-	surface.draw_string(font, Vector2(48, origin.y + content_height() - 16), tr("LIVE_NOTE"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, color)
+	surface.draw_string(font, Vector2(48, origin.y + drawing_height() - 16), tr("LIVE_NOTE"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, color)
 
 func draw_live_staff(surface: Control, note: Dictionary, x: float, origin_y: float, row_index: int, color: Color) -> void:
 	var y: float = origin_y + mapped_row_y(row_index, ScoreLayout.staff_y(int(note.pitch)))
-	var center: float = origin_y + mapped_row_y(row_index, 112)
-	var staff_top: float = origin_y + mapped_row_y(row_index, 80)
-	if y >= origin_y + mapped_row_y(row_index, 48) and y <= origin_y + mapped_row_y(row_index, 144):
+	var center: float = origin_y + mapped_row_y(row_index, ScoreLayout.STAFF_BOTTOM)
+	var staff_top: float = origin_y + mapped_row_y(row_index, ScoreLayout.STAFF_TOP)
+	if y >= origin_y + mapped_row_y(row_index, 12) and y <= origin_y + mapped_row_y(row_index, 172):
 		for ledger: int in range(1, 5):
-			for line_y: float in [center + mapped_row_distance(row_index, ledger * 8), staff_top - mapped_row_distance(row_index, ledger * 8)]:
+			for line_y: float in [center + mapped_row_distance(row_index, ledger * ScoreLayout.STAFF_SPACE), staff_top - mapped_row_distance(row_index, ledger * ScoreLayout.STAFF_SPACE)]:
 				if (line_y > center and y >= line_y) or (line_y < staff_top and y <= line_y): surface.draw_line(Vector2(x - 11, line_y), Vector2(x + 11, line_y), color, 2)
 		var points: PackedVector2Array = PackedVector2Array([Vector2(x, y - 7), Vector2(x + 9, y), Vector2(x, y + 7), Vector2(x - 9, y), Vector2(x, y - 7)])
 		surface.draw_colored_polygon(points, color)
@@ -450,10 +488,10 @@ func draw_live_staff(surface: Control, note: Dictionary, x: float, origin_y: flo
 		surface.draw_string(ui_font, Vector2(x + 12, origin_y + mapped_row_y(row_index, 60)), tr("PITCH_MARKER") % int(note.pitch), HORIZONTAL_ALIGNMENT_LEFT, -1, 16, color)
 
 func visual_rows() -> Array[Dictionary]:
-	if not notation_rows.is_empty():
+	if not drawing_rows().is_empty():
 		var result: Array[Dictionary] = []
-		for index: int in range(notation_rows.size()):
-			result.append({"type": notation_rows[index].type, "index": index})
+		for index: int in range(drawing_rows().size()):
+			result.append({"type": drawing_rows()[index].type, "index": index})
 		return result
 	var legacy: Array[Dictionary] = []
 	if notation != "tab": legacy.append({"type": "staff", "index": 0})
@@ -461,29 +499,32 @@ func visual_rows() -> Array[Dictionary]:
 	return legacy
 
 func mapped_row_y(index: int, native_y: float) -> float:
-	return native_y if notation_rows.is_empty() else NotationRows.mapped_y(notation_rows, index, native_y)
+	return native_y if drawing_rows().is_empty() else NotationRows.mapped_y(drawing_rows(), index, native_y)
 
 func mapped_row_distance(index: int, native_distance: float) -> float:
-	if notation_rows.is_empty(): return native_distance
-	return native_distance * float(notation_rows[index].height) / NotationRows.native_height(str(notation_rows[index].type))
+	if drawing_rows().is_empty(): return native_distance
+	return native_distance * float(drawing_rows()[index].height) / NotationRows.native_height(str(drawing_rows()[index].type))
+
+func row_text_size(index: int, base: int) -> int:
+	return roundi(base * minf(1.0, mapped_row_distance(index, 1)))
 
 func draw_reading_guide(surface: Control, row: Dictionary) -> void:
 	var row_index: int = int(row.index)
 	if row.type == "staff":
-		surface.draw_string(music_font, Vector2(8, mapped_row_y(row_index, 105)), String.chr(0xe050), HORIZONTAL_ALIGNMENT_LEFT, -1, 32, get_theme_color("ink", "LibreTabs"))
-		surface.draw_string(ui_font, Vector2(17, mapped_row_y(row_index, 132)), "8", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, get_theme_color("ink", "LibreTabs"))
+		surface.draw_string(music_font, Vector2(8, mapped_row_y(row_index, ScoreLayout.STAFF_TOP + 40.625)), String.chr(0xe050), HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(mapped_row_distance(row_index, ScoreLayout.STAFF_FONT)), get_theme_color("ink", "LibreTabs"))
+		surface.draw_string(ui_font, Vector2(17, mapped_row_y(row_index, 145)), "8", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, get_theme_color("ink", "LibreTabs"))
 	elif row.type == "tab":
 		for string_index: int in range(6):
-			surface.draw_string(ui_font, Vector2(14, mapped_row_y(row_index, ScoreLayout.tab_y(string_index + 1, notation)) + 6), str(string_index + 1), HORIZONTAL_ALIGNMENT_LEFT, -1, 18, get_theme_color("muted", "LibreTabs"))
+			surface.draw_string(ui_font, Vector2(14, mapped_row_y(row_index, ScoreLayout.tab_y(string_index + 1, drawing_notation())) + row_text_size(row_index, 6)), str(string_index + 1), HORIZONTAL_ALIGNMENT_LEFT, -1, row_text_size(row_index, 18), get_theme_color("muted", "LibreTabs"))
 
 func draw_piano_rows(surface: Control) -> void:
-	if notation_rows.is_empty(): return
-	for index: int in range(notation_rows.size()):
-		if notation_rows[index].type == "piano": draw_piano(surface, index)
+	if drawing_rows().is_empty(): return
+	for index: int in range(drawing_rows().size()):
+		if drawing_rows()[index].type == "piano": draw_piano(surface, index)
 
 func draw_piano(surface: Control, row_index: int) -> void:
-	var top: float = NotationRows.row_top(notation_rows, row_index)
-	var height: float = float(notation_rows[row_index].height)
+	var top: float = NotationRows.row_top(drawing_rows(), row_index)
+	var height: float = float(drawing_rows()[row_index].height)
 	var left: float = 52
 	var right: float = maxf(left + 40, size.x - 10)
 	var key_top: float = top + 28
@@ -528,16 +569,16 @@ func pitch_name(pitch: int) -> String:
 	return ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"][posmod(pitch, 12)] + str(pitch / 12 - 1)
 
 # Open corner brackets mean "next"; a complete box means "sounding".
-func draw_note_mark(surface: Control, center: Vector2, half: float, upcoming: bool, note: Dictionary) -> void:
+func draw_note_mark(surface: Control, center: Vector2, half: float, upcoming: bool, note: Dictionary, half_height: float = 14) -> void:
 	var color: Color = get_theme_color("accent", "LibreTabs")
 	if upcoming:
 		for side: float in [-1.0, 1.0]:
 			var x: float = center.x + side * (half + 2)
-			surface.draw_line(Vector2(x, center.y - 14), Vector2(x, center.y + 14), color, 2, true)
-			for y: float in [center.y - 14, center.y + 14]:
+			surface.draw_line(Vector2(x, center.y - half_height), Vector2(x, center.y + half_height), color, 2, true)
+			for y: float in [center.y - half_height, center.y + half_height]:
 				surface.draw_line(Vector2(x, y), Vector2(x - side * 5, y), color, 2, true)
 	else:
-		surface.draw_rect(Rect2(center - Vector2(half, 14), Vector2(half * 2, 28)), color, false, 2)
+		surface.draw_rect(Rect2(center - Vector2(half, half_height), Vector2(half * 2, half_height * 2)), color, false, 2)
 		draw_particles(surface, center, note)
 
 func draw_particles(surface: Control, center: Vector2, note: Dictionary) -> void:

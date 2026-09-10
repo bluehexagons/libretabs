@@ -61,7 +61,7 @@ static func total_height(rows: Array) -> float:
 	return float(total)
 
 static func native_height(type: String) -> float:
-	return 144.0 if type == "staff" else (176.0 if type == "tab" else 160.0)
+	return 176.0 if type == "staff" else (176.0 if type == "tab" else 160.0)
 
 static func row_top(rows: Array, index: int) -> float:
 	var result: float = 0

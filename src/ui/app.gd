@@ -136,6 +136,11 @@ var page_next: Button
 var page_follow: Button
 var seek_navigation: HBoxContainer
 var view_picker: OptionButton
+var music_layout_controls: Dictionary = {}
+var quick_music_layout: Array[OptionButton] = []
+var music_layout: Dictionary = {"lines": 1, "spacing": 100, "staff": 150}
+var tv_music_layout: Dictionary = {"lines": 3, "spacing": 50, "staff": 150}
+const MUSIC_LAYOUT_VALUES: Dictionary = {"lines": [1, 2, 3, 4, 5, 6], "spacing": [50, 65, 80, 100, 125, 150], "staff": [100, 150, 200, 250]}
 var notation_picker: OptionButton
 var notation_rows: Array[Dictionary] = NotationRows.defaults()
 var notation_rows_box: VBoxContainer
@@ -212,7 +217,15 @@ func _ready() -> void:
 	host.exported.connect(func(success: bool) -> void: print_status.text = tr("PRINT_SAVED" if success else "PRINT_FAILED"))
 	audio = PracticeAudio.new()
 	add_child(audio)
+	for prefix: String in ["music_", "tv_music_"]:
+		var profile: Dictionary = music_layout if prefix == "music_" else tv_music_layout
+		for key: String in MUSIC_LAYOUT_VALUES:
+			var allowed: Array[String] = []
+			for value: int in MUSIC_LAYOUT_VALUES[key]: allowed.append(str(value))
+			var storage_key: String = prefix + key
+			if persist_preferences: profile[key] = int(host.load_display_choice(storage_key, allowed, str(profile[key])))
 	build_ui()
+	apply_music_layout()
 	capture_view = CaptureView.new()
 	add_child(capture_view)
 	resized.connect(responsive)
@@ -379,6 +392,7 @@ func build_ui() -> void:
 	view_button = button("SCORE_VIEW", func() -> void: toggle_drawer("SCORE_VIEW"))
 	reading_tools = flow(panel)
 	reading_tools.add_child(view_button)
+	build_music_layout_controls(reading_tools, true)
 	notice_button.reparent(reading_tools)
 	menu_overlay = Control.new()
 	menu_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -477,6 +491,9 @@ func build_ui() -> void:
 	page_follow = button("PAGE_FOLLOW", toggle_page_follow)
 	page_follow.toggle_mode = true
 	page_navigation.add_child(page_follow)
+	for item: Button in [page_previous, page_next, page_follow]:
+		item.autowrap_mode = TextServer.AUTOWRAP_OFF
+		item.clip_text = true
 	page_navigation.hide()
 	# Keep play/pause reachable while the score and settings scroll on phones.
 	dock_margin = MarginContainer.new()
@@ -641,6 +658,8 @@ func build_drawers() -> void:
 	view_picker.add_item(tr("VIEW_FOLLOW_PAGES"))
 	view_picker.item_selected.connect(func(_index: int) -> void: change_view())
 	views.add_child(view_picker)
+	views.add_child(label("MUSIC_LAYOUT_HELP", 18))
+	build_music_layout_controls(views, false)
 	notation_picker = OptionButton.new()
 	notation_picker.custom_minimum_size.y = 56
 	notation_picker.fit_to_longest_item = false
@@ -967,7 +986,7 @@ func enter_tv() -> void:
 		score.follow_pages = true
 		score.page_to_playback()
 		view_picker.select(2)
-	responsive()
+	apply_music_layout()
 	score_frame.arrange()
 	tv_button.grab_focus()
 
@@ -1211,12 +1230,51 @@ func change_view() -> void:
 		var choice: int = view_picker.selected
 		enter_tv()
 		view_picker.select(choice)
+	if view_picker.selected == 0 and int(music_layout.lines) > 1: change_music_layout("lines", 1)
 	notation_picker.disabled = true
 	score.follow_pages = view_picker.selected == 2
 	score.set_view("scroll" if view_picker.selected == 0 else "pages", ["both", "tab", "staff"][notation_picker.selected])
 	if score.follow_pages: score.page_to_playback()
 	update_page_controls()
 	scroll.scroll_vertical = 0
+
+func build_music_layout_controls(parent: Control, quick: bool) -> void:
+	for key: String in MUSIC_LAYOUT_VALUES:
+		var picker: OptionButton = OptionButton.new()
+		picker.custom_minimum_size = Vector2(150, 56)
+		picker.fit_to_longest_item = false
+		picker.tooltip_text = tr("MUSIC_" + key.to_upper() + "_HELP")
+		for value: int in MUSIC_LAYOUT_VALUES[key]: picker.add_item(tr("MUSIC_" + key.to_upper()) % value)
+		picker.item_selected.connect(func(index: int) -> void: change_music_layout(key, int(MUSIC_LAYOUT_VALUES[key][index])))
+		parent.add_child(picker)
+		if not music_layout_controls.has(key): music_layout_controls[key] = []
+		music_layout_controls[key].append(picker)
+		if quick: quick_music_layout.append(picker)
+
+func change_music_layout(key: String, value: int) -> void:
+	if not MUSIC_LAYOUT_VALUES.has(key) or value not in MUSIC_LAYOUT_VALUES[key]: return
+	var profile: Dictionary = tv_music_layout if tv_active else music_layout
+	profile[key] = value
+	if key == "lines" and value > 1:
+		score.set_view("pages", score.notation)
+		score.follow_pages = true
+		view_picker.select(2)
+	apply_music_layout()
+	if persist_preferences and not host.save_display_choice(("tv_music_" if tv_active else "music_") + key, str(value)): set_status("STORAGE_SESSION")
+
+func apply_music_layout() -> void:
+	var profile: Dictionary = tv_music_layout if tv_active else music_layout
+	if score_frame != null:
+		score_frame.music_lines = int(profile.lines)
+		score_frame.note_spacing = float(profile.spacing) / 100.0
+		score_frame.staff_height = float(profile.staff) / 100.0
+		if score_frame.music_lines > 1 and score.mode == "scroll":
+			score.set_view("pages", score.notation)
+			score.follow_pages = true
+			view_picker.select(2)
+	for key: String in music_layout_controls:
+		for picker: OptionButton in music_layout_controls[key]: picker.select(MUSIC_LAYOUT_VALUES[key].find(profile[key]))
+	responsive()
 
 func rebuild_notation_rows_editor() -> void:
 	if notation_rows_box == null: return
@@ -1349,11 +1407,12 @@ func update_page_controls() -> void:
 	page_label.tooltip_text = tr("PAGE_NUMBER") % [score.page_index + 1, score.pages()]
 	for item: Button in [page_previous, page_next]:
 		item.text = "" if small_navigation else tr("PAGE_PREVIOUS" if item == page_previous else "PAGE_NEXT")
-		item.custom_minimum_size.x = 56
+		item.custom_minimum_size.x = 56 if small_navigation else minf(220, size.x * 0.22)
 		item.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	page_previous.disabled = score.page_index == 0
 	page_next.disabled = score.page_index == score.pages() - 1
 	# Follow playback remains available in Score view when vertical space is tight.
+	page_follow.custom_minimum_size.x = minf(280, size.x * 0.25)
 	page_follow.visible = not small_navigation
 	page_follow.set_pressed_no_signal(score.follow_pages)
 	page_follow.text = tr("PAGE_FOLLOW_ACTIVE" if score.follow_pages else "PAGE_FOLLOW")
@@ -1491,6 +1550,7 @@ func responsive() -> void:
 	header.alignment = BoxContainer.ALIGNMENT_BEGIN if side_dock else BoxContainer.ALIGNMENT_END
 	song_title.visible = not landscape and (tv_active or not compact)
 	reading_tools.visible = not landscape and (tv_active or not compact)
+	for picker: OptionButton in quick_music_layout: picker.visible = size.x >= 1000 and theme.default_font_size < 30
 	set_status(status_key)
 	for side: String in ["left", "right", "top", "bottom"]:
 		content_margin.add_theme_constant_override("margin_" + side, 8 if side_dock else ((16 if tv_active else maxi(16, int((size.x - 1280) / 2))) if side in ["left", "right"] else (4 if compact else 10)))
@@ -1549,8 +1609,9 @@ func update_main_scroll() -> void:
 	fit_hide_seek = false
 	song_title.visible = not landscape and (tv_active or not compact)
 	reading_tools.visible = not landscape and (tv_active or not compact)
+	for picker: OptionButton in quick_music_layout: picker.visible = size.x >= 1000 and theme.default_font_size < 30
 	update_page_controls()
-	score_frame.fit_height(96 if tv_active else score.content_height())
+	score_frame.fit_height(96)
 	for _frame: int in range(3): await get_tree().process_frame
 	for extra: Control in [cue.get_parent(), reading_tools, song_title, seek_navigation]:
 		if content_margin.get_combined_minimum_size().y <= content_height_budget() + 1: break
@@ -2095,7 +2156,7 @@ func report_state() -> void:
 	if song == null: return
 	if host.trace_enabled():
 		var evidence: Dictionary = audio.metrics()
-		evidence.merge({"tv_active": tv_active, "tv_systems": score_frame.visible_systems(), "fullscreen": host.is_fullscreen(), "follow_pages": score.follow_pages, "upcoming_tick": score.upcoming_tick, "count_beat": int(count_badge.text) if count_badge.visible else 0, "capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "font_style": font_style, "control_position": control_position, "handedness": handedness, "controls_on_side": controls_on_side, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "notation_rows": notation_rows, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "arrangement_style": projection.style, "placed": projection.placed, "eligible": projection.eligible, "omitted": projection.omitted.size(), "mute_marks": projection.mute_marks, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
+		evidence.merge({"tv_active": tv_active, "tv_systems": score_frame.visible_systems(), "music_lines": score_frame.music_lines, "note_spacing": score_frame.note_spacing, "staff_height": score_frame.staff_height, "score_height": score.drawing_height(), "fitted_rows": score.fitted_rows, "fullscreen": host.is_fullscreen(), "follow_pages": score.follow_pages, "upcoming_tick": score.upcoming_tick, "count_beat": int(count_badge.text) if count_badge.visible else 0, "capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "font_style": font_style, "control_position": control_position, "handedness": handedness, "controls_on_side": controls_on_side, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "notation_rows": notation_rows, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "arrangement_style": projection.style, "placed": projection.placed, "eligible": projection.eligible, "omitted": projection.omitted.size(), "mute_marks": projection.mute_marks, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
 		host.report(evidence)
 	offline.text = tr("OFFLINE_READY") if host.offline_ready() else tr("OFFLINE_PENDING")
 	if host.offline_ready() and not host.trace_enabled(): idle_timer.stop()

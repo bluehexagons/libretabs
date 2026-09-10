@@ -769,6 +769,33 @@ func run() -> void:
 	score.set_view("scroll", "both")
 	app.call("responsive")
 	for _frame: int in range(20): await process_frame
+	var full_height: float = score.drawing_height()
+	var staff_gap: float = score.mapped_row_distance(0, ScoreLayout.STAFF_SPACE)
+	var normal_bars: int = score.tiles.size()
+	var layout_tick: float = app.get("source_tick")
+	check(full_height >= app.get("score_frame").size.y - 2, "regular music fills the available score height")
+	check(staff_gap > 8, "regular staff lines have more separation than the old eight-pixel staff")
+	app.call("change_music_layout", "spacing", 50)
+	for _frame: int in range(24): await process_frame
+	check(score.tiles.size() > normal_bars and is_equal_approx(score.mapped_row_distance(0, ScoreLayout.STAFF_SPACE), staff_gap), "horizontal density adds music without shrinking staff height")
+	app.call("change_music_layout", "staff", 250)
+	for _frame: int in range(24): await process_frame
+	check(score.mapped_row_distance(0, ScoreLayout.STAFF_SPACE) > staff_gap, "staff height changes visible line separation instead of being undone by auto-fit")
+	var fitted_tile: NotationMeasureStack = score.tiles[score.tiles.keys()[0]]
+	var staff_canvas: MeasureCanvas = fitted_tile.canvases[0]
+	var native_center: Vector2 = staff_canvas.get_global_transform() * Vector2(0, ScoreLayout.staff_y(64))
+	var overlay_center: Vector2 = score.get_global_transform() * Vector2(0, score.mapped_row_y(0, ScoreLayout.staff_y(64)))
+	check(is_equal_approx(native_center.y, overlay_center.y), "engraved note and source-linked overlay use the same fitted staff center")
+	app.call("change_music_layout", "lines", 2)
+	for _frame: int in range(24): await process_frame
+	check(app.get("score_frame").visible_systems() == 2 and score.drawing_height() < full_height, "regular player also supports consecutive music lines with adjustable height")
+	check(app.get("source_tick") == layout_tick and app.get("notation_rows") == NotationRows.defaults(), "layout controls preserve source time and saved row definitions")
+	app.call("change_music_layout", "lines", 1)
+	app.call("change_music_layout", "staff", 150)
+	app.call("change_music_layout", "spacing", 100)
+	score.set_view("scroll", "both")
+	app.call("responsive")
+	for _frame: int in range(24): await process_frame
 	var ordinary_measures: int = score.tiles.size()
 	app.get("tv_button").pressed.emit()
 	for _frame: int in range(24): await process_frame
@@ -777,7 +804,10 @@ func run() -> void:
 	for bar: int in score.tiles: visible_bars[bar] = true
 	for continuation: ScoreView in overview_frame.continuations:
 		if continuation.visible:
-			for bar: int in continuation.tiles: visible_bars[bar] = true
+			check(continuation.fitted_rows == score.fitted_rows, "continuation rows share exactly the same fitted staff geometry")
+			for bar: int in continuation.tiles:
+				check(not visible_bars.has(bar), "multiple music lines never repeat a partial measure")
+				visible_bars[bar] = true
 	check(overview_frame.visible_systems() >= 2 and visible_bars.size() > ordinary_measures, "one-tap TV density shows more distinct music using consecutive score systems")
 	var overview_tick: float = app.get("source_tick")
 	app.call("toggle_drawer", "SOUND")
@@ -794,6 +824,12 @@ func run() -> void:
 		if viewport.x == 390:
 			check(app.get("play_button").size.x > app.get("speed_control").size.x and app.get("play_button").size.y > app.get("speed_control").size.y, "portrait Play is larger than the speed control")
 	app.get("tv_button").pressed.emit()
+	app.call("load_library_item", 0)
+	root.size = Vector2i(1280, 900)
+	app.call("change_music_layout", "spacing", 50)
+	app.call("change_music_layout", "lines", 6)
+	for _frame: int in range(35): await process_frame
+	check(app.get("score_frame").visible_systems() == 1 and score.drawing_height() >= app.get("score_frame").size.y - 2, "short songs use the height instead of reserving empty continuation lines")
 	app.queue_free()
 	await process_frame
 	print("Practice UI: %d checks, %d failures" % [checks, failures])

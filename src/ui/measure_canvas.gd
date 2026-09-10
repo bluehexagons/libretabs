@@ -24,25 +24,36 @@ func _draw() -> void:
 	accent = get_theme_color("accent", "LibreTabs")
 	draw_measure(index, Vector2.ZERO, size.x)
 
+func text_size(font_size: int) -> int:
+	return roundi(font_size * minf(1.0, scale.y)) if font_size >= 22 else font_size
+
 func text_at(at: Vector2, text: String, font_size: int = 15, color: Color = Color(-1, -1, -1)) -> void:
-	draw_string(ui_font, at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, ink if color.r < 0 else color)
+	draw_set_transform(at, 0, Vector2(1, 1 / scale.y))
+	draw_string(ui_font, Vector2.ZERO, text, HORIZONTAL_ALIGNMENT_LEFT, -1, text_size(font_size), ink if color.r < 0 else color)
+	draw_set_transform(Vector2.ZERO)
 
 func glyph(at: Vector2, code: int, font_size: int = 32, color: Color = Color(-1, -1, -1)) -> void:
-	draw_string(music_font, at, String.chr(code), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, ink if color.r < 0 else color)
+	draw_set_transform(at, 0, Vector2(1, 1 / scale.y))
+	draw_string(music_font, Vector2.ZERO, String.chr(code), HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(font_size * scale.y), ink if color.r < 0 else color)
+	draw_set_transform(Vector2.ZERO)
 
 func draw_measure(index: int, origin: Vector2, width: float) -> void:
 	var bar: Dictionary = song.measures[index]
 	var left: float = origin.x if continuous else origin.x + 44
 	var right: float = origin.x + width if continuous else origin.x + width - 12
-	var top: float = origin.y + 80
+	var top: float = origin.y + ScoreLayout.STAFF_TOP
 	var tab_top: float = origin.y + (176 if notation == "both" else 80) + tab_y_offset
 	var start: float = float(bar.start)
 	var finish: float = float(bar.end)
-	if show_measure_title: text_at(origin + Vector2(8, 22), tr("MEASURE_TITLE") % [index + 1, song.measures.size()], 16)
+	if show_measure_title:
+		var title: String = tr("MEASURE_TITLE") % [index + 1, song.measures.size()]
+		if ui_font.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, 16).x > width - 16: title = tr("MEASURE_SHORT") % (index + 1)
+		if ui_font.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, 16).x > width - 16: title = tr("MEASURE_NUMBER_ONLY") % (index + 1)
+		text_at(origin + Vector2(8, 22), title, 16)
 	if notation != "tab":
 		for line: int in range(5):
-			draw_line(Vector2(left, top + line * 8), Vector2(right, top + line * 8), muted, 1.0, true)
-		if not continuous: glyph(Vector2(origin.x + 9, top + 25), 0xe050, 32)
+			draw_line(Vector2(left, top + line * ScoreLayout.STAFF_SPACE), Vector2(right, top + line * ScoreLayout.STAFF_SPACE), ink.lerp(get_theme_color("paper", "LibreTabs"), 0.30), 1.0, true)
+		if not continuous: glyph(Vector2(origin.x + 9, top + 40.625), 0xe050, ScoreLayout.STAFF_FONT)
 		if not continuous: text_at(Vector2(origin.x + 18, top + 53), "8", 10)
 		if not continuous: text_at(Vector2(left + 2, top + 13), str(bar.numerator), 13)
 		if not continuous: text_at(Vector2(left + 2, top + 29), str(bar.denominator), 13)
@@ -51,9 +62,9 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 			var y: float = tab_top + string_index * 21
 			if not continuous: text_at(Vector2(origin.x + 12, y + 5), str(string_index + 1), 13, muted)
 			draw_line(Vector2(left, y), Vector2(right, y), muted, 1, true)
-		if notation != "tab": draw_line(Vector2(right, top), Vector2(right, top + 32), ink, 1.5)
+		if notation != "tab": draw_line(Vector2(right, top), Vector2(right, top + 4 * ScoreLayout.STAFF_SPACE), ink, 1.5)
 		draw_line(Vector2(right, tab_top), Vector2(right, tab_top + 105), ink, 1.5)
-	if notation == "staff": draw_line(Vector2(right, top), Vector2(right, top + 32), ink, 1.5)
+	if notation == "staff": draw_line(Vector2(right, top), Vector2(right, top + 4 * ScoreLayout.STAFF_SPACE), ink, 1.5)
 	var music_left: float = origin.x + (16 if continuous else 68)
 	var span: float = width if continuous else width - 92
 	var visible_count: int = 0
@@ -61,7 +72,7 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 	var short_counts: Dictionary = {}
 	for candidate: Dictionary in song.notes:
 		if int(candidate.part) == part and candidate.start >= start and candidate.start < finish and candidate.end - candidate.start <= song.division / 2.0:
-			var group: int = floori(float(candidate.start) / song.division)
+			var group: int = floori(float(candidate.start) / song.division) * 2 + (1 if ScoreLayout.staff_y(int(candidate.pitch)) <= ScoreLayout.STAFF_TOP + 2 * ScoreLayout.STAFF_SPACE else 0)
 			short_counts[group] = int(short_counts.get(group, 0)) + 1
 	for note: Dictionary in song.notes:
 		if int(note.part) != part or float(note.end) <= start or float(note.start) >= finish or note.end <= note.start:
@@ -81,31 +92,33 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 		if notation != "tab":
 			if active:
 				draw_circle(Vector2(x, y), 10, Color(0.95, 0.81, 0.65, 0.65))
-			if y >= top - 32 and y <= top + 64:
+			if y >= origin.y + 12 and y <= origin.y + 172:
 				# Ledger lines in octave-transposing guitar treble.
 				for ledger: int in range(1, 12):
-					var below: float = top + 32 + ledger * 8
-					var above: float = top - ledger * 8
+					var below: float = top + 4 * ScoreLayout.STAFF_SPACE + ledger * ScoreLayout.STAFF_SPACE
+					var above: float = top - ledger * ScoreLayout.STAFF_SPACE
 					if y >= below:
-						draw_line(Vector2(x - 10, below), Vector2(x + 10, below), color, 1)
+						draw_line(Vector2(x - 15 * scale.y, below), Vector2(x + 15 * scale.y, below), color, 1)
 					if y <= above:
-						draw_line(Vector2(x - 10, above), Vector2(x + 10, above), color, 1)
+						draw_line(Vector2(x - 15 * scale.y, above), Vector2(x + 15 * scale.y, above), color, 1)
 				var duration: float = minf(float(note.end), finish) - raw
 				var head: int = 0xe0a3 if duration >= song.division * 2 else 0xe0a4
-				var half_head: float = music_font.get_string_size(String.chr(head), HORIZONTAL_ALIGNMENT_LEFT, -1, 32).x / 2
-				glyph(Vector2(x - half_head, y), head, 32, color)
+				var half_head: float = music_font.get_string_size(String.chr(head), HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(ScoreLayout.STAFF_FONT * scale.y)).x / 2
+				glyph(Vector2(x - half_head, y), head, ScoreLayout.STAFF_FONT, color)
 				if pitch % 12 in [1, 3, 6, 8, 10]:
-					glyph(Vector2(x - 16, y), 0xe262, 26, color)
+					glyph(Vector2(x - half_head - 18 * scale.y, y), 0xe262, 42, color)
+				var down: bool = y <= top + 2 * ScoreLayout.STAFF_SPACE
+				var stem: Vector2 = Vector2(x - half_head + 1 if down else x + half_head - 1, y + (42.25 if down else -42.25))
 				if duration < song.division * 4:
-					draw_line(Vector2(x + half_head - 1, y), Vector2(x + half_head - 1, y - 26), color, 1.5, true)
+					draw_line(Vector2(stem.x, y), stem, color, 1.5, true)
 				if duration <= song.division / 2.0:
-					var beat: int = floori(display / song.division)
+					var beat: int = floori(display / song.division) * 2 + (1 if down else 0)
 					if beamed.has(beat):
 						var previous: Vector2 = beamed[beat]
-						draw_line(previous, Vector2(x + half_head - 1, y - 26), color, 3, true)
+						draw_line(previous, stem, color, 3, true)
 					elif int(short_counts.get(beat, 0)) < 2:
-						glyph(Vector2(x + half_head - 1, y - 26), 0xe242 if duration <= song.division / 4.0 else 0xe240, 25, color)
-					beamed[beat] = Vector2(x + half_head - 1, y - 26)
+						glyph(stem, (0xe242 if duration <= song.division / 4.0 else 0xe240) + (1 if down else 0), 41, color)
+					beamed[beat] = stem
 				if is_equal_approx(duration / song.division, 1.5) or is_equal_approx(duration / song.division, 3.0):
 					draw_circle(Vector2(x + 13, y - 2), 1.8, color)
 				if float(note.end) > finish or float(note.start) < start:
@@ -117,9 +130,9 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 				var placement: Dictionary = projection.placements[note.id]
 				var tab_y: float = origin.y + ScoreLayout.tab_y(int(placement.string), notation) + tab_y_offset
 				var fret: String = str(placement.fret)
-				var half: float = ui_font.get_string_size(fret, HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x / 2
+				var half: float = ui_font.get_string_size(fret, HORIZONTAL_ALIGNMENT_LEFT, -1, text_size(26)).x / 2
 				draw_rect(Rect2(x - half - 4, tab_y - 13, half * 2 + 8, 26), get_theme_color("paper", "LibreTabs"))
-				text_at(Vector2(x - half, tab_y + (ui_font.get_ascent(26) - ui_font.get_descent(26)) / 2), fret, 26, color)
+				text_at(Vector2(x - half, tab_y + (ui_font.get_ascent(text_size(26)) - ui_font.get_descent(text_size(26))) / (2 * scale.y)), fret, 26, color)
 				if projection.right_hand.has(note.id):
 					var role_key: String = "FINGER_%s_MARK" % String(projection.right_hand[note.id]).to_upper()
 					text_at(Vector2(x + half + 5, tab_y - 5), tr(role_key), 12, accent)
@@ -138,9 +151,9 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 			draw_line(Vector2(bracket_x, last_y + 8), Vector2(bracket_x + 6, last_y + 8), accent, 2, true)
 			for string_number: int in strum.mutes:
 				var y: float = origin.y + ScoreLayout.tab_y(string_number, notation) + tab_y_offset
-				var half: float = ui_font.get_string_size("X", HORIZONTAL_ALIGNMENT_LEFT, -1, 22).x / 2
+				var half: float = ui_font.get_string_size("X", HORIZONTAL_ALIGNMENT_LEFT, -1, text_size(22)).x / 2
 				draw_rect(Rect2(x - half - 3, y - 12, half * 2 + 6, 24), get_theme_color("paper", "LibreTabs"))
-				text_at(Vector2(x - half, y + (ui_font.get_ascent(22) - ui_font.get_descent(22)) / 2), "X", 22, accent)
+				text_at(Vector2(x - half, y + (ui_font.get_ascent(text_size(22)) - ui_font.get_descent(text_size(22))) / (2 * scale.y)), "X", 22, accent)
 		for barre: Dictionary in projection.barres:
 			if float(barre.tick) < start or float(barre.tick) >= finish: continue
 			var marker: Dictionary = {"start": barre.tick}
@@ -162,5 +175,5 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 				break
 		if not occupied:
 			var x: float = music_left + (pulse - start) / (finish - start) * span
-			glyph(Vector2(x - music_font.get_string_size(String.chr(0xe4e5), HORIZONTAL_ALIGNMENT_LEFT, -1, 30).x / 2, top + 16), 0xe4e5, 30, muted)
+			glyph(Vector2(x - music_font.get_string_size(String.chr(0xe4e5), HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(49 * scale.y)).x / 2, top + 26), 0xe4e5, 49, muted)
 		pulse += song.division

@@ -5,6 +5,9 @@ extends Control
 # The regular player and dense overview share ScoreView and its source geometry.
 var score: ScoreView
 var dense: bool = false
+var music_lines: int = 1
+var note_spacing: float = 1.0
+var staff_height: float = 1.5
 var continuations: Array[ScoreView] = []
 var system_count: int = 1
 var arranging: bool = false
@@ -16,15 +19,25 @@ func _ready() -> void:
 
 func fit_height(available: float) -> void:
 	if score == null: return
-	custom_minimum_size.y = maxf(48, available) if dense else minf(score.content_height(), maxf(48, available))
+	custom_minimum_size.y = maxf(48, available)
 	arrange.call_deferred()
 
 func arrange() -> void:
 	if score == null or not is_instance_valid(score) or arranging: return
 	arranging = true
-	var height: float = score.content_height()
-	system_count = clampi(floori(size.y / (height * 0.65)), 1, 4) if dense else 1
-	var factor: float = minf(0.75 if dense else 1.0, (size.y - (system_count - 1) * 8) / (height * system_count))
+	score.set_note_spacing(note_spacing)
+	score.size.x = maxf(240, size.x)
+	score.refresh()
+	var row_count: int = score.notation_rows.size() if not score.notation_rows.is_empty() else (2 if score.notation == "both" else 1)
+	var minimum: float = float(row_count * 80)
+	system_count = mini(mini(music_lines, score.pages()), maxi(1, floori((size.y + 8) / (minimum + 8))))
+	score.page_preview = system_count == 1
+	score.refresh()
+	var allocated: float = (size.y - (system_count - 1) * 8) / system_count
+	score.fit_rows(allocated, staff_height)
+	var height: float = score.drawing_height()
+	var factor: float = minf(1.0, allocated / height)
+	score.set_note_spacing(note_spacing)
 	if factor <= 0:
 		arranging = false
 		return
@@ -48,7 +61,7 @@ func arrange() -> void:
 func update_overview() -> void:
 	for index: int in range(continuations.size()):
 		var next: ScoreView = continuations[index]
-		if not dense or index >= system_count - 1:
+		if index >= system_count - 1:
 			next.hide()
 			continue
 		if next.notation_rows != score.notation_rows:
@@ -57,6 +70,9 @@ func update_overview() -> void:
 			next.set_document(score.song, score.part, score.projection)
 		if next.mode != "pages" or next.notation != score.notation:
 			next.set_view("pages", score.notation)
+		next.page_preview = false
+		next.set_note_spacing(note_spacing)
+		next.set_fitted_rows(score.fitted_rows)
 		next.reduced_motion = score.reduced_motion
 		next.effects_playing = score.effects_playing
 		next.page_index = mini(score.page_index + index + 1, next.pages() - 1)

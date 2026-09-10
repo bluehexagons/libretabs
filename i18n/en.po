@@ -515,7 +515,7 @@ msgid "PAGE_NOTATION"
 msgstr "Show on pages"
 
 msgid "NOTATION_ROWS_HELP"
-msgstr "Build the score from any number of rows. Put them in the order you want, and give more height to the view you are learning from. The default remains sheet music above a larger tab row."
+msgstr "Build the score from any number of rows. Put them in the order you want, and give more height to the view you are learning from. Base heights control the balance between rows; the player fits them into the available music height."
 
 msgid "NOTATION_ROW_NUMBER"
 msgstr "Row %d"
@@ -533,7 +533,7 @@ msgid "NOTATION_PIANO_ROW"
 msgstr "Piano · sounding notes"
 
 msgid "NOTATION_ROW_HEIGHT"
-msgstr "Height of this row. A taller row gets more of the available score area."
+msgstr "Base row height. Larger values give this row more of the available music height."
 
 msgid "PIXELS_SHORT"
 msgstr "px"
@@ -1058,7 +1058,7 @@ msgid "CARD_TV_VIEW"
 msgstr "TV & large screen\nMore music in the same player"
 
 msgid "TV_INTRO"
-msgstr "The TV button in the player switches to a denser score with more consecutive lines of music. It keeps the same playback controls, settings and appearance. Press TV again to restore your regular reading layout."
+msgstr "The TV button uses more music lines and tighter note spacing in the same player. Adjust Music lines, Note spacing and Staff height in Score view, or directly above the music on a wide screen. Each view remembers its own choices. Press TV again to return to your regular layout."
 
 msgid "TV_ENTER"
 msgstr "Toggle TV density"
@@ -1101,3 +1101,30 @@ msgstr "Fullscreen is unavailable here. Use your browser’s fullscreen option, 
 
 msgid "SPEED_ZERO"
 msgstr "Speed is 0%. Increase the speed, then press Play to resume."
+
+msgid "MUSIC_LAYOUT_HELP"
+msgstr "Use more lines to see a longer passage, or fewer lines for taller music. Note spacing fits more notes across without shrinking their height. Staff height gives the five pitch lines more room. Settings are remembered separately for regular and TV views."
+
+msgid "MUSIC_LINES"
+msgstr "Up to %d music lines"
+
+msgid "MUSIC_LINES_HELP"
+msgstr "Consecutive lines of music share the available height. Short screens show fewer lines to keep them readable. More than one line follows playback in pages."
+
+msgid "MUSIC_SPACING"
+msgstr "Note spacing: %d%%"
+
+msgid "MUSIC_SPACING_HELP"
+msgstr "Lower spacing fits more notes across the screen without reducing staff height."
+
+msgid "MUSIC_STAFF"
+msgstr "Staff height: %d%%"
+
+msgid "MUSIC_STAFF_HELP"
+msgstr "Give the five pitch lines more height relative to the other notation rows. Notes and highlights stay aligned with their lines."
+
+msgid "MEASURE_SHORT"
+msgstr "Measure %d"
+
+msgid "MEASURE_NUMBER_ONLY"
+msgstr "%d"

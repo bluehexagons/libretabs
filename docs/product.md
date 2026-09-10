@@ -15,7 +15,7 @@ A startup Quick start guide explains the string lines, numbered frets, playback,
 and practice controls beside a ready exercise. Its “Show on startup” checkbox is
 saved on the device; Menu → Quick start always opens it again and can re-enable
 it. Starting practice dismisses the guide without automatically playing audio.
-Regular practice fits the paired score into the available screen height, hiding
+Regular practice fills the available music height with the paired score, hiding
 secondary context before proportionally reducing the music; menus may scroll.
 Compact manual pages use large previous/next arrows and a page counter on one
 row. Follow playback stays available in Score view. Very short windows retain
@@ -35,7 +35,13 @@ restore the previous reading view. Rotate the phone sideways and connect using
 the device's screen-mirroring controls. Fullscreen is beside the TV button;
 the same button or Escape exits fullscreen. This view does not establish a TV
 connection or provide a separate remote screen.
-See [decision 0017](decisions/0017-dense-player-speed-and-fullscreen.md).
+Music lines, Note spacing and Staff height are independent controls, available
+above the music on wide screens and in Score view everywhere. Fewer music lines
+make each line taller; tighter horizontal spacing shows more notes without
+shrinking their height. Staff height changes the relative room given to the five
+pitch lines. Regular and TV choices are remembered separately. Short screens and
+short songs can show fewer lines than the selected maximum.
+See [decision 0018](decisions/0018-adjustable-music-layout.md).
 
 The app is a teacher-shaped practice aid, not a replacement for a teacher, a full notation editor, or an automatic arranger that claims every MIDI file is playable.
 

@@ -85,7 +85,9 @@ func _initialize() -> void:
 	check(keys.press(KEY_A).pitch == 60 and keys.press(KEY_W).pitch == 61 and keys.press(KEY_K).pitch == 72, "home row and black keys match pitches")
 	keys.octave = 3
 	check(keys.release(KEY_A).pitch == 60, "release retains pitch from key down across octave change")
-	check(ScoreLayout.staff_y(64) == 84 and ScoreLayout.tab_y(1) == 176 and ScoreLayout.tab_y(6) == 281, "shared staff and tab centers")
+	check(ScoreLayout.staff_y(64) == 62.5 and ScoreLayout.tab_y(1) == 176 and ScoreLayout.tab_y(6) == 281, "shared staff and tab centers")
+	check(ScoreLayout.staff_y(52) == ScoreLayout.STAFF_BOTTOM and ScoreLayout.staff_y(65) == ScoreLayout.STAFF_TOP, "staff pitches land on the bottom E and top F lines")
+	check(ScoreLayout.staff_y(64) - ScoreLayout.staff_y(65) == ScoreLayout.STAFF_SPACE / 2, "adjacent diatonic pitches are separated by half a staff space")
 	check(MidiImport.clean_text("Café لحن.mid") == "Café لحن.mid", "display-name sanitizing preserves ordinary Unicode")
 	check(MidiImport.clean_text("safe\u0007\u0085\u202e\u2066\ufeff.mid") == "safe.mid", "display-name sanitizing removes controls and invisible direction overrides")
 	var bytes: PackedByteArray = fixture("first_melody")
