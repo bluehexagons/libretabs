@@ -28,13 +28,14 @@ one- or two-finger horizontal swipes and a horizontal mouse wheel. Page gestures
 never seek audio; a single tap on the music still seeks. Help describes these
 optional shortcuts alongside the visible page arrows.
 
-Menu → TV & large screen provides a mirroring-friendly presentation with larger
-paired notation, a solid background, and a compact playback/status bar. Rotate
-the phone sideways and connect using the device's screen-mirroring controls.
-More music trades note size for a wider passage. Exit TV view restores the
-ordinary player; presentation changes do not overwrite practice preferences.
-This view does not establish a TV connection or provide a separate remote screen.
-See [decision 0016](decisions/0016-large-screen-mirroring.md).
+The header's TV & large screen button toggles denser reading within the same
+player. It uses the available width and stacks consecutive rows of music while
+retaining the usual controls, information and appearance. Toggle it off to
+restore the previous reading view. Rotate the phone sideways and connect using
+the device's screen-mirroring controls. Fullscreen is beside the TV button;
+the same button or Escape exits fullscreen. This view does not establish a TV
+connection or provide a separate remote screen.
+See [decision 0017](decisions/0017-dense-player-speed-and-fullscreen.md).
 
 The app is a teacher-shaped practice aid, not a replacement for a teacher, a full notation editor, or an automatic arranger that claims every MIDI file is playable.
 
@@ -105,7 +106,7 @@ No owner decision currently blocks M0. The provisional name still needs a final 
 
 1. The learner presses play and hears a count-in followed by synchronized audio.
 2. The active beat/notes are emphasized in both staff and tab, using shape/position as well as color.
-3. The learner can pause, seek by measure, choose 25–200% tempo or a custom starting BPM, enable the metronome, and define a measure loop.
+3. The learner can pause, seek by measure, choose 0–999% tempo or a custom starting BPM, enable the metronome, and define a measure loop.
 4. A compact fretboard guide shows the current string and fret and repeats the convention that string 1 is the thinnest/highest string.
 5. Menu → Help summarizes how tab lines/fret numbers align with staff pitch/rhythm. Close returns directly to practice.
 6. Music scrolls smoothly by default, with upcoming notes visible ahead of the playhead. Menu → Score view also offers manually turned screen pages with tabs, sheet music, or both. Pages share scrolling notation and spacing, with a next-page preview. Enable Follow playback for automatic page turns; manually turning a page suspends following without seeking audio. Reduced motion disables decorative effects while preserving the chosen scroll/page behavior. Open brackets highlight upcoming notes, full outlines highlight sounding notes.
@@ -171,9 +172,10 @@ Import is cancellable and transactional: a failed or cancelled replacement leave
 
 ### Playback and practice controls
 
-- Play/pause/stop, direct click/tap seeking on the music, a continuous timeline scrub with readable measure/time feedback, count-in, metronome, independent instrument/metronome volume, 25–200% tempo and custom starting BPM, and contiguous measure loop.
+- Play/pause/stop, direct click/tap seeking on the music, a continuous timeline scrub with readable measure/time feedback, count-in, metronome, independent instrument/metronome volume, 0–999% tempo and custom starting BPM, and contiguous measure loop.
 - Keep speed and the metronome near Play. Present the direct speed control as one unit containing its icon, percentage and slider at all supported text sizes. Normal text also shows an explicit click on/off toggle; enlarged layouts reach it through the percentage control. Menu → Playback groups speed steps, original speed, metronome, count-in, presets and custom BPM; Volume & parts holds the mixer.
-- Slower/faster steps change speed by five percentage points within 25–200%; Original speed restores 100%. Repeat this measure initializes the existing loop range from the current playback measure.
+- Dragging the speed control adjusts relative to the press position and pans its range; tapping the track selects a position and tapping the percentage opens Playback. Zero pauses at the current position.
+- Slower/faster steps change speed by five percentage points within 0–999%; Original speed restores 100%. Repeat this measure initializes the existing loop range from the current playback measure.
 - Metronome toggling leaves the active stream and position intact; count-in remains independent. Changing the count-in option affects the next start, not an ongoing phrase.
 - Per-part mute/solo and a one-action **Mute my part** control.
 - A procedural practice synthesizer with bounded polyphony and clear part distinction; pitch must not change when tempo changes.

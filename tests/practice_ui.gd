@@ -95,10 +95,31 @@ func run() -> void:
 	check(app.get("speed_picker").selected == 7, "original speed synchronizes preset picker")
 	app.call("set_speed", 0.25)
 	app.call("step_speed", -1)
-	check(app.get("speed") == 0.25 and app.get("slower_button").disabled, "slower stops at 25 percent")
+	check(app.get("speed") == 0.2 and not app.get("slower_button").disabled, "slower goes below the preset range")
 	app.call("set_speed", 2.0)
 	app.call("step_speed", 1)
-	check(app.get("speed") == 2.0 and app.get("faster_button").disabled, "faster stops at 200 percent")
+	check(app.get("speed") == 2.05 and not app.get("faster_button").disabled, "faster goes beyond the preset range")
+	app.call("set_speed", 1.0)
+	var speed_slider: RelativeSpeedSlider = app.get("main_speed")
+	var speed_press: InputEventMouseButton = InputEventMouseButton.new()
+	speed_press.button_index = MOUSE_BUTTON_LEFT
+	speed_press.pressed = true
+	speed_press.position = speed_slider.global_position + Vector2(speed_slider.size.x - 5, 20)
+	speed_slider.handle_pointer(speed_press)
+	check(speed_slider.value == 100, "speed press does not jump before a drag is recognized")
+	var speed_move: InputEventMouseMotion = InputEventMouseMotion.new()
+	speed_move.position = speed_press.position + Vector2(1000, 0)
+	speed_slider.handle_pointer(speed_move)
+	check(speed_slider.value == 999 and app.get("speed") == 1.0, "speed pans to 999 percent with a deferred transport commit")
+	speed_press.pressed = false
+	speed_press.position = speed_move.position
+	speed_slider.handle_pointer(speed_press)
+	check(app.get("speed") == 9.99, "speed drag release commits beyond the old range")
+	app.call("set_speed", 0.0)
+	var zero_tick: float = app.get("source_tick")
+	app.call("toggle_play")
+	check(not app.get("audio").playing_practice and app.get("source_tick") == zero_tick and app.get("status_key") == "SPEED_ZERO", "zero speed pauses safely without configuring a zero-rate transport")
+	app.call("set_speed", 1.0)
 	app.call("load_demo", 1)
 	for _frame: int in range(30): await process_frame
 	app.call("change_bpm", 50)
@@ -468,7 +489,7 @@ func run() -> void:
 			if viewport.x == 480:
 				app.call("start", true)
 				for _frame: int in range(10): await process_frame
-				check(app.get("count_badge").visible and app.get("root_box").size.y <= viewport.y and app.get("play_button").size.x == 56, "count-in fits the short landscape transport without another row")
+				check(app.get("count_badge").visible and app.get("root_box").size.y <= viewport.y and app.get("play_button").size.x >= 56, "count-in fits the short landscape transport without another row")
 				app.call("pause")
 	app.call("set_status", "ERR_READ")
 	check(app.get("status").visible, "short layout retains actionable errors")
@@ -675,47 +696,25 @@ func run() -> void:
 	check(not app.get("capture_active") and app.get("root_box").visible, "touch exits capture without needing a small button")
 	var tv_tick: float = app.get("source_tick")
 	var tv_rows: Array = score.notation_rows.duplicate(true)
-	var capture_preference: String = app.call("capture_choice", "capture_notation")
+	var normal_score: ScoreView = score
 	app.call("enter_tv")
-	check(app.get("tv_active") and app.get("capture_active") and app.get("tv_bar").visible, "TV view exposes its playback and exit controls")
-	check(capture.background == "solid" and capture.symbols == "both" and capture.large_screen, "TV view starts with an opaque paired score and larger notes")
-	check(not player.playing_practice and app.get("source_tick") == tv_tick, "entering TV view never starts or seeks playback")
-	app.call("change_appearance", 2)
-	check(app.get("tv_bar").get_theme_stylebox("panel").bg_color == UIAppearance.panel_style(true, 8).bg_color, "TV toolbar follows a dark appearance change")
-	app.call("change_appearance", 0)
+	check(app.get("tv_active") and not app.get("capture_active") and app.get("root_box").visible, "TV density keeps the regular player visible")
+	check(app.get("score") == normal_score and app.get("play_button").is_visible_in_tree(), "TV reuses the regular score and controls")
+	check(not player.playing_practice and app.get("source_tick") == tv_tick, "TV density never starts or seeks playback")
 	for viewport: Vector2i in [Vector2i(1920, 1080), Vector2i(844, 390), Vector2i(390, 844), Vector2i(1280, 720)]:
 		root.size = viewport
-		for _frame: int in range(12): await process_frame
-		var tv_card: Rect2 = capture.card.get_global_rect()
-		var tv_controls: Rect2 = app.get("tv_bar").get_global_rect()
-		check(tv_card.position.x >= 0 and tv_card.end.x <= viewport.x + 1 and (tv_card.end.y <= tv_controls.position.y or tv_card.end.x <= tv_controls.position.x), "TV score fits clear of controls at %s" % viewport)
-		check(tv_controls.end.x <= viewport.x + 1 and tv_controls.end.y <= viewport.y, "TV controls fit at %s" % viewport)
-	app.call("apply_scale", 2.0)
-	root.size = Vector2i(844, 390)
-	for _frame: int in range(12): await process_frame
-	var enlarged_controls: Rect2 = app.get("tv_bar").get_global_rect()
-	check(enlarged_controls.end.x <= 844 and enlarged_controls.end.y <= 390, "TV controls remain reachable with enlarged text in landscape")
-	app.call("apply_scale", 1.0)
-	root.size = Vector2i(844, 390)
-	app.call("set_status", "AUDIO_BLOCKED")
-	for _frame: int in range(12): await process_frame
-	check(app.get("tv_status").visible and app.get("tv_bar").get_global_rect().end.y <= 390, "short TV layout retains blocked-audio recovery without clipping controls")
-	app.call("set_status", "START_HINT")
-	root.size = Vector2i(1920, 1080)
-	for _frame: int in range(12): await process_frame
-	var large_factor: float = capture.card.scale.x
-	app.call("toggle_tv_density")
-	for _frame: int in range(4): await process_frame
-	check(capture.card.scale.x < large_factor and capture.score.current_tick == tv_tick, "More music reduces score scale while preserving the transport")
-	app.call("set_status", "AUDIO_BLOCKED")
-	check(app.get("tv_status").text == TranslationServer.translate("AUDIO_BLOCKED"), "TV view exposes blocked audio recovery")
+		for _frame: int in range(20): await process_frame
+		check(app.get("root_box").size.x <= viewport.x + 1 and app.get("root_box").size.y <= viewport.y + 1, "dense regular player fits %s" % viewport)
+		check(app.get("fullscreen_button").is_visible_in_tree() and app.get("tv_button").is_visible_in_tree(), "TV and fullscreen are direct header actions")
+		for next: ScoreView in app.get("score_frame").continuations:
+			if next.visible:
+				check(next.song == score.song and next.projection == score.projection and next.current_tick == score.current_tick, "continuation systems share source, arrangement and transport")
+				check(next.page_start() > score.page_start() and next.get_global_rect().end.y <= viewport.y, "continuation systems show later music within the viewport")
 	app.call("toggle_drawer", "HELP")
-	check(not app.get("tv_active") and app.get("opened_drawer") == "HELP", "TV Help returns to reachable reading guidance")
-	check(score.notation_rows == tv_rows and app.call("capture_choice", "capture_notation") == capture_preference, "TV view preserves normal notation and capture preferences")
+	check(app.get("tv_active") and app.get("opened_drawer") == "HELP", "Help stays in the same player layout")
 	app.call("close_menu")
-	app.call("enter_capture")
-	check(not capture.large_screen and capture.bottom_inset == 0 and not app.get("tv_bar").visible, "ordinary capture does not inherit TV controls or sizing")
-	app.call("leave_capture")
+	app.call("enter_tv")
+	check(not app.get("tv_active") and score.notation_rows == tv_rows and app.get("source_tick") == tv_tick, "TV toggle restores normal notation without seeking")
 	app.set("motion_mode", "full")
 	app.call("apply_motion")
 	check(score.playhead_x() <= score.size.x * 0.4 and score.playhead_x() <= 360, "playhead leaves most width for upcoming music and more trailing context")
@@ -761,6 +760,40 @@ func run() -> void:
 	score.update_tick(float(song.notes[0].start))
 	check(score.active_pitches().has(int(song.notes[0].pitch)), "piano row reads sounding pitches from the shared source tick")
 	await process_frame
+	app.call("apply_scale", 1.0)
+	root.size = Vector2i(1280, 900)
+	app.call("restore_notation_rows")
+	app.call("load_library_item", 8)
+	for _frame: int in range(35): await process_frame
+	app.call("seek_tick", 0.0)
+	score.set_view("scroll", "both")
+	app.call("responsive")
+	for _frame: int in range(20): await process_frame
+	var ordinary_measures: int = score.tiles.size()
+	app.get("tv_button").pressed.emit()
+	for _frame: int in range(24): await process_frame
+	var overview_frame: ScoreFrame = app.get("score_frame")
+	var visible_bars: Dictionary = {}
+	for bar: int in score.tiles: visible_bars[bar] = true
+	for continuation: ScoreView in overview_frame.continuations:
+		if continuation.visible:
+			for bar: int in continuation.tiles: visible_bars[bar] = true
+	check(overview_frame.visible_systems() >= 2 and visible_bars.size() > ordinary_measures, "one-tap TV density shows more distinct music using consecutive score systems")
+	var overview_tick: float = app.get("source_tick")
+	app.call("toggle_drawer", "SOUND")
+	app.call("close_menu")
+	check(app.get("tv_active") and app.get("source_tick") == overview_tick, "settings return directly to the dense player")
+	for viewport: Vector2i in [Vector2i(390, 844), Vector2i(844, 390), Vector2i(480, 280)]:
+		root.size = viewport
+		app.call("responsive")
+		await process_frame
+		app.call("responsive")
+		for _frame: int in range(35): await process_frame
+		check(app.get("root_box").size.y <= viewport.y + 1, "dense player settles after overlapping resize requests: %s" % viewport)
+		check(app.get("play_button").get_global_rect().end.y <= viewport.y, "dense player keeps Play reachable: %s" % viewport)
+		if viewport.x == 390:
+			check(app.get("play_button").size.x > app.get("speed_control").size.x and app.get("play_button").size.y > app.get("speed_control").size.y, "portrait Play is larger than the speed control")
+	app.get("tv_button").pressed.emit()
 	app.queue_free()
 	await process_frame
 	print("Practice UI: %d checks, %d failures" % [checks, failures])

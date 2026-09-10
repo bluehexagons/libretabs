@@ -179,7 +179,7 @@ msgid "STOP"
 msgstr "Stop"
 
 msgid "SPEED"
-msgstr "Playback speed; pitch stays the same"
+msgstr "Tap the track to set speed, or drag horizontally to adjust from the current value (0–999%). Dragging pans the range. At 0%, playback is paused; pitch stays the same."
 
 msgid "SPEED_VALUE"
 msgstr "%d%% speed"
@@ -1055,16 +1055,16 @@ msgid "TV_VIEW"
 msgstr "TV & large screen"
 
 msgid "CARD_TV_VIEW"
-msgstr "TV & large screen\nLarger music for screen mirroring"
+msgstr "TV & large screen\nMore music in the same player"
 
 msgid "TV_INTRO"
-msgstr "Make the music easier to read across the room. Large notes fill the available space; More music shows a wider passage with smaller notes. Your usual player settings stay unchanged."
+msgstr "The TV button in the player switches to a denser score with more consecutive lines of music. It keeps the same playback controls, settings and appearance. Press TV again to restore your regular reading layout."
 
 msgid "TV_ENTER"
-msgstr "Open large-screen view"
+msgstr "Toggle TV density"
 
 msgid "TV_SETUP"
-msgstr "1. Turn your phone sideways.\n2. Use your phone’s screen-mirroring controls to connect to a compatible TV. On iPhone or iPad, use Screen Mirroring in Control Center; on Android, use your device’s casting controls or Google Home.\n3. Return here and open large-screen view. Press Play when you are ready.\n\nMirroring shows the same picture on your phone and TV. LibreTabs does not connect to a TV itself. Keep this app visible; switching away pauses practice. Use your browser’s full-screen option if available."
+msgstr "1. Turn your phone sideways.\n2. Use your phone’s screen-mirroring controls to connect to a compatible TV. On iPhone or iPad, use Screen Mirroring in Control Center; on Android, use your device’s casting controls or Google Home.\n3. Return here and press the TV button. Press Play when you are ready.\n\nMirroring shows the same picture on your phone and TV. LibreTabs does not connect to a TV itself. Keep this app visible; switching away pauses practice. Use the Fullscreen button to fill the display. Press it again or press Escape to exit."
 
 msgid "TV_TIMING"
 msgstr "Wireless mirroring can delay the picture and sound. Check them together before practising in time. A cable may work better for your setup."
@@ -1089,3 +1089,15 @@ msgstr "Measure %d / %d · Speed %d%%"
 
 msgid "TV_READY"
 msgstr "Press Play when you are ready."
+
+msgid "FULLSCREEN"
+msgstr "Fullscreen"
+
+msgid "EXIT_FULLSCREEN"
+msgstr "Exit fullscreen"
+
+msgid "FULLSCREEN_UNAVAILABLE"
+msgstr "Fullscreen is unavailable here. Use your browser’s fullscreen option, or open the player directly if it is embedded in another page."
+
+msgid "SPEED_ZERO"
+msgstr "Speed is 0%. Increase the speed, then press Play to resume."

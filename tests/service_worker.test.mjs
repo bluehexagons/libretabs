@@ -151,3 +151,37 @@ test('evicted assets fail safely; next activation cleans unused releases', async
   await next.send('activate');
   assert.equal((await env.caches.keys()).includes('libretabs-release:' + scope + 'A'), false);
 });
+
+test('fullscreen adapter follows confirmed browser state and reports denial', async () => {
+  const events = {};
+  const document = {
+    documentElement: {},
+    addEventListener: (key, action) => { events[key] = action; },
+  };
+  const window = {addEventListener() {}};
+  vm.runInNewContext(bridge, {window, document, navigator: {}, location: {search: ''}, URLSearchParams});
+  const host = window.libretabsHost;
+  assert.equal(host.setFullscreen(true), false);
+  let changes = 0, failures = 0;
+  host.onFullscreen(() => changes++);
+  host.onFullscreenError(() => failures++);
+  document.documentElement.requestFullscreen = () => Promise.reject(new Error('Denied'));
+  assert.equal(host.setFullscreen(true), true);
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(failures, 1);
+  assert.equal(host.isFullscreen(), false);
+  document.documentElement.requestFullscreen = async () => {
+    document.fullscreenElement = document.documentElement;
+    events.fullscreenchange();
+  };
+  await host.setFullscreen(true);
+  assert.equal(host.isFullscreen(), true);
+  assert.equal(changes, 1);
+  document.exitFullscreen = async () => {
+    document.fullscreenElement = null;
+    events.fullscreenchange();
+  };
+  await host.setFullscreen(false);
+  assert.equal(host.isFullscreen(), false);
+  assert.equal(changes, 2);
+});

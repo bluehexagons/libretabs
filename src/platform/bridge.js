@@ -1,8 +1,26 @@
 // SPDX-License-Identifier: Apache-2.0
 // Included verbatim in the Godot HTML head. No imported text is executed.
 (() => {
-  let chooser, generation = 0;
+  let chooser, generation = 0, fullscreenFailure;
   window.libretabsHost = {
+    isFullscreen() { return !!(document.fullscreenElement || document.webkitFullscreenElement); },
+    onFullscreen(callback) {
+      document.addEventListener('fullscreenchange', () => callback());
+      document.addEventListener('webkitfullscreenchange', () => callback());
+    },
+    onFullscreenError(callback) { fullscreenFailure = callback; },
+    setFullscreen(enabled) {
+      if (enabled === this.isFullscreen()) return true;
+      const target = enabled ? document.documentElement : document;
+      const action = enabled
+        ? (target.requestFullscreen || target.webkitRequestFullscreen)
+        : (target.exitFullscreen || target.webkitExitFullscreen);
+      if (!action) return false;
+      try {
+        Promise.resolve(action.call(target)).catch(() => fullscreenFailure?.());
+        return true;
+      } catch (_) { return false; }
+    },
     viewWidth() { return Math.round(document.getElementById('canvas')?.getBoundingClientRect().width || innerWidth); },
     viewHeight() { return Math.round(document.getElementById('canvas')?.getBoundingClientRect().height || innerHeight); },
     onResize(callback) {

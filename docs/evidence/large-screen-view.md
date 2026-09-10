@@ -1,5 +1,7 @@
 # Large-screen mirroring view
 
+Historical implementation, superseded by [dense-player refinement](dense-player-refinement.md).
+
 Date: 2026-09-10. Project-authored documentation: CC0-1.0.
 Scope and limitations: [decision 0016](../decisions/0016-large-screen-mirroring.md).
 

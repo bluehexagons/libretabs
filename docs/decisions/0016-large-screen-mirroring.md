@@ -1,6 +1,6 @@
 # 0016 — Large-screen view for device mirroring
 
-- Status: accepted owner-requested evaluation slice
+- Status: superseded by [decision 0017](0017-dense-player-speed-and-fullscreen.md)
 - Date: 2026-09-10
 
 The owner requested further UI polish and phone-to-TV use, then selected

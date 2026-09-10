@@ -8,6 +8,10 @@ signal appearance_changed
 signal focus_lost
 signal motion_changed
 signal exported(success: bool)
+signal fullscreen_changed
+signal fullscreen_failed
+var fullscreen_callback: JavaScriptObject
+var fullscreen_error_callback: JavaScriptObject
 var motion_callback: JavaScriptObject
 var export_dialog: FileDialog
 var pending_export: String = ""
@@ -26,6 +30,10 @@ const DISPLAY_SCALES: Array[float] = [1.0, 1.5, 2.0]
 func _ready() -> void:
 	if OS.has_feature("web"):
 		web = JavaScriptBridge.get_interface("libretabsHost")
+		fullscreen_callback = JavaScriptBridge.create_callback(func(_args: Array) -> void: fullscreen_changed.emit())
+		fullscreen_error_callback = JavaScriptBridge.create_callback(func(_args: Array) -> void: fullscreen_failed.emit())
+		web.onFullscreen(fullscreen_callback)
+		web.onFullscreenError(fullscreen_error_callback)
 		callback = JavaScriptBridge.create_callback(_web_file)
 		hidden_callback = JavaScriptBridge.create_callback(func(_args: Array) -> void: hidden.emit())
 		web.onHidden(hidden_callback)
@@ -40,6 +48,7 @@ func _ready() -> void:
 		get_window().size_changed.connect(sync_display)
 		sync_display()
 	else:
+		get_window().size_changed.connect(func() -> void: fullscreen_changed.emit())
 		get_window().focus_exited.connect(func() -> void: focus_lost.emit())
 		if DisplayServer.is_dark_mode_supported(): DisplayServer.set_system_theme_change_callback(func() -> void: appearance_changed.emit())
 		dialog = FileDialog.new()
@@ -50,6 +59,17 @@ func _ready() -> void:
 		dialog.file_selected.connect(_desktop_file)
 		dialog.canceled.connect(func() -> void: picked.emit("", PackedByteArray(), "CANCELLED"))
 		add_child(dialog)
+
+func is_fullscreen() -> bool:
+	if web != null: return bool(web.isFullscreen())
+	return get_window().mode in [Window.MODE_FULLSCREEN, Window.MODE_EXCLUSIVE_FULLSCREEN]
+
+func set_fullscreen(enabled: bool) -> void:
+	if web != null:
+		if not bool(web.setFullscreen(enabled)): fullscreen_failed.emit()
+	else:
+		get_window().mode = Window.MODE_FULLSCREEN if enabled else Window.MODE_WINDOWED
+		fullscreen_changed.emit()
 
 func pick() -> void:
 	if web != null:

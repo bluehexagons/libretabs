@@ -4,6 +4,9 @@ extends RefCounted
 
 # Project-authored outlines. Text labels remain the primary accessible names.
 const PATHS: Dictionary = {
+	"TV_VIEW": "M2 3h20v14H2zM8 21h8M12 17v4M6 7h4M6 11h4M14 7h4M14 11h4",
+	"FULLSCREEN": "M3 9V3h6M15 3h6v6M21 15v6h-6M9 21H3v-6",
+	"EXIT_FULLSCREEN": "M9 3v6H3M21 9h-6V3M15 21v-6h6M3 15h6v6",
 	"MENU": "M4 6h16M4 12h16M4 18h16",
 	"PLAY": "M8 4l12 8-12 8z", "PAUSE": "M8 4v16M16 4v16",
 	"STOP": "M5 5h14v14H5z", "TEMPO": "M4 17a9 9 0 1 1 16 0M12 12l5-5",
