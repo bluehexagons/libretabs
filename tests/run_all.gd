@@ -104,7 +104,7 @@ func _initialize() -> void:
 		library_projection.build(library_import.document, 0)
 		check(library_projection.placed == library_projection.eligible, "%s stays within the default guitar range" % name)
 	var auld_lang_syne: SongDocument = parse(library_file("auld_lang_syne")).document
-	check(auld_lang_syne.measures[0].numerator == 2 and auld_lang_syne.measures[0].denominator == 4, "Auld Lang Syne keeps its 2/4 meter")
+	check(auld_lang_syne.measures[0].numerator == 4 and auld_lang_syne.measures[0].denominator == 4, "Auld Lang Syne keeps its 4/4 meter")
 	var brahms_lullaby: SongDocument = parse(library_file("brahms_lullaby")).document
 	check(brahms_lullaby.measures[0].numerator == 3 and brahms_lullaby.measures[0].denominator == 4, "Brahms Lullaby keeps its 3/4 meter")
 	var score_layout: ScoreLayout = ScoreLayout.new()

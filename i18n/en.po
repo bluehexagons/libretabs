@@ -23,7 +23,7 @@ msgid "CLASSICS"
 msgstr "Classical & familiar melodies"
 
 msgid "BEGINNER_LIBRARY_NOTE"
-msgstr "Short starter pieces are marked “Starter”."
+msgstr "Single-line melodies and longer themes. Some begin after a short rest before the first full measure."
 
 msgid "CHOOSE_CLASSIC"
 msgstr "Choose a classic…"
@@ -32,37 +32,37 @@ msgid "LIBRARY_ODE_TO_JOY"
 msgstr "Ode to Joy · Beethoven"
 
 msgid "LIBRARY_FUR_ELISE"
-msgstr "Für Elise · Beethoven"
+msgstr "Für Elise · opening theme · Beethoven"
 
 msgid "LIBRARY_SPRING"
-msgstr "Spring · Vivaldi"
+msgstr "Spring · opening theme · Vivaldi"
 
 msgid "LIBRARY_CANON_IN_D"
-msgstr "Canon in D · Pachelbel"
+msgstr "Canon in D · opening, twice · Pachelbel"
 
 msgid "LIBRARY_TWINKLE"
 msgstr "Twinkle, Twinkle Little Star · traditional"
 
 msgid "LIBRARY_THE_ENTERTAINER"
-msgstr "The Entertainer · Scott Joplin"
+msgstr "The Entertainer · first strain · Scott Joplin"
 
 msgid "LIBRARY_MARY_HAD_A_LITTLE_LAMB"
-msgstr "Starter · Mary Had a Little Lamb · American traditional"
+msgstr "Mary Had a Little Lamb · twice · American traditional"
 
 msgid "LIBRARY_FRERE_JACQUES"
-msgstr "Starter · Frère Jacques · French traditional"
+msgstr "Frère Jacques · twice · French traditional"
 
 msgid "LIBRARY_AULD_LANG_SYNE"
-msgstr "Starter · Auld Lang Syne · Scottish traditional"
+msgstr "Auld Lang Syne · Scottish traditional"
 
 msgid "LIBRARY_YANKEE_DOODLE"
-msgstr "Starter · Yankee Doodle · American traditional"
+msgstr "Yankee Doodle · twice · American traditional"
 
 msgid "LIBRARY_BRAHMS_LULLABY"
-msgstr "Starter · Lullaby · Johannes Brahms"
+msgstr "Lullaby · Johannes Brahms"
 
 msgid "LIBRARY_MINUET_IN_G"
-msgstr "Starter · Minuet in G · Christian Petzold"
+msgstr "Minuet in G · Christian Petzold"
 
 msgid "DEMO_0"
 msgstr "First melody"
@@ -1128,3 +1128,15 @@ msgstr "Measure %d"
 
 msgid "MEASURE_NUMBER_ONLY"
 msgstr "%d"
+
+msgid "TV_ZOOM"
+msgstr "TV zoom: %d%%"
+
+msgid "TV_ZOOM_HELP"
+msgstr "Calibrate the music for your screen and viewing distance. Smaller zoom fits more music; larger zoom makes notes easier to read. TV playback tucks controls into the screen edge after three seconds. Pause stays visible; Show controls brings everything back."
+
+msgid "SHOW_CONTROLS"
+msgstr "Show controls"
+
+msgid "LAST_STATUS"
+msgstr "Show latest message"

@@ -492,7 +492,7 @@ func run() -> void:
 				check(app.get("count_badge").visible and app.get("root_box").size.y <= viewport.y and app.get("play_button").size.x >= 56, "count-in fits the short landscape transport without another row")
 				app.call("pause")
 	app.call("set_status", "ERR_READ")
-	check(app.get("status").visible, "short layout retains actionable errors")
+	check(app.get("status_toast").visible, "short layout retains actionable errors")
 	app.call("set_status", "START_HINT")
 	var ancestor: Control = score.get_parent()
 	while ancestor != app.get("scroll"):
@@ -824,12 +824,60 @@ func run() -> void:
 		if viewport.x == 390:
 			check(app.get("play_button").size.x > app.get("speed_control").size.x and app.get("play_button").size.y > app.get("speed_control").size.y, "portrait Play is larger than the speed control")
 	app.get("tv_button").pressed.emit()
-	app.call("load_library_item", 0)
+	app.call("load_demo", 0)
 	root.size = Vector2i(1280, 900)
 	app.call("change_music_layout", "spacing", 50)
 	app.call("change_music_layout", "lines", 6)
 	for _frame: int in range(35): await process_frame
 	check(app.get("score_frame").visible_systems() == 1 and score.drawing_height() >= app.get("score_frame").size.y - 2, "short songs use the height instead of reserving empty continuation lines")
+	app.call("load_library_item", 0)
+	for _frame: int in range(35): await process_frame
+	app.get("tv_button").pressed.emit()
+	app.call("change_tv_zoom", 40)
+	for _frame: int in range(24): await process_frame
+	var small_zoom: float = score.scale.x
+	var small_bars: int = score.tiles.size()
+	app.call("change_tv_zoom", 100)
+	for _frame: int in range(24): await process_frame
+	check(score.scale.x > small_zoom and score.tiles.size() < small_bars, "TV zoom changes readable music size and how much fits")
+	app.call("change_tv_zoom", 65)
+	app.get("count_check").button_pressed = false
+	app.call("toggle_play")
+	await process_frame
+	app.call("tuck_tv_controls")
+	for _frame: int in range(24): await process_frame
+	check(app.get("tv_tucked") and app.get("tv_edge_pause").is_visible_in_tree(), "TV playback leaves a reachable edge Pause")
+	check(not app.get("dock_margin").visible and not app.get("header_margin").visible, "TV playback reclaims header and dock space")
+	app.get("tv_edge_pause").pressed.emit()
+	for _frame: int in range(24): await process_frame
+	check(not player.playing_practice and not app.get("tv_tucked") and app.get("play_button").is_visible_in_tree(), "edge Pause stops shared transport and restores controls")
+	root.size = Vector2i(844, 390)
+	app.call("change_tv_zoom", 65)
+	app.call("seek_tick", 0.0)
+	app.call("start", false)
+	app.get("play_button").grab_focus()
+	app.call("tuck_tv_controls")
+	for _frame: int in range(35): await process_frame
+	check(app.get("score_frame").visible_systems() >= 2, "landscape mirroring fits multiple complete music lines during playback")
+	app.call("pause")
+	root.size = Vector2i(390, 844)
+	app.call("apply_scale", 2.0)
+	for _frame: int in range(35): await process_frame
+	check(app.get("root_box").size.x <= 391 and app.get("play_button").get_global_rect().end.y <= 845, "TV zoom controls fit narrow screens at 200 percent text")
+	var toast: StatusToast = app.get("status_toast")
+	app.call("set_status", "STORAGE_SESSION")
+	check(toast.visible and not app.get("status").visible, "status floats outside the music layout")
+	toast.expire()
+	await create_timer(0.5).timeout
+	check(not toast.visible, "floating status fades and disappears")
+	toast.show_message("test")
+	toast.expire()
+	toast.show_message("replacement")
+	await create_timer(0.5).timeout
+	check(toast.visible and toast.modulate.a == 1, "new status cancels a previous fade")
+	toast.reduced_motion = true
+	toast.expire()
+	check(not toast.visible, "reduced motion dismisses status without animation")
 	app.queue_free()
 	await process_frame
 	print("Practice UI: %d checks, %d failures" % [checks, failures])

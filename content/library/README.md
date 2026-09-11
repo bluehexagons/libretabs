@@ -1,44 +1,70 @@
 # Default music library
 
-The MIDI files in this directory are project-authored, single-line teaching
-excerpts dedicated to the public domain under CC0-1.0. They are not downloaded
-performances or copies of a third-party MIDI sequence. The underlying works are
-used because their compositions are public domain; the exact LibreTabs melody
-selection, timing, metadata, and guitar-oriented practice treatment are
-project-authored.
+These are project-authored, single-line teaching arrangements of public-domain
+compositions, with music data dedicated under CC0-1.0. They contain no downloaded
+MIDI, recordings, accompaniment, or score graphics. They are melodies and selected
+themes, not complete arrangements of the larger instrumental works.
 
-This is a small default library, not a claim that each work is a complete or
-authoritative transcription. Titles identify the familiar theme being taught.
-Review the resulting tab and the visible arrangement disclaimer before calling
-any item beginner-ready.
+The readable recipe is [library_scores.py](../../scripts/library_scores.py).
+Every bar is checked against its meter before MIDI generation. Durations use
+sixteenth-note units; rests are explicit and ties extend the original attack.
+Pickups (notes before the first full measure) begin after padding rests in the
+first MIDI measure so the following downbeat aligns correctly. Tempos are chosen
+for practice, not claims about an authoritative performance. Ornamentation and
+accompaniment are omitted. No swing or human timing is added.
 
-Items marked “Starter” in the app are deliberately short, single-line excerpts
-with a narrow pitch range and simple rhythms. They are intended as first songs,
-not as authoritative complete arrangements of the underlying works.
+| File | Scope and rhythm review | Meter / quarter-note BPM |
+| --- | --- | --- |
+| ode_to_joy | Complete 16-bar familiar theme in C, including contrasting phrase and dotted cadences | 4/4 · 100 |
+| fur_elise | Opening theme twice, with pickup, sixteenths, rests and held A endings | 3/8 · 72 |
+| spring | Longer opening theme in E; eighths, sixteenths and dotted notes restored; final E half-note is an authored practice cadence | 4/4 · 100 |
+| canon_in_d | First violin's opening four bars and three bars of the eighth-note variation, with an authored whole-note D cadence; study played twice | 4/4 · 80 |
+| twinkle | Complete 12-bar melody, including the contrasting middle and returning opening | 4/4 · 100 |
+| the_entertainer | First 16-bar strain with pickup; syncopations tied across beats/bars; melody extracted from chords; final pickup replaced by rest | 2/4 · 80 |
+| mary_had_a_little_lamb | Complete eight bars twice, with full-length closing note | 4/4 · 100 |
+| frere_jacques | Complete eight bars twice; bell phrase uses eighths and lower G | 4/4 · 100 |
+| auld_lang_syne | Verse and chorus in C; pickup, dotted-quarter/eighth rhythm and held phrase endings | 4/4 · 88 |
+| yankee_doodle | Verse and chorus twice, with dotted chorus rhythm | 2/4 · 100 |
+| brahms_lullaby | Complete vocal melody in C, preserving pickup, rests and dotted rhythm; piano introduction omitted | 3/4 · 84 |
+| minuet_in_g | Both 16-bar sections, without repeats or ornaments, down one octave | 3/4 · 100 |
 
-Musicians who contribute an original work for this library should include a
-readable note list or generator recipe, intended learner level, tuning/meter and
-range, and a statement that they own the material and dedicate it to CC0-1.0.
-Public-domain source works and any new arrangement should be identified
-separately. See [CONTRIBUTING.md](../../CONTRIBUTING.md) for the review path.
+## Score references checked 2026-09-11
 
-| File | Work / composer | Source and public-domain basis | Practice treatment |
-| --- | --- | --- | --- |
-| `ode_to_joy.mid` | “Ode to Joy” theme from Symphony No. 9 / Ludwig van Beethoven | [IMSLP work page](https://imslp.org/wiki/Symphony_No.9_-_An_die_Freude_%28Beethoven,_Ludwig_van%29) | Short melody excerpt in C major |
-| `fur_elise.mid` | Opening theme / Ludwig van Beethoven | [IMSLP work page](https://imslp.org/wiki/Fur_elise) | Short melody excerpt, transposed only as represented by the authored notes |
-| `spring.mid` | First theme from *La primavera* (“Spring”), *The Four Seasons*, RV 269 / Antonio Vivaldi | [IMSLP collection page](https://imslp.org/wiki/Le_quattro_stagioni_%28Vivaldi%2C_Antonio%29) | Short melody excerpt |
-| `canon_in_d.mid` | Theme from *Canon and Gigue in D major*, P.37 / Johann Pachelbel | [IMSLP work page](https://imslp.org/wiki/Canon_and_Gigue_in_D_Major_%28Pachelbel%2C_Johann%29) | Melody excerpt; no third-party accompaniment included |
-| `twinkle.mid` | “Twinkle, Twinkle, Little Star” / traditional melody also known as “Ah! vous dirai-je” | [IMSLP Mozart variation reference](https://imslp.org/wiki/12_Variations_on_%22Ah%2C_vous_dirai-je_maman%22%2C_K.265%2F300e_%28Mozart%2C_Wolfgang_Amadeus%29) | Familiar melody in C major |
-| `the_entertainer.mid` | *The Entertainer* / Scott Joplin | [IMSLP work page](https://imslp.org/wiki/The_Entertainer_%28Joplin%2C_Scott%29) | Short opening-theme excerpt with a bounded rhythm pattern |
-| `mary_had_a_little_lamb.mid` | “Mary Had a Little Lamb” / American traditional | [Library of Congress sheet-music record](https://www.loc.gov/item/2016766456/) and [historical overview](https://en.wikisource.org/wiki/Mary_Had_a_Little_Lamb) | **Starter:** narrow three-note range in C major |
-| `frere_jacques.mid` | “Frère Jacques” / French traditional round | [Wikisource public-domain text and editions](https://fr.wikisource.org/wiki/Fr%C3%A8re_Jacques) | **Starter:** repeated four-note phrases in C major |
-| `auld_lang_syne.mid` | “Auld Lang Syne” / Scottish traditional melody | [IMSLP folk-song record](https://imslp.org/wiki/Auld_lang_syne_%28Anonymous%29) and [Library of Congress background](https://blogs.loc.gov/music/2018/12/auld-lang-syne-sharing-a-cup-of-kindness-with-old-friends/) | **Starter:** familiar 2/4 melody with a compact range |
-| `yankee_doodle.mid` | “Yankee Doodle” / American traditional melody | [Library of Congress public-domain sheet-music record](https://www.loc.gov/item/2023841819/) | **Starter:** short repeated phrases in C major |
-| `brahms_lullaby.mid` | “Lullaby” (*Wiegenlied*, Op.49 No.4) / Johannes Brahms | [IMSLP work page](https://imslp.org/wiki/Wiegenlied_%28Brahms%2C_Johannes%29) | **Starter:** gentle 3/4 theme with a small range |
-| `minuet_in_g.mid` | *Minuet in G major*, BWV Anh.114 / Christian Petzold (formerly attributed to Bach) | [IMSLP work page](https://imslp.org/wiki/Minuet_in_G_Major_%28Pezold%2C_Christian%29) | **Starter:** compact 3/4 dance melody; no keyboard accompaniment included |
+Public-domain source editions used to check melody and rhythm:
 
-The generator is `scripts/generate_fixtures.py`; it recreates both the technical
-fixtures and these library files. Do not replace these project-authored files
-with downloaded MIDI from IMSLP, MuseScore, or another archive without adding
-the file-level source, exact license, checksum, attribution, and modification
-record to `third_party/README.md`.
+- Beethoven, *Für Elise*, Breitkopf & Härtel (1888): Mutopia edition
+  [2015/08/18-931](https://www.mutopiaproject.org/ftp/BeethovenLv/WoO59/fur_Elise_WoO59/fur_Elise_WoO59.ly),
+  Stelios Samelis, Public Domain.
+- Joplin, *The Entertainer* (1902): Mutopia edition
+  [2016/11/25-263](https://www.mutopiaproject.org/ftp/JoplinS/entertainer/entertainer.ly),
+  Chris Sawer / Simon Albrecht, Public Domain.
+- Petzold, *Minuet in G*, BWV Anh.114, Bach-Gesellschaft source: Mutopia
+  [2017/01/19-75](https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=75),
+  Allen Garvin, Public Domain. The historical catalog attributes it to Bach;
+  the app retains Petzold attribution.
+- Brahms, *Wiegenlied*, Op.49 No.4, Indiana University score source: Mutopia
+  [2007/11/04-1037](https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1037),
+  森 章吾, Public Domain; vocal melody, not the contributed SATB arrangement.
+
+Additional reference-only checks of public-domain composition facts:
+
+- Vivaldi, *La primavera*, RV269 (1725), opening solo/unison violin theme:
+  [Mutopia 2010/02/08-301](https://www.mutopiaproject.org/ftp/VivaldiA/O8/spring/spring-lys/spring1.ly).
+  That modern engraving is CC BY-SA 3.0 (Anonymous / John Williams); no engraving,
+  source code, editorial markings or modern arrangement is redistributed.
+- Pachelbel, *Canon and Gigue in D*, first violin:
+  [mfiles original-version score](https://www.mfiles.co.uk/scores/pachelbel-canon-in-d.htm).
+  No modern keyboard realization or score asset is used.
+- Traditional *Auld Lang Syne*: [North Atlantic Tune List, 2018-12-17](https://natunelist.net/auld-lang-syne/),
+  verse/chorus melody, transposed from G to C without its fingering annotations.
+- Traditional *Yankee Doodle*: [John Chambers, 2006 melody notation](https://trillian.mit.edu/~jc/music/abc/session/march/Yankee_Doodle-D-16-2.abc), transposed from D to C;
+  [Library of Congress historical score record](https://www.loc.gov/item/2023841819/).
+- Beethoven *Symphony No.9* theme, traditional *Ah! vous dirai-je, maman*
+  (Twinkle), *Mary Had a Little Lamb*, and *Frère Jacques*: familiar single-line
+  teaching versions. Their full phrase forms and durations are written explicitly
+  in the recipe; traditional variants exist.
+
+These checks and automated rhythmic assertions do not replace musician review.
+Contributors should identify source work and authored arrangement separately;
+see [CONTRIBUTING.md](../../CONTRIBUTING.md). Do not replace these generated files
+with downloaded MIDI without a file-level license and attribution review.

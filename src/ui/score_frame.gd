@@ -5,6 +5,7 @@ extends Control
 # The regular player and dense overview share ScoreView and its source geometry.
 var score: ScoreView
 var dense: bool = false
+var zoom: float = 0.65
 var music_lines: int = 1
 var note_spacing: float = 1.0
 var staff_height: float = 1.5
@@ -26,17 +27,18 @@ func arrange() -> void:
 	if score == null or not is_instance_valid(score) or arranging: return
 	arranging = true
 	score.set_note_spacing(note_spacing)
-	score.size.x = maxf(240, size.x)
+	score.size.x = maxf(240, size.x / zoom if dense else size.x)
 	score.refresh()
 	var row_count: int = score.notation_rows.size() if not score.notation_rows.is_empty() else (2 if score.notation == "both" else 1)
-	var minimum: float = float(row_count * 80)
+	# Allow a modest vertical fit adjustment when it makes another complete line fit.
+	var minimum: float = maxf(score.content_height(), row_count * 160.0) * zoom * 0.85 if dense else float(row_count * 80)
 	system_count = mini(mini(music_lines, score.pages()), maxi(1, floori((size.y + 8) / (minimum + 8))))
 	score.page_preview = system_count == 1
 	score.refresh()
 	var allocated: float = (size.y - (system_count - 1) * 8) / system_count
-	score.fit_rows(allocated, staff_height)
+	score.fit_rows(maxf(score.content_height(), row_count * 160.0) if dense else allocated, staff_height)
 	var height: float = score.drawing_height()
-	var factor: float = minf(1.0, allocated / height)
+	var factor: float = minf(zoom if dense else 1.0, allocated / height)
 	score.set_note_spacing(note_spacing)
 	if factor <= 0:
 		arranging = false

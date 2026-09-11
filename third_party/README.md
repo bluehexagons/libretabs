@@ -72,3 +72,14 @@ fallback. The Simple preference uses that existing engine font and removes the
 Nunito dependency from UI styling. This is a bounded visual choice, not completion
 of multilingual font coverage. Code-generated UI icon outlines are original
 LibreTabs code, with no external icon dependency.
+
+## Built-in melody review (2026-09-11)
+
+The generated teaching melodies at `content/library/*.mid` are project-authored
+arrangements of public-domain compositions. The readable note data lives in
+`scripts/library_scores.py`. Exact source-edition dates, maintainers, licenses,
+selection/transposition details and reference-only modern editions are recorded
+in [the library provenance](../content/library/README.md#score-references-checked-2026-09-11).
+No third-party MIDI, score graphics, LilyPond source, accompaniment or editorial
+ornaments are bundled. Source editions keep their own license; CC0 applies only
+to the project's authored music data and arrangement treatment.

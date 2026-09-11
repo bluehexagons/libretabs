@@ -44,12 +44,13 @@ def authored_melody(title, composer, pitches, durations, tempo=100, time_numerat
     events = []
     cursor = 0
     for pitch, duration in zip(pitches, durations):
-        events.extend([
-            (cursor, bytes([0x90, pitch, 88])),
-            (cursor + duration, bytes([0x80, pitch, 0])),
-        ])
+        if pitch is not None:
+            events.extend([
+                (cursor, bytes([0x90, pitch, 88])),
+                (cursor + duration, bytes([0x80, pitch, 0])),
+            ])
         cursor += duration
-    return midi([track(conductor + events, max(cursor, 1920))], 0)
+    return midi([track(conductor + events, cursor)], 0)
 
 def melody(channel=0):
     pitches=[64,64,67,69,67,66,64,62,64,67,71,69,67,66,64]
@@ -83,58 +84,10 @@ if __name__=='__main__':
 
     library = ROOT.parent / 'library'
     library.mkdir(parents=True, exist_ok=True)
-    library_songs = [
-        ('ode_to_joy', 'Ode to Joy - Beethoven', 'Beethoven',
-         [64, 64, 65, 67, 67, 65, 64, 62, 60, 60, 62, 64, 64, 62, 62],
-         [480, 480, 480, 480, 480, 480, 480, 480, 480, 480, 480, 480, 720, 240, 960], 4, 4),
-        ('fur_elise', 'Fur Elise - Beethoven', 'Beethoven',
-         [76, 75, 76, 75, 76, 71, 74, 72, 69, 60, 64, 69, 71, 60, 64, 71, 72, 64,
-          76, 75, 76, 75, 76, 71, 74, 72, 69],
-         [240] * 27, 4, 4),
-        ('spring', 'Spring - Vivaldi', 'Vivaldi',
-         [64, 64, 64, 62, 64, 67, 69, 69, 69, 67, 69, 72, 71, 69, 67, 64],
-         [240, 240, 480, 240, 240, 480, 240, 240, 480, 240, 240, 480, 240, 240, 240, 960], 4, 4),
-        ('canon_in_d', 'Canon in D - Pachelbel', 'Pachelbel',
-         [66, 69, 67, 66, 64, 62, 64, 66, 67, 69, 71, 69, 67, 66, 64, 62],
-         [480] * 15 + [960], 4, 4),
-        ('twinkle', 'Twinkle Twinkle Little Star - traditional', 'Traditional',
-         [60, 60, 67, 67, 69, 69, 67, 65, 65, 64, 64, 62, 62, 60],
-         [480, 480, 480, 480, 480, 480, 960, 480, 480, 480, 480, 480, 480, 960], 4, 4),
-        ('the_entertainer', 'The Entertainer - Scott Joplin', 'Scott Joplin',
-         [63, 64, 72, 69, 69, 72, 75, 76, 72, 69, 67, 69, 72, 69, 64, 63, 64],
-         [240, 240, 480, 480, 240, 240, 480, 480, 240, 240, 480, 480, 240, 240, 480, 240, 960], 4, 4),
-        ('mary_had_a_little_lamb', 'Mary Had a Little Lamb - American traditional', 'American traditional',
-         [64, 62, 60, 62, 64, 64, 64, 62, 62, 62, 64, 67, 67,
-          64, 62, 60, 62, 64, 64, 64, 64, 62, 62, 64, 62, 60],
-         [480, 480, 480, 480, 480, 480, 960, 480, 480, 960, 480, 480, 960,
-          480, 480, 480, 480, 480, 480, 480, 480, 480, 480, 480, 480, 960], 4, 4),
-        ('frere_jacques', 'Frere Jacques - French traditional', 'French traditional',
-         [60, 62, 64, 60, 60, 62, 64, 60, 64, 65, 67, 64, 65, 67, 67, 69,
-          67, 65, 64, 60, 67, 69, 67, 65, 64, 60, 60, 67, 60, 60, 67, 60],
-         [480] * 32, 4, 4),
-        ('auld_lang_syne', 'Auld Lang Syne - Scottish traditional', 'Scottish traditional',
-         [67, 60, 60, 60, 64, 62, 60, 62, 64, 60, 67, 67, 64, 62, 60, 62, 64, 67,
-          69, 67, 65, 64, 60, 60, 67, 67, 64, 62, 60, 62, 64, 60],
-         [240, 720, 480, 480, 720, 480, 480, 480, 480, 960, 480, 480, 720, 480, 480, 480,
-          480, 960, 480, 480, 720, 480, 480, 480, 480, 960, 480, 480, 720, 480, 480, 960], 2, 4),
-        ('yankee_doodle', 'Yankee Doodle - American traditional', 'American traditional',
-         [60, 60, 62, 64, 60, 64, 62, 60, 62, 64, 60, 60, 62, 64, 60, 64,
-          62, 60, 62, 64, 62, 62, 64, 62, 60, 62, 64, 60],
-         [240, 240, 240, 240, 240, 240, 240, 240, 240, 240, 480, 240, 240, 240,
-          240, 240, 240, 240, 240, 240, 480, 240, 240, 240, 240, 240, 240, 960], 4, 4),
-        ('brahms_lullaby', 'Lullaby - Johannes Brahms', 'Johannes Brahms',
-         [67, 67, 71, 67, 67, 71, 67, 71, 74, 72, 71, 69, 69, 71, 72, 69,
-          67, 67, 71, 67, 67, 71, 67, 71, 74, 72, 71, 69, 67, 67, 60],
-         [240, 240, 720, 240, 240, 720, 480, 480, 480, 480, 960, 240, 240, 720, 240, 240,
-          720, 240, 240, 720, 240, 240, 720, 480, 480, 480, 480, 960, 240, 240, 720], 3, 4),
-        ('minuet_in_g', 'Minuet in G - Christian Petzold', 'Christian Petzold',
-         [62, 67, 69, 71, 67, 64, 60, 62, 64, 65, 67, 69, 71, 72, 74, 71,
-          69, 67, 65, 64, 62, 60, 62, 67, 69, 71, 67, 64, 60, 62, 64, 65],
-         [480] * 32, 3, 4),
-    ]
-    for filename, title, composer, pitches, durations, time_numerator, time_denominator in library_songs:
+    from library_scores import SONGS
+    for filename, song in SONGS.items():
+        pitches, durations = zip(*song['notes'])
         (library / f'{filename}.mid').write_bytes(authored_melody(
-            title, composer, pitches, durations,
-            time_numerator=time_numerator,
-            time_denominator=time_denominator,
+            song['title'], song['composer'], pitches, durations, tempo=song['tempo'],
+            time_numerator=song['meter'][0], time_denominator=song['meter'][1],
         ))

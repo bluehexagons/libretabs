@@ -5,6 +5,18 @@ var page_swipe_start: Vector2
 var capture_view: CaptureView
 var capture_active: bool = false
 var tv_active: bool = false
+var tv_tucked: bool = false
+var tv_was_playing: bool = false
+var tv_tuck_timer: Timer
+var tv_edge: PanelContainer
+var tv_edge_fullscreen: Button
+var tv_inline_zoom: BoxContainer
+var tv_edge_pause: Button
+var status_toast: StatusToast
+var last_status: String = ""
+var tv_zoom: float = 0.65
+var tv_zoom_controls: Array[HSlider] = []
+var tv_zoom_captions: Array[Label] = []
 var tv_reading: Dictionary = {}
 var tv_button: Button
 var fullscreen_button: Button
@@ -139,7 +151,7 @@ var view_picker: OptionButton
 var music_layout_controls: Dictionary = {}
 var quick_music_layout: Array[OptionButton] = []
 var music_layout: Dictionary = {"lines": 1, "spacing": 100, "staff": 150}
-var tv_music_layout: Dictionary = {"lines": 3, "spacing": 50, "staff": 150}
+var tv_music_layout: Dictionary = {"lines": 6, "spacing": 80, "staff": 150}
 const MUSIC_LAYOUT_VALUES: Dictionary = {"lines": [1, 2, 3, 4, 5, 6], "spacing": [50, 65, 80, 100, 125, 150], "staff": [100, 150, 200, 250]}
 var notation_picker: OptionButton
 var notation_rows: Array[Dictionary] = NotationRows.defaults()
@@ -224,7 +236,13 @@ func _ready() -> void:
 			for value: int in MUSIC_LAYOUT_VALUES[key]: allowed.append(str(value))
 			var storage_key: String = prefix + key
 			if persist_preferences: profile[key] = int(host.load_display_choice(storage_key, allowed, str(profile[key])))
+	var zoom_choices: Array[String] = []
+	for zoom: int in range(40, 201, 5): zoom_choices.append(str(zoom))
+	if persist_preferences: tv_zoom = float(host.load_display_choice("tv_zoom", zoom_choices, "65")) / 100.0
 	build_ui()
+	build_tv_edge()
+	status_toast = StatusToast.new()
+	add_child(status_toast)
 	apply_music_layout()
 	capture_view = CaptureView.new()
 	add_child(capture_view)
@@ -258,7 +276,104 @@ func pass_scroll_input(node: Node) -> void:
 func set_status(key: String) -> void:
 	status_key = key
 	status.text = tr(key)
-	status.visible = key not in ["START_HINT", "STATE_PAUSED", "FOLLOW_HINT", "COUNTING"]
+	status.hide()
+	if key in ["START_HINT", "STATE_PAUSED", "FOLLOW_HINT", "COUNTING"]:
+		if key == "START_HINT" and last_status == "IMPORTING" and status_toast != null:
+			status_toast.hide()
+			status_toast.timer.stop()
+			last_status = ""
+		return
+	last_status = key
+	if status_toast != null:
+		status_toast.reduced_motion = reduced_motion
+		status_toast.show_message(tr(key))
+		place_status()
+
+func place_status() -> void:
+	if status_toast == null: return
+	status_toast.size = Vector2(minf(720, size.x - 32), 0)
+	status_toast.position = Vector2((size.x - status_toast.size.x) / 2, 16)
+
+func build_tv_edge() -> void:
+	tv_tuck_timer = Timer.new()
+	tv_tuck_timer.one_shot = true
+	tv_tuck_timer.timeout.connect(tuck_tv_controls)
+	add_child(tv_tuck_timer)
+	tv_edge = PanelContainer.new()
+	add_child(tv_edge)
+	var column: VBoxContainer = VBoxContainer.new()
+	tv_edge.add_child(column)
+	tv_edge_pause = button("PAUSE", toggle_play)
+	tv_edge_pause.text = ""
+	tv_edge_pause.custom_minimum_size = Vector2(72, 72)
+	column.add_child(tv_edge_pause)
+	var reveal: Button = button("SHOW_CONTROLS", reveal_tv_controls)
+	reveal.text = ""
+	reveal.icon = UIIcons.get_icon("MENU")
+	column.add_child(reveal)
+	tv_edge_fullscreen = button("EXIT_FULLSCREEN", toggle_fullscreen)
+	var fullscreen: Button = tv_edge_fullscreen
+	fullscreen.text = ""
+	fullscreen.icon = UIIcons.get_icon("FULLSCREEN")
+	fullscreen.tooltip_text = tr("FULLSCREEN")
+	column.add_child(fullscreen)
+	tv_edge.hide()
+
+func tuck_tv_controls() -> void:
+	if not tv_active or not audio.playing_practice or menu_overlay.visible or capture_active: return
+	if main_speed.pointer_active or Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) or get_viewport().gui_get_focus_owner() is LineEdit:
+		tv_tuck_timer.start(3)
+		return
+	tv_tucked = true
+	responsive()
+	tv_edge_pause.grab_focus()
+
+func reveal_tv_controls() -> void:
+	tv_tucked = false
+	responsive()
+	menu_button.grab_focus()
+	if tv_active and audio.playing_practice: tv_tuck_timer.start(8)
+
+func update_tv_playback() -> void:
+	if tv_tuck_timer == null: return
+	var playing: bool = tv_active and audio.playing_practice and not menu_overlay.visible and not capture_active
+	if not playing:
+		tv_tuck_timer.stop()
+		if tv_tucked:
+			tv_tucked = false
+			responsive.call_deferred()
+	elif not tv_was_playing: tv_tuck_timer.start(3)
+	tv_was_playing = playing
+
+func build_tv_zoom(parent: Control) -> void:
+	var caption: Label = label("TV_ZOOM", 18)
+	caption.text = tr("TV_ZOOM") % roundi(tv_zoom * 100)
+	caption.autowrap_mode = TextServer.AUTOWRAP_OFF
+	parent.add_child(caption)
+	tv_zoom_captions.append(caption)
+	var slider: HSlider = HSlider.new()
+	slider.min_value = 40
+	slider.max_value = 200
+	slider.step = 5
+	slider.value = tv_zoom * 100
+	slider.custom_minimum_size = Vector2(160, 48)
+	slider.tooltip_text = tr("TV_ZOOM_HELP")
+	slider.value_changed.connect(change_tv_zoom)
+	slider.drag_started.connect(func() -> void: tv_tuck_timer.stop())
+	slider.drag_ended.connect(func(_changed: bool) -> void:
+		if tv_active and audio.playing_practice: tv_tuck_timer.start(8))
+	parent.add_child(slider)
+	tv_zoom_controls.append(slider)
+
+func change_tv_zoom(value: float) -> void:
+	tv_zoom = clampf(value, 40, 200) / 100.0
+	for slider: HSlider in tv_zoom_controls: slider.set_value_no_signal(tv_zoom * 100)
+	for caption: Label in tv_zoom_captions: caption.text = tr("TV_ZOOM") % roundi(tv_zoom * 100)
+	if score_frame != null:
+		score_frame.zoom = tv_zoom
+		score_frame.arrange()
+	report_state.call_deferred()
+	if persist_preferences and not host.save_display_choice("tv_zoom", str(roundi(tv_zoom * 100))): set_status("STORAGE_SESSION")
 
 func label(key: String, font_size: int = 20) -> Label:
 	var item: Label = Label.new()
@@ -382,7 +497,8 @@ func build_ui() -> void:
 	song_title.add_theme_font_override("font", UIAppearance.ui_font(font_style, true))
 	panel.add_child(song_title)
 	status = label("START_HINT", 18)
-	panel.add_child(status)
+	add_child(status)
+	status.hide()
 	var details: HFlowContainer = flow(panel)
 	cue = label("CUE_READY", 24)
 	# Share the compact cue row with the arrangement disclosure.
@@ -393,6 +509,9 @@ func build_ui() -> void:
 	reading_tools = flow(panel)
 	reading_tools.add_child(view_button)
 	build_music_layout_controls(reading_tools, true)
+	tv_inline_zoom = BoxContainer.new()
+	reading_tools.add_child(tv_inline_zoom)
+	build_tv_zoom(tv_inline_zoom)
 	notice_button.reparent(reading_tools)
 	menu_overlay = Control.new()
 	menu_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -427,6 +546,9 @@ func build_ui() -> void:
 	menu_column.add_child(drawer_title)
 	menu_column.move_child(drawer_title, 1)
 	build_drawers()
+	drawers["MENU"].add_child(button("LAST_STATUS", func() -> void:
+		close_menu()
+		if not last_status.is_empty(): status_toast.show_message(tr(last_status))))
 	notice_button.reparent(drawers["SCORE_VIEW"])
 	drawer.hide()
 	menu_overlay.hide()
@@ -658,6 +780,7 @@ func build_drawers() -> void:
 	view_picker.add_item(tr("VIEW_FOLLOW_PAGES"))
 	view_picker.item_selected.connect(func(_index: int) -> void: change_view())
 	views.add_child(view_picker)
+	views.add_child(button("TV_VIEW", func() -> void: toggle_drawer("TV_VIEW")))
 	views.add_child(label("MUSIC_LAYOUT_HELP", 18))
 	build_music_layout_controls(views, false)
 	notation_picker = OptionButton.new()
@@ -961,6 +1084,8 @@ func volume_control(parent: Node, key: String, initial: float, instrument: bool)
 func build_tv_menu() -> void:
 	var content: VBoxContainer = section("TV_VIEW")
 	content.add_child(label("TV_INTRO", 18))
+	content.add_child(label("TV_ZOOM_HELP", 18))
+	build_tv_zoom(content)
 	content.add_child(button("TV_ENTER", enter_tv))
 	content.add_child(label("TV_SETUP", 18))
 	content.add_child(button("TV_APPLE_HELP", func() -> void: host.open_url("https://support.apple.com/102661")))
@@ -998,6 +1123,9 @@ func update_fullscreen() -> void:
 	fullscreen_button.text = tr(key) if size.x >= 1100 and not controls_on_side else ""
 	fullscreen_button.icon = UIIcons.get_icon(key)
 	fullscreen_button.tooltip_text = tr(key)
+	if tv_edge_fullscreen != null:
+		tv_edge_fullscreen.icon = UIIcons.get_icon(key)
+		tv_edge_fullscreen.tooltip_text = tr(key)
 	responsive()
 	report_state()
 
@@ -1088,6 +1216,7 @@ func restore_drawer(navigation: int, destination: Dictionary) -> void:
 
 func toggle_drawer(key: String, remember: bool = true) -> void:
 	if menu_overlay.visible and opened_drawer == key: return
+	if tv_tucked: reveal_tv_controls()
 	if remember and menu_overlay.visible:
 		var focus: Control = get_viewport().gui_get_focus_owner()
 		drawer_history.append({"key": opened_drawer, "scroll": menu_scroll.scroll_vertical, "focus": weakref(focus) if focus != null else null})
@@ -1265,6 +1394,7 @@ func change_music_layout(key: String, value: int) -> void:
 func apply_music_layout() -> void:
 	var profile: Dictionary = tv_music_layout if tv_active else music_layout
 	if score_frame != null:
+		score_frame.zoom = tv_zoom
 		score_frame.music_lines = int(profile.lines)
 		score_frame.note_spacing = float(profile.spacing) / 100.0
 		score_frame.staff_height = float(profile.staff) / 100.0
@@ -1440,13 +1570,16 @@ func apply_appearance() -> void:
 	paper.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 8))
 	dock_panel.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 12))
 	speed_control.add_theme_stylebox_override("panel", UIAppearance.tempo_unit_style(dark_mode))
-	for action: Button in [play_button, welcome_practice]:
+	status_toast.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 12))
+	tv_edge.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 8))
+	for action: Button in [play_button, welcome_practice, tv_edge_pause]:
 		for state_name: String in ["normal", "hover", "pressed", "hover_pressed"]:
 			action.add_theme_stylebox_override(state_name, UIAppearance.primary_style(dark_mode, state_name))
 		for token: String in ["font_color", "font_focus_color", "font_hover_color", "font_pressed_color", "font_hover_pressed_color"]:
 			action.add_theme_color_override(token, Color.WHITE)
 	play_button.add_theme_color_override("font_hover_pressed_color", Color.WHITE)
-	for token: String in ["icon_normal_color", "icon_hover_color", "icon_pressed_color", "icon_focus_color", "icon_hover_pressed_color"]: play_button.add_theme_color_override(token, Color.WHITE)
+	for action: Button in [play_button, tv_edge_pause]:
+		for token: String in ["icon_normal_color", "icon_hover_color", "icon_pressed_color", "icon_focus_color", "icon_hover_pressed_color"]: action.add_theme_color_override(token, Color.WHITE)
 	if score != null:
 		for tile: NotationMeasureStack in score.tiles.values():
 			for canvas: MeasureCanvas in tile.canvases: canvas.queue_redraw()
@@ -1479,6 +1612,7 @@ func responsive() -> void:
 		effective_position = handedness
 	elif size.x < 600 and size.y >= size.x and control_position in ["left", "right"]:
 		effective_position = "bottom"
+	if tv_tucked: effective_position = "bottom"
 	var side_dock: bool = effective_position in ["left", "right"]
 	controls_on_side = side_dock
 	tight_controls = not side_dock and size.y < 440
@@ -1549,9 +1683,11 @@ func responsive() -> void:
 	menu_button.size_flags_horizontal = Control.SIZE_FILL if side_dock else Control.SIZE_SHRINK_END
 	header.alignment = BoxContainer.ALIGNMENT_BEGIN if side_dock else BoxContainer.ALIGNMENT_END
 	song_title.visible = not landscape and (tv_active or not compact)
-	reading_tools.visible = not landscape and (tv_active or not compact)
+	tv_inline_zoom.vertical = size.x < 600 and theme.default_font_size >= 30
+	tv_inline_zoom.visible = tv_active
+	reading_tools.visible = not tv_tucked and not landscape and (tv_active or not compact)
 	for picker: OptionButton in quick_music_layout: picker.visible = size.x >= 1000 and theme.default_font_size < 30
-	set_status(status_key)
+	place_status()
 	for side: String in ["left", "right", "top", "bottom"]:
 		content_margin.add_theme_constant_override("margin_" + side, 8 if side_dock else ((16 if tv_active else maxi(16, int((size.x - 1280) / 2))) if side in ["left", "right"] else (4 if compact else 10)))
 	panel.add_theme_constant_override("separation", 4 if landscape or compact else 10)
@@ -1567,6 +1703,14 @@ func responsive() -> void:
 	var small_menu_header: bool = theme.default_font_size >= 30 and (size.x < 600 or size.y < 500)
 	menu_back.text = "" if small_menu_header else tr("MENU_BACK")
 	menu_close.text = "" if small_menu_header else tr("CLOSE")
+	header_margin.visible = not tv_tucked
+	dock_margin.visible = not tv_tucked
+	if tv_edge != null:
+		tv_edge.visible = tv_tucked and not menu_overlay.visible
+		tv_edge.size = Vector2(88, 0)
+		tv_edge.position = Vector2(8 if handedness == "left" else size.x - 96, 8)
+	if tv_tucked:
+		content_margin.add_theme_constant_override("margin_" + ("left" if handedness == "left" else "right"), 104)
 	adapt_flow(menu_overlay)
 	adapt_flow(root_box)
 	if score != null: score.refresh(); update_page_controls()
@@ -1608,7 +1752,9 @@ func update_main_scroll() -> void:
 	fit_hide_cue = false
 	fit_hide_seek = false
 	song_title.visible = not landscape and (tv_active or not compact)
-	reading_tools.visible = not landscape and (tv_active or not compact)
+	tv_inline_zoom.vertical = size.x < 600 and theme.default_font_size >= 30
+	tv_inline_zoom.visible = tv_active
+	reading_tools.visible = not tv_tucked and not landscape and (tv_active or not compact)
 	for picker: OptionButton in quick_music_layout: picker.visible = size.x >= 1000 and theme.default_font_size < 30
 	update_page_controls()
 	score_frame.fit_height(96)
@@ -1631,7 +1777,7 @@ func update_main_scroll() -> void:
 
 func content_height_budget() -> float:
 	if controls_on_side: return size.y
-	return maxf(0, size.y - header_margin.get_combined_minimum_size().y - dock_margin.get_combined_minimum_size().y)
+	return size.y if tv_tucked else maxf(0, size.y - header_margin.get_combined_minimum_size().y - dock_margin.get_combined_minimum_size().y)
 
 func adapt_flow(node: Node) -> void:
 	if node != page_navigation and (node is HFlowContainer or (node is BoxContainer and not node.vertical)):
@@ -2011,6 +2157,7 @@ func loop_changed(end_edited: bool = false) -> void:
 
 func update_play_control(frame: int = -1) -> void:
 	if count_badge == null: return
+	update_tv_playback()
 	var beat: int = 0
 	if audio.playing_practice:
 		beat = audio.transport.count_beat_at(audio.audible_frame() if frame < 0 else frame)
@@ -2156,7 +2303,7 @@ func report_state() -> void:
 	if song == null: return
 	if host.trace_enabled():
 		var evidence: Dictionary = audio.metrics()
-		evidence.merge({"tv_active": tv_active, "tv_systems": score_frame.visible_systems(), "music_lines": score_frame.music_lines, "note_spacing": score_frame.note_spacing, "staff_height": score_frame.staff_height, "score_height": score.drawing_height(), "fitted_rows": score.fitted_rows, "fullscreen": host.is_fullscreen(), "follow_pages": score.follow_pages, "upcoming_tick": score.upcoming_tick, "count_beat": int(count_badge.text) if count_badge.visible else 0, "capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "font_style": font_style, "control_position": control_position, "handedness": handedness, "controls_on_side": controls_on_side, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "notation_rows": notation_rows, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "arrangement_style": projection.style, "placed": projection.placed, "eligible": projection.eligible, "omitted": projection.omitted.size(), "mute_marks": projection.mute_marks, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
+		evidence.merge({"tv_active": tv_active, "tv_tucked": tv_tucked, "tv_zoom": tv_zoom, "status_visible": status_toast.visible, "tv_systems": score_frame.visible_systems(), "music_lines": score_frame.music_lines, "note_spacing": score_frame.note_spacing, "staff_height": score_frame.staff_height, "score_height": score.drawing_height(), "fitted_rows": score.fitted_rows, "fullscreen": host.is_fullscreen(), "follow_pages": score.follow_pages, "upcoming_tick": score.upcoming_tick, "count_beat": int(count_badge.text) if count_badge.visible else 0, "capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "font_style": font_style, "control_position": control_position, "handedness": handedness, "controls_on_side": controls_on_side, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "notation_rows": notation_rows, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "arrangement_style": projection.style, "placed": projection.placed, "eligible": projection.eligible, "omitted": projection.omitted.size(), "mute_marks": projection.mute_marks, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
 		host.report(evidence)
 	offline.text = tr("OFFLINE_READY") if host.offline_ready() else tr("OFFLINE_PENDING")
 	if host.offline_ready() and not host.trace_enabled(): idle_timer.stop()
@@ -2267,6 +2414,7 @@ func show_control_help(text: String) -> void:
 
 func apply_motion() -> void:
 	reduced_motion = motion_mode == "reduced" or (motion_mode == "system" and host.system_reduced_motion())
+	if status_toast != null: status_toast.reduced_motion = reduced_motion
 	motion_check.set_pressed_no_signal(reduced_motion)
 	motion_note.text = tr("MOTION_SYSTEM" if motion_mode == "system" else "MOTION_OVERRIDE")
 	if menu_tween != null: menu_tween.kill()
