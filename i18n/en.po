@@ -767,7 +767,7 @@ msgid "WELCOME_STARTUP_HELP"
 msgstr "Open Menu → Quick start any time to return here or turn startup help back on."
 
 msgid "PLAYER_SHORTCUTS"
-msgstr "Space always plays or pauses while a menu is closed. Left and Right move by measure, or turn a reading page. Focus the position scrubber for beat-by-beat Arrow keys, Page Up/Down by measure, and Home/End. Escape closes a menu or capture view. F8 toggles capture view. Tab moves between controls. Swipe across a manual reading page to turn it. Piano keys are listed below."
+msgstr "Space always plays or pauses while a menu is closed. Left and Right move by measure, or turn a reading page. Focus the position scrubber for beat-by-beat Arrow keys, Page Up/Down by measure, and Home/End. Escape closes a menu or capture view. F8 toggles capture view. F9 toggles Theater. Tab moves between controls. Swipe across a manual reading page to turn it. Piano keys are listed below."
 
 msgid "TIP_MENU"
 msgstr "Open music, playback, printing and appearance options."
@@ -1052,19 +1052,19 @@ msgid "CARD_SETTINGS"
 msgstr "Settings\nPlayback, score, sound and appearance"
 
 msgid "TV_VIEW"
-msgstr "TV & large screen"
+msgstr "Theater"
 
 msgid "CARD_TV_VIEW"
-msgstr "TV & large screen\nMore music in the same player"
+msgstr "Theater\nMore music in the same player"
 
 msgid "TV_INTRO"
-msgstr "The TV button uses more music lines and tighter note spacing in the same player. Adjust Music lines, Note spacing and Staff height in Score view, or directly above the music on a wide screen. Each view remembers its own choices. Press TV again to return to your regular layout."
+msgstr "Theater shows more music in the same player, using the full window. Recommended for desktops, tablets and larger displays. Adjust music zoom for comfortable reading, and Music lines for the amount shown. Each view remembers its own layout. Use Theater again to return to your regular view; fullscreen is optional."
 
 msgid "TV_ENTER"
-msgstr "Toggle TV density"
+msgstr "Enter Theater"
 
 msgid "TV_SETUP"
-msgstr "1. Turn your phone sideways.\n2. Use your phone’s screen-mirroring controls to connect to a compatible TV. On iPhone or iPad, use Screen Mirroring in Control Center; on Android, use your device’s casting controls or Google Home.\n3. Return here and press the TV button. Press Play when you are ready.\n\nMirroring shows the same picture on your phone and TV. LibreTabs does not connect to a TV itself. Keep this app visible; switching away pauses practice. Use the Fullscreen button to fill the display. Press it again or press Escape to exit."
+msgstr "Optional TV mirroring:\n1. Turn your phone or tablet sideways.\n2. Use your phone’s screen-mirroring controls to connect to a compatible TV. On iPhone or iPad, use Screen Mirroring in Control Center; on Android, use your device’s casting controls or Google Home.\n3. Return here and select Theater. Press Play when you are ready.\n\nMirroring shows the same picture on your phone and TV. LibreTabs does not connect to a TV itself. Keep this app visible; switching away pauses practice. Use the Fullscreen button to fill the display. Press it again or press Escape to exit."
 
 msgid "TV_TIMING"
 msgstr "Wireless mirroring can delay the picture and sound. Check them together before practising in time. A cable may work better for your setup."
@@ -1082,7 +1082,7 @@ msgid "TV_LARGE_NOTES"
 msgstr "Larger notes"
 
 msgid "TV_EXIT"
-msgstr "Exit TV view"
+msgstr "Return to regular view"
 
 msgid "TV_PROGRESS"
 msgstr "Measure %d / %d · Speed %d%%"
@@ -1103,7 +1103,7 @@ msgid "SPEED_ZERO"
 msgstr "Speed is 0%. Increase the speed, then press Play to resume."
 
 msgid "MUSIC_LAYOUT_HELP"
-msgstr "Use more lines to see a longer passage, or fewer lines for taller music. Note spacing fits more notes across without shrinking their height. Staff height gives the five pitch lines more room. Settings are remembered separately for regular and TV views."
+msgstr "Use more lines to see a longer passage, or fewer lines for taller music. Note spacing fits more notes across without shrinking their height. Staff height gives the five pitch lines more room. Settings are remembered separately for regular and Theater views."
 
 msgid "MUSIC_LINES"
 msgstr "Up to %d music lines"
@@ -1130,13 +1130,31 @@ msgid "MEASURE_NUMBER_ONLY"
 msgstr "%d"
 
 msgid "TV_ZOOM"
-msgstr "TV zoom: %d%%"
+msgstr "Music zoom: %d%%"
 
 msgid "TV_ZOOM_HELP"
-msgstr "Calibrate the music for your screen and viewing distance. Smaller zoom fits more music; larger zoom makes notes easier to read. TV playback tucks controls into the screen edge after three seconds. Pause stays visible; Show controls brings everything back."
+msgstr "Calibrate the music for your screen and viewing distance. Smaller zoom fits more music; larger zoom makes notes easier to read. Use the slider with a pointer, touch, or the arrow keys when focused."
 
 msgid "SHOW_CONTROLS"
 msgstr "Show controls"
 
 msgid "LAST_STATUS"
 msgstr "Show latest message"
+
+msgid "THEATER_RECOMMEND"
+msgstr "Using a desktop or tablet? Try Theater to see more music across the screen. You can adjust zoom and return to the regular view at any time."
+
+msgid "THEATER_TRY"
+msgstr "Try Theater"
+
+msgid "THEATER_KEEP_CONTROLS"
+msgstr "Keep controls visible while playing"
+
+msgid "THEATER_CONTROLS_HELP"
+msgstr "Keep the full playback controls on screen for frequent adjustments. With this off, controls tuck into the edge after three seconds; Pause stays visible and Show controls brings the full controls back."
+
+msgid "THEATER_ENTER_TIP"
+msgstr "Enter Theater for more music across your screen (F9). Right-click for Theater settings."
+
+msgid "THEATER_EXIT_TIP"
+msgstr "Return to your regular reading view (F9). Right-click for Theater settings."

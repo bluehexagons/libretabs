@@ -28,18 +28,23 @@ one- or two-finger horizontal swipes and a horizontal mouse wheel. Page gestures
 never seek audio; a single tap on the music still seeks. Help describes these
 optional shortcuts alongside the visible page arrows.
 
-The header's TV & large screen button toggles denser reading within the same
+The header's Theater button toggles denser reading within the same
 player. It uses the available width and stacks consecutive rows of music while
 retaining the usual controls, information and appearance. Toggle it off to
 restore the previous reading view. Rotate the phone sideways and connect using
-the device's screen-mirroring controls. Fullscreen is beside the TV button;
+the device's screen-mirroring controls. Fullscreen is beside Theater;
 the same button or Escape exits fullscreen. This view does not establish a TV
 connection or provide a separate remote screen.
+Theater is recommended in Quick start for desktop and tablet reading as well as
+mirroring. Its name remains visible in tablet headers, and F9 toggles it without
+starting or seeking playback. Tablet reading exposes the music-line count and
+zoom directly. Theater settings can keep the full controls visible during
+playback; this device preference overrides automatic tucking into the edge.
 Music lines, Note spacing and Staff height are independent controls, available
 above the music on wide screens and in Score view everywhere. Fewer music lines
 make each line taller; tighter horizontal spacing shows more notes without
 shrinking their height. Staff height changes the relative room given to the five
-pitch lines. Regular and TV choices are remembered separately. Short screens and
+pitch lines. Regular and Theater choices are remembered separately. Short screens and
 short songs can show fewer lines than the selected maximum.
 See [decision 0018](decisions/0018-adjustable-music-layout.md).
 

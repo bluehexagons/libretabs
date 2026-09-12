@@ -864,6 +864,45 @@ func run() -> void:
 	app.call("apply_scale", 2.0)
 	for _frame: int in range(35): await process_frame
 	check(app.get("root_box").size.x <= 391 and app.get("play_button").get_global_rect().end.y <= 845, "TV zoom controls fit narrow screens at 200 percent text")
+	app.call("apply_scale", 1.0)
+	root.size = Vector2i(768, 1024)
+	app.call("responsive")
+	for _frame: int in range(35): await process_frame
+	check(app.get("tv_button").text == TranslationServer.translate("TV_VIEW"), "tablet header names Theater instead of requiring icon recognition")
+	check(app.get("quick_music_layout")[0].is_visible_in_tree(), "tablet exposes music line count alongside zoom")
+	app.call("set_theater_controls", true)
+	app.call("seek_tick", 0.0)
+	app.call("start", false)
+	app.call("tuck_tv_controls")
+	for _frame: int in range(24): await process_frame
+	check(not app.get("tv_tucked") and app.get("play_button").is_visible_in_tree(), "keeping controls visible prevents Theater auto-tuck")
+	app.call("set_theater_controls", false)
+	app.get("play_button").grab_focus()
+	app.call("tuck_tv_controls")
+	for _frame: int in range(24): await process_frame
+	check(app.get("tv_tucked"), "automatic controls can be restored during playback")
+	app.call("set_theater_controls", true)
+	for _frame: int in range(24): await process_frame
+	check(not app.get("tv_tucked") and player.playing_practice, "pinning controls reveals them without pausing")
+	app.call("pause")
+	var options_event: InputEventMouseButton = InputEventMouseButton.new()
+	options_event.button_index = MOUSE_BUTTON_RIGHT
+	options_event.pressed = true
+	app.call("theater_pointer_options", options_event)
+	check(app.get("opened_drawer") == "TV_VIEW", "right-click opens Theater settings directly")
+	app.call("close_menu")
+	var theater_tick: float = app.get("source_tick")
+	var theater_key: InputEventKey = InputEventKey.new()
+	theater_key.keycode = KEY_F9
+	theater_key.pressed = true
+	app.call("_input", theater_key)
+	check(not app.get("tv_active") and app.get("source_tick") == theater_tick, "F9 restores regular reading without seeking")
+	app.call("_input", theater_key)
+	check(app.get("tv_active") and not player.playing_practice, "F9 re-enters Theater without starting audio")
+	root.size = Vector2i(1024, 768)
+	app.call("responsive")
+	for _frame: int in range(35): await process_frame
+	check(app.get("score_frame").visible_systems() >= 2, "landscape tablet keeps room for two music lines instead of wrapping secondary controls")
 	var toast: StatusToast = app.get("status_toast")
 	app.call("set_status", "STORAGE_SESSION")
 	check(toast.visible and not app.get("status").visible, "status floats outside the music layout")

@@ -18,6 +18,9 @@ var tv_zoom: float = 0.65
 var tv_zoom_controls: Array[HSlider] = []
 var tv_zoom_captions: Array[Label] = []
 var tv_reading: Dictionary = {}
+var theater_keep_controls: bool = false
+var theater_keep_check: CheckButton
+var theater_toggle: Button
 var tv_button: Button
 var fullscreen_button: Button
 
@@ -239,6 +242,7 @@ func _ready() -> void:
 	var zoom_choices: Array[String] = []
 	for zoom: int in range(40, 201, 5): zoom_choices.append(str(zoom))
 	if persist_preferences: tv_zoom = float(host.load_display_choice("tv_zoom", zoom_choices, "65")) / 100.0
+	if persist_preferences: theater_keep_controls = host.load_display_choice("theater_controls", ["auto", "keep"], "auto") == "keep"
 	build_ui()
 	build_tv_edge()
 	status_toast = StatusToast.new()
@@ -320,10 +324,14 @@ func build_tv_edge() -> void:
 	tv_edge.hide()
 
 func tuck_tv_controls() -> void:
-	if not tv_active or not audio.playing_practice or menu_overlay.visible or capture_active: return
+	if not tv_active or theater_keep_controls or not audio.playing_practice or menu_overlay.visible or capture_active: return
 	if main_speed.pointer_active or Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) or get_viewport().gui_get_focus_owner() is LineEdit:
 		tv_tuck_timer.start(3)
 		return
+	for picker: OptionButton in quick_music_layout:
+		if picker.get_popup().visible:
+			tv_tuck_timer.start(3)
+			return
 	tv_tucked = true
 	responsive()
 	tv_edge_pause.grab_focus()
@@ -332,11 +340,11 @@ func reveal_tv_controls() -> void:
 	tv_tucked = false
 	responsive()
 	menu_button.grab_focus()
-	if tv_active and audio.playing_practice: tv_tuck_timer.start(8)
+	if tv_active and not theater_keep_controls and audio.playing_practice: tv_tuck_timer.start(8)
 
 func update_tv_playback() -> void:
 	if tv_tuck_timer == null: return
-	var playing: bool = tv_active and audio.playing_practice and not menu_overlay.visible and not capture_active
+	var playing: bool = tv_active and not theater_keep_controls and audio.playing_practice and not menu_overlay.visible and not capture_active
 	if not playing:
 		tv_tuck_timer.stop()
 		if tv_tucked:
@@ -345,10 +353,21 @@ func update_tv_playback() -> void:
 	elif not tv_was_playing: tv_tuck_timer.start(3)
 	tv_was_playing = playing
 
+func theater_pointer_options(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_RIGHT:
+		toggle_drawer("TV_VIEW")
+		tv_button.accept_event()
+
+func set_theater_controls(keep: bool) -> void:
+	theater_keep_controls = keep
+	theater_keep_check.set_pressed_no_signal(keep)
+	update_tv_playback()
+	if persist_preferences and not host.save_display_choice("theater_controls", "keep" if keep else "auto"): set_status("STORAGE_SESSION")
+
 func build_tv_zoom(parent: Control) -> void:
 	var caption: Label = label("TV_ZOOM", 18)
 	caption.text = tr("TV_ZOOM") % roundi(tv_zoom * 100)
-	caption.autowrap_mode = TextServer.AUTOWRAP_OFF
+	caption.autowrap_mode = TextServer.AUTOWRAP_OFF if parent == tv_inline_zoom else TextServer.AUTOWRAP_WORD_SMART
 	parent.add_child(caption)
 	tv_zoom_captions.append(caption)
 	var slider: HSlider = HSlider.new()
@@ -361,11 +380,12 @@ func build_tv_zoom(parent: Control) -> void:
 	slider.value_changed.connect(change_tv_zoom)
 	slider.drag_started.connect(func() -> void: tv_tuck_timer.stop())
 	slider.drag_ended.connect(func(_changed: bool) -> void:
-		if tv_active and audio.playing_practice: tv_tuck_timer.start(8))
+		if tv_active and not theater_keep_controls and audio.playing_practice: tv_tuck_timer.start(8))
 	parent.add_child(slider)
 	tv_zoom_controls.append(slider)
 
 func change_tv_zoom(value: float) -> void:
+	if tv_active and not theater_keep_controls and audio.playing_practice: tv_tuck_timer.start(8)
 	tv_zoom = clampf(value, 40, 200) / 100.0
 	for slider: HSlider in tv_zoom_controls: slider.set_value_no_signal(tv_zoom * 100)
 	for caption: Label in tv_zoom_captions: caption.text = tr("TV_ZOOM") % roundi(tv_zoom * 100)
@@ -489,6 +509,7 @@ func build_ui() -> void:
 	tv_button = button("TV_VIEW", enter_tv)
 	tv_button.toggle_mode = true
 	header_actions.add_child(tv_button)
+	tv_button.gui_input.connect(theater_pointer_options)
 	fullscreen_button = button("FULLSCREEN", toggle_fullscreen)
 	header_actions.add_child(fullscreen_button)
 	menu_button = button("MENU", func() -> void: toggle_drawer("MENU"))
@@ -727,6 +748,10 @@ func build_welcome_menu() -> void:
 		close_menu()
 		play_button.grab_focus())
 	welcome.add_child(welcome_practice)
+	welcome.add_child(label("THEATER_RECOMMEND", 18))
+	welcome.add_child(button("THEATER_TRY", func() -> void:
+		if not tv_active: enter_tv()
+		else: close_menu()))
 	for key: String in ["WELCOME_READ", "WELCOME_PLAY", "WELCOME_PACE"]:
 		var card: PanelContainer = PanelContainer.new()
 		card.add_theme_stylebox_override("panel", UIAppearance.role_style("reading", dark_mode, "normal"))
@@ -1086,7 +1111,13 @@ func build_tv_menu() -> void:
 	content.add_child(label("TV_INTRO", 18))
 	content.add_child(label("TV_ZOOM_HELP", 18))
 	build_tv_zoom(content)
-	content.add_child(button("TV_ENTER", enter_tv))
+	theater_toggle = button("TV_ENTER", enter_tv)
+	content.add_child(theater_toggle)
+	theater_keep_check = check("THEATER_KEEP_CONTROLS", theater_keep_controls)
+	theater_keep_check.tooltip_text = tr("THEATER_CONTROLS_HELP")
+	theater_keep_check.toggled.connect(set_theater_controls)
+	content.add_child(theater_keep_check)
+	content.add_child(label("THEATER_CONTROLS_HELP", 16))
 	content.add_child(label("TV_SETUP", 18))
 	content.add_child(button("TV_APPLE_HELP", func() -> void: host.open_url("https://support.apple.com/102661")))
 	content.add_child(button("TV_ANDROID_HELP", func() -> void: host.open_url("https://support.google.com/googlehome/answer/7169790")))
@@ -1113,6 +1144,7 @@ func enter_tv() -> void:
 		view_picker.select(2)
 	apply_music_layout()
 	score_frame.arrange()
+	update_tv_playback()
 	tv_button.grab_focus()
 
 func toggle_fullscreen() -> void:
@@ -1296,6 +1328,10 @@ func _input(event: InputEvent) -> void:
 			return
 	if event is InputEventKey and event.pressed and not event.echo and not event.ctrl_pressed and not event.meta_pressed and not event.alt_pressed:
 		var focused: Control = get_viewport().gui_get_focus_owner()
+		if event.keycode == KEY_F9 and not capture_active:
+			enter_tv()
+			get_viewport().set_input_as_handled()
+			return
 		if event.keycode == KEY_F8 or (event.keycode == KEY_ESCAPE and capture_active):
 			if capture_active: leave_capture()
 			else: enter_capture()
@@ -1634,8 +1670,11 @@ func responsive() -> void:
 		item.icon = UIIcons.get_icon(key) if header_icons or size.x >= 760 else null
 		item.custom_minimum_size.x = 56 if header_icons else 0
 	import_button.visible = not side_dock
+	if not side_dock and size.x >= 600 and expanded_controls:
+		tv_button.text = tr("TV_VIEW")
+	theater_toggle.text = tr("TV_EXIT" if tv_active else "TV_ENTER")
 	tv_button.set_pressed_no_signal(tv_active)
-	tv_button.tooltip_text = tr("TV_EXIT" if tv_active else "TV_VIEW")
+	tv_button.tooltip_text = tr("THEATER_EXIT_TIP" if tv_active else "THEATER_ENTER_TIP")
 	header_actions.alignment = FlowContainer.ALIGNMENT_CENTER if side_dock or size.x < 760 else (FlowContainer.ALIGNMENT_BEGIN if handedness == "left" else FlowContainer.ALIGNMENT_END)
 	tempo_button.icon = UIIcons.get_icon("TEMPO")
 	if tight_controls: tempo_button.icon = null
@@ -1684,9 +1723,11 @@ func responsive() -> void:
 	header.alignment = BoxContainer.ALIGNMENT_BEGIN if side_dock else BoxContainer.ALIGNMENT_END
 	song_title.visible = not landscape and (tv_active or not compact)
 	tv_inline_zoom.vertical = size.x < 600 and theme.default_font_size >= 30
+	for caption: Label in tv_zoom_captions:
+		if caption.get_parent() == tv_inline_zoom: caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART if tv_inline_zoom.vertical else TextServer.AUTOWRAP_OFF
 	tv_inline_zoom.visible = tv_active
 	reading_tools.visible = not tv_tucked and not landscape and (tv_active or not compact)
-	for picker: OptionButton in quick_music_layout: picker.visible = size.x >= 1000 and theme.default_font_size < 30
+	for picker: OptionButton in quick_music_layout: picker.visible = size.x >= (600 if picker == quick_music_layout[0] else 1200) and theme.default_font_size < 30
 	place_status()
 	for side: String in ["left", "right", "top", "bottom"]:
 		content_margin.add_theme_constant_override("margin_" + side, 8 if side_dock else ((16 if tv_active else maxi(16, int((size.x - 1280) / 2))) if side in ["left", "right"] else (4 if compact else 10)))
@@ -1753,9 +1794,11 @@ func update_main_scroll() -> void:
 	fit_hide_seek = false
 	song_title.visible = not landscape and (tv_active or not compact)
 	tv_inline_zoom.vertical = size.x < 600 and theme.default_font_size >= 30
+	for caption: Label in tv_zoom_captions:
+		if caption.get_parent() == tv_inline_zoom: caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART if tv_inline_zoom.vertical else TextServer.AUTOWRAP_OFF
 	tv_inline_zoom.visible = tv_active
 	reading_tools.visible = not tv_tucked and not landscape and (tv_active or not compact)
-	for picker: OptionButton in quick_music_layout: picker.visible = size.x >= 1000 and theme.default_font_size < 30
+	for picker: OptionButton in quick_music_layout: picker.visible = size.x >= (600 if picker == quick_music_layout[0] else 1200) and theme.default_font_size < 30
 	update_page_controls()
 	score_frame.fit_height(96)
 	for _frame: int in range(3): await get_tree().process_frame
