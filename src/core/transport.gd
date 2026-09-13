@@ -64,7 +64,13 @@ func configure(document: SongDocument, start_tick: float, end_tick: float, multi
 		# This sub-sample rounding never changes source ticks or crosses the end.
 		var on_frame: int = clampi(roundi((onset - start_seconds) / speed * RATE), 0, cycle_frames - 1)
 		var off_frame: int = clampi(roundi((release - start_seconds) / speed * RATE), on_frame + 1, cycle_frames)
-		add_event(on_frame, "on", note)
+		var onset_kind: String = "on"
+		var onset_note: Dictionary = note
+		if onset < start_seconds:
+			onset_kind = "restore"
+			onset_note = note.duplicate()
+			onset_note["restore_seconds"] = (start_seconds - onset) / speed
+		add_event(on_frame, onset_kind, onset_note)
 		add_event(off_frame, "off", note)
 	if metronome:
 		for bar: Dictionary in song.measures:
@@ -91,7 +97,7 @@ func count_beat_at(frame: int) -> int:
 	return (count_beats.bsearch(frame, false) - 1) % count_meter + 1
 
 func add_event(frame: int, kind: String, note: Dictionary) -> void:
-	var rank: int = {"reset": 0, "off": 1, "on": 2, "click": 3}[kind]
+	var rank: int = {"reset": 0, "off": 1, "on": 2, "restore": 2, "click": 3}[kind]
 	schedule.append({"frame": frame, "kind": kind, "note": note, "order": rank})
 
 # A fake consumer can inject any frame count. The synth is the runtime consumer.

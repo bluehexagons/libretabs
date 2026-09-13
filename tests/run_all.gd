@@ -141,6 +141,14 @@ func _initialize() -> void:
 	compound_count.configure(compound, 0, 1440, 1, false, false, false, [], -1, 4)
 	check(compound_count.count_frames == 0, "off disables count-in regardless of stored length")
 	check(compound_count.count_beat_at(0) == 0, "count visual resets when count-in is disabled")
+	var crossing: SongDocument = SongDocument.new()
+	crossing.end_tick = 960
+	crossing.measures.append({"start": 0, "end": 1920, "numerator": 4, "denominator": 4})
+	crossing.notes = [{"id": 90, "part": 0, "channel": 0, "pitch": 64, "velocity": 90, "start": 0, "end": 960}]
+	var crossing_transport: PracticeTransport = PracticeTransport.new()
+	crossing_transport.configure(crossing, 240, 960, 1.0, false, false, false, [])
+	var restored: Array[Dictionary] = crossing_transport.schedule.filter(func(event: Dictionary) -> bool: return event.kind == "restore")
+	check(restored.size() == 1 and is_equal_approx(float(restored[0].note.restore_seconds), 0.25), "seek schedule restores a note already sounding at the destination")
 	check(is_equal_approx(song.seconds_at(1920), 2.4), "100 BPM measure")
 	check(song.source.bytes_copy() == bytes, "exact source bytes")
 	var copy: PackedByteArray = song.source.bytes_copy()

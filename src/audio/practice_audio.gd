@@ -231,23 +231,28 @@ func apply_event(event: Dictionary) -> void:
 					targets[voice] = 0.0
 					releases[voice] = 1
 		"on":
-			var slot: int = -1
-			for voice: int in range(VOICES):
-				if ids[voice].is_empty():
-					slot = voice
-					break
-			if slot < 0:
-				slot = 0
-				for voice: int in range(1, VOICES):
-					if gains[voice] < gains[slot]:
-						slot = voice
-				steals += 1
-			ids[slot] = String(note.id)
-			phases[slot] = 0.0
-			increments[slot] = 440.0 * pow(2.0, (float(note.pitch) - 69.0) / 12.0) / PracticeTransport.RATE * TABLE_SIZE
-			gains[slot] = 0.0
-			targets[slot] = 0.14 * float(note.velocity) / 127.0
-			releases[slot] = 0
+			start_voice(note)
+		"restore":
+			start_voice(note, float(note.get("restore_seconds", 0.0)))
+
+func start_voice(note: Dictionary, restore_seconds: float = 0.0) -> void:
+	var slot: int = -1
+	for voice: int in range(VOICES):
+		if ids[voice].is_empty():
+			slot = voice
+			break
+	if slot < 0:
+		slot = 0
+		for voice: int in range(1, VOICES):
+			if gains[voice] < gains[slot]:
+				slot = voice
+		steals += 1
+	ids[slot] = String(note.id)
+	increments[slot] = 440.0 * pow(2.0, (float(note.pitch) - 69.0) / 12.0) / PracticeTransport.RATE * TABLE_SIZE
+	phases[slot] = fmod(increments[slot] * restore_seconds, TABLE_SIZE)
+	targets[slot] = 0.14 * float(note.velocity) / 127.0
+	gains[slot] = targets[slot] if restore_seconds > 0.0 else 0.0
+	releases[slot] = 0
 
 func live_on(note: Dictionary) -> void:
 	if playback == null:

@@ -1755,7 +1755,7 @@ func responsive() -> void:
 		content_margin.add_theme_constant_override("margin_" + ("left" if handedness == "left" else "right"), 104)
 	adapt_flow(menu_overlay)
 	adapt_flow(root_box)
-	if score != null: score.refresh(); update_page_controls()
+	if score != null: update_page_controls()
 	if fitting_layout: fit_pending = true
 	else: update_main_scroll.call_deferred()
 
