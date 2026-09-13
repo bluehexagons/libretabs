@@ -171,6 +171,19 @@ func _initialize() -> void:
 		if projection.placements.has(note.id):
 			var p: Dictionary = projection.placements[note.id]
 			check(TabProjection.TUNING[6 - int(p.string)] + int(p.fret) == int(note.pitch), "fret reproduces source pitch")
+	var leading_measures: SongDocument = SongDocument.new()
+	leading_measures.end_tick = 5760
+	leading_measures.notes = [{"id": 40, "part": 0, "pitch": 64, "start": 1440, "end": 1920}, {"id": 41, "part": 1, "pitch": 60, "start": 3840, "end": 4320}]
+	check(leading_measures.build_measures(), "leading-measure fixture builds")
+	check(leading_measures.first_sounding_measure(0) == 0 and leading_measures.first_sounding_measure(1) == 2, "first sounding measure preserves pickups and skips empty leading measures")
+	var held_technique: SongDocument = SongDocument.new()
+	held_technique.notes = [
+		{"id": 50, "part": 0, "pitch": 64, "start": 0, "end": 960},
+		{"id": 51, "part": 0, "pitch": 65, "start": 480, "end": 960},
+	]
+	for technique: String in [TabProjection.PICK, TabProjection.FINGER]:
+		projection.build(held_technique, 0, technique)
+		check(projection.placed == 2 and projection.placements[50].string != projection.placements[51].string, "%s reserves strings across held note onsets" % technique)
 	var pick_song: SongDocument = SongDocument.new()
 	pick_song.notes = []
 	var chord_pitches: Array[int] = [40, 45, 50, 55, 59, 64, 67]

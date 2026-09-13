@@ -230,6 +230,7 @@ func _ready() -> void:
 	startup_help_pending = startup_help_enabled
 	host.motion_changed.connect(apply_motion)
 	host.exported.connect(func(success: bool) -> void: print_status.text = tr("PRINT_SAVED" if success else "PRINT_FAILED"))
+	host.export_cancelled.connect(func() -> void: print_status.text = tr("CANCELLED"))
 	audio = PracticeAudio.new()
 	add_child(audio)
 	for prefix: String in ["music_", "tv_music_"]:
@@ -2045,7 +2046,8 @@ func select_part(index: int) -> void:
 	print_html = ""
 	print_save.disabled = true
 	part = index
-	source_tick = 0.0
+	var first_measure: int = song.first_sounding_measure(part)
+	source_tick = float(song.measures[first_measure].start) if not song.measures.is_empty() else 0.0
 	update_arrangement()
 	for child: Node in backing_box.get_children():
 		child.queue_free()

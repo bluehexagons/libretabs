@@ -90,9 +90,19 @@ func build_onsets(song: SongDocument, part: int, finger_style: bool) -> void:
 			order.append(tick)
 		groups[tick].append(note)
 	order.sort()
+	var active: Array[Dictionary] = []
 	for tick: int in order:
+		var occupied: Array[int] = []
+		var held_frets: Array[int] = []
+		var still_active: Array[Dictionary] = []
+		for held: Dictionary in active:
+			if int(held.end) <= tick: continue
+			still_active.append(held)
+			occupied.append(int(held.string))
+			if int(held.fret) > 0: held_frets.append(int(held.fret))
+		active = still_active
 		var notes: Array = groups[tick]
-		var shape: Dictionary = best_chord_shape(notes, finger_style)
+		var shape: Dictionary = best_chord_shape(notes, finger_style, occupied, held_frets)
 		var assigned: Dictionary = shape.get("placements", {})
 		for note: Dictionary in notes:
 			var id: Variant = note.id
@@ -102,32 +112,37 @@ func build_onsets(song: SongDocument, part: int, finger_style: bool) -> void:
 				placements[id] = placement
 				if finger_style: right_hand[id] = hand_role(int(placement.string))
 				placed += 1
+				active.append({"string": placement.string, "fret": placement.fret, "end": note.end})
 			else:
 				omitted.append(id)
 		if finger_style or assigned.size() < 2:
 			continue
-		var occupied: Array[int] = []
+		var strum_strings: Array[int] = occupied.duplicate()
 		for id: Variant in assigned:
-			occupied.append(int(assigned[id].string))
-		occupied.sort()
+			strum_strings.append(int(assigned[id].string))
+		strum_strings.sort()
 		var mutes: Array[int] = []
-		for string_number: int in range(occupied.front(), occupied.back() + 1):
-			if not occupied.has(string_number): mutes.append(string_number)
+		for string_number: int in range(strum_strings.front(), strum_strings.back() + 1):
+			if not strum_strings.has(string_number): mutes.append(string_number)
 		mute_marks += mutes.size()
-		strums.append({"tick": tick, "first_string": occupied.front(), "last_string": occupied.back(), "mutes": mutes})
+		strums.append({"tick": tick, "first_string": strum_strings.front(), "last_string": strum_strings.back(), "mutes": mutes})
 
-func best_chord_shape(notes: Array, finger_style: bool) -> Dictionary:
+func best_chord_shape(notes: Array, finger_style: bool, reserved_strings: Array = [], reserved_frets: Array = []) -> Dictionary:
 	if notes.size() == 1:
 		var note: Dictionary = notes[0]
 		var best_single: Dictionary = {}
 		for string_number: int in range(1, 7):
+			if reserved_strings.has(string_number): continue
 			var fret: int = int(note.pitch) - TUNING[6 - string_number]
 			if fret < 0 or fret > 20: continue
 			if best_single.is_empty() or fret < int(best_single.fret):
 				best_single = {"string": string_number, "fret": fret}
-		return {} if best_single.is_empty() else {"placements": {note.id: best_single}, "frets": [best_single.fret] if int(best_single.fret) > 0 else [], "signature": "%02d:%s;" % [best_single.string, str(note.id)], "mutes": 0}
-	var states: Array[Dictionary] = [{"placements": {}, "frets": [], "roles": {}, "signature": ""}]
+		var frets: Array = reserved_frets.duplicate()
+		if int(best_single.get("fret", 0)) > 0: frets.append(best_single.fret)
+		return {} if best_single.is_empty() else {"placements": {note.id: best_single}, "frets": frets, "roles": {}, "signature": "%02d:%s;" % [best_single.string, str(note.id)], "mutes": 0}
+	var states: Array[Dictionary] = [{"placements": {}, "frets": reserved_frets.duplicate(), "roles": {}, "signature": ""}]
 	for string_number: int in range(1, 7):
+		if reserved_strings.has(string_number): continue
 		var expanded: Array[Dictionary] = []
 		for state: Dictionary in states:
 			expanded.append(state)

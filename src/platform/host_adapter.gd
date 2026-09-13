@@ -8,6 +8,7 @@ signal appearance_changed
 signal focus_lost
 signal motion_changed
 signal exported(success: bool)
+signal export_cancelled
 signal fullscreen_changed
 signal fullscreen_failed
 var fullscreen_callback: JavaScriptObject
@@ -282,7 +283,9 @@ func export_print(html: String) -> void:
 				success = file.get_error() == OK
 			pending_export = ""
 			exported.emit(success))
-		export_dialog.canceled.connect(func() -> void: pending_export = "")
+		export_dialog.canceled.connect(func() -> void:
+			pending_export = ""
+			export_cancelled.emit())
 		add_child(export_dialog)
 	export_dialog.current_file = "libretabs-score.html"
 	export_dialog.popup_centered_ratio(0.8)

@@ -10,8 +10,14 @@ import json
 expected=json.loads((root/'release/toolchain.json').read_text())['version']
 version=subprocess.check_output([engine,'--version'],text=True).strip()
 if version!=expected: raise SystemExit(f'Expected {expected}; found {version}')
+COMMAND_TIMEOUT_SECONDS=120
 def run(args, failure=False):
-    result=subprocess.run(args,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    try:
+        result=subprocess.run(args,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,timeout=COMMAND_TIMEOUT_SECONDS)
+    except subprocess.TimeoutExpired as error:
+        output=error.stdout or ''
+        print(output)
+        raise SystemExit(f'Verification timed out after {COMMAND_TIMEOUT_SECONDS}s: {args}')
     print(result.stdout)
     if failure:
         if result.returncode==0 or 'intentional test-runner failure' not in result.stdout:

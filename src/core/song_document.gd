@@ -47,6 +47,17 @@ func measure_at(tick: float) -> int:
 			return index
 	return maxi(0, measures.size() - 1)
 
+func first_sounding_measure(selected_part: int = -1) -> int:
+	var found: bool = false
+	var first_tick: float = 0.0
+	for note: Dictionary in notes:
+		if selected_part >= 0 and int(note.part) != selected_part: continue
+		if float(note.end) <= float(note.start): continue
+		if not found or float(note.start) < first_tick:
+			found = true
+			first_tick = float(note.start)
+	return measure_at(first_tick) if found and not measures.is_empty() else 0
+
 func build_measures() -> bool:
 	var tick: float = 0.0
 	var meter_index: int = 0
