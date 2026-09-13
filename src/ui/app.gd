@@ -1802,22 +1802,43 @@ func update_main_scroll() -> void:
 	for picker: OptionButton in quick_music_layout: picker.visible = size.x >= (600 if picker == quick_music_layout[0] else 1200) and theme.default_font_size < 30
 	update_page_controls()
 	score_frame.fit_height(96)
-	for _frame: int in range(3): await get_tree().process_frame
+	await wait_for_layout_stability()
 	for extra: Control in [cue.get_parent(), reading_tools, song_title, seek_navigation]:
 		if content_margin.get_combined_minimum_size().y <= content_height_budget() + 1: break
 		if not extra.visible: continue
 		extra.hide()
 		if extra == cue.get_parent(): fit_hide_cue = true
 		if extra == seek_navigation: fit_hide_seek = true
-		for _frame: int in range(2): await get_tree().process_frame
+		await wait_for_layout_stability()
 	var other_height: float = content_margin.get_combined_minimum_size().y - score_frame.get_combined_minimum_size().y
 	score_frame.fit_height(content_height_budget() - other_height)
 	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	scroll.scroll_vertical = 0
-	for _frame: int in range(3): await get_tree().process_frame
+	await wait_for_layout_stability()
 	fitting_layout = false
 	report_state()
 	if fit_pending: update_main_scroll.call_deferred()
+
+func layout_signature() -> String:
+	var parts: PackedStringArray = []
+	for control: Control in [root_box, content_margin, scroll, score_frame, score]:
+		parts.append("%s:%s:%s:%s" % [control.name, control.position, control.size, control.get_combined_minimum_size()])
+	parts.append("score_height:%f" % score.drawing_height())
+	parts.append("systems:%d" % score_frame.system_count)
+	return "|".join(parts)
+
+func wait_for_layout_stability(max_frames: int = 8) -> void:
+	var previous: String = ""
+	var stable_frames: int = 0
+	for _frame: int in range(max_frames):
+		await get_tree().process_frame
+		var current: String = layout_signature()
+		if current == previous:
+			stable_frames += 1
+		else:
+			stable_frames = 0
+		previous = current
+		if stable_frames >= 2: return
 
 func content_height_budget() -> float:
 	if controls_on_side: return size.y

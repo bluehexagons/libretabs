@@ -13,6 +13,32 @@ func check(value: bool, message: String) -> void:
 func settle(frames: int = 20) -> void:
 	for _frame: int in range(frames): await process_frame
 
+func layout_signature(app: Control, score: ScoreView) -> String:
+	var parts: PackedStringArray = []
+	for control: Control in [app.get("root_box"), app.get("content_margin"), app.get("scroll"), app.get("score_frame"), score, app.get("drawer"), app.get("menu_scroll"), app.get("drawer_body"), app.get("menu_close"), app.get("scale_picker"), app.get("library_title")]:
+		parts.append("%s:%s:%s:%s" % [control.name, control.position, control.size, control.get_combined_minimum_size()])
+	parts.append("score_height:%f" % score.drawing_height())
+	parts.append("systems:%d" % app.get("score_frame").system_count)
+	parts.append("fitting:%s" % app.get("fitting_layout"))
+	parts.append("pending:%s" % app.get("fit_pending"))
+	parts.append("drawer:%s" % app.get("opened_drawer"))
+	parts.append("nodes:%d" % app.get_tree().get_node_count())
+	return "|".join(parts)
+
+func settle_layout(app: Control, score: ScoreView, max_frames: int = 24) -> void:
+	var previous: String = ""
+	var stable_frames: int = 0
+	for _frame: int in range(max_frames):
+		await process_frame
+		var current: String = layout_signature(app, score)
+		if current == previous:
+			stable_frames += 1
+		else:
+			stable_frames = 0
+		previous = current
+		if stable_frames >= 2 and not app.get("fitting_layout") and not app.get("fit_pending"): return
+	check(false, "layout did not settle within %d frames" % max_frames)
+
 func _initialize() -> void: call_deferred("run")
 
 func run() -> void:
@@ -32,7 +58,7 @@ func run() -> void:
 			for notation: String in ["both", "tab", "staff"]:
 				score.set_view("pages", notation)
 				app.call("responsive")
-				await settle(24)
+				await settle_layout(app, score)
 				var context: String = "%s, %s, %s%%" % [config, notation, factor * 100]
 				var shell: Control = app.get("root_box")
 				check(shell.size.x <= root.size.x + 1 and shell.size.y <= root.size.y + 1, "shell fits " + context)
@@ -49,11 +75,11 @@ func run() -> void:
 				check(app.get("source_tick") == tick, "page navigation never seeks playback " + context)
 	root.size = Vector2i(320,568)
 	app.call("toggle_drawer", "DISPLAY")
-	await settle()
+	await settle_layout(app, score)
 	app.call("apply_scale", 1.0)
-	await settle()
+	await settle_layout(app, score)
 	app.call("apply_scale", 2.0)
-	await settle()
+	await settle_layout(app, score)
 	var scale_rect: Rect2 = app.get("scale_picker").get_global_rect()
 	var scroll_rect: Rect2 = app.get("menu_scroll").get_global_rect()
 	check(scale_rect.position.y >= scroll_rect.position.y and scale_rect.end.y <= scroll_rect.end.y + 1, "text-size choice stays visible after reflow")
@@ -62,7 +88,7 @@ func run() -> void:
 		root.size = viewport
 		for key: String in app.get("drawers"):
 			app.call("toggle_drawer", key)
-			await settle()
+			await settle_layout(app, score)
 			var drawer: Control = app.get("drawer")
 			var scroller: ScrollContainer = app.get("menu_scroll")
 			check(drawer.size.x <= viewport.x + 1 and drawer.size.y <= viewport.y + 1, "menu fits %s %s" % [key, viewport])
