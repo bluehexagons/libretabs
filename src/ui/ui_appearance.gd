@@ -6,13 +6,15 @@ const LIGHT: Dictionary = {
 	"background": "ede7f1", "paper": "fffbf2", "ink": "30283e", "muted": "66596e",
 	"accent": "7040a0", "control": "eee8f3", "hover": "e1d4ec", "pressed": "d3bee5",
 	"disabled": "eae6e8", "line": "8b7e95", "primary": "12645f", "primary_hover": "0c514f", "primary_pressed": "083e3d", "live": "9b461d",
-	"library": "f7dfa9", "practice": "f4d4c6", "sound": "cce8df", "reading": "e0d5f3"
+	"library": "f7dfa9", "practice": "f4d4c6", "sound": "cce8df", "reading": "e0d5f3",
+	"note_open": "087f73", "note_first": "386f43", "note_move": "b25a1e", "rest": "756782", "warning": "b3434c"
 }
 const DARK: Dictionary = {
 	"background": "171725", "paper": "242439", "ink": "faf2e3", "muted": "c8bdd7",
 	"accent": "d0b2ff", "control": "37354c", "hover": "49405f", "pressed": "584867",
 	"disabled": "2c2b3d", "line": "9e90af", "primary": "12645f", "primary_hover": "0c514f", "primary_pressed": "083e3d", "live": "ffc18e",
-	"library": "4d3d2b", "practice": "50333e", "sound": "24483f", "reading": "413659"
+	"library": "4d3d2b", "practice": "50333e", "sound": "24483f", "reading": "413659",
+	"note_open": "78d8c9", "note_first": "9cdda8", "note_move": "ffc080", "rest": "c8bdd7", "warning": "ff9e9e"
 }
 
 const BUTTON_ROLES: Dictionary = {

@@ -419,7 +419,7 @@ func draw_cursor(surface: Control) -> void:
 					if y >= top and y <= bottom:
 						if upcoming: draw_note_mark(surface, Vector2(x, y), maxf(10, mapped_row_distance(row_index, 8)), true, note)
 						else:
-							surface.draw_arc(Vector2(x, y), maxf(11, mapped_row_distance(row_index, 8)), 0, TAU, 20, get_theme_color("accent", "LibreTabs"), 2, true)
+							surface.draw_arc(Vector2(x, y), maxf(11, mapped_row_distance(row_index, 8)), 0, TAU, 20, get_theme_color(ScoreLayout.placement_color_token(projection, note), "LibreTabs"), 2, true)
 							draw_particles(surface, Vector2(x, y), note)
 
 	draw_live(surface)
@@ -570,7 +570,7 @@ func pitch_name(pitch: int) -> String:
 
 # Open corner brackets mean "next"; a complete box means "sounding".
 func draw_note_mark(surface: Control, center: Vector2, half: float, upcoming: bool, note: Dictionary, half_height: float = 14) -> void:
-	var color: Color = get_theme_color("accent", "LibreTabs")
+	var color: Color = get_theme_color("accent", "LibreTabs") if upcoming else get_theme_color(ScoreLayout.placement_color_token(projection, note), "LibreTabs")
 	if upcoming:
 		for side: float in [-1.0, 1.0]:
 			var x: float = center.x + side * (half + 2)
@@ -584,7 +584,7 @@ func draw_note_mark(surface: Control, center: Vector2, half: float, upcoming: bo
 func draw_particles(surface: Control, center: Vector2, note: Dictionary) -> void:
 	var phase: float = particle_phase(note)
 	if phase < 0: return
-	var color: Color = get_theme_color("accent", "LibreTabs")
+	var color: Color = get_theme_color(ScoreLayout.placement_color_token(projection, note), "LibreTabs")
 	color.a = (1 - phase) * 0.75
 	for index: int in range(4):
 		var direction: Vector2 = Vector2.from_angle(-PI * (0.15 + index * 0.23))

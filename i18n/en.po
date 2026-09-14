@@ -241,6 +241,24 @@ msgstr "Staff · rhythm reference"
 msgid "TAB_PRIMARY"
 msgstr "TAB · FRETS"
 
+msgid "COLOR_KEY"
+msgstr "Reading key"
+
+msgid "COLOR_OPEN"
+msgstr "0 · open string"
+
+msgid "COLOR_FIRST"
+msgstr "1–3 · first frets"
+
+msgid "COLOR_MOVE"
+msgstr "4+ · move your hand"
+
+msgid "COLOR_REST"
+msgstr "Rest · stay quiet"
+
+msgid "COLOR_UNPLACED"
+msgstr "! / △ · warning"
+
 msgid "DENSE_DISPLAY"
 msgstr "! Dense measure: some symbols are hidden."
 
@@ -254,7 +272,7 @@ msgid "HELP_TITLE"
 msgstr "How to follow along"
 
 msgid "HELP_TEXT"
-msgstr "Tab is a map of the six guitar strings. The top line is string 1, the thinnest and highest-sounding string. A number tells you which fret to press; 0 means play the open string. The staff above is a pitch and rhythm reference: higher notes appear higher up. Guitar treble is written one octave above its sound. A measure is a small group of beats between vertical lines. The moving line follows the original timing; outlined notes show what is sounding. A ! marks a note this basic arrangement could not place. Use From and Through to repeat a short section."
+msgstr "Tab is a map of the six guitar strings. The top line is string 1, the thinnest and highest-sounding string. A number tells you which fret to press; 0 means play the open string. The staff above is a pitch and rhythm reference: higher notes appear higher up. Guitar treble is written one octave above its sound. A measure is a small group of beats between vertical lines. The moving line follows the original timing; outlined notes show what is sounding. The reading key pairs note colors with open strings, first frets and hand moves; the fret number remains the instruction. A rest symbol means do not play. A ! or △ marks a note this arrangement could not place. Use From and Through to repeat a short section."
 
 msgid "SCALE"
 msgstr "Control text size"

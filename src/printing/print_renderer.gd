@@ -19,6 +19,11 @@ func render(song: SongDocument, projection: TabProjection, part: int, plan: Dict
 	page.theme.set_color("ink", "LibreTabs", Color.BLACK)
 	page.theme.set_color("muted", "LibreTabs", Color("444444"))
 	page.theme.set_color("accent", "LibreTabs", Color.BLACK)
+	page.theme.set_color("note_open", "LibreTabs", Color.BLACK)
+	page.theme.set_color("note_first", "LibreTabs", Color.BLACK)
+	page.theme.set_color("note_move", "LibreTabs", Color.BLACK)
+	page.theme.set_color("rest", "LibreTabs", Color("444444"))
+	page.theme.set_color("warning", "LibreTabs", Color("444444"))
 	viewport.add_child(page)
 	var bytes: int = 0
 	for page_index: int in range(plan.pages.size()):

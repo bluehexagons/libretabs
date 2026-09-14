@@ -5,6 +5,8 @@ extends Control
 var ink: Color = Color("202d49")
 var muted: Color = Color("79849b")
 var accent: Color = Color("4665d8")
+var rest_color: Color = Color("756782")
+var warning: Color = Color("b3434c")
 var music_font: Font = preload("res://assets/fonts/Bravura.otf")
 var ui_font: Font = ThemeDB.fallback_font
 var song: SongDocument
@@ -22,6 +24,8 @@ func _draw() -> void:
 	ink = get_theme_color("ink", "LibreTabs")
 	muted = get_theme_color("muted", "LibreTabs")
 	accent = get_theme_color("accent", "LibreTabs")
+	rest_color = get_theme_color("rest", "LibreTabs")
+	warning = get_theme_color("warning", "LibreTabs")
 	draw_measure(index, Vector2.ZERO, size.x)
 
 func text_size(font_size: int) -> int:
@@ -87,11 +91,8 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 		var x: float = origin.x + ScoreLayout.note_x(song, note, index, width, continuous)
 		var pitch: int = int(note.pitch) + 12
 		var y: float = origin.y + ScoreLayout.staff_y(int(note.pitch))
-		var active: bool = false
-		var color: Color = accent if active else ink
+		var color: Color = get_theme_color(ScoreLayout.placement_color_token(projection, note), "LibreTabs")
 		if notation != "tab":
-			if active:
-				draw_circle(Vector2(x, y), 10, Color(0.95, 0.81, 0.65, 0.65))
 			if y >= origin.y + 12 and y <= origin.y + 172:
 				# Ledger lines in octave-transposing guitar treble.
 				for ledger: int in range(1, 12):
@@ -131,13 +132,15 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 				var tab_y: float = origin.y + ScoreLayout.tab_y(int(placement.string), notation) + tab_y_offset
 				var fret: String = str(placement.fret)
 				var half: float = ui_font.get_string_size(fret, HORIZONTAL_ALIGNMENT_LEFT, -1, text_size(26)).x / 2
-				draw_rect(Rect2(x - half - 4, tab_y - 13, half * 2 + 8, 26), get_theme_color("paper", "LibreTabs"))
+				var tab_box: Rect2 = Rect2(x - half - 4, tab_y - 13, half * 2 + 8, 26)
+				draw_rect(tab_box, get_theme_color("paper", "LibreTabs").lerp(color, 0.12))
+				draw_rect(tab_box, color, false, 1.5, true)
 				text_at(Vector2(x - half, tab_y + (ui_font.get_ascent(text_size(26)) - ui_font.get_descent(text_size(26))) / (2 * scale.y)), fret, 26, color)
 				if projection.right_hand.has(note.id):
 					var role_key: String = "FINGER_%s_MARK" % String(projection.right_hand[note.id]).to_upper()
 					text_at(Vector2(x + half + 5, tab_y - 5), tr(role_key), 12, accent)
-			elif not projection.omitted.has(note.id):
-				text_at(Vector2(x, tab_top + 31), "!", 22, accent)
+			else:
+				text_at(Vector2(x, tab_top + 31), "△" if projection.omitted.has(note.id) else "!", 22, warning)
 	if notation != "staff":
 		for strum: Dictionary in projection.strums:
 			if float(strum.tick) < start or float(strum.tick) >= finish: continue
@@ -164,16 +167,13 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 			draw_line(Vector2(x - 4, first_y), Vector2(x + 4, first_y), accent, 2, true)
 			draw_line(Vector2(x - 4, last_y), Vector2(x + 4, last_y), accent, 2, true)
 			text_at(Vector2(x + 4, first_y + 4), tr("BARRE_MARK"), 12, accent)
-	# Quarter rests are only claimed for completely empty quarter intervals.
+	# Rests are a conservative display projection of empty sixteenth-grid cells.
 	if notation == "tab": return
-	var pulse: float = start
-	while pulse < finish:
-		var occupied: bool = false
-		for note: Dictionary in song.notes:
-			if int(note.part) == part and float(note.start) < pulse + song.division and float(note.end) > pulse:
-				occupied = true
-				break
-		if not occupied:
-			var x: float = music_left + (pulse - start) / (finish - start) * span
-			glyph(Vector2(x - music_font.get_string_size(String.chr(0xe4e5), HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(49 * scale.y)).x / 2, top + 26), 0xe4e5, 49, muted)
-		pulse += song.division
+	for rest: Dictionary in ScoreLayout.rest_segments(song.notes, part, start, finish, song.division):
+		var x: float = music_left + ((float(rest.start) + float(rest.end)) / 2.0 - start) / (finish - start) * span
+		var rest_code: int = int(rest.glyph)
+		var rest_size: int = roundi(49 * scale.y)
+		var half_rest: float = music_font.get_string_size(String.chr(rest_code), HORIZONTAL_ALIGNMENT_LEFT, -1, rest_size).x / 2
+		glyph(Vector2(x - half_rest, top + 26), rest_code, 49, rest_color)
+		if int(rest.dots) > 0:
+			draw_circle(Vector2(x + half_rest + 6, top + 20), 2.5, rest_color, true, -1, true)

@@ -173,6 +173,9 @@ var dark_mode: bool = false
 var appearance_picker: OptionButton
 var paper: PanelContainer
 var reading_tools: HFlowContainer
+var color_legend: HFlowContainer
+var color_legend_swatches: Array[ColorRect] = []
+var color_legend_tokens: Array[String] = ["note_open", "note_first", "note_move", "rest", "warning"]
 var drawer_history: Array[Dictionary] = []
 var drawer_navigation: int = 0
 var menu_back: Button
@@ -453,6 +456,38 @@ func flow(parent: Node) -> HFlowContainer:
 	parent.add_child(row)
 	return row
 
+func build_color_legend(parent: Control) -> void:
+	color_legend = HFlowContainer.new()
+	color_legend.add_theme_constant_override("h_separation", 10)
+	color_legend.add_theme_constant_override("v_separation", 4)
+	color_legend.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	parent.add_child(color_legend)
+	var title: Label = label("COLOR_KEY", 14)
+	title.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	title.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	color_legend.add_child(title)
+	for index: int in range(color_legend_tokens.size()):
+		var chip: HBoxContainer = HBoxContainer.new()
+		chip.add_theme_constant_override("separation", 4)
+		chip.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+		var swatch: ColorRect = ColorRect.new()
+		swatch.custom_minimum_size = Vector2(14, 14)
+		swatch.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		swatch.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		color_legend_swatches.append(swatch)
+		chip.add_child(swatch)
+		var caption: Label = label(["COLOR_OPEN", "COLOR_FIRST", "COLOR_MOVE", "COLOR_REST", "COLOR_UNPLACED"][index], 14)
+		caption.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+		caption.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		chip.add_child(caption)
+		color_legend.add_child(chip)
+	update_color_legend()
+
+func update_color_legend() -> void:
+	if color_legend_swatches.is_empty(): return
+	for index: int in range(color_legend_swatches.size()):
+		color_legend_swatches[index].color = get_theme_color(color_legend_tokens[index], "LibreTabs")
+
 func surface(color: String, padding: int = 16) -> StyleBoxFlat:
 	var box: StyleBoxFlat = StyleBoxFlat.new()
 	box.bg_color = Color(color)
@@ -568,6 +603,7 @@ func build_ui() -> void:
 	menu_column.add_child(drawer_title)
 	menu_column.move_child(drawer_title, 1)
 	build_drawers()
+	build_color_legend(drawers["HELP"] as VBoxContainer)
 	drawers["MENU"].add_child(button("LAST_STATUS", func() -> void:
 		close_menu()
 		if not last_status.is_empty(): status_toast.show_message(tr(last_status))))
@@ -1602,6 +1638,7 @@ func apply_appearance() -> void:
 	song_title.add_theme_font_override("font", UIAppearance.ui_font(font_style, true))
 	RenderingServer.set_default_clear_color(UIAppearance.color("background", dark_mode))
 	host.apply_appearance(dark_mode)
+	update_color_legend()
 	appearance_picker.select(["system", "light", "dark"].find(appearance_mode))
 	drawer.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 16))
 	paper.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 8))
