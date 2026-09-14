@@ -5,7 +5,7 @@ extends Node
 signal progress(page: int, total: int)
 var cancelled: bool = false
 
-func render(song: SongDocument, projection: TabProjection, part: int, plan: Dictionary) -> Array[String]:
+func render(song: SongDocument, projection: TabProjection, part: int, plan: Dictionary, shape_cues: bool = false) -> Array[String]:
 	var images: Array[String] = []
 	var viewport: SubViewport = SubViewport.new()
 	viewport.size = Vector2i(PrintLayout.WIDTH * 2, int(plan.height) * 2)
@@ -41,6 +41,7 @@ func render(song: SongDocument, projection: TabProjection, part: int, plan: Dict
 				tile.song = song
 				tile.part = part
 				tile.projection = projection
+				tile.shape_cues = shape_cues
 				tile.index = row[column]
 				tile.continuous = false
 				tile.notation = plan.notation

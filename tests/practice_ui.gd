@@ -605,6 +605,7 @@ func run() -> void:
 	check(settings.save_scale(2.0) and settings.load_appearance() == "dark", "text size save preserves appearance")
 	check(HostAdapter.validated_scale(INF) == 1.0 and HostAdapter.validated_scale(1.25) == 1.0, "invalid display scales recover without corrupting layout")
 	check(not settings.save_scale(NAN) and not settings.save_scale(1.25) and settings.load_scale() == 2.0, "invalid display scales cannot overwrite a saved choice")
+	check(settings.save_display_choice("shape_cues", "on") and settings.load_display_choice("shape_cues", ["off", "on"], "off") == "on", "shape cues persist through the display adapter")
 	check(settings.save_display_choice("control_position", "left") and settings.load_display_choice("control_position", ["left", "top", "right", "bottom"], "bottom") == "left", "control edge persists through the display adapter")
 	check(settings.save_display_choice("handedness", "left") and settings.load_display_choice("handedness", ["left", "right"], "right") == "left", "handedness persists through the display adapter")
 	check(settings.load_display_choice("control_position", ["top", "right", "bottom"], "bottom") == "bottom", "removed or invalid control choices recover to a safe default")
@@ -623,9 +624,20 @@ func run() -> void:
 	check(app.get("dark_mode") and app.get_theme_color("ink", "LibreTabs") == UIAppearance.color("ink", true), "dark palette applied to app and score")
 	check(score.get_theme_color("paper", "LibreTabs") == UIAppearance.color("paper", true), "engraving inherits dark paper")
 	check(app.get("source_tick") == tick_before and not app.is_processing(), "theme change preserves transport and idle processing")
+	app.call("set_shape_cues", true)
+	check(app.get("shape_cues") and score.shape_cues and app.get("shape_cue_check").button_pressed, "shape-cue setting updates the primary score")
+	for tile: NotationMeasureStack in score.tiles.values():
+		for canvas: MeasureCanvas in tile.canvases:
+			check(canvas.shape_cues, "shape-cue setting reaches staff and tab canvases")
+	app.call("set_shape_cues", false)
+	check(not app.get("shape_cues") and not score.shape_cues, "shape-cue setting can be disabled")
 	for dark: bool in [false, true]:
 		for token: String in ["ink", "muted", "accent"]:
 			check(contrast(UIAppearance.color(token, dark), UIAppearance.color("paper", dark)) >= 4.5, "score text/highlight contrast in both palettes")
+		for token: String in ["note_open", "note_first", "note_move", "rest", "warning"]:
+			check(contrast(UIAppearance.color(token, dark), UIAppearance.color("paper", dark)) >= 4.5, "score cue contrast in both palettes: %s / %s" % [token, dark])
+		check(absf(luminance(UIAppearance.color("note_open", dark)) - luminance(UIAppearance.color("note_first", dark))) >= 0.04, "nearby note groups have luminance separation: open / first / %s" % dark)
+		check(absf(luminance(UIAppearance.color("note_first", dark)) - luminance(UIAppearance.color("note_move", dark))) >= 0.04, "nearby note groups have luminance separation: first / move / %s" % dark)
 		check(contrast(Color.WHITE, UIAppearance.color("primary", dark)) >= 4.5, "play button text contrast")
 		for role: String in ["library", "practice", "sound", "reading"]:
 			for state: String in ["normal", "hover", "pressed", "hover_pressed", "disabled"]:

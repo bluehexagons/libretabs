@@ -31,6 +31,8 @@ var motion_mode: String = "system"
 var reduced_motion: bool = false
 var motion_check: CheckButton
 var motion_note: Label
+var shape_cues: bool = false
+var shape_cue_check: CheckButton
 var font_style: String = "rounded"
 var font_picker: OptionButton
 var control_position: String = "bottom"
@@ -175,6 +177,7 @@ var paper: PanelContainer
 var reading_tools: HFlowContainer
 var color_legend: HFlowContainer
 var color_legend_swatches: Array[ColorRect] = []
+var color_legend_captions: Array[Label] = []
 var color_legend_tokens: Array[String] = ["note_open", "note_first", "note_move", "rest", "warning"]
 var drawer_history: Array[Dictionary] = []
 var drawer_navigation: int = 0
@@ -223,6 +226,7 @@ func _ready() -> void:
 	host.fullscreen_changed.connect(update_fullscreen)
 	host.fullscreen_failed.connect(func() -> void: set_status("FULLSCREEN_UNAVAILABLE"))
 	motion_mode = host.load_display_choice("motion", ["system", "reduced", "full"], "system")
+	shape_cues = host.load_display_choice("shape_cues", ["off", "on"], "off") == "on"
 	font_style = host.load_display_choice("font", ["rounded", "simple"], "rounded")
 	control_position = host.load_display_choice("control_position", ["left", "top", "right", "bottom"], "bottom")
 	handedness = host.load_display_choice("handedness", ["left", "right"], "right")
@@ -479,6 +483,7 @@ func build_color_legend(parent: Control) -> void:
 		var caption: Label = label(["COLOR_OPEN", "COLOR_FIRST", "COLOR_MOVE", "COLOR_REST", "COLOR_UNPLACED"][index], 14)
 		caption.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 		caption.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		color_legend_captions.append(caption)
 		chip.add_child(caption)
 		color_legend.add_child(chip)
 	update_color_legend()
@@ -487,6 +492,11 @@ func update_color_legend() -> void:
 	if color_legend_swatches.is_empty(): return
 	for index: int in range(color_legend_swatches.size()):
 		color_legend_swatches[index].color = get_theme_color(color_legend_tokens[index], "LibreTabs")
+	var keys: Array[String] = ["COLOR_OPEN", "COLOR_FIRST", "COLOR_MOVE", "COLOR_REST", "COLOR_UNPLACED"]
+	if shape_cues:
+		keys = ["COLOR_OPEN_SHAPE", "COLOR_FIRST_SHAPE", "COLOR_MOVE_SHAPE", "COLOR_REST", "COLOR_UNPLACED"]
+	for index: int in range(mini(color_legend_captions.size(), keys.size())):
+		color_legend_captions[index].text = tr(keys[index])
 
 func surface(color: String, padding: int = 16) -> StyleBoxFlat:
 	var box: StyleBoxFlat = StyleBoxFlat.new()
@@ -618,6 +628,7 @@ func build_ui() -> void:
 	score_frame = ScoreFrame.new()
 	paper.add_child(score_frame)
 	score = ScoreView.new()
+	score.shape_cues = shape_cues
 	score.set_notation_rows(notation_rows)
 	score.seek_requested.connect(seek_tick)
 	score.page_turn_requested.connect(turn_page)
@@ -1075,6 +1086,11 @@ func build_drawers() -> void:
 		apply_appearance()
 		if not host.save_display_choice("font", font_style): set_status("STORAGE_SESSION"))
 	display.add_child(font_picker)
+	shape_cue_check = check("NOTE_SHAPE_CUES", shape_cues)
+	shape_cue_check.tooltip_text = tr("NOTE_SHAPE_CUES_HELP")
+	shape_cue_check.toggled.connect(set_shape_cues)
+	display.add_child(shape_cue_check)
+	display.add_child(label("NOTE_SHAPE_CUES_HELP", 18))
 	display.add_child(label("CONTROL_POSITION"))
 	control_position_picker = OptionButton.new()
 	control_position_picker.custom_minimum_size.y = 56
@@ -2406,7 +2422,7 @@ func report_state() -> void:
 	if song == null: return
 	if host.trace_enabled():
 		var evidence: Dictionary = audio.metrics()
-		evidence.merge({"tv_active": tv_active, "tv_tucked": tv_tucked, "tv_zoom": tv_zoom, "status_visible": status_toast.visible, "tv_systems": score_frame.visible_systems(), "music_lines": score_frame.music_lines, "note_spacing": score_frame.note_spacing, "staff_height": score_frame.staff_height, "score_height": score.drawing_height(), "fitted_rows": score.fitted_rows, "fullscreen": host.is_fullscreen(), "follow_pages": score.follow_pages, "upcoming_tick": score.upcoming_tick, "count_beat": int(count_badge.text) if count_badge.visible else 0, "capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "font_style": font_style, "control_position": control_position, "handedness": handedness, "controls_on_side": controls_on_side, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "notation_rows": notation_rows, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "arrangement_style": projection.style, "placed": projection.placed, "eligible": projection.eligible, "omitted": projection.omitted.size(), "mute_marks": projection.mute_marks, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
+		evidence.merge({"tv_active": tv_active, "tv_tucked": tv_tucked, "tv_zoom": tv_zoom, "status_visible": status_toast.visible, "tv_systems": score_frame.visible_systems(), "music_lines": score_frame.music_lines, "note_spacing": score_frame.note_spacing, "staff_height": score_frame.staff_height, "score_height": score.drawing_height(), "fitted_rows": score.fitted_rows, "fullscreen": host.is_fullscreen(), "follow_pages": score.follow_pages, "upcoming_tick": score.upcoming_tick, "count_beat": int(count_badge.text) if count_badge.visible else 0, "capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "shape_cues": shape_cues, "font_style": font_style, "control_position": control_position, "handedness": handedness, "controls_on_side": controls_on_side, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "notation_rows": notation_rows, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "arrangement_style": projection.style, "placed": projection.placed, "eligible": projection.eligible, "omitted": projection.omitted.size(), "mute_marks": projection.mute_marks, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
 		host.report(evidence)
 	offline.text = tr("OFFLINE_READY") if host.offline_ready() else tr("OFFLINE_PENDING")
 	if host.offline_ready() and not host.trace_enabled(): idle_timer.stop()
@@ -2532,6 +2548,15 @@ func apply_motion() -> void:
 		capture_view.score.invalidate()
 	responsive()
 
+func set_shape_cues(enabled: bool) -> void:
+	shape_cues = enabled
+	if shape_cue_check != null: shape_cue_check.set_pressed_no_signal(enabled)
+	if score_frame != null: score_frame.set_shape_cues(enabled)
+	if capture_active and capture_view != null: capture_view.score.set_shape_cues(enabled)
+	update_color_legend()
+	if persist_preferences and host != null and not host.save_display_choice("shape_cues", "on" if enabled else "off"):
+		set_status("STORAGE_SESSION")
+
 func apply_button_motion(node: Node) -> void:
 	if node is FriendlyButton:
 		node.reduced_motion = reduced_motion
@@ -2603,7 +2628,7 @@ func prepare_print() -> void:
 	add_child(printer)
 	printer.progress.connect(func(page: int, total: int) -> void: print_status.text = tr("PRINT_PROGRESS") % [page, total])
 	print_status.text = tr("PRINT_PROGRESS") % [0, plan.pages.size()]
-	var images: Array[String] = await printer.render(song, projection, part, plan)
+	var images: Array[String] = await printer.render(song, projection, part, plan, shape_cues)
 	var cancelled: bool = printer.cancelled
 	printer.queue_free()
 	printer = null

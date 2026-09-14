@@ -52,6 +52,7 @@ func configure(source: ScoreView, song_title: String, dark: bool) -> void:
 	heading.visible = show_title
 	card.add_theme_stylebox_override("panel", UIAppearance.box(UIAppearance.color("paper", dark), 8))
 	score.reduced_motion = source.reduced_motion
+	score.set_shape_cues(source.shape_cues)
 	score.set_view("scroll", symbols)
 	score.set_document(source.song, source.part, source.projection)
 	score.update_tick(source.current_tick)

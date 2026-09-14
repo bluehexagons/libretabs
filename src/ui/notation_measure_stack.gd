@@ -9,6 +9,7 @@ var index: int = 0
 var continuous: bool = true
 var notation: String = "both"
 var notation_rows: Array[Dictionary] = []
+var shape_cues: bool = false
 var ui_font: Font = ThemeDB.fallback_font
 var music_font: Font = preload("res://assets/fonts/Bravura.otf")
 var canvases: Array[MeasureCanvas] = []
@@ -36,6 +37,7 @@ func add_canvas(type: String, top: float, height: float, native_height: float, s
 	canvas.index = index
 	canvas.continuous = continuous
 	canvas.notation = type
+	canvas.shape_cues = shape_cues
 	canvas.tab_y_offset = -48 if type == "tab" and not notation_rows.is_empty() else 0
 	canvas.show_measure_title = show_title
 	canvas.ui_font = ui_font

@@ -7,6 +7,7 @@ var muted: Color = Color("79849b")
 var accent: Color = Color("4665d8")
 var rest_color: Color = Color("756782")
 var warning: Color = Color("b3434c")
+var shape_cues: bool = false
 var music_font: Font = preload("res://assets/fonts/Bravura.otf")
 var ui_font: Font = ThemeDB.fallback_font
 var song: SongDocument
@@ -40,6 +41,20 @@ func glyph(at: Vector2, code: int, font_size: int = 32, color: Color = Color(-1,
 	draw_set_transform(at, 0, Vector2(1, 1 / scale.y))
 	draw_string(music_font, Vector2.ZERO, String.chr(code), HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(font_size * scale.y), ink if color.r < 0 else color)
 	draw_set_transform(Vector2.ZERO)
+
+func draw_shape_cue(center: Vector2, token: String, color: Color, radius: float = 4.5) -> void:
+	# These small outline badges sit beside the notation, preserving the
+	# conventional notehead and tab number while adding a non-color cue.
+	if token == "note_open":
+		draw_arc(center, radius, 0, TAU, 16, color, 1.5, true)
+		return
+	var points: PackedVector2Array
+	if token == "note_first":
+		points = PackedVector2Array([center + Vector2(0, -radius), center + Vector2(radius, radius), center + Vector2(-radius, radius)])
+	else:
+		points = PackedVector2Array([center + Vector2(0, -radius), center + Vector2(radius, 0), center + Vector2(0, radius), center + Vector2(-radius, 0)])
+	points.append(points[0])
+	draw_polyline(points, color, 1.5, true)
 
 func draw_measure(index: int, origin: Vector2, width: float) -> void:
 	var bar: Dictionary = song.measures[index]
@@ -124,6 +139,8 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 					draw_circle(Vector2(x + 13, y - 2), 1.8, color)
 				if float(note.end) > finish or float(note.start) < start:
 					draw_arc(Vector2(x + 13, y + 4), 12, 0.2, PI - 0.2, 20, color, 1.5, true)
+				if shape_cues:
+					draw_shape_cue(Vector2(x + half_head + 8, y - 18), ScoreLayout.placement_color_token(projection, note), color)
 			else:
 				text_at(Vector2(x, top + 16), tr("PITCH_MARKER") % int(note.pitch), 11, accent)
 		if notation != "staff":
@@ -136,6 +153,8 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 				draw_rect(tab_box, get_theme_color("paper", "LibreTabs").lerp(color, 0.12))
 				draw_rect(tab_box, color, false, 1.5, true)
 				text_at(Vector2(x - half, tab_y + (ui_font.get_ascent(text_size(26)) - ui_font.get_descent(text_size(26))) / (2 * scale.y)), fret, 26, color)
+				if shape_cues:
+					draw_shape_cue(Vector2(tab_box.end.x + 6, tab_box.position.y + 4), ScoreLayout.placement_color_token(projection, note), color, 4.0)
 				if projection.right_hand.has(note.id):
 					var role_key: String = "FINGER_%s_MARK" % String(projection.right_hand[note.id]).to_upper()
 					text_at(Vector2(x + half + 5, tab_y - 5), tr(role_key), 12, accent)

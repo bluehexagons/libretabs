@@ -23,6 +23,10 @@ func fit_height(available: float) -> void:
 	custom_minimum_size.y = maxf(48, available)
 	arrange.call_deferred()
 
+func set_shape_cues(enabled: bool) -> void:
+	if score != null: score.set_shape_cues(enabled)
+	for next: ScoreView in continuations: next.set_shape_cues(enabled)
+
 func arrange() -> void:
 	if score == null or not is_instance_valid(score) or arranging: return
 	arranging = true
@@ -76,6 +80,7 @@ func update_overview() -> void:
 		next.set_note_spacing(note_spacing)
 		next.set_fitted_rows(score.fitted_rows)
 		next.reduced_motion = score.reduced_motion
+		next.set_shape_cues(score.shape_cues)
 		next.effects_playing = score.effects_playing
 		next.page_index = mini(score.page_index + index + 1, next.pages() - 1)
 		next.visible = score.page_index + index + 1 < next.pages()

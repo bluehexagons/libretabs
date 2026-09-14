@@ -25,6 +25,7 @@ var current_tick: float = 0.0
 var measure_index: int = 0
 var mode: String = "scroll"
 var notation: String = "both"
+var shape_cues: bool = false
 var notation_rows: Array[Dictionary] = []
 var fitted_rows: Array[Dictionary] = []
 var note_spacing: float = 1.0
@@ -104,6 +105,16 @@ func set_notation_rows(rows: Array) -> void:
 	else: notation_rows.assign(NotationRows.clean(rows))
 	notation = "both" if notation_rows.is_empty() else "custom"
 	invalidate()
+
+func set_shape_cues(enabled: bool) -> void:
+	if shape_cues == enabled: return
+	shape_cues = enabled
+	for tile: NotationMeasureStack in tiles.values():
+		tile.shape_cues = enabled
+		for canvas: MeasureCanvas in tile.canvases:
+			canvas.shape_cues = enabled
+			canvas.queue_redraw()
+	if cursor != null: cursor.queue_redraw()
 
 func content_height() -> float:
 	return ScoreLayout.row_height(notation) if notation_rows.is_empty() else NotationRows.total_height(notation_rows)
@@ -223,6 +234,7 @@ func refresh() -> void:
 			tile.continuous = true
 			tile.notation = drawing_notation()
 			tile.notation_rows = drawing_rows()
+			tile.shape_cues = shape_cues
 			tile.ui_font = ui_font
 			tile.music_font = music_font
 			tile.mouse_filter = Control.MOUSE_FILTER_IGNORE
