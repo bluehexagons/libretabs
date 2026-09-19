@@ -28,6 +28,11 @@ one- or two-finger horizontal swipes and a horizontal mouse wheel. Page gestures
 never seek audio; a single tap on the music still seeks. Help describes these
 optional shortcuts alongside the visible page arrows.
 
+When several music lines fit, Follow playback retains preceding lines and balances context around the
+active line instead of moving it straight to the top. A still-sounding note keeps
+its earlier line visible when space permits. The view stays stationary within a
+line and keeps the final screen filled with preceding music.
+
 The header's Theater button toggles denser reading within the same
 player. It uses the available width and stacks consecutive rows of music while
 retaining the usual controls, information and appearance. Toggle it off to

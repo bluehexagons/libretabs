@@ -1526,6 +1526,7 @@ func change_view() -> void:
 	score.follow_pages = view_picker.selected == 2
 	score.set_view("scroll" if view_picker.selected == 0 else "pages", ["both", "tab", "staff"][notation_picker.selected])
 	if score.follow_pages: score.page_to_playback()
+	score_frame.update_overview()
 	update_page_controls()
 	scroll.scroll_vertical = 0
 
@@ -1684,6 +1685,7 @@ func toggle_page_follow() -> void:
 	score.follow_pages = not score.follow_pages
 	view_picker.select(2 if score.follow_pages else 1)
 	if score.follow_pages: score.page_to_playback()
+	score_frame.update_overview()
 	update_page_controls()
 
 func update_page_controls() -> void:

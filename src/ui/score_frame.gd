@@ -50,6 +50,7 @@ func arrange() -> void:
 	score.scale = Vector2.ONE * factor
 	score.size = Vector2(maxf(240, size.x / factor), height)
 	score.position = Vector2.ZERO
+	score.set_follow_line_count(system_count)
 	while continuations.size() < system_count - 1:
 		var next: ScoreView = ScoreView.new()
 		add_child(next)

@@ -11,6 +11,9 @@ const PIANO_LAST_PITCH: int = 108
 var reduced_motion: bool = false
 var presentation: bool = false
 var follow_pages: bool = false
+var follow_line_count: int = 1
+var last_follow_page: int = -1
+var oldest_sounding_tick: float = -1
 var effects_playing: bool = false
 var page_starts: Array[int] = [0]
 var geometry_width: float = -1
@@ -78,6 +81,8 @@ func set_document(document: SongDocument, selection: int, tab: TabProjection) ->
 	projection = tab
 	page_index = 0
 	page_capacity = 0
+	last_follow_page = -1
+	oldest_sounding_tick = -1
 	geometry_width = -1
 	layout.build(song)
 	invalidate()
@@ -96,7 +101,7 @@ func set_view(value: String, symbols: String) -> void:
 	var enter_pages: bool = mode != "pages" and value == "pages"
 	mode = value
 	notation = "custom" if not notation_rows.is_empty() else ("both" if mode == "scroll" and not presentation else symbols)
-	if enter_pages: page_index = page_for_measure(measure_index)
+	if enter_pages: update_follow_window(true)
 	invalidate()
 
 func set_notation_rows(rows: Array) -> void:
@@ -161,22 +166,49 @@ func page_for_measure(index: int) -> int:
 
 func turn_page(direction: int) -> void:
 	follow_pages = false
+	last_follow_page = -1
 	page_index = clampi(page_index + direction, 0, pages() - 1)
 	refresh()
 
+func set_follow_line_count(count: int) -> void:
+	count = maxi(1, count)
+	if follow_line_count == count: return
+	follow_line_count = count
+	last_follow_page = -1
+	if follow_pages: page_to_playback()
+
+func update_follow_window(force: bool = false) -> void:
+	var active_page: int = page_for_measure(measure_index)
+	if not force and active_page == last_follow_page: return
+	last_follow_page = active_page
+	# The primary view is the first line of a shared screen, not necessarily
+	# the active line. Balance preceding and upcoming music and fill the end.
+	var preceding: int = follow_line_count / 2
+	var first: int = active_page - preceding
+	if oldest_sounding_tick >= 0 and song != null:
+		first = mini(first, page_for_measure(song.measure_at(oldest_sounding_tick)))
+	page_index = clampi(first, maxi(0, active_page - follow_line_count + 1), maxi(0, pages() - follow_line_count))
+
 func page_to_playback() -> void:
-	page_index = page_for_measure(measure_index)
+	update_follow_window(true)
 	refresh()
 
 func update_tick(tick: float) -> void:
+	var moved_back: bool = tick < current_tick
 	current_tick = tick
 	measure_index = song.measure_at(tick) if song != null else 0
 	upcoming_tick = -1
+	oldest_sounding_tick = -1
 	if song != null:
 		for note: Dictionary in song.notes:
-			if int(note.part) == part and float(note.start) > tick and (upcoming_tick < 0 or float(note.start) < upcoming_tick):
+			if int(note.part) != part: continue
+			if float(note.start) > tick and (upcoming_tick < 0 or float(note.start) < upcoming_tick):
 				upcoming_tick = float(note.start)
-	if follow_pages: page_index = page_for_measure(measure_index)
+			if float(note.start) <= tick and float(note.end) > tick and (oldest_sounding_tick < 0 or float(note.start) < oldest_sounding_tick):
+				oldest_sounding_tick = float(note.start)
+	# Keep the screen stationary within a line, including when a held note
+	# releases. Reconsider context at the next line boundary or explicit return.
+	if follow_pages: update_follow_window(moved_back)
 	refresh()
 
 func playhead_x() -> float:
@@ -199,7 +231,8 @@ func rebuild_geometry() -> void:
 			page_starts.append(index)
 			used = 0
 		used += layout.widths[index]
-	page_index = page_for_measure(measure_index if follow_pages else anchor)
+	if follow_pages: update_follow_window(true)
+	else: page_index = page_for_measure(anchor)
 
 func refresh() -> void:
 	if song == null or strip == null: return
