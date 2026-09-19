@@ -7,6 +7,8 @@ var capture_active: bool = false
 var tv_active: bool = false
 var tv_tucked: bool = false
 var tv_was_playing: bool = false
+var tv_controls_layer: BoxContainer
+var tv_controls_tween: Tween
 var tv_tuck_timer: Timer
 var tv_edge: PanelContainer
 var tv_edge_fullscreen: Button
@@ -273,8 +275,10 @@ func _ready() -> void:
 	idle_timer.start()
 	pass_scroll_input(root_box)
 	pass_scroll_input(drawer)
-	for container: Control in [content_margin, header_margin, dock_margin]:
-		container.minimum_size_changed.connect(update_main_scroll)
+	content_margin.minimum_size_changed.connect(update_main_scroll)
+	for container: Control in [header_margin, dock_margin]:
+		container.minimum_size_changed.connect(func() -> void:
+			if not tv_active: update_main_scroll())
 	load_library_item(0)
 
 func pass_scroll_input(node: Node) -> void:
@@ -307,6 +311,16 @@ func place_status() -> void:
 	status_toast.position = Vector2((size.x - status_toast.size.x) / 2, 16)
 
 func build_tv_edge() -> void:
+	tv_controls_layer = BoxContainer.new()
+	tv_controls_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(tv_controls_layer)
+	move_child(tv_controls_layer, menu_overlay.get_index())
+	tv_controls_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var tv_controls_space: Control = Control.new()
+	tv_controls_space.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tv_controls_space.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	tv_controls_space.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	tv_controls_layer.add_child(tv_controls_space)
 	tv_tuck_timer = Timer.new()
 	tv_tuck_timer.one_shot = true
 	tv_tuck_timer.timeout.connect(tuck_tv_controls)
@@ -331,22 +345,20 @@ func build_tv_edge() -> void:
 	column.add_child(fullscreen)
 	tv_edge.hide()
 
-func tuck_tv_controls() -> void:
+func tuck_tv_controls(immediate: bool = false) -> void:
 	if not tv_active or theater_keep_controls or not audio.playing_practice or menu_overlay.visible or capture_active: return
-	if main_speed.pointer_active or Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) or get_viewport().gui_get_focus_owner() is LineEdit:
+	if not immediate and (main_speed.pointer_active or Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) or get_viewport().gui_get_focus_owner() is LineEdit):
 		tv_tuck_timer.start(3)
 		return
 	for picker: OptionButton in quick_music_layout:
 		if picker.get_popup().visible:
 			tv_tuck_timer.start(3)
 			return
-	tv_tucked = true
-	responsive()
+	set_tv_tucked(true)
 	tv_edge_pause.grab_focus()
 
 func reveal_tv_controls() -> void:
-	tv_tucked = false
-	responsive()
+	set_tv_tucked(false)
 	menu_button.grab_focus()
 	if tv_active and not theater_keep_controls and audio.playing_practice: tv_tuck_timer.start(8)
 
@@ -355,11 +367,39 @@ func update_tv_playback() -> void:
 	var playing: bool = tv_active and not theater_keep_controls and audio.playing_practice and not menu_overlay.visible and not capture_active
 	if not playing:
 		tv_tuck_timer.stop()
-		if tv_tucked:
-			tv_tucked = false
-			responsive.call_deferred()
-	elif not tv_was_playing: tv_tuck_timer.start(3)
+		set_tv_tucked(false)
+	var just_started: bool = playing and not tv_was_playing
 	tv_was_playing = playing
+	if just_started: tuck_tv_controls(true)
+
+func set_tv_tucked(tucked: bool) -> void:
+	if tv_tucked == tucked: return
+	tv_tucked = tucked
+	if tv_controls_tween != null: tv_controls_tween.kill()
+	var controls: Array[Control] = [header_margin]
+	if dock_margin.get_parent() != header: controls.append(dock_margin)
+	else:
+		dock_margin.show()
+		dock_margin.modulate.a = 1.0
+		dock_margin.mouse_behavior_recursive = Control.MOUSE_BEHAVIOR_INHERITED
+		dock_margin.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_INHERITED
+	tv_edge.visible = tucked and not menu_overlay.visible
+	for control: Control in controls:
+		control.show()
+		# Ignore the fading controls immediately, including keyboard focus.
+		control.mouse_behavior_recursive = Control.MOUSE_BEHAVIOR_DISABLED if tucked else Control.MOUSE_BEHAVIOR_INHERITED
+		control.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_DISABLED if tucked else Control.FOCUS_BEHAVIOR_INHERITED
+	if reduced_motion:
+		for control: Control in controls:
+			control.modulate.a = 0.0 if tucked else 1.0
+			control.visible = not tucked
+		return
+	tv_controls_tween = create_tween().set_parallel(true)
+	for control: Control in controls:
+		tv_controls_tween.tween_property(control, "modulate:a", 0.0 if tucked else 1.0, 0.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	if tucked:
+		tv_controls_tween.chain().tween_callback(func() -> void:
+			for control: Control in controls: control.hide())
 
 func theater_pointer_options(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_RIGHT:
@@ -535,6 +575,8 @@ func build_ui() -> void:
 	margin.add_child(panel)
 	header = BoxContainer.new()
 	header_margin = MarginContainer.new()
+	header_margin.draw.connect(func() -> void:
+		if tv_active: header_margin.draw_style_box(UIAppearance.panel_style(dark_mode, 8), Rect2(Vector2.ZERO, header_margin.size)))
 	root_box.add_child(header_margin)
 	root_box.move_child(header_margin, 0)
 	header_margin.add_child(header)
@@ -1266,6 +1308,8 @@ func enter_capture() -> void:
 	capture_view.configure(score, title, dark_mode)
 	capture_active = true
 	root_box.hide()
+	tv_controls_layer.hide()
+	tv_edge.hide()
 	capture_view.show()
 	apply_capture_background()
 	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
@@ -1275,6 +1319,7 @@ func leave_capture() -> void:
 	capture_active = false
 	capture_view.hide()
 	root_box.show()
+	tv_controls_layer.show()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	apply_capture_background()
 	responsive()
@@ -1682,6 +1727,9 @@ func apply_appearance() -> void:
 func apply_scale(factor: float) -> void:
 	theme.default_font_size = roundi(20 * factor)
 	scale_labels(root_box, factor)
+	if tv_active:
+		scale_labels(header_margin, factor)
+		if dock_margin.get_parent() != header: scale_labels(dock_margin, factor)
 	scale_labels(menu_overlay, factor)
 	scale_picker.select(0 if factor < 1.5 else (1 if factor < 2.0 else 2))
 	responsive()
@@ -1694,6 +1742,8 @@ func reveal_scale_choice() -> void:
 	if scale_picker.is_visible_in_tree(): menu_scroll.ensure_control_visible(scale_picker)
 
 func responsive() -> void:
+	if tv_controls_tween != null: tv_controls_tween.kill()
+	header_margin.queue_redraw()
 	compact = size.y < 780 or (theme.default_font_size >= 30 and size.y < 1000)
 	var short_screen: bool = size.x > size.y and size.y < 500 and size.x >= 480
 	landscape = short_screen
@@ -1702,7 +1752,6 @@ func responsive() -> void:
 		effective_position = handedness
 	elif size.x < 600 and size.y >= size.x and control_position in ["left", "right"]:
 		effective_position = "bottom"
-	if tv_tucked: effective_position = "bottom"
 	var side_dock: bool = effective_position in ["left", "right"]
 	controls_on_side = side_dock
 	tight_controls = not side_dock and size.y < 440
@@ -1780,11 +1829,13 @@ func responsive() -> void:
 	for caption: Label in tv_zoom_captions:
 		if caption.get_parent() == tv_inline_zoom: caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART if tv_inline_zoom.vertical else TextServer.AUTOWRAP_OFF
 	tv_inline_zoom.visible = tv_active
-	reading_tools.visible = not tv_tucked and not landscape and (tv_active or not compact)
+	reading_tools.visible = not landscape and (tv_active or not compact)
 	for picker: OptionButton in quick_music_layout: picker.visible = size.x >= (600 if picker == quick_music_layout[0] else 1200) and theme.default_font_size < 30
 	place_status()
 	for side: String in ["left", "right", "top", "bottom"]:
 		content_margin.add_theme_constant_override("margin_" + side, 8 if side_dock else ((16 if tv_active else maxi(16, int((size.x - 1280) / 2))) if side in ["left", "right"] else (4 if compact else 10)))
+	if tv_active:
+		for edge: String in ["top", "bottom"]: content_margin.add_theme_constant_override("margin_" + edge, 0)
 	panel.add_theme_constant_override("separation", 4 if landscape or compact else 10)
 	cue.custom_minimum_size.x = minf(size.x - 64, 200 * theme.default_font_size / 20.0)
 	status.custom_minimum_size.y = 0
@@ -1798,30 +1849,37 @@ func responsive() -> void:
 	var small_menu_header: bool = theme.default_font_size >= 30 and (size.x < 600 or size.y < 500)
 	menu_back.text = "" if small_menu_header else tr("MENU_BACK")
 	menu_close.text = "" if small_menu_header else tr("CLOSE")
-	header_margin.visible = not tv_tucked
-	dock_margin.visible = not tv_tucked
+	for control: Control in [header_margin, dock_margin]:
+		control.visible = not tv_tucked
+		control.modulate.a = 0.0 if tv_tucked else 1.0
+		control.mouse_behavior_recursive = Control.MOUSE_BEHAVIOR_DISABLED if tv_tucked else Control.MOUSE_BEHAVIOR_INHERITED
+		control.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_DISABLED if tv_tucked else Control.FOCUS_BEHAVIOR_INHERITED
 	if tv_edge != null:
 		tv_edge.visible = tv_tucked and not menu_overlay.visible
 		tv_edge.size = Vector2(88, 0)
 		tv_edge.position = Vector2(8 if handedness == "left" else size.x - 96, 8)
-	if tv_tucked:
-		content_margin.add_theme_constant_override("margin_" + ("left" if handedness == "left" else "right"), 104)
 	adapt_flow(menu_overlay)
 	adapt_flow(root_box)
+	if tv_active:
+		adapt_flow(header_margin)
+		if dock_margin.get_parent() != header: adapt_flow(dock_margin)
 	if score != null: update_page_controls()
 	if fitting_layout: fit_pending = true
 	else: update_main_scroll.call_deferred()
 
 func apply_control_layout(position: String) -> void:
 	var side_dock: bool = position in ["left", "right"]
-	var dock_parent: Node = header if side_dock else root_box
+	var header_parent: Node = tv_controls_layer if tv_active else root_box
+	if header_margin.get_parent() != header_parent: header_margin.reparent(header_parent)
+	if tv_controls_layer != null: tv_controls_layer.vertical = not side_dock
+	var dock_parent: Node = header if side_dock else header_parent
 	if dock_margin.get_parent() != dock_parent: dock_margin.reparent(dock_parent)
 	if side_dock:
-		root_box.move_child(header_margin, 0 if position == "left" else root_box.get_child_count() - 1)
-		header.move_child(dock_margin, 0 if handedness == "left" else header.get_child_count() - 1)
+		header_parent.move_child(header_margin, 0 if position == "left" else header_parent.get_child_count() - 1)
 	else:
-		root_box.move_child(header_margin, 0)
-		root_box.move_child(dock_margin, 1 if position == "top" else root_box.get_child_count() - 1)
+		header_parent.move_child(header_margin, 0)
+		header_parent.move_child(dock_margin, 1 if position == "top" else header_parent.get_child_count() - 1)
+	if side_dock: header.move_child(dock_margin, 0 if handedness == "left" else header.get_child_count() - 1)
 	# Hand preference changes reach order without changing text direction.
 	header.move_child(brand_label, header.get_child_count() - 1 if handedness == "left" else 0)
 	set_child_order(header_actions, [menu_button, fullscreen_button, tv_button, import_button, songs_button] if handedness == "left" else [songs_button, import_button, tv_button, fullscreen_button, menu_button])
@@ -1851,7 +1909,7 @@ func update_main_scroll() -> void:
 	for caption: Label in tv_zoom_captions:
 		if caption.get_parent() == tv_inline_zoom: caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART if tv_inline_zoom.vertical else TextServer.AUTOWRAP_OFF
 	tv_inline_zoom.visible = tv_active
-	reading_tools.visible = not tv_tucked and not landscape and (tv_active or not compact)
+	reading_tools.visible = not landscape and (tv_active or not compact)
 	for picker: OptionButton in quick_music_layout: picker.visible = size.x >= (600 if picker == quick_music_layout[0] else 1200) and theme.default_font_size < 30
 	update_page_controls()
 	score_frame.fit_height(96)
@@ -1895,7 +1953,7 @@ func wait_for_layout_stability(max_frames: int = 8) -> void:
 
 func content_height_budget() -> float:
 	if controls_on_side: return size.y
-	return size.y if tv_tucked else maxf(0, size.y - header_margin.get_combined_minimum_size().y - dock_margin.get_combined_minimum_size().y)
+	return size.y if tv_active else maxf(0, size.y - header_margin.get_combined_minimum_size().y - dock_margin.get_combined_minimum_size().y)
 
 func adapt_flow(node: Node) -> void:
 	if node != page_navigation and (node is HFlowContainer or (node is BoxContainer and not node.vertical)):

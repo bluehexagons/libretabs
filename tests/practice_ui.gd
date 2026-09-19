@@ -853,13 +853,23 @@ func run() -> void:
 	for _frame: int in range(24): await process_frame
 	check(score.scale.x > small_zoom and score.tiles.size() < small_bars, "TV zoom changes readable music size and how much fits")
 	app.call("change_tv_zoom", 65)
-	app.get("count_check").button_pressed = false
+	for _frame: int in range(35): await process_frame
+	var theater_rect: Rect2 = app.get("score_frame").get_global_rect()
+	app.get("count_check").button_pressed = true
 	app.call("toggle_play")
-	await process_frame
+	check(app.get("tv_tucked") and player.audible_frame() < player.transport.count_frames, "Theater tucks immediately on Play during the count-in")
+	check(app.get("tv_controls_tween").is_running(), "Theater controls animate in full motion")
+	await create_timer(0.08).timeout
+	check(app.get("score_frame").get_global_rect() == theater_rect, "score stays fixed during the fade")
+	await create_timer(0.22).timeout
+	check(app.get("score_frame").get_global_rect() == theater_rect, "tucking floating controls preserves score geometry")
+	app.call("reveal_tv_controls")
+	await create_timer(0.3).timeout
+	check(not app.get("tv_tucked") and app.get("score_frame").get_global_rect() == theater_rect, "revealing controls preserves score geometry")
 	app.call("tuck_tv_controls")
-	for _frame: int in range(24): await process_frame
+	await create_timer(0.3).timeout
 	check(app.get("tv_tucked") and app.get("tv_edge_pause").is_visible_in_tree(), "TV playback leaves a reachable edge Pause")
-	check(not app.get("dock_margin").visible and not app.get("header_margin").visible, "TV playback reclaims header and dock space")
+	check(not app.get("dock_margin").visible and not app.get("header_margin").visible, "TV floating header and dock finish fading out")
 	app.get("tv_edge_pause").pressed.emit()
 	for _frame: int in range(24): await process_frame
 	check(not player.playing_practice and not app.get("tv_tucked") and app.get("play_button").is_visible_in_tree(), "edge Pause stops shared transport and restores controls")
@@ -867,7 +877,7 @@ func run() -> void:
 	app.call("change_tv_zoom", 65)
 	app.call("seek_tick", 0.0)
 	app.call("start", false)
-	app.get("play_button").grab_focus()
+	app.get("tv_edge_pause").grab_focus()
 	app.call("tuck_tv_controls")
 	for _frame: int in range(35): await process_frame
 	check(app.get("score_frame").visible_systems() >= 2, "landscape mirroring fits multiple complete music lines during playback")
@@ -889,7 +899,7 @@ func run() -> void:
 	for _frame: int in range(24): await process_frame
 	check(not app.get("tv_tucked") and app.get("play_button").is_visible_in_tree(), "keeping controls visible prevents Theater auto-tuck")
 	app.call("set_theater_controls", false)
-	app.get("play_button").grab_focus()
+	app.get("tv_edge_pause").grab_focus()
 	app.call("tuck_tv_controls")
 	for _frame: int in range(24): await process_frame
 	check(app.get("tv_tucked"), "automatic controls can be restored during playback")
@@ -897,6 +907,15 @@ func run() -> void:
 	for _frame: int in range(24): await process_frame
 	check(not app.get("tv_tucked") and player.playing_practice, "pinning controls reveals them without pausing")
 	app.call("pause")
+	app.set("motion_mode", "reduced")
+	app.call("apply_motion")
+	app.call("set_theater_controls", false)
+	app.call("start", false)
+	check(app.get("tv_tucked") and not app.get("header_margin").visible, "reduced motion tucks immediately without a fade")
+	app.call("pause")
+	check(app.get("header_margin").visible and app.get("header_margin").modulate.a == 1.0, "reduced motion restores controls immediately")
+	app.set("motion_mode", "full")
+	app.call("apply_motion")
 	var options_event: InputEventMouseButton = InputEventMouseButton.new()
 	options_event.button_index = MOUSE_BUTTON_RIGHT
 	options_event.pressed = true
