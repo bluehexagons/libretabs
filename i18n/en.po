@@ -800,7 +800,7 @@ msgid "WELCOME_STARTUP_HELP"
 msgstr "Open Menu → Quick start any time to return here or turn startup help back on."
 
 msgid "PLAYER_SHORTCUTS"
-msgstr "Space always plays or pauses while a menu is closed. Left and Right move by measure, or turn a reading page. Focus the position scrubber for beat-by-beat Arrow keys, Page Up/Down by measure, and Home/End. Escape closes a menu or capture view. F8 toggles capture view. F9 toggles Theater. Tab moves between controls. Swipe across a manual reading page to turn it. Piano keys are listed below."
+msgstr "Space always plays or pauses while a menu is closed. Left and Right move by measure, or turn a reading page. Focus the position scrubber for beat-by-beat Arrow keys, Page Up/Down by measure, and Home/End. Escape closes a menu or capture view. F8 toggles capture view. F9 toggles Theater. F10 shows Theater controls without pausing. Tab moves between controls. Swipe across a manual reading page to turn it. Piano keys are listed below."
 
 msgid "TIP_MENU"
 msgstr "Open music, playback, printing and appearance options."
@@ -1171,6 +1171,9 @@ msgstr "Calibrate the music for your screen and viewing distance. Smaller zoom f
 msgid "SHOW_CONTROLS"
 msgstr "Show controls"
 
+msgid "THEATER_REVEAL_TIP"
+msgstr "Show playback controls without pausing (F10). Controls tuck away again after eight seconds."
+
 msgid "LAST_STATUS"
 msgstr "Show latest message"
 
@@ -1184,7 +1187,7 @@ msgid "THEATER_KEEP_CONTROLS"
 msgstr "Keep controls visible while playing"
 
 msgid "THEATER_CONTROLS_HELP"
-msgstr "Keep the full playback controls on screen for frequent adjustments. With this off, controls tuck into the edge after three seconds; Pause stays visible and Show controls brings the full controls back."
+msgstr "Keep the playback controls on screen for frequent adjustments. With this off, controls tuck into the edge as soon as you press Play. The count-in beats and Pause stay visible. Show controls or F10 brings the controls back without pausing."
 
 msgid "THEATER_ENTER_TIP"
 msgstr "Enter Theater for more music across your screen (F9). Right-click for Theater settings."

@@ -834,7 +834,7 @@ func run() -> void:
 		check(app.get("root_box").size.y <= viewport.y + 1, "dense player settles after overlapping resize requests: %s" % viewport)
 		check(app.get("play_button").get_global_rect().end.y <= viewport.y, "dense player keeps Play reachable: %s" % viewport)
 		if viewport.x == 390:
-			check(app.get("play_button").size.x > app.get("speed_control").size.x and app.get("play_button").size.y > app.get("speed_control").size.y, "portrait Play is larger than the speed control")
+			check(app.get("dock_panel").size.y < 120 and app.get("play_button").size.y >= 64, "portrait Theater has a compact dock and a large Play target")
 	app.get("tv_button").pressed.emit()
 	app.call("load_demo", 0)
 	root.size = Vector2i(1280, 900)
@@ -869,7 +869,7 @@ func run() -> void:
 	app.call("tuck_tv_controls")
 	await create_timer(0.3).timeout
 	check(app.get("tv_tucked") and app.get("tv_edge_pause").is_visible_in_tree(), "TV playback leaves a reachable edge Pause")
-	check(not app.get("dock_margin").visible and not app.get("header_margin").visible, "TV floating header and dock finish fading out")
+	check(app.get("dock_margin").modulate.a == 0.0 and app.get("header_margin").modulate.a == 0.0, "TV floating header and dock finish fading out")
 	app.get("tv_edge_pause").pressed.emit()
 	for _frame: int in range(24): await process_frame
 	check(not player.playing_practice and not app.get("tv_tucked") and app.get("play_button").is_visible_in_tree(), "edge Pause stops shared transport and restores controls")
@@ -911,7 +911,7 @@ func run() -> void:
 	app.call("apply_motion")
 	app.call("set_theater_controls", false)
 	app.call("start", false)
-	check(app.get("tv_tucked") and not app.get("header_margin").visible, "reduced motion tucks immediately without a fade")
+	check(app.get("tv_tucked") and app.get("header_margin").modulate.a == 0.0, "reduced motion tucks immediately without a fade")
 	app.call("pause")
 	check(app.get("header_margin").visible and app.get("header_margin").modulate.a == 1.0, "reduced motion restores controls immediately")
 	app.set("motion_mode", "full")

@@ -10,6 +10,8 @@ var tv_was_playing: bool = false
 var tv_controls_layer: BoxContainer
 var tv_controls_tween: Tween
 var tv_tuck_timer: Timer
+var tv_edge_row: BoxContainer
+var effective_control_position: String = "bottom"
 var tv_edge: PanelContainer
 var tv_edge_fullscreen: Button
 var tv_inline_zoom: BoxContainer
@@ -327,22 +329,25 @@ func build_tv_edge() -> void:
 	add_child(tv_tuck_timer)
 	tv_edge = PanelContainer.new()
 	add_child(tv_edge)
-	var column: VBoxContainer = VBoxContainer.new()
-	tv_edge.add_child(column)
+	tv_edge_row = BoxContainer.new()
+	tv_edge_row.add_theme_constant_override("separation", 4)
+	tv_edge.add_child(tv_edge_row)
 	tv_edge_pause = button("PAUSE", toggle_play)
 	tv_edge_pause.text = ""
 	tv_edge_pause.custom_minimum_size = Vector2(72, 72)
-	column.add_child(tv_edge_pause)
+	tv_edge_pause.add_theme_font_size_override("font_size", 28)
+	tv_edge_row.add_child(tv_edge_pause)
 	var reveal: Button = button("SHOW_CONTROLS", reveal_tv_controls)
 	reveal.text = ""
 	reveal.icon = UIIcons.get_icon("MENU")
-	column.add_child(reveal)
+	reveal.tooltip_text = tr("THEATER_REVEAL_TIP")
+	tv_edge_row.add_child(reveal)
 	tv_edge_fullscreen = button("EXIT_FULLSCREEN", toggle_fullscreen)
 	var fullscreen: Button = tv_edge_fullscreen
 	fullscreen.text = ""
 	fullscreen.icon = UIIcons.get_icon("FULLSCREEN")
 	fullscreen.tooltip_text = tr("FULLSCREEN")
-	column.add_child(fullscreen)
+	tv_edge_row.add_child(fullscreen)
 	tv_edge.hide()
 
 func tuck_tv_controls(immediate: bool = false) -> void:
@@ -359,7 +364,7 @@ func tuck_tv_controls(immediate: bool = false) -> void:
 
 func reveal_tv_controls() -> void:
 	set_tv_tucked(false)
-	menu_button.grab_focus()
+	play_button.grab_focus()
 	if tv_active and not theater_keep_controls and audio.playing_practice: tv_tuck_timer.start(8)
 
 func update_tv_playback() -> void:
@@ -374,6 +379,8 @@ func update_tv_playback() -> void:
 
 func set_tv_tucked(tucked: bool) -> void:
 	if tv_tucked == tucked: return
+	var focus: Control = get_viewport().gui_get_focus_owner()
+	var restore_focus: bool = not tucked and focus != null and tv_edge.is_ancestor_of(focus)
 	tv_tucked = tucked
 	if tv_controls_tween != null: tv_controls_tween.kill()
 	var controls: Array[Control] = [header_margin]
@@ -389,17 +396,34 @@ func set_tv_tucked(tucked: bool) -> void:
 		# Ignore the fading controls immediately, including keyboard focus.
 		control.mouse_behavior_recursive = Control.MOUSE_BEHAVIOR_DISABLED if tucked else Control.MOUSE_BEHAVIOR_INHERITED
 		control.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_DISABLED if tucked else Control.FOCUS_BEHAVIOR_INHERITED
+	if restore_focus: play_button.grab_focus()
 	if reduced_motion:
 		for control: Control in controls:
 			control.modulate.a = 0.0 if tucked else 1.0
-			control.visible = not tucked
 		return
 	tv_controls_tween = create_tween().set_parallel(true)
 	for control: Control in controls:
 		tv_controls_tween.tween_property(control, "modulate:a", 0.0 if tucked else 1.0, 0.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	if tucked:
-		tv_controls_tween.chain().tween_callback(func() -> void:
-			for control: Control in controls: control.hide())
+	# Transparent controls retain their container sizes. Their reserved margins
+	# and the score geometry therefore stay identical throughout either fade.
+
+func fit_theater_margins() -> void:
+	if not tv_active: return
+	if controls_on_side:
+		content_margin.add_theme_constant_override("margin_" + effective_control_position, ceili(maxf(header_margin.size.x, tv_edge.get_combined_minimum_size().x) + 8))
+	else:
+		var dock_height: int = ceili(maxf(dock_margin.size.y, tv_edge.get_combined_minimum_size().y + 16))
+		var header_height: int = ceili(header_margin.size.y) + tv_controls_layer.get_theme_constant("separation")
+		content_margin.add_theme_constant_override("margin_top", header_height + (dock_height if effective_control_position == "top" else 0))
+		content_margin.add_theme_constant_override("margin_bottom", dock_height if effective_control_position == "bottom" else 0)
+
+func place_tv_edge() -> void:
+	if tv_edge == null: return
+	tv_edge.size = tv_edge.get_combined_minimum_size()
+	if controls_on_side:
+		tv_edge.position = Vector2(8 if effective_control_position == "left" else size.x - tv_edge.size.x - 8, maxf(8, size.y - tv_edge.size.y - 8))
+	else:
+		tv_edge.position = Vector2((size.x - tv_edge.size.x) / 2, header_margin.size.y + 8 if effective_control_position == "top" else size.y - tv_edge.size.y - 8)
 
 func theater_pointer_options(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_RIGHT:
@@ -1408,7 +1432,7 @@ func _input(event: InputEvent) -> void:
 		host.set_fullscreen(false)
 		get_viewport().set_input_as_handled()
 		return
-	if not menu_overlay.visible and not capture_active and main_speed.handle_pointer(event):
+	if not menu_overlay.visible and not capture_active and not tv_tucked and main_speed.handle_pointer(event):
 		get_viewport().set_input_as_handled()
 		return
 	if capture_active and ((event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT) or event is InputEventScreenTouch):
@@ -1426,6 +1450,10 @@ func _input(event: InputEvent) -> void:
 			return
 	if event is InputEventKey and event.pressed and not event.echo and not event.ctrl_pressed and not event.meta_pressed and not event.alt_pressed:
 		var focused: Control = get_viewport().gui_get_focus_owner()
+		if event.keycode == KEY_F10 and tv_active and not capture_active and not menu_overlay.visible and not focused is LineEdit and not focused is TextEdit:
+			reveal_tv_controls()
+			get_viewport().set_input_as_handled()
+			return
 		if event.keycode == KEY_F9 and not capture_active:
 			enter_tv()
 			get_viewport().set_input_as_handled()
@@ -1752,13 +1780,15 @@ func responsive() -> void:
 		effective_position = handedness
 	elif size.x < 600 and size.y >= size.x and control_position in ["left", "right"]:
 		effective_position = "bottom"
+	effective_control_position = effective_position
 	var side_dock: bool = effective_position in ["left", "right"]
 	controls_on_side = side_dock
 	tight_controls = not side_dock and size.y < 440
 	root_box.vertical = not side_dock
 	header.vertical = side_dock
 	apply_control_layout(effective_position)
-	header_margin.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN if side_dock else Control.SIZE_FILL
+	header_margin.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN if side_dock or (tv_active and handedness == "left") else (Control.SIZE_SHRINK_END if tv_active else Control.SIZE_FILL)
+	header_actions.custom_minimum_size.x = 0
 	for side: String in ["left", "right", "top", "bottom"]:
 		header_margin.add_theme_constant_override("margin_" + side, (8 if side in ["left", "right", "top"] else 0) if side_dock else ((16 if tv_active else maxi(16, int((size.x - 1280) / 2))) if side in ["left", "right"] else 8))
 	# Keep direct speed adjustment at every scale. Reduce auxiliary actions
@@ -1772,7 +1802,8 @@ func responsive() -> void:
 		item.text = "" if header_icons else tr(key)
 		item.icon = UIIcons.get_icon(key) if header_icons or size.x >= 760 else null
 		item.custom_minimum_size.x = 56 if header_icons else 0
-	import_button.visible = not side_dock
+	songs_button.visible = not tv_active
+	import_button.visible = not side_dock and not tv_active
 	if not side_dock and size.x >= 600 and expanded_controls:
 		tv_button.text = tr("TV_VIEW")
 	theater_toggle.text = tr("TV_EXIT" if tv_active else "TV_ENTER")
@@ -1784,7 +1815,7 @@ func responsive() -> void:
 	quick_row.visible = true
 	tempo_button.visible = true
 	metro_button.visible = expanded_controls and not tight_controls and (not side_dock or size.y >= 320)
-	loop_button.visible = not tight_controls
+	loop_button.visible = not tight_controls and not tv_active
 	stop_button.visible = false
 	update_play_control()
 	metro_button.text = tr("CLICK_ON" if metro_check.button_pressed else "CLICK_OFF") if not side_dock and size.x >= 760 else ""
@@ -1821,7 +1852,7 @@ func responsive() -> void:
 		for edge: String in ["top", "bottom"]: dock_margin.add_theme_constant_override("margin_" + edge, 0)
 
 	if not side_dock and not expanded_controls and size.x < 760: main_speed.custom_minimum_size.x = 64
-	brand_label.visible = not side_dock and size.x >= (760 if expanded_controls else 1100)
+	brand_label.visible = not tv_active and not side_dock and size.x >= (760 if expanded_controls else 1100)
 	menu_button.size_flags_horizontal = Control.SIZE_FILL if side_dock else Control.SIZE_SHRINK_END
 	header.alignment = BoxContainer.ALIGNMENT_BEGIN if side_dock else BoxContainer.ALIGNMENT_END
 	song_title.visible = not landscape and (tv_active or not compact)
@@ -1850,19 +1881,35 @@ func responsive() -> void:
 	menu_back.text = "" if small_menu_header else tr("MENU_BACK")
 	menu_close.text = "" if small_menu_header else tr("CLOSE")
 	for control: Control in [header_margin, dock_margin]:
-		control.visible = not tv_tucked
+		control.show()
 		control.modulate.a = 0.0 if tv_tucked else 1.0
 		control.mouse_behavior_recursive = Control.MOUSE_BEHAVIOR_DISABLED if tv_tucked else Control.MOUSE_BEHAVIOR_INHERITED
 		control.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_DISABLED if tv_tucked else Control.FOCUS_BEHAVIOR_INHERITED
 	if tv_edge != null:
 		tv_edge.visible = tv_tucked and not menu_overlay.visible
-		tv_edge.size = Vector2(88, 0)
-		tv_edge.position = Vector2(8 if handedness == "left" else size.x - 96, 8)
+		tv_edge_row.vertical = side_dock
+		place_tv_edge.call_deferred()
+	dock_margin.size_flags_horizontal = Control.SIZE_SHRINK_CENTER if tv_active and not side_dock else Control.SIZE_FILL
+	if tv_active and not side_dock:
+		dock.vertical = false
+		tempo_button.icon = null
+		tempo_button.custom_minimum_size.x = 0
+		speed_control.custom_minimum_size.x = 0
+		main_speed.custom_minimum_size.x = 48 if size.x < 600 else 64
+		speed_unit_layout.add_theme_constant_override("separation", 0)
+		for edge: String in ["left", "right"]: dock_margin.add_theme_constant_override("margin_" + edge, 8)
+		metro_button.visible = expanded_controls
+		metro_button.text = ""
 	adapt_flow(menu_overlay)
 	adapt_flow(root_box)
 	if tv_active:
 		adapt_flow(header_margin)
 		if dock_margin.get_parent() != header: adapt_flow(dock_margin)
+		if not side_dock:
+			var action_width: float = 0
+			for action: Button in [tv_button, fullscreen_button, menu_button]:
+				action_width += action.get_combined_minimum_size().x
+			header_actions.custom_minimum_size.x = action_width + 2 * header_actions.get_theme_constant("h_separation")
 	if score != null: update_page_controls()
 	if fitting_layout: fit_pending = true
 	else: update_main_scroll.call_deferred()
@@ -1914,6 +1961,9 @@ func update_main_scroll() -> void:
 	update_page_controls()
 	score_frame.fit_height(96)
 	await wait_for_layout_stability()
+	if tv_active:
+		fit_theater_margins()
+		await wait_for_layout_stability()
 	for extra: Control in [cue.get_parent(), reading_tools, song_title, seek_navigation]:
 		if content_margin.get_combined_minimum_size().y <= content_height_budget() + 1: break
 		if not extra.visible: continue
@@ -1927,6 +1977,7 @@ func update_main_scroll() -> void:
 	scroll.scroll_vertical = 0
 	await wait_for_layout_stability()
 	fitting_layout = false
+	place_tv_edge()
 	report_state()
 	if fit_pending: update_main_scroll.call_deferred()
 
@@ -1974,7 +2025,9 @@ func adapt_flow(node: Node) -> void:
 				child.custom_minimum_size.x = maxf(120, minf(needed, available)) if child == play_button else minf(needed, maxf(80, limit))
 	for child: Node in node.get_children(): adapt_flow(child)
 	if node == dock:
-		if controls_on_side:
+		if tv_active and not controls_on_side:
+			play_button.custom_minimum_size = Vector2(64, 64)
+		elif controls_on_side:
 			play_button.custom_minimum_size = Vector2(dock.custom_minimum_size.x - (64 if theme.default_font_size >= 30 or size.y < 320 else 0), 80 if size.y >= 360 or (theme.default_font_size >= 30 and size.y >= 320) else 64)
 		elif size.x < 760 and not tight_controls:
 			play_button.custom_minimum_size = Vector2(maxf(120, size.x - 64), 72)
@@ -2012,7 +2065,7 @@ func set_metronome(enabled: bool) -> void:
 func update_metronome() -> void:
 	if metro_button == null: return
 	metro_button.set_pressed_no_signal(metro_check.button_pressed)
-	metro_button.text = tr("CLICK_ON" if metro_check.button_pressed else "CLICK_OFF") if not controls_on_side and size.x >= 760 else ""
+	metro_button.text = tr("CLICK_ON" if metro_check.button_pressed else "CLICK_OFF") if not tv_active and not controls_on_side and size.x >= 760 else ""
 	metro_button.tooltip_text = tr("CLICK_HELP")
 	metro_button.icon = UIIcons.get_icon("CLICK_ON" if metro_check.button_pressed else "CLICK_OFF")
 	adapt_flow(dock)
@@ -2339,6 +2392,10 @@ func update_play_control(frame: int = -1) -> void:
 	if audio.playing_practice:
 		beat = audio.transport.count_beat_at(audio.audible_frame() if frame < 0 else frame)
 	var key: String = "COUNT" if beat > 0 else ("PAUSE" if audio.playing_practice else ("REPLAY" if state == "STATE_COMPLETE" else "PLAY"))
+	if tv_edge_pause != null:
+		tv_edge_pause.text = str(beat) if beat > 0 else ""
+		tv_edge_pause.icon = null if beat > 0 else UIIcons.get_icon("PAUSE")
+		tv_edge_pause.tooltip_text = tr("TIP_COUNT_BEAT") % beat if beat > 0 else tr("TIP_PAUSE")
 	count_badge.visible = beat > 0
 	if beat > 0:
 		count_badge.text = str(beat)
@@ -2346,7 +2403,7 @@ func update_play_control(frame: int = -1) -> void:
 		play_button.icon = null
 		play_button.tooltip_text = tr("TIP_COUNT_BEAT") % beat
 	else:
-		play_button.text = "" if controls_on_side or tight_controls else tr(key)
+		play_button.text = "" if tv_active or controls_on_side or tight_controls else tr(key)
 		play_button.icon = UIIcons.get_icon(key)
 		play_button.tooltip_text = tr("TIP_" + key)
 	if key != play_control_key:
