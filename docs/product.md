@@ -30,8 +30,11 @@ optional shortcuts alongside the visible page arrows.
 
 When several music lines fit, Follow playback retains preceding lines and balances context around the
 active line instead of moving it straight to the top. A still-sounding note keeps
-its earlier line visible when space permits. The view stays stationary within a
-line and keeps the final screen filled with preceding music.
+its earlier line visible when space permits. The final screen stays filled with preceding music. Automatic line advances
+slide the lines upward together, keeping the outgoing music and its highlights
+visible until it leaves the score area. Between advances the view stays still.
+Reduced motion skips the slide; pauses, seeks, loop wraps and resizing clear
+uncompleted transitions.
 
 The header's Theater button toggles denser reading within the same
 player. It uses the available width and stacks consecutive rows of music while
