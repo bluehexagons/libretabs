@@ -28,8 +28,8 @@ review; treat them as practice suggestions.
    **Play**. Both measures repeat. Choose **Turn loop off** when you want to
    continue through the song.
 
-For another tune, open **Menu → Songs** and look for **Starter** choices, such as
-Twinkle, Twinkle Little Star. These have simpler rhythms and smaller note ranges;
+For another tune, open **Menu → Songs** and try
+Twinkle, Twinkle Little Star or Mary Had a Little Lamb. These use simpler rhythms;
 they are still generated practice arrangements. Some tunes begin with silence.
 Wait for the moving line to reach the first note.
 

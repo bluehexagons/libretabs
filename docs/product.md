@@ -2,6 +2,10 @@
 
 Status: planning baseline accepted, updated 2026-09-05
 
+For instructions for the current player, see the [user guide](user-guide.md).
+This specification includes planned features; it is not a list of everything
+available in the prototype.
+
 ## Product promise
 
 LibreTabs helps a complete beginner understand what to do with a guitar, open a suitable MIDI song, see one honest playable arrangement, and practice a small section at a comfortable speed. It works offline after installation or a completed first web download and does not require an account.

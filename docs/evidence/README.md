@@ -9,3 +9,5 @@ When a later record supersedes an earlier one, keep the earlier record for
 history and identify the newer record or current handoff.
 
 Current focused review: [arrangement techniques](arrangement-techniques-review.md).
+
+Instructional copy and navigation: [beginner guidance review](user-guidance.md).

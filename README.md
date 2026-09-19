@@ -22,7 +22,7 @@ and device checks are still in progress.
    The notes keep the same pitch. Choose **Stop**, then **Play** to start again.
 4. Open **Menu → Loop**, set **From 1** and **Through 2**, and choose
    **Turn loop on** to repeat the first two measures (groups of beats).
-5. Open **Menu → Songs** for another tune. Look for **Starter** choices.
+5. Open **Menu → Songs** for another tune. Try Twinkle, Twinkle Little Star.
 
 The [user guide](docs/user-guide.md) explains reading tabs, choosing music,
 practicing with loops, changing the view, printing and troubleshooting. You can
@@ -43,8 +43,8 @@ public entry points; the managed preview used during development is not a public
 launch URL.
 
 The Songs drawer includes 12 project-authored MIDI excerpts based on familiar
-public-domain works and traditional melodies. Six are marked **Starter** for
-shorter ranges and simpler rhythms. It also includes technical examples and
+public-domain works and traditional melodies. Start with Twinkle, Twinkle Little
+Star or Mary Had a Little Lamb, then explore the longer themes when you feel ready. It also includes technical examples and
 opens local Standard MIDI File format 0 or 1 files. Imported files are read on
 the device and are not uploaded or saved by the prototype.
 

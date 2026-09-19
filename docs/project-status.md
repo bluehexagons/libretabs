@@ -1,5 +1,7 @@
 # Project handoff
 
+To use the current player, start with the [user guide](user-guide.md).
+
 Snapshot date: 2026-09-08. Current phase: evaluating public **prototype releases**.
 
 The [evidence records](evidence/README.md) are dated snapshots. This handoff is
@@ -11,8 +13,8 @@ LibreTabs has a runnable Godot practice player: local MIDI import, project-autho
 examples, synchronized staff/tab, generated audio, count-in, tempo, seeking,
 loops, saved preferences, keyboard reference notes, responsive control placement,
 light/dark appearance, printing and capture layouts. The default library contains
-12 project-authored excerpts, including six marked Starter. The six-lesson course
-and musical/platform acceptance gates remain incomplete.
+12 project-authored excerpts, including familiar traditional melodies. The
+six-lesson course and musical/platform acceptance gates remain incomplete.
 
 Godot is retained by [owner decision 0005](decisions/0005-godot-and-appearance.md).
 Full screen-reader integration is deferred; it no longer blocks product work or

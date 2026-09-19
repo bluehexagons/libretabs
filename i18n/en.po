@@ -11,7 +11,7 @@ msgid "HEADLINE"
 msgstr "One phrase at a time."
 
 msgid "INTRO"
-msgstr "Try an original melody, or open a MIDI file from your device. Listen first, then follow the string and fret numbers."
+msgstr "Choose a built-in melody, or open a MIDI file from your device. Listen first, then follow the guitar string and fret numbers."
 
 msgid "OPEN"
 msgstr "Open MIDI file"
@@ -23,7 +23,7 @@ msgid "CLASSICS"
 msgstr "Classical & familiar melodies"
 
 msgid "BEGINNER_LIBRARY_NOTE"
-msgstr "Single-line melodies and longer themes. Some begin after a short rest before the first full measure."
+msgstr "New to guitar? Try Twinkle, Twinkle Little Star or Mary Had a Little Lamb first. Some tunes begin with silence before the first notes."
 
 msgid "CHOOSE_CLASSIC"
 msgstr "Choose a classic…"
@@ -122,7 +122,7 @@ msgid "ARRANGEMENT_FINGER"
 msgstr "Fingerpick"
 
 msgid "BASIC_ARRANGEMENT_HELP"
-msgstr "This keeps the prototype's direct, low-fret guitar placement. It does not claim that every chord can be strummed or assigned comfortably to picking fingers."
+msgstr "Start here for suggested strings and frets, favoring the lower frets near the headstock. Check the note count and warnings below: some notes cannot be placed, and displayed chords are not guaranteed comfortable."
 
 msgid "PICK_ARRANGEMENT_HELP"
 msgstr "This makes a separate, pick-friendly tab. A bracket marks the strings to strum. X means touch that string lightly so it does not ring. For crowded chords, the tab may leave out notes; the staff and playback still keep the original music."
@@ -143,7 +143,7 @@ msgid "FINGER_COVERAGE"
 msgstr "Fingerpicking tab: %d of %d source notes included"
 
 msgid "FINGER_LIMIT"
-msgstr "Procedural preview: each onset uses at most four distinct picking roles and is not turned into an arpeggio. This has not been reviewed by a guitar teacher. Source pitches, timing, staff notation and audio are unchanged."
+msgstr "Generated suggestion: notes that start together use up to four picking fingers. They are not spread into a sequence. This has not been reviewed by a guitar teacher. Source pitches, timing, staff notation and audio are unchanged."
 
 msgid "FINGER_OMITTED"
 msgstr "△ %d source notes are left out of the fingerpicking tab where the full chord cannot fit. They remain visible on the staff and audible."
@@ -350,10 +350,10 @@ msgid "ERR_LENGTH"
 msgstr "The MIDI file is truncated or a data length is invalid. Try another file."
 
 msgid "ERR_FORMAT"
-msgstr "Format 2 is not supported. Choose a format 0 or 1 MIDI file."
+msgstr "This MIDI file format is not supported. Try another file, or export it from your music software as Standard MIDI format 0 or 1."
 
 msgid "ERR_DIVISION"
-msgstr "SMPTE or zero time division is not supported. Choose a ticks-per-quarter MIDI file."
+msgstr "This file uses a timing format the prototype cannot read. Try another MIDI file, or export it from your music software using musical beats (ticks per quarter note) instead of SMPTE timecode."
 
 msgid "ERR_TRACKS"
 msgstr "The track structure is invalid or exceeds the prototype limit of 32 tracks."
@@ -482,7 +482,7 @@ msgid "DISPLAY"
 msgstr "Appearance & text"
 
 msgid "TEMPO_HELP"
-msgstr "BPM means beats per minute. Here, one beat is a quarter note. Pitch stays the same when you change speed."
+msgstr "Tempo is how fast the music moves. 100% is the original speed; 50% is half speed. BPM means beats per minute: 60 is one beat per second. Here, a beat is a quarter note. Changing speed keeps the same pitches; later tempo changes keep their proportions."
 
 msgid "BPM_LABEL"
 msgstr "Custom starting BPM"
@@ -503,22 +503,22 @@ msgid "CLICK_VOLUME"
 msgstr "Metronome · %d%%"
 
 msgid "LOOP_HELP"
-msgstr "A measure is a small group of beats between vertical lines. Repeat a few measures to practice a short phrase."
+msgstr "A measure is a group of beats between vertical lines. Set From to the first measure and Through to the last, then choose Turn loop on. Both end measures are included. Close this menu and press Play. Turn loop off to continue through the song."
 
 msgid "HELP_STRINGS"
-msgstr "1. Follow the six tab lines. The top line is string 1: your thinnest guitar string."
+msgstr "1. Read tabs from left to right. The six lines represent guitar strings. The top line is string 1, the thinnest and highest sounding; the bottom is string 6, the thickest. Tabs assume standard tuning: E–A–D–G–B–E from thickest to thinnest. Use a separate tuner if needed."
 
 msgid "HELP_FRETS"
-msgstr "2. Press the fret number shown. A 0 means play the open string, without pressing a fret."
+msgstr "2. A fret is a metal strip across the guitar neck. A tab number tells you which fret to use, not which finger. For 3, press just behind the third fret toward the headstock, then pluck that string. A 0 means pluck without pressing. Vertically aligned numbers are played together: a chord."
 
 msgid "HELP_STAFF"
-msgstr "3. The smaller staff above is a pitch and rhythm reference. Higher notes mean higher pitches. Guitar staff notes are written one octave above their sound."
+msgstr "3. The five-line staff is the sheet music reference. Higher positions mean higher pitches; note shapes show duration. Here, a quarter note lasts one beat, a half note two, and an eighth note half a beat. A rest means silence. A tie joins same-pitch notes into one held sound. Guitar treble is written an octave higher than it sounds: the same note name in the next higher register."
 
 msgid "HELP_TIMING"
-msgstr "4. Press Play and count with the clicks. Point at the music to preview a position, or click/tap to seek there. Outlined numbers show sounding notes. A ! means a note has no guitar placement. Slow down with Playback or repeat a phrase with Loop."
+msgstr "4. A beat is the pulse you count along with; a measure groups beats between vertical lines. In Playback, turn on Beat clicks for a steady pulse or lower the speed to give yourself more time. Tap the music to move playback there. The rhythm display is simplified; audio keeps the original timing."
 
 msgid "HELP_TECHNIQUES"
-msgstr "5. In a strumming tab, a bracket shows all strings to sweep and X means touch a string lightly so it stays quiet. B marks a barre: one fretting finger holds several strings at one fret. In a fingerpicking tab, T is thumb and I, M, R are index, middle, and ring. These are procedural suggestions, not instructions found in the MIDI file."
+msgstr "5. In About this arrangement (under Songs), choose Basic tab, Strum with a pick or Fingerpick. A strum bracket marks the strings to sweep; X means keep that string quiet. B marks a possible barre: one fretting finger presses several strings at one fret. For fingerpicking, T is thumb; I, M, R are index, middle, ring of the picking hand. Read the warnings: simplified tabs may omit notes that remain in the staff and sound."
 
 msgid "FOLLOW_HINT"
 msgstr "Follow the outlined fret numbers."
@@ -536,7 +536,7 @@ msgid "SCORE_VIEW"
 msgstr "Score view"
 
 msgid "VIEW_HELP"
-msgstr "Choose scrolling, manual pages, or pages that follow playback. Turning a page yourself pauses page following, without changing the sound."
+msgstr "Choose scrolling, pages you turn yourself, or pages that follow the music. Turning a page yourself turns Follow playback off without moving the sound. Enable Follow playback to resume automatic turns. Tapping the music moves playback to that position."
 
 msgid "VIEW_SCROLL"
 msgstr "Smooth scrolling"
@@ -746,19 +746,19 @@ msgid "CARD_TEMPO"
 msgstr "Playback\nSpeed, count-in and metronome"
 
 msgid "CARD_SCORE_VIEW"
-msgstr "Read the music\nScrolling, pages and arrangement details"
+msgstr "Score view\nScrolling, pages and music layout"
 
 msgid "CARD_PRINT"
 msgstr "Print your music\nTabs, sheet music or both"
 
 msgid "CARD_LOOP_TOOL"
-msgstr "Repeat a passage\nPractice one measure or a section"
+msgstr "Loop\nRepeat one measure or a section"
 
 msgid "CARD_SOUND"
-msgstr "Sound & parts\nBalance the instrument and the click"
+msgstr "Volume & parts\nListen, mute your part or balance the sound"
 
 msgid "CARD_DISPLAY"
-msgstr "Appearance\nColor, text, font and motion"
+msgstr "Appearance & text\nColor, text, font and motion"
 
 msgid "CARD_KEYBOARD"
 msgstr "Keyboard notes\nChoose your piano key layout"
@@ -779,25 +779,25 @@ msgid "CARD_WELCOME"
 msgstr "Quick start · Getting started"
 
 msgid "WELCOME_INTRO"
-msgstr "An exercise is ready. Here is how to play along."
+msgstr "An exercise is ready. Start practicing closes this guide; press Play afterward to hear it. LibreTabs does not listen to or grade your guitar playing."
 
 msgid "WELCOME_PRACTICE"
 msgstr "Start practicing"
 
 msgid "WELCOME_READ"
-msgstr "1. Read the six lines\nThe lines are guitar strings, with the thinnest at the top. Press just behind the numbered fret. A 0 means play the open string."
+msgstr "1. Read the guitar tabs\nThe six lines represent strings: the top is string 1, the thinnest. A number tells you which fret to use, not which finger. Press just behind that metal fret and pluck the string. A 0 means pluck without pressing."
 
 msgid "WELCOME_PLAY"
-msgstr "2. Press Play\nListen to the count-in, then follow the highlighted numbers. Open brackets show the next notes. Space plays or pauses with menus closed."
+msgstr "2. Listen once, then join in\nPress Play. The count-in clicks give you time to get ready. Read left to right: open brackets mark upcoming notes, and full outlines mark sounding notes. Space plays or pauses with menus closed."
 
 msgid "WELCOME_PACE"
-msgstr "3. Set a comfortable pace\nSlow down with the percentage slider. The metronome adds a steady beat; use Click to switch it on or off. Loop repeats a section. Tap the music to change position."
+msgstr "3. Slow down and repeat\nIn Playback (under Menu), try 50% speed: half as fast, with the same pitches. In Loop (under Menu), set From 1 and Through 2, then Turn loop on to repeat those measures. A measure is a group of beats between vertical lines."
 
 msgid "WELCOME_STARTUP"
 msgstr "Show on startup"
 
 msgid "WELCOME_STARTUP_HELP"
-msgstr "Open Menu → Quick start any time to return here or turn startup help back on."
+msgstr "Open Menu, then Quick start any time to return here or turn startup help back on."
 
 msgid "PLAYER_SHORTCUTS"
 msgstr "Space always plays or pauses while a menu is closed. Left and Right move by measure, or turn a reading page. Focus the position scrubber for beat-by-beat Arrow keys, Page Up/Down by measure, and Home/End. Escape closes a menu or capture view. F8 toggles capture view. F9 toggles Theater. F10 shows Theater controls without pausing. Tab moves between controls. Swipe across a manual reading page to turn it. Piano keys are listed below."
@@ -869,13 +869,13 @@ msgid "HANDED_RIGHT"
 msgstr "Right-handed layout"
 
 msgid "CONTROL_LAYOUT_HELP"
-msgstr "Handedness mirrors the action order, position label and menu edge. On very short landscape screens, controls move to your preferred hand side. On narrow portrait screens, side controls move below the music."
+msgstr "Preferred hand changes the action order and menu edge, not the tab string order or tuning. On very short landscape screens, controls move to your preferred hand side. On narrow portrait screens, side controls move below the music."
 
 msgid "PRINT"
 msgstr "Print your music"
 
 msgid "PRINT_HELP"
-msgstr "Make a clean, printable copy of the selected part. Use the saved file to print or choose Save as PDF in your browser."
+msgstr "Choose what to include, the measure range and paper size. Select Prepare pages, then Save printable file. Open the saved HTML file in a browser to print or choose Save as PDF."
 
 msgid "PRINT_CONTENT"
 msgstr "Include"
@@ -989,7 +989,7 @@ msgid "CARD_CAPTURE"
 msgstr "Capture & overlay\nA score-only view for recording and streaming"
 
 msgid "CAPTURE_HELP"
-msgstr "Hide controls for recording. Press F8 or Escape, or tap anywhere, to return. Space still plays or pauses."
+msgstr "Show only the score for separate recording or streaming software. LibreTabs does not record video. Choose your layout, then Enter capture view. F8, Escape or a tap returns to the player. Space still plays or pauses."
 
 msgid "CAPTURE_ENTER"
 msgstr "Enter capture view"
@@ -1194,3 +1194,12 @@ msgstr "Enter Theater for more music across your screen (F9). Right-click for Th
 
 msgid "THEATER_EXIT_TIP"
 msgstr "Return to your regular reading view (F9). Right-click for Theater settings."
+
+msgid "SONG_FILE_HELP"
+msgstr "MIDI files (.mid or .midi) contain note and timing instructions, not recorded audio. MP3s, PDFs and photos cannot be opened here. Choose a part below if the file has several instruments. Imports stay on this device and must be reopened after restarting."
+
+msgid "SOUND_HELP"
+msgstr "Listen to your selected part first. Then turn on Mute my part to play it yourself while hearing the enabled other parts. Turn it off to hear the reference again. Instrument and metronome volumes are separate."
+
+msgid "HELP_WARNINGS"
+msgstr "A ! or △ marks an arrangement warning, not a mistake you played. Open Songs, then About this arrangement to see which notes could not fit the guitar tab. Try another part or simpler music if needed."
