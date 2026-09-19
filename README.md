@@ -2,11 +2,31 @@
 
 [Play on GitHub Pages](https://bluehexagons.github.io/libretabs/play/) · [Guide and downloads](https://bluehexagons.github.io/libretabs/) · [Report a problem](https://github.com/bluehexagons/libretabs/issues)
 
-LibreTabs is free software for learning guitar with short guided exercises and
-MIDI-based practice. It shows a selected melody as synchronized staff notation
-and E-standard guitar tablature. The current repository contains an evaluation
-prototype; the six-lesson course and several musical, timing, accessibility and
-device checks are still in progress.
+LibreTabs helps you practice guitar by showing which strings and frets to play.
+Listen to a built-in tune, slow it down, and repeat a short section while you play
+along. Guitar tablature (tabs) gives the string and fret numbers; sheet music
+shows pitch and rhythm alongside it. No account or music file is needed to start.
+
+This is an early prototype, not a complete guitar course. It does not listen to
+or grade your playing. The planned six lessons and musical, timing, accessibility
+and device checks are still in progress.
+
+## Your first session
+
+1. [Open the player](https://bluehexagons.github.io/libretabs/play/). An exercise
+   is ready. Read **Quick start**, then choose **Start practicing**.
+2. Press **Play** and listen once. On the six tab lines, the top line is the
+   thinnest guitar string. Numbers tell you which fret to press; **0** means
+   pluck the string without pressing it.
+3. Open **Menu → Playback → Speed presets** and try **50%** for half speed.
+   The notes keep the same pitch. Choose **Stop**, then **Play** to start again.
+4. Open **Menu → Loop**, set **From 1** and **Through 2**, and choose
+   **Turn loop on** to repeat the first two measures (groups of beats).
+5. Open **Menu → Songs** for another tune. Look for **Starter** choices.
+
+The [user guide](docs/user-guide.md) explains reading tabs, choosing music,
+practicing with loops, changing the view, printing and troubleshooting. You can
+also open **Menu → Help** or **Menu → Quick start** inside the player.
 
 The project is maintained by **bluehexagons**. It is operated without paid
 editions, subscriptions, advertising or data monetization. That describes the
@@ -35,7 +55,7 @@ authoritative editions, and the built-in repertoire has not yet had musician
 review. The [M0 evidence record](docs/evidence/m0-prototype.md) lists measured
 results and open checks.
 
-## Run locally
+## For contributors: run locally
 
 With the pinned Godot `4.7.2.stable.official.ed1daf0bf` installed:
 
@@ -80,6 +100,7 @@ Credit is welcome for CC0 contributions even when it is not required.
 
 ## Project documents
 
+- [User guide](docs/user-guide.md) — step-by-step practice and feature reference
 - [Project status](docs/project-status.md) — current prototype state and next work
 - [Product and MVP specification](docs/product.md)
 - [Technical architecture](docs/architecture.md)
