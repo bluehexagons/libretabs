@@ -178,6 +178,7 @@ var appearance_mode: String = "system"
 var dark_mode: bool = false
 var appearance_picker: OptionButton
 var paper: PanelContainer
+var theater_context: HBoxContainer
 var reading_tools: HFlowContainer
 var color_legend: HFlowContainer
 var color_legend_swatches: Array[ColorRect] = []
@@ -628,6 +629,10 @@ func build_ui() -> void:
 	header_actions.add_child(menu_button)
 	song_title = label("DEMO_0", 32)
 	song_title.add_theme_font_override("font", UIAppearance.ui_font(font_style, true))
+	theater_context = HBoxContainer.new()
+	theater_context.add_theme_constant_override("separation", 16)
+	panel.add_child(theater_context)
+	theater_context.hide()
 	panel.add_child(song_title)
 	status = label("START_HINT", 18)
 	add_child(status)
@@ -1768,6 +1773,42 @@ func apply_scale(factor: float) -> void:
 	responsive()
 	if opened_drawer == "DISPLAY": reveal_scale_choice.call_deferred()
 
+func set_theater_context_layout(inline: bool) -> void:
+	if inline:
+		if song_title.get_parent() != theater_context:
+			song_title.reparent(theater_context)
+			reading_tools.reparent(theater_context)
+		song_title.autowrap_mode = TextServer.AUTOWRAP_OFF
+		song_title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		song_title.tooltip_text = song_title.text
+		reading_tools.size_flags_horizontal = Control.SIZE_SHRINK_END
+		theater_context.show()
+	else:
+		if song_title.get_parent() == theater_context:
+			song_title.reparent(panel)
+			reading_tools.reparent(panel)
+			panel.move_child(song_title, theater_context.get_index() + 1)
+			panel.move_child(reading_tools, paper.get_index())
+		song_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		song_title.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
+		reading_tools.size_flags_horizontal = Control.SIZE_FILL
+		reading_tools.custom_minimum_size.x = 0
+		theater_context.hide()
+
+func fit_theater_context_controls() -> bool:
+	if not theater_context.visible: return true
+	var width: float = 0
+	var visible_count: int = 0
+	for item: Control in reading_tools.get_children():
+		if not item.visible: continue
+		width += item.get_combined_minimum_size().x
+		visible_count += 1
+	width += maxi(0, visible_count - 1) * reading_tools.get_theme_constant("h_separation")
+	# Keep room for a recognizable title even with longer translated controls.
+	if width > size.x - 288: return false
+	reading_tools.custom_minimum_size.x = width
+	return true
+
 func reveal_scale_choice() -> void:
 	# Wrapped explanations above the field change height with the font. Keep
 	# the selected size in view so the user can immediately adjust it again.
@@ -1788,6 +1829,7 @@ func responsive() -> void:
 	effective_control_position = effective_position
 	var side_dock: bool = effective_position in ["left", "right"]
 	controls_on_side = side_dock
+	set_theater_context_layout(tv_active and not side_dock and size.x >= 1200 and theme.default_font_size < 30)
 	tight_controls = not side_dock and size.y < 440
 	root_box.vertical = not side_dock
 	header.vertical = side_dock
@@ -1866,7 +1908,7 @@ func responsive() -> void:
 		if caption.get_parent() == tv_inline_zoom: caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART if tv_inline_zoom.vertical else TextServer.AUTOWRAP_OFF
 	tv_inline_zoom.visible = tv_active
 	reading_tools.visible = not landscape and (tv_active or not compact)
-	for picker: OptionButton in quick_music_layout: picker.visible = size.x >= (600 if picker == quick_music_layout[0] else 1200) and theme.default_font_size < 30
+	for picker: OptionButton in quick_music_layout: picker.visible = size.x >= (600 if picker == quick_music_layout[0] else (1700 if theater_context.visible else 1200)) and theme.default_font_size < 30
 	place_status()
 	for side: String in ["left", "right", "top", "bottom"]:
 		content_margin.add_theme_constant_override("margin_" + side, 8 if side_dock else ((16 if tv_active else maxi(16, int((size.x - 1280) / 2))) if side in ["left", "right"] else (4 if compact else 10)))
@@ -1907,6 +1949,10 @@ func responsive() -> void:
 		metro_button.text = ""
 	adapt_flow(menu_overlay)
 	adapt_flow(root_box)
+	if not fit_theater_context_controls():
+		set_theater_context_layout(false)
+		for picker: OptionButton in quick_music_layout: picker.visible = size.x >= (600 if picker == quick_music_layout[0] else 1200) and theme.default_font_size < 30
+		adapt_flow(root_box)
 	if tv_active:
 		adapt_flow(header_margin)
 		if dock_margin.get_parent() != header: adapt_flow(dock_margin)
@@ -1962,7 +2008,7 @@ func update_main_scroll() -> void:
 		if caption.get_parent() == tv_inline_zoom: caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART if tv_inline_zoom.vertical else TextServer.AUTOWRAP_OFF
 	tv_inline_zoom.visible = tv_active
 	reading_tools.visible = not landscape and (tv_active or not compact)
-	for picker: OptionButton in quick_music_layout: picker.visible = size.x >= (600 if picker == quick_music_layout[0] else 1200) and theme.default_font_size < 30
+	for picker: OptionButton in quick_music_layout: picker.visible = size.x >= (600 if picker == quick_music_layout[0] else (1700 if theater_context.visible else 1200)) and theme.default_font_size < 30
 	update_page_controls()
 	score_frame.fit_height(96)
 	await wait_for_layout_stability()
@@ -2198,6 +2244,7 @@ func finish_import() -> void:
 	song = result
 	title = import_name
 	song_title.text = title
+	song_title.tooltip_text = title
 	library_title.text = title
 	active_demo = pending_demo
 	active_library = pending_library

@@ -40,6 +40,7 @@ func run() -> void:
 	for config: Array in [
 		[1280, 900, 1.0, "bottom"], [1280, 900, 1.0, "top"],
 		[1280, 900, 1.0, "left"], [1280, 900, 1.0, "right"],
+		[1280, 720, 1.0, "bottom"],
 		[390, 844, 1.0, "bottom"], [320, 568, 1.0, "bottom"],
 		[320, 568, 2.0, "bottom"], [844, 390, 1.0, "bottom"],
 		[480, 280, 2.0, "bottom"],
@@ -56,6 +57,9 @@ func run() -> void:
 		check(viewport.encloses(music), "music fits " + context)
 		check(not music.intersects(header.get_global_rect()) and not music.intersects(dock.get_global_rect()) and not music.intersects(edge.get_global_rect()), "reserved margins protect music " + context)
 		check(not app.get("brand_label").visible and not app.get("songs_button").visible and not app.get("import_button").visible, "Theater header removes secondary actions " + context)
+		if config[0] == 1280 and config[1] == 720:
+			check(app.get("theater_context").visible and frame.system_count >= 2, "wide Theater shares context row and fits two music lines")
+			check(app.get("song_title").get_global_rect().end.x <= app.get("reading_tools").get_global_rect().position.x, "wide Theater title leaves room for reading controls")
 		if config[0] == 390:
 			check(app.get("dock_panel").size.y <= 100, "phone transport stays on one compact row")
 		app.call("start", true)
@@ -91,9 +95,18 @@ func run() -> void:
 	await create_timer(0.3).timeout
 	check(header.modulate.a == 1.0 and frame.get_global_rect() == music, "reversed fade completes with stable music")
 	app.call("pause")
+	root.size = Vector2i(1280, 720)
+	app.set("control_position", "bottom")
+	app.call("apply_scale", 1.0)
+	var long_title: String = "A very long imported song title ".repeat(20)
+	app.get("song_title").text = long_title
+	app.call("responsive")
+	await settle()
+	check(Rect2(Vector2.ZERO, root.size).encloses(app.get("reading_tools").get_global_rect()), "long titles leave Theater reading controls on screen")
+	check(app.get("song_title").tooltip_text == long_title, "trimmed Theater title keeps its full text in a tooltip")
 	app.call("enter_tv")
 	await settle()
-	check(app.get("songs_button").visible and header.get_parent() == app.get("root_box"), "leaving Theater restores regular controls")
+	check(app.get("songs_button").visible and header.get_parent() == app.get("root_box") and app.get("song_title").get_parent() == app.get("panel"), "leaving Theater restores regular controls and title layout")
 	app.queue_free()
 	await process_frame
 	TranslationServer.pseudolocalization_enabled = true
@@ -109,6 +122,12 @@ func run() -> void:
 	var viewport: Rect2 = Rect2(Vector2.ZERO, root.size)
 	check(viewport.encloses(app.get("header_margin").get_global_rect()) and viewport.encloses(app.get("dock_margin").get_global_rect()), "pseudolocalized Theater controls fit at 200 percent on a narrow phone")
 	check(viewport.encloses(app.get("score_frame").get_global_rect()), "pseudolocalized Theater music remains on screen")
+	root.size = Vector2i(1280, 720)
+	app.call("apply_scale", 1.0)
+	await settle()
+	viewport = Rect2(Vector2.ZERO, root.size)
+	check(viewport.encloses(app.get("reading_tools").get_global_rect()), "wide pseudolocalized Theater reading controls fit")
+	check(viewport.encloses(app.get("song_title").get_global_rect()), "wide pseudolocalized Theater title fits")
 	app.queue_free()
 	await process_frame
 	TranslationServer.pseudolocalization_enabled = false
