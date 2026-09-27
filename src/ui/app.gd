@@ -295,7 +295,7 @@ func _ready() -> void:
 	add_child(capture_view)
 	resized.connect(responsive)
 	appearance_mode = host.load_appearance()
-	background_style = host.load_display_choice("background_style", ["ribbon", "gradient", "solid"], "ribbon")
+	background_style = host.load_display_choice("background_style", ThemeBackdrop.STYLES, "ribbon")
 	host.appearance_changed.connect(apply_appearance)
 	apply_appearance()
 	apply_motion()
@@ -1353,7 +1353,7 @@ func build_drawers() -> void:
 	background_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	background_picker.fit_to_longest_item = false
 	background_picker.custom_minimum_size.y = 56
-	for key: String in ["BACKGROUND_RIBBON", "BACKGROUND_GRADIENT", "BACKGROUND_SOLID"]: background_picker.add_item(tr(key))
+	for key: String in ["BACKGROUND_RIBBON", "BACKGROUND_GRADIENT", "BACKGROUND_SOLID", "BACKGROUND_WARM", "BACKGROUND_SLATE", "BACKGROUND_HORIZON", "BACKGROUND_DOTS"]: background_picker.add_item(tr(key))
 	background_picker.item_selected.connect(change_background_style)
 	background_picker.tooltip_text = tr("BACKGROUND_STYLE_HELP")
 	display.add_child(background_picker)
@@ -1961,8 +1961,11 @@ func change_appearance(index: int) -> void:
 	if persist_preferences and not host.save_appearance(appearance_mode): set_status("STORAGE_SESSION")
 
 func change_background_style(index: int) -> void:
-	background_style = ["ribbon", "gradient", "solid"][index]
+	background_style = ThemeBackdrop.STYLES[index]
 	backdrop.set_palette(dark_mode, appearance_mode == "midnight", background_style)
+	var background: Color = ThemeBackdrop.base_color(background_style, dark_mode, appearance_mode == "midnight")
+	RenderingServer.set_default_clear_color(background)
+	host.apply_appearance(dark_mode, background)
 	if persist_preferences and not host.save_display_choice("background_style", background_style): set_status("STORAGE_SESSION")
 
 func apply_appearance() -> void:
@@ -1977,12 +1980,12 @@ func apply_appearance() -> void:
 	backdrop.set_palette(dark_mode, midnight, background_style)
 	brand_label.add_theme_font_override("font", UIAppearance.ui_font(font_style, true))
 	song_title.add_theme_font_override("font", UIAppearance.ui_font(font_style, true))
-	var background: Color = UIAppearance.color("background", dark_mode, midnight)
+	var background: Color = ThemeBackdrop.base_color(background_style, dark_mode, midnight)
 	RenderingServer.set_default_clear_color(background)
 	host.apply_appearance(dark_mode, background)
 	update_color_legend()
 	appearance_picker.select(["system", "light", "dark", "midnight"].find(appearance_mode))
-	background_picker.select(["ribbon", "gradient", "solid"].find(background_style))
+	background_picker.select(ThemeBackdrop.STYLES.find(background_style))
 	background_picker.disabled = midnight
 	drawer.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 16, midnight))
 	picker_panel.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 12, midnight))

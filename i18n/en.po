@@ -778,8 +778,20 @@ msgstr "Soft gradient"
 msgid "BACKGROUND_SOLID"
 msgstr "Solid color"
 
+msgid "BACKGROUND_WARM"
+msgstr "Warm cream (plain)"
+
+msgid "BACKGROUND_SLATE"
+msgstr "Cool slate (plain)"
+
+msgid "BACKGROUND_HORIZON"
+msgstr "Horizon wash"
+
+msgid "BACKGROUND_DOTS"
+msgstr "Quiet dots"
+
 msgid "BACKGROUND_STYLE_HELP"
-msgstr "Choose the space around the music. Midnight always uses black."
+msgstr "Choose the space around the music. Plain choices have no pattern. Midnight always uses black."
 
 msgid "TEXT_SIZE"
 msgstr "Text size"

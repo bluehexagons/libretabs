@@ -2,8 +2,10 @@
 class_name ThemeBackdrop
 extends Control
 
-# One cached, project-authored ribbon tile. No shader, timer or idle animation.
+# Cached, project-authored pattern tiles. No shader, timer or idle animation.
+const STYLES: Array[String] = ["ribbon", "gradient", "solid", "warm", "slate", "horizon", "dots"]
 var ribbon: Texture2D
+var dots: Texture2D
 var wash: GradientTexture2D
 var dark: bool = false
 var midnight: bool = false
@@ -26,6 +28,10 @@ func _ready() -> void:
 	var source: Image = Image.new()
 	source.load_svg_from_string(svg)
 	ribbon = ImageTexture.create_from_image(source)
+	var dots_svg: String = '<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128"><g fill="white"><circle cx="24" cy="24" r="2.5" opacity=".55"/><circle cx="88" cy="88" r="2.5" opacity=".55"/><circle cx="88" cy="24" r="1.5" opacity=".28"/><circle cx="24" cy="88" r="1.5" opacity=".28"/></g></svg>'
+	var dots_source: Image = Image.new()
+	dots_source.load_svg_from_string(dots_svg)
+	dots = ImageTexture.create_from_image(dots_source)
 	texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
 	wash = GradientTexture2D.new()
 	wash.width = 64
@@ -41,19 +47,33 @@ func set_palette(value: bool, oled: bool = false, style: String = "ribbon") -> v
 	background_style = style
 	if wash == null: return
 	var gradient: Gradient = Gradient.new()
-	gradient.colors = PackedColorArray([
-		UIAppearance.color("background", dark, midnight),
-		UIAppearance.color("background", dark, midnight).lerp(UIAppearance.color("library", dark, midnight), 0.32)])
+	var start: Color = base_color(background_style, dark, midnight)
+	var finish: Color = Color("19302e" if dark else "dbeae8") if background_style == "horizon" else start.lerp(UIAppearance.color("library", dark, midnight), 0.32)
+	gradient.colors = PackedColorArray([start, finish])
+	wash.fill_from = Vector2(0.5, 0.0) if background_style == "horizon" else Vector2.ZERO
+	wash.fill_to = Vector2(0.5, 1.0) if background_style == "horizon" else Vector2.ONE
 	wash.gradient = gradient
 	queue_redraw()
 
+static func base_color(style: String, is_dark: bool, oled: bool = false) -> Color:
+	if oled: return Color.BLACK
+	match style:
+		"warm": return Color("251d1a" if is_dark else "f0e4d5")
+		"slate": return Color("17262c" if is_dark else "dfe9ec")
+		_: return UIAppearance.color("background", is_dark)
+
 func _draw() -> void:
 	if ribbon == null: return
-	if midnight or background_style == "solid":
-		draw_rect(Rect2(Vector2.ZERO, size), UIAppearance.color("background", dark, midnight))
+	var area: Rect2 = Rect2(Vector2.ZERO, size)
+	if midnight or background_style in ["solid", "warm", "slate", "dots"]:
+		draw_rect(area, base_color(background_style, dark, midnight))
+		if not midnight and background_style == "dots":
+			var dot_tint: Color = UIAppearance.color("ink", dark)
+			dot_tint.a = 0.13 if dark else 0.11
+			draw_texture_rect(dots, area, true, dot_tint)
 		return
-	draw_texture_rect(wash, Rect2(Vector2.ZERO, size), false)
+	draw_texture_rect(wash, area, false)
 	if background_style == "ribbon":
 		var tint: Color = UIAppearance.color("ink", dark)
 		tint.a = 0.09 if dark else 0.065
-		draw_texture_rect(ribbon, Rect2(Vector2.ZERO, size), true, tint)
+		draw_texture_rect(ribbon, area, true, tint)
