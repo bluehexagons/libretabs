@@ -7,7 +7,7 @@ const MAX_ROWS: int = 32
 const MIN_HEIGHT: int = 96
 const MAX_HEIGHT: int = 480
 const MAX_BYTES: int = 2048
-const TYPES: Array[String] = ["staff", "tab", "piano"]
+const TYPES: Array[String] = ["staff", "tab", "piano", "treble", "bass"]
 const DEFAULT_ROWS: Array[Dictionary] = [
 	{"type": "staff", "height": 144},
 	{"type": "tab", "height": 176},
@@ -61,7 +61,7 @@ static func total_height(rows: Array) -> float:
 	return float(total)
 
 static func native_height(type: String) -> float:
-	return 176.0 if type == "staff" else (176.0 if type == "tab" else 160.0)
+	return 160.0 if type == "piano" else 176.0
 
 static func row_top(rows: Array, index: int) -> float:
 	var result: float = 0

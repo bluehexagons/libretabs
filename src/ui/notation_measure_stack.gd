@@ -22,14 +22,18 @@ func configure() -> void:
 		return
 	var top: float = 0
 	var has_title: bool = false
+	var split_staff: bool = false
+	var row_types: Array[String] = []
+	for row: Dictionary in notation_rows: row_types.append(str(row.type))
+	split_staff = row_types.has("treble") and row_types.has("bass")
 	for row: Dictionary in notation_rows:
 		var height: float = float(row.height)
 		if row.type != "piano":
-			add_canvas(str(row.type), top, height, NotationRows.native_height(str(row.type)), not has_title)
+			add_canvas(str(row.type), top, height, NotationRows.native_height(str(row.type)), not has_title, split_staff)
 			has_title = true
 		top += height
 
-func add_canvas(type: String, top: float, height: float, native_height: float, show_title: bool = true) -> void:
+func add_canvas(type: String, top: float, height: float, native_height: float, show_title: bool = true, split_staff: bool = false) -> void:
 	var canvas: MeasureCanvas = MeasureCanvas.new()
 	canvas.song = song
 	canvas.part = part
@@ -37,6 +41,7 @@ func add_canvas(type: String, top: float, height: float, native_height: float, s
 	canvas.index = index
 	canvas.continuous = continuous
 	canvas.notation = type
+	canvas.split_staff = split_staff and type in ["treble", "bass"]
 	canvas.shape_cues = shape_cues
 	canvas.tab_y_offset = -48 if type == "tab" and not notation_rows.is_empty() else 0
 	canvas.show_measure_title = show_title

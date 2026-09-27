@@ -372,3 +372,8 @@ order, with an individual height for each row. The existing staff-above-tab
 layout remains the default. Heights prioritize limited screen space; all rows
 still use the one shared transport tick, and the piano is a visualization rather
 than recorded input or a second musical timeline.
+
+The prototype also offers [practice presets and concert-pitch staff rows](decisions/0019-practice-presets-and-concert-staff.md)
+for guitar, pick, bass-staff reading, and piano grand-staff reading. The
+project-authored two-hand example has one MIDI part; these views do not add bass
+fingering or multi-part piano reduction to the MVP contract.

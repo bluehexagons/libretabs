@@ -8,12 +8,37 @@ var picker: OptionButton
 var original: Array[String] = []
 var displayed: Array[String] = []
 var tooltips: Array[String] = []
+var touch_target: FriendlyButton
 
 func _ready() -> void:
 	picker = get_parent() as OptionButton
 	picker.get_popup().about_to_popup.connect(fit_items)
 	picker.get_popup().popup_hide.connect(restore_items)
 	get_viewport().size_changed.connect(picker.get_popup().hide)
+	# Use a scrollable in-app choice sheet. PopupMenu selects an item when a
+	# finger tries to drag its list, and can stop reopening on mobile Safari.
+	touch_target = FriendlyButton.new()
+	touch_target.flat = true
+	touch_target.focus_mode = Control.FOCUS_ALL
+	touch_target.mouse_filter = Control.MOUSE_FILTER_PASS
+	touch_target.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	touch_target.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	picker.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	picker.focus_mode = Control.FOCUS_NONE
+	picker.add_child(touch_target)
+	touch_target.mouse_entered.connect(refresh_target_help)
+	touch_target.focus_entered.connect(refresh_target_help)
+	refresh_target_help()
+	touch_target.pressed.connect(func() -> void:
+		if touch_target.suppress_action: return
+		var ancestor: Node = picker
+		while ancestor != null and not ancestor.has_method("open_choice_picker"):
+			ancestor = ancestor.get_parent()
+		if ancestor != null: ancestor.call("open_choice_picker", picker))
+
+func refresh_target_help() -> void:
+	if touch_target == null or picker == null: return
+	touch_target.tooltip_text = picker.tooltip_text if not picker.tooltip_text.is_empty() else (picker.text if not picker.text.is_empty() else tr("PICKER_CHOICE"))
 
 func fit_items() -> void:
 	if not original.is_empty(): restore_items()

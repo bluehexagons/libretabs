@@ -35,3 +35,11 @@ and the linked Pages deployment.
 [0014 — Pick-friendly derived arrangements](0014-pick-friendly-arrangements.md) records the optional procedural strum projection, explicit mute notation and the boundary between imported-song generation and musician-authored variants.
 
 [0015 — Custom notation and visualization rows](0015-custom-notation-rows.md) records ordered, repeatable staff/tab/piano rows, individual row heights, shared-tick piano highlights, and bounded device-local layout storage.
+
+[0016 — Large-screen mirroring](0016-large-screen-mirroring.md) records Theater's compact reading layout for mirrored displays.
+
+[0017 — Dense player, speed and fullscreen](0017-dense-player-speed-and-fullscreen.md) records the player density and control refinements.
+
+[0018 — Adjustable music layout](0018-adjustable-music-layout.md) records separate music-line, note-spacing and staff-height controls.
+
+[0019 — Practice presets and concert-pitch staff rows](0019-practice-presets-and-concert-staff.md) records direct layout choices, the one-part two-hand example, and touch navigation behavior.

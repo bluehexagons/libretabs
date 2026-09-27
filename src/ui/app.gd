@@ -145,11 +145,23 @@ var notice_button: Button
 var tempo_button: Button
 var metro_button: Button
 var stop_button: Button
+var layout_button: Button
+var preset_buttons: Dictionary = {}
+var preset_choice_buttons: Dictionary = {}
+var welcome_preset_grid: GridContainer
+var layout_preset_grid: GridContainer
+var active_preset: String = "guitar"
 var quick_row: HFlowContainer
 var slower_button: Button
 var faster_button: Button
 var original_button: Button
 var menu_overlay: Control
+var picker_overlay: Control
+var picker_panel: PanelContainer
+var picker_scroll: ScrollContainer
+var picker_choices: VBoxContainer
+var picker_source: OptionButton
+var picker_close: Button
 var menu_button: Button
 var menu_scroll: ScrollContainer
 var page_label: Label
@@ -222,8 +234,17 @@ const BUILT_IN_LIBRARY: Array[Dictionary] = [
 	{"file": "yankee_doodle", "title_key": "LIBRARY_YANKEE_DOODLE"},
 	{"file": "brahms_lullaby", "title_key": "LIBRARY_BRAHMS_LULLABY"},
 	{"file": "minuet_in_g", "title_key": "LIBRARY_MINUET_IN_G"},
+	{"file": "piano_study", "title_key": "LIBRARY_PIANO_STUDY"},
 ]
 const STARTER_SONGS: Array[int] = [4, 6]
+const PRACTICE_PRESETS: Array[Dictionary] = [
+	{"id": "guitar", "key": "PRESET_GUITAR", "rows": [{"type": "staff", "height": 144}, {"type": "tab", "height": 176}], "style": 0},
+	{"id": "piano", "key": "PRESET_PIANO", "rows": [{"type": "treble", "height": 176}, {"type": "bass", "height": 176}], "style": 0},
+	{"id": "bass", "key": "PRESET_BASS", "rows": [{"type": "bass", "height": 240}], "style": 0},
+	{"id": "pick", "key": "PRESET_PICK", "rows": [{"type": "staff", "height": 144}, {"type": "tab", "height": 176}], "style": 1},
+	{"id": "finger", "key": "PRESET_FINGER", "rows": [{"type": "staff", "height": 144}, {"type": "tab", "height": 176}], "style": 2},
+	{"id": "piano_keys", "key": "PRESET_PIANO_KEYS", "rows": [{"type": "treble", "height": 176}, {"type": "bass", "height": 176}, {"type": "piano", "height": 144}], "style": 0},
+]
 
 func _ready() -> void:
 	host = HostAdapter.new()
@@ -242,6 +263,7 @@ func _ready() -> void:
 	var notation_result: Dictionary = host.load_notation_rows() if persist_preferences else {"rows": NotationRows.defaults(), "status": "ok"}
 	notation_rows.assign(notation_result.rows)
 	notation_rows_load_status = str(notation_result.status)
+	sync_preset_marker()
 	startup_help_pending = startup_help_enabled
 	host.motion_changed.connect(apply_motion)
 	host.exported.connect(func(success: bool) -> void: print_status.text = tr("PRINT_SAVED" if success else "PRINT_FAILED"))
@@ -260,6 +282,7 @@ func _ready() -> void:
 	if persist_preferences: tv_zoom = float(host.load_display_choice("tv_zoom", zoom_choices, "65")) / 100.0
 	if persist_preferences: theater_keep_controls = host.load_display_choice("theater_controls", ["auto", "keep"], "auto") == "keep"
 	build_ui()
+	build_picker_overlay()
 	build_tv_edge()
 	status_toast = StatusToast.new()
 	add_child(status_toast)
@@ -294,6 +317,80 @@ func pass_scroll_input(node: Node) -> void:
 	if node is Control and not node is ScrollContainer and not node is Range and not node is LineEdit:
 		if node.mouse_filter == Control.MOUSE_FILTER_STOP: node.mouse_filter = Control.MOUSE_FILTER_PASS
 	for child: Node in node.get_children(): pass_scroll_input(child)
+
+func build_picker_overlay() -> void:
+	picker_overlay = Control.new()
+	picker_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	picker_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(picker_overlay)
+	var shade: ColorRect = ColorRect.new()
+	shade.color = Color(0.08, 0.12, 0.22, 0.65)
+	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	shade.gui_input.connect(func(event: InputEvent) -> void:
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed: close_choice_picker())
+	picker_overlay.add_child(shade)
+	picker_panel = PanelContainer.new()
+	picker_panel.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 12))
+	picker_overlay.add_child(picker_panel)
+	var column: VBoxContainer = VBoxContainer.new()
+	column.add_theme_constant_override("separation", 8)
+	picker_panel.add_child(column)
+	picker_close = button("CLOSE", close_choice_picker)
+	column.add_child(picker_close)
+	picker_scroll = TouchScrollContainer.new()
+	picker_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	picker_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	column.add_child(picker_scroll)
+	picker_choices = VBoxContainer.new()
+	picker_choices.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	picker_choices.add_theme_constant_override("separation", 8)
+	picker_scroll.add_child(picker_choices)
+	picker_overlay.hide()
+	resized.connect(place_choice_picker)
+
+func open_choice_picker(picker: OptionButton) -> void:
+	if picker == null or picker.disabled or picker.item_count == 0: return
+	picker_source = picker
+	for child: Node in picker_choices.get_children():
+		picker_choices.remove_child(child)
+		child.queue_free()
+	for index: int in range(picker.item_count):
+		var item_index: int = index
+		var choice: Button = button("PICKER_CHOICE", func() -> void: choose_picker_item(item_index))
+		choice.text = tr("PICKER_CURRENT") % picker.get_item_text(index) if picker.selected == index else picker.get_item_text(index)
+		choice.tooltip_text = picker.get_item_text(index)
+		choice.disabled = picker.is_item_disabled(index)
+		choice.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		choice.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		picker_choices.add_child(choice)
+	picker_overlay.show()
+	place_choice_picker()
+	picker_scroll.scroll_vertical = 0
+	for choice: Button in picker_choices.get_children():
+		if not choice.disabled:
+			choice.grab_focus()
+			break
+
+func place_choice_picker() -> void:
+	if picker_overlay == null or not picker_overlay.visible or not is_instance_valid(picker_source): return
+	var box_size: Vector2 = Vector2(minf(size.x - 16, 560), minf(size.y - 16, minf(720, 76 + picker_source.item_count * 72)))
+	picker_panel.size = box_size
+	picker_panel.position = (size - box_size) / 2
+
+func choose_picker_item(index: int) -> void:
+	var selected: OptionButton = picker_source
+	close_choice_picker()
+	if not is_instance_valid(selected) or index < 0 or index >= selected.item_count or selected.is_item_disabled(index): return
+	selected.select(index)
+	selected.item_selected.emit(index)
+
+func close_choice_picker() -> void:
+	picker_overlay.hide()
+	if is_instance_valid(picker_source) and picker_source.is_visible_in_tree():
+		for child: Node in picker_source.get_children():
+			var fit: OptionMenuFit = child as OptionMenuFit
+			if fit != null and is_instance_valid(fit.touch_target): fit.touch_target.grab_focus()
+	picker_source = null
 
 func set_status(key: String) -> void:
 	status_key = key
@@ -667,6 +764,8 @@ func build_ui() -> void:
 	view_button = button("SCORE_VIEW", func() -> void: toggle_drawer("SCORE_VIEW"))
 	reading_tools = flow(panel)
 	reading_tools.add_child(view_button)
+	layout_button = button("LAYOUTS", func() -> void: toggle_drawer("LAYOUTS"))
+	reading_tools.add_child(layout_button)
 	build_music_layout_controls(reading_tools, true)
 	tv_inline_zoom = BoxContainer.new()
 	reading_tools.add_child(tv_inline_zoom)
@@ -691,7 +790,7 @@ func build_ui() -> void:
 	drawer_header.add_child(menu_back)
 	menu_close = button("CLOSE", close_menu)
 	drawer_header.add_child(menu_close)
-	menu_scroll = ScrollContainer.new()
+	menu_scroll = TouchScrollContainer.new()
 	menu_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	menu_scroll.follow_focus = true
 	menu_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -723,6 +822,8 @@ func build_ui() -> void:
 	score.shape_cues = shape_cues
 	score.set_notation_rows(notation_rows)
 	score.seek_requested.connect(seek_tick)
+	score.scrub_started.connect(begin_seek_drag)
+	score.scrub_ended.connect(func() -> void: end_seek_drag(true))
 	score.page_turn_requested.connect(turn_page)
 	score_frame.add_child(score)
 	score_frame.score = score
@@ -814,7 +915,9 @@ func build_ui() -> void:
 	count_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	play_button.add_child(count_badge)
 	count_badge.hide()
-	stop_button = button("STOP", stop_practice)
+	stop_button = button("RESTART", restart_song)
+	stop_button.icon = UIIcons.get_icon("REPLAY")
+	stop_button.custom_minimum_size.x = 56
 	transport_row.add_child(stop_button)
 	quick_row = flow(dock)
 	quick_row.alignment = FlowContainer.ALIGNMENT_CENTER
@@ -888,6 +991,9 @@ func build_welcome_menu() -> void:
 		close_menu()
 		play_button.grab_focus())
 	welcome.add_child(welcome_practice)
+	welcome.add_child(label("PRESET_START_HINT", 18))
+	welcome_preset_grid = build_preset_grid(welcome, preset_buttons)
+	welcome.add_child(button("PRESET_PIANO_EXAMPLE", open_piano_example))
 	for key: String in ["WELCOME_READ", "WELCOME_PLAY", "WELCOME_PACE"]:
 		var card: PanelContainer = PanelContainer.new()
 		card.add_theme_stylebox_override("panel", UIAppearance.role_style("reading", dark_mode, "normal"))
@@ -915,6 +1021,63 @@ func build_welcome_menu() -> void:
 	welcome_storage.hide()
 	welcome.add_child(welcome_storage)
 
+func build_preset_grid(parent: VBoxContainer, targets: Dictionary) -> GridContainer:
+	var grid: GridContainer = GridContainer.new()
+	grid.columns = 2
+	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid.add_theme_constant_override("h_separation", 8)
+	grid.add_theme_constant_override("v_separation", 8)
+	parent.add_child(grid)
+	for preset: Dictionary in PRACTICE_PRESETS:
+		var id: String = str(preset.id)
+		var choice: Button = button(str(preset.key), func() -> void: apply_preset(id))
+		choice.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		grid.add_child(choice)
+		targets[id] = choice
+	update_preset_buttons()
+	return grid
+
+func update_preset_buttons() -> void:
+	for group: Dictionary in [preset_buttons, preset_choice_buttons]:
+		for id: String in group:
+			var choice: Button = group[id]
+			choice.text = tr("PRESET_CURRENT") % tr(preset_key(id)) if id == active_preset else tr(preset_key(id))
+
+func sync_preset_marker() -> void:
+	active_preset = ""
+	var style: int = arrangement_picker.selected if arrangement_picker != null else 0
+	for preset: Dictionary in PRACTICE_PRESETS:
+		if notation_rows == preset.rows and style == int(preset.style):
+			active_preset = str(preset.id)
+			break
+	update_preset_buttons()
+
+func preset_key(id: String) -> String:
+	for preset: Dictionary in PRACTICE_PRESETS:
+		if preset.id == id: return str(preset.key)
+	return "PRESET_GUITAR"
+
+func apply_preset(id: String) -> void:
+	for preset: Dictionary in PRACTICE_PRESETS:
+		if preset.id != id: continue
+		var was_playing: bool = audio.playing_practice
+		if was_playing: pause()
+		active_preset = id
+		notation_rows.assign((preset.rows as Array).duplicate(true))
+		arrangement_picker.select(int(preset.style))
+		apply_notation_rows()
+		rebuild_notation_rows_editor()
+		if song != null: update_arrangement()
+		update_position()
+		update_preset_buttons()
+		if menu_overlay.visible: close_menu()
+		if was_playing: start(false)
+		return
+
+func open_piano_example() -> void:
+	apply_preset("piano")
+	load_library_item(BUILT_IN_LIBRARY.size() - 1)
+
 func set_startup_help(enabled: bool) -> void:
 	startup_help_enabled = enabled
 	if persist_preferences:
@@ -922,7 +1085,7 @@ func set_startup_help(enabled: bool) -> void:
 
 func build_drawers() -> void:
 	var menu_index: VBoxContainer = section("MENU")
-	for key: String in ["SONG_MENU", "WELCOME", "SETTINGS", "TV_VIEW", "TEMPO", "SCORE_VIEW", "PRINT", "CAPTURE", "LOOP_TOOL", "SOUND", "DISPLAY", "KEYBOARD", "HELP", "ABOUT"]:
+	for key: String in ["SONG_MENU", "WELCOME", "LAYOUTS", "SETTINGS", "TV_VIEW", "TEMPO", "SCORE_VIEW", "PRINT", "CAPTURE", "LOOP_TOOL", "SOUND", "DISPLAY", "KEYBOARD", "HELP", "ABOUT"]:
 		var entry: Button = button(key, func() -> void: toggle_drawer(key))
 		entry.text = tr("CARD_" + key)
 		entry.alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -935,7 +1098,13 @@ func build_drawers() -> void:
 	build_print_menu()
 	build_capture_menu()
 	build_tv_menu()
+	var presets: VBoxContainer = section("LAYOUTS")
+	presets.add_child(label("PRESET_EXPLAIN", 18))
+	layout_preset_grid = build_preset_grid(presets, preset_choice_buttons)
+	presets.add_child(button("PRESET_PIANO_EXAMPLE", open_piano_example))
+	presets.add_child(button("SCORE_VIEW", func() -> void: toggle_drawer("SCORE_VIEW")))
 	var views: VBoxContainer = section("SCORE_VIEW")
+	views.add_child(button("LAYOUTS", func() -> void: toggle_drawer("LAYOUTS")))
 	view_picker = OptionButton.new()
 	view_picker.tooltip_text = tr("VIEW_HELP")
 	view_picker.custom_minimum_size.y = 56
@@ -1456,6 +1625,19 @@ func close_menu() -> void:
 	else: menu_button.grab_focus()
 
 func _input(event: InputEvent) -> void:
+	if picker_overlay != null and picker_overlay.visible:
+		if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
+			close_choice_picker()
+			get_viewport().set_input_as_handled()
+		elif event is InputEventKey and event.pressed and event.keycode == KEY_TAB:
+			var choices: Array[Control] = [picker_close]
+			for child: Button in picker_choices.get_children():
+				if not child.disabled: choices.append(child)
+			var focused: Control = get_viewport().gui_get_focus_owner()
+			var step: int = -1 if event.shift_pressed else 1
+			choices[posmod(choices.find(focused) + step, choices.size())].grab_focus()
+			get_viewport().set_input_as_handled()
+		return
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE and host.is_fullscreen():
 		host.set_fullscreen(false)
 		get_viewport().set_input_as_handled()
@@ -1470,7 +1652,7 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		return
 	if not capture_active and not menu_overlay.visible and (event is InputEventScreenTouch or event is InputEventScreenDrag):
-		var touched_score: ScoreView = score_frame.pointer_score(event.position)
+		var touched_score: ScoreView = score if score.touch_origins.has(event.index) else score_frame.pointer_score(event.position)
 		if touched_score != null:
 			var local_event: InputEvent = event.xformed_by(touched_score.get_global_transform_with_canvas().affine_inverse())
 			touched_score.touch_input(local_event)
@@ -1619,7 +1801,7 @@ func rebuild_notation_rows_editor() -> void:
 		type.custom_minimum_size = Vector2(150, 56)
 		type.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		type.fit_to_longest_item = false
-		for key: String in ["NOTATION_STAFF_ROW", "NOTATION_TAB_ROW", "NOTATION_PIANO_ROW"]: type.add_item(tr(key))
+		for key: String in ["NOTATION_STAFF_ROW", "NOTATION_TAB_ROW", "NOTATION_PIANO_ROW", "NOTATION_TREBLE_ROW", "NOTATION_BASS_ROW"]: type.add_item(tr(key))
 		type.select(NotationRows.TYPES.find(str(notation_rows[index].type)))
 		type.tooltip_text = tr("NOTATION_ROW_TYPE")
 		type.item_selected.connect(func(selected: int) -> void:
@@ -1693,6 +1875,7 @@ func restore_notation_rows() -> void:
 
 func apply_notation_rows() -> void:
 	notation_rows = NotationRows.clean(notation_rows)
+	sync_preset_marker()
 	if score != null:
 		score.set_notation_rows(notation_rows)
 		update_main_scroll.call_deferred()
@@ -1761,6 +1944,7 @@ func apply_appearance() -> void:
 	update_color_legend()
 	appearance_picker.select(["system", "light", "dark"].find(appearance_mode))
 	drawer.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 16))
+	picker_panel.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 12))
 	paper.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 8))
 	dock_panel.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 12))
 	speed_control.add_theme_stylebox_override("panel", UIAppearance.tempo_unit_style(dark_mode))
@@ -1884,7 +2068,9 @@ func responsive() -> void:
 	tempo_button.visible = true
 	metro_button.visible = expanded_controls and not tight_controls and (not side_dock or size.y >= 320)
 	loop_button.visible = not tight_controls and not tv_active
-	stop_button.visible = false
+	stop_button.visible = not tight_controls and not landscape and (not tv_active or size.x >= 760)
+	stop_button.text = "" if side_dock or size.x < 760 or tv_active else tr("RESTART")
+	stop_button.tooltip_text = tr("TIP_RESTART")
 	update_play_control()
 	metro_button.text = tr("CLICK_ON" if metro_check.button_pressed else "CLICK_OFF") if not side_dock and size.x >= 760 else ""
 	metro_button.custom_minimum_size.x = 56
@@ -1944,6 +2130,9 @@ func responsive() -> void:
 	var song_columns: int = 2 if size.x >= 600 and theme.default_font_size < 30 else 1
 	starter_song_grid.columns = song_columns
 	more_song_grid.columns = song_columns
+	if welcome_preset_grid != null: welcome_preset_grid.columns = song_columns
+	if layout_preset_grid != null: layout_preset_grid.columns = song_columns
+	if layout_button != null: layout_button.visible = not tv_active and size.x >= 900
 	if opened_drawer == "WELCOME":
 		var inset: float = 8 if size.x < 600 else 24
 		drawer.size = Vector2(minf(size.x - inset * 2, 720), minf(size.y - inset * 2, 760))
@@ -2331,6 +2520,7 @@ func set_arrangement_style(_index: int) -> void:
 	print_html = ""
 	print_save.disabled = true
 	update_arrangement()
+	sync_preset_marker()
 	update_position()
 
 func update_arrangement() -> void:
@@ -2408,6 +2598,12 @@ func stop_practice() -> void:
 	update_play_control()
 	set_status("START_HINT")
 	update_position()
+
+func restart_song() -> void:
+	if song == null or importer != null: return
+	var was_playing: bool = audio.playing_practice
+	stop_practice()
+	if was_playing: start(false)
 
 func restart_if_playing() -> void:
 	var was_playing: bool = audio.playing_practice
@@ -2638,6 +2834,15 @@ func update_position(animate_follow: bool = false) -> void:
 	var elapsed: int = floori(song.seconds_at(source_tick))
 	seek_label.text = tr("SEEK_POSITION") % [score.measure_index + 1, elapsed / 60, posmod(elapsed, 60)]
 	cue.text = tr("CUE_REST")
+	var shows_tab: bool = false
+	for row: Dictionary in notation_rows:
+		if row.type == "tab": shows_tab = true
+	if not shows_tab:
+		var names: Array[String] = []
+		for pitch: int in score.active_pitches(): names.append(score.pitch_name(pitch))
+		if names.size() > 3: cue.text = tr("CUE_MANY_PITCHES") % names.size()
+		elif not names.is_empty(): cue.text = tr("CUE_PITCHES") % ", ".join(names)
+		return
 	for note: Dictionary in song.notes:
 		if int(note.part) == part and source_tick >= float(note.start) and source_tick < float(note.end):
 			if projection.placements.has(note.id):

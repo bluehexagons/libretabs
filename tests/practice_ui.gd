@@ -22,9 +22,10 @@ func run() -> void:
 	for _frame: int in range(30): await process_frame
 	check(app.get("song") != null, "initial sample is ready")
 	var song_buttons: Dictionary = app.get("library_song_buttons")
-	check(song_buttons.size() == 12 and app.get("starter_song_grid").get_child_count() == 2, "every built-in song has a direct choice and beginner songs come first")
+	check(song_buttons.size() == 13 and app.get("starter_song_grid").get_child_count() == 2, "every built-in song has a direct choice and beginner songs come first")
 	check(song_buttons[0].text == TranslationServer.translate("SONG_CURRENT_ITEM") % TranslationServer.translate("LIBRARY_ODE_TO_JOY"), "the active song has a text marker")
 	check(app.get("title") == TranslationServer.translate("LIBRARY_ODE_TO_JOY"), "default library opens with Ode to Joy")
+	check(app.get("preset_buttons").size() == 6 and app.get("preset_choice_buttons").size() == 6, "practice layouts are direct choices on the starting page and in the menu")
 	check(app.get("opened_drawer") == "WELCOME" and app.get("startup_help_check").button_pressed, "first startup opens quick start with the opt-out enabled")
 	app.get("startup_help_check").button_pressed = false
 	check(not app.get("startup_help_enabled"), "startup help can be disabled")
@@ -54,6 +55,32 @@ func run() -> void:
 	app.call("set_arrangement_style", 0)
 	check(app.get("projection").style == TabProjection.BASIC, "arrangement picker returns to the unchanged basic projection")
 	app.call("close_menu")
+	app.call("apply_preset", "piano")
+	check(app.get("notation_rows")[0].type == "treble" and app.get("notation_rows")[1].type == "bass" and app.get("score").notation_rows.size() == 2, "piano preset opens concert-pitch treble and bass staffs")
+	check(is_equal_approx(ScoreLayout.staff_y(64, "treble"), ScoreLayout.STAFF_BOTTOM) and is_equal_approx(ScoreLayout.staff_y(43, "bass"), ScoreLayout.STAFF_BOTTOM), "treble E4 and bass G2 sit on their correct bottom staff lines")
+	app.call("open_piano_example")
+	for _frame: int in range(35): await process_frame
+	var piano_song: SongDocument = app.get("song")
+	var low_notes: int = 0
+	var high_notes: int = 0
+	for note: Dictionary in piano_song.notes:
+		if int(note.pitch) < 60: low_notes += 1
+		else: high_notes += 1
+	check(app.get("active_library") == 12 and low_notes >= 16 and high_notes >= 32 and piano_song.parts.size() == 1, "original two-hand example loads both pitch ranges into one source-linked part")
+	check(app.get("score").tiles[0].canvases.size() == 2 and app.get("cue").text.contains("Sounding notes"), "piano practice shows both staffs and pitch cues instead of guitar frets")
+	app.call("apply_preset", "pick")
+	check(app.get("projection").style == TabProjection.PICK and app.get("notation_rows") == NotationRows.defaults(), "pick preset selects the guitar arrangement and paired score")
+	app.call("apply_preset", "bass")
+	check(app.get("score").notation_rows[0].type == "bass" and not app.get("cue").text.contains("String"), "bass preset shows a bass staff without claiming guitar fingering")
+	app.call("apply_preset", "guitar")
+	app.call("load_library_item", 0)
+	for _frame: int in range(35): await process_frame
+	app.call("open_choice_picker", app.get("view_picker"))
+	check(app.get("picker_overlay").visible and app.get("picker_choices").get_child_count() == 3 and not app.get("view_picker").get_popup().visible, "dropdown choices use a scrollable in-app sheet rather than the touch-selecting native popup")
+	app.call("choose_picker_item", 1)
+	check(not app.get("picker_overlay").visible and app.get("score").mode == "pages", "choosing a sheet item changes the linked setting")
+	app.get("view_picker").select(0)
+	app.call("change_view")
 	app.call("toggle_drawer", "WELCOME")
 	check(not app.get("startup_help_check").button_pressed, "quick start stays accessible after opting out")
 	app.get("startup_help_check").button_pressed = true
@@ -256,6 +283,8 @@ func run() -> void:
 	app.call("_input", space)
 	check(not player.playing_practice, "Space pauses from any non-menu focus")
 	app.call("start", false)
+	app.call("restart_song")
+	check(player.playing_practice and app.get("source_tick") == 0.0, "Restart returns a playing song to its start and keeps playback active")
 	app.call("seek_input", seek_press)
 	check(app.get("seek_dragging") and not player.playing_practice, "pointer press pauses an active transport once")
 	app.call("begin_seek_drag")
@@ -348,10 +377,15 @@ func run() -> void:
 	check(is_equal_approx(app.get("source_tick"), score_seek_tick) and not player.playing_practice, "clicking paused music seeks without starting playback")
 	var before_score_drag: float = app.get("source_tick")
 	score.begin_pointer(score_seek_position)
-	score.pointer_position = score_seek_position + Vector2(30, 2)
-	score.pointer_moved = true
-	score.finish_pointer(score.pointer_position)
-	check(app.get("source_tick") == before_score_drag, "dragging across the music remains a scroll gesture rather than seeking")
+	score.move_pointer(score_seek_position + Vector2(80, 2))
+	check(app.get("source_tick") > before_score_drag and app.get("seek_dragging"), "horizontal score drag previews a new source position through the shared transport")
+	score.finish_pointer(score_seek_position + Vector2(80, 2))
+	check(not app.get("seek_dragging") and not player.playing_practice, "releasing a paused score scrub commits position without playing")
+	var after_score_drag: float = app.get("source_tick")
+	score.begin_pointer(score_seek_position)
+	score.move_pointer(score_seek_position + Vector2(2, 80))
+	score.finish_pointer(score_seek_position + Vector2(2, 80))
+	check(app.get("source_tick") == after_score_drag, "vertical score drag does not seek")
 	score.set_view("pages", "both")
 	app.call("turn_page", -1)
 	check(score.page_index == 0 and app.get("paper").modulate.a == 1.0, "page limit does not flash when the passage stays put")

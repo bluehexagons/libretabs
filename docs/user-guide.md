@@ -13,14 +13,16 @@ review; treat them as practice suggestions.
 
 ## Your first five minutes
 
-1. Open the player. An exercise is already loaded. Read **Quick start**, then
-   choose **Start practicing** to close the guide. This does not start the sound.
+1. Open the player. An exercise is already loaded. In **Quick start**, choose a
+   practice layout or keep the guitar default, then choose **Start practicing**.
+   This does not start the sound.
 2. Press **Play** and listen once without playing your guitar. The clicks before
    the music are a **count-in**: time to get ready. The moving line follows the
    music, and outlined numbers show the notes sounding now.
 3. Open **Menu → Playback** and choose a slower speed, such as **50%** under
    **Speed presets**. That means half the original speed, with the same pitches.
-   Choose **Stop** to return to the beginning, then **Play** to try again.
+   Choose **Restart** beside Play to return to the beginning. If sound is
+   playing, it continues from the start.
 4. Follow just a few numbers on the guitar tabs, using the reading guide below.
    It is fine to listen again before joining in.
 5. To repeat a short section, open **Menu → Loop**, set **From** to **1** and
@@ -112,10 +114,12 @@ or practice progress. See [privacy details](privacy.md).
   changes how quickly notes arrive, not their pitch.
 - **Beat clicks (metronome):** adds a click on each beat to help you keep time.
   **Count in before playing** adds preparation clicks on a fresh start; resuming
-  after Pause continues immediately. Use Stop then Play for a fresh start.
-- **Move to a passage:** click or tap the music to move playback there. The
-  position slider also lets you move through the song. **Stop** returns to the
-  beginning of the song, or the beginning of an enabled loop.
+  after Pause continues immediately. Use **Menu → Playback → Stop**, then Play,
+  when you want a new count-in.
+- **Move to a passage:** click or tap the music to move playback there. In
+  scrolling view, drag sideways across the music to scrub. The position slider
+  also lets you move through the song. **Restart** returns to the beginning of
+  the song, or the beginning of an enabled loop.
 - **Loop:** From and Through include the first and last measures you choose.
   **Repeat this measure** sets and enables a one-measure loop. **Start at current
   measure** and **End at current measure** set the range from the current position.
@@ -143,6 +147,19 @@ transcription of someone's guitar performance.
 
 ## Make the music easier to see
 
+Open **Menu → Practice layouts** (or choose a layout in **Quick start**) for
+one-step guitar tabs, pick strumming, fingerpicking, bass-staff reading, or
+piano treble-plus-bass staff reading. **Try a two-hand piano exercise** loads
+an original short piece with high and low notes in one MIDI part. Piano keys
+can also show which notes sound now. Piano and bass staffs show actual sounding
+pitches; guitar tabs still describe six-string E-standard guitar and are not
+bass-guitar fingering. In the piano layout, notes at or above middle C use the
+treble staff and lower notes use the bass staff. Separate MIDI tracks are not
+automatically merged into two piano hands.
+
+Menu and dropdown lists scroll at the distance you drag with a finger. Drag
+through a choice list to browse it, then tap a choice to select it.
+
 Open **Menu → Score view** for reading and layout choices:
 
 - **Smooth scrolling** follows the music. **Manual pages** lets you read at your
@@ -153,7 +170,8 @@ Open **Menu → Score view** for reading and layout choices:
 - **Music lines** controls how many consecutive lines fit on screen. Fewer lines
   give each line more height. **Note spacing** changes the horizontal gaps;
   **Staff height** changes the height of the five-line sheet music reference.
-- Add, reorder or resize sheet music, guitar-tab and piano rows. The piano row
+- Add, reorder or resize guitar, concert-pitch treble or bass, guitar-tab, and
+  piano rows. The piano row
   shows sounding notes; it is not a connected MIDI keyboard or a playing test.
   **Restore default rows** returns to the initial row layout.
 

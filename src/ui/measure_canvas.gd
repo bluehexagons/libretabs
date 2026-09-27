@@ -16,6 +16,7 @@ var part: int = 0
 var index: int = 0
 var continuous: bool = true
 var notation: String = "both"
+var split_staff: bool = false
 var tab_y_offset: float = 0
 var show_measure_title: bool = true
 var draw_count: int = 0
@@ -57,6 +58,9 @@ func draw_shape_cue(center: Vector2, token: String, color: Color, radius: float 
 	draw_polyline(points, color, 1.5, true)
 
 func draw_measure(index: int, origin: Vector2, width: float) -> void:
+	var has_staff: bool = notation != "tab"
+	var has_tab: bool = notation in ["both", "tab"]
+	var clef: String = notation if notation in ["treble", "bass"] else "staff"
 	var bar: Dictionary = song.measures[index]
 	var left: float = origin.x if continuous else origin.x + 44
 	var right: float = origin.x + width if continuous else origin.x + width - 12
@@ -69,21 +73,21 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 		if ui_font.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, 16).x > width - 16: title = tr("MEASURE_SHORT") % (index + 1)
 		if ui_font.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, 16).x > width - 16: title = tr("MEASURE_NUMBER_ONLY") % (index + 1)
 		text_at(origin + Vector2(8, 22), title, 16)
-	if notation != "tab":
+	if has_staff:
 		for line: int in range(5):
 			draw_line(Vector2(left, top + line * ScoreLayout.STAFF_SPACE), Vector2(right, top + line * ScoreLayout.STAFF_SPACE), ink.lerp(get_theme_color("paper", "LibreTabs"), 0.30), 1.0, true)
-		if not continuous: glyph(Vector2(origin.x + 9, top + 40.625), 0xe050, ScoreLayout.STAFF_FONT)
-		if not continuous: text_at(Vector2(origin.x + 18, top + 53), "8", 10)
+		if not continuous: glyph(Vector2(origin.x + 9, top + 40.625), 0xe062 if clef == "bass" else 0xe050, ScoreLayout.STAFF_FONT)
+		if not continuous and clef == "staff": text_at(Vector2(origin.x + 18, top + 53), "8", 10)
 		if not continuous: text_at(Vector2(left + 2, top + 13), str(bar.numerator), 13)
 		if not continuous: text_at(Vector2(left + 2, top + 29), str(bar.denominator), 13)
-	if notation != "staff":
+	if has_tab:
 		for string_index: int in range(6):
 			var y: float = tab_top + string_index * 21
 			if not continuous: text_at(Vector2(origin.x + 12, y + 5), str(string_index + 1), 13, muted)
 			draw_line(Vector2(left, y), Vector2(right, y), muted, 1, true)
-		if notation != "tab": draw_line(Vector2(right, top), Vector2(right, top + 4 * ScoreLayout.STAFF_SPACE), ink, 1.5)
+		if has_staff: draw_line(Vector2(right, top), Vector2(right, top + 4 * ScoreLayout.STAFF_SPACE), ink, 1.5)
 		draw_line(Vector2(right, tab_top), Vector2(right, tab_top + 105), ink, 1.5)
-	if notation == "staff": draw_line(Vector2(right, top), Vector2(right, top + 4 * ScoreLayout.STAFF_SPACE), ink, 1.5)
+	if has_staff and not has_tab: draw_line(Vector2(right, top), Vector2(right, top + 4 * ScoreLayout.STAFF_SPACE), ink, 1.5)
 	var music_left: float = origin.x + (16 if continuous else 68)
 	var span: float = width if continuous else width - 92
 	var visible_count: int = 0
@@ -91,11 +95,13 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 	var short_counts: Dictionary = {}
 	for candidate: Dictionary in song.notes:
 		if int(candidate.part) == part and candidate.start >= start and candidate.start < finish and candidate.end - candidate.start <= song.division / 2.0:
-			var group: int = floori(float(candidate.start) / song.division) * 2 + (1 if ScoreLayout.staff_y(int(candidate.pitch)) <= ScoreLayout.STAFF_TOP + 2 * ScoreLayout.STAFF_SPACE else 0)
+			if split_staff and not staff_accepts_pitch(int(candidate.pitch)): continue
+			var group: int = floori(float(candidate.start) / song.division) * 2 + (1 if ScoreLayout.staff_y(int(candidate.pitch), clef) <= ScoreLayout.STAFF_TOP + 2 * ScoreLayout.STAFF_SPACE else 0)
 			short_counts[group] = int(short_counts.get(group, 0)) + 1
 	for note: Dictionary in song.notes:
 		if int(note.part) != part or float(note.end) <= start or float(note.start) >= finish or note.end <= note.start:
 			continue
+		if split_staff and not staff_accepts_pitch(int(note.pitch)): continue
 		visible_count += 1
 		if visible_count > 48:
 			text_at(origin + Vector2(12, size.y - 8), tr("DENSE_DISPLAY"), 12, accent)
@@ -104,10 +110,10 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 		var grid: float = song.division / 4.0
 		var display: float = clampf(round(raw / grid) * grid, start, finish - grid)
 		var x: float = origin.x + ScoreLayout.note_x(song, note, index, width, continuous)
-		var pitch: int = int(note.pitch) + 12
-		var y: float = origin.y + ScoreLayout.staff_y(int(note.pitch))
-		var color: Color = get_theme_color(ScoreLayout.placement_color_token(projection, note), "LibreTabs")
-		if notation != "tab":
+		var pitch: int = int(note.pitch)
+		var y: float = origin.y + ScoreLayout.staff_y(pitch, clef)
+		var color: Color = get_theme_color("ink" if clef in ["treble", "bass"] else ScoreLayout.placement_color_token(projection, note), "LibreTabs")
+		if has_staff:
 			if y >= origin.y + 12 and y <= origin.y + 172:
 				# Ledger lines in octave-transposing guitar treble.
 				for ledger: int in range(1, 12):
@@ -139,11 +145,11 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 					draw_circle(Vector2(x + 13, y - 2), 1.8, color)
 				if float(note.end) > finish or float(note.start) < start:
 					draw_arc(Vector2(x + 13, y + 4), 12, 0.2, PI - 0.2, 20, color, 1.5, true)
-				if shape_cues:
+				if shape_cues and clef == "staff":
 					draw_shape_cue(Vector2(x + half_head + 8, y - 18), ScoreLayout.placement_color_token(projection, note), color)
 			else:
 				text_at(Vector2(x, top + 16), tr("PITCH_MARKER") % int(note.pitch), 11, accent)
-		if notation != "staff":
+		if has_tab:
 			if projection.placements.has(note.id):
 				var placement: Dictionary = projection.placements[note.id]
 				var tab_y: float = origin.y + ScoreLayout.tab_y(int(placement.string), notation) + tab_y_offset
@@ -160,7 +166,7 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 					text_at(Vector2(x + half + 5, tab_y - 5), tr(role_key), 12, accent)
 			else:
 				text_at(Vector2(x, tab_top + 31), "△" if projection.omitted.has(note.id) else "!", 22, warning)
-	if notation != "staff":
+	if has_tab:
 		for strum: Dictionary in projection.strums:
 			if float(strum.tick) < start or float(strum.tick) >= finish: continue
 			var marker: Dictionary = {"start": strum.tick}
@@ -187,8 +193,13 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 			draw_line(Vector2(x - 4, last_y), Vector2(x + 4, last_y), accent, 2, true)
 			text_at(Vector2(x + 4, first_y + 4), tr("BARRE_MARK"), 12, accent)
 	# Rests are a conservative display projection of empty sixteenth-grid cells.
-	if notation == "tab": return
-	for rest: Dictionary in ScoreLayout.rest_segments(song.notes, part, start, finish, song.division):
+	if not has_staff: return
+	var staff_notes: Array = song.notes
+	if split_staff:
+		staff_notes = []
+		for note: Dictionary in song.notes:
+			if staff_accepts_pitch(int(note.pitch)): staff_notes.append(note)
+	for rest: Dictionary in ScoreLayout.rest_segments(staff_notes, part, start, finish, song.division):
 		var x: float = music_left + ((float(rest.start) + float(rest.end)) / 2.0 - start) / (finish - start) * span
 		var rest_code: int = int(rest.glyph)
 		var rest_size: int = roundi(49 * scale.y)
@@ -196,3 +207,6 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 		glyph(Vector2(x - half_rest, top + 26), rest_code, 49, rest_color)
 		if int(rest.dots) > 0:
 			draw_circle(Vector2(x + half_rest + 6, top + 20), 2.5, rest_color, true, -1, true)
+
+func staff_accepts_pitch(pitch: int) -> bool:
+	return pitch >= 60 if notation == "treble" else pitch < 60

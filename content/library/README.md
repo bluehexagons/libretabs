@@ -27,6 +27,7 @@ accompaniment are omitted. No swing or human timing is added.
 | yankee_doodle | Verse and chorus twice, with dotted chorus rhythm | 2/4 · 100 |
 | brahms_lullaby | Complete vocal melody in C, preserving pickup, rests and dotted rhythm; piano introduction omitted | 3/4 · 84 |
 | minuet_in_g | Both 16-bar sections, without repeats or ornaments, down one octave | 3/4 · 100 |
+| piano_study | Original eight-bar two-hand C-major exercise with a quarter-note melody and alternating low half notes; both pitch ranges share one MIDI part | 4/4 · 88 |
 
 ## Score references checked 2026-09-11
 

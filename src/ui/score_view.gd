@@ -3,6 +3,8 @@ class_name ScoreView
 extends Control
 
 signal seek_requested(tick: float)
+signal scrub_started
+signal scrub_ended
 signal page_turn_requested(direction: int)
 
 const PIANO_FIRST_PITCH: int = 21
@@ -50,6 +52,8 @@ var pointer_pressed: bool = false
 var pointer_origin: Vector2
 var pointer_position: Vector2
 var pointer_moved: bool = false
+var pointer_anchor_offset: float = 0.0
+var pointer_scrubbing: bool = false
 var touch_origins: Dictionary = {}
 var touch_positions: Dictionary = {}
 var touch_released: Dictionary = {}
@@ -141,9 +145,9 @@ func fit_rows(height: float, staff_height: float) -> void:
 		if notation != "tab": rows.append({"type": "staff", "height": 144})
 		if notation != "staff": rows.append({"type": "tab", "height": 176})
 	var weight: float = 0
-	for row: Dictionary in rows: weight += float(row.height) * (staff_height if row.type == "staff" else 1.0)
+	for row: Dictionary in rows: weight += float(row.height) * (staff_height if row.type in ["staff", "treble", "bass"] else 1.0)
 	for row: Dictionary in rows:
-		row.height = clampi(roundi(height * float(row.height) * (staff_height if row.type == "staff" else 1.0) / weight), NotationRows.MIN_HEIGHT, NotationRows.MAX_HEIGHT)
+		row.height = clampi(roundi(height * float(row.height) * (staff_height if row.type in ["staff", "treble", "bass"] else 1.0) / weight), NotationRows.MIN_HEIGHT, NotationRows.MAX_HEIGHT)
 	set_fitted_rows(rows)
 
 func set_fitted_rows(rows: Array[Dictionary]) -> void:
@@ -293,8 +297,10 @@ func engraving_draws() -> int:
 	return total
 
 func tick_at_position(local_position: Vector2) -> float:
+	return tick_at_timeline_position(local_position.x + view_offset)
+
+func tick_at_timeline_position(timeline_position: float) -> float:
 	if song == null or song.measures.is_empty(): return 0
-	var timeline_position: float = local_position.x + view_offset
 	var index: int = 0
 	for candidate: int in range(layout.offsets.size()):
 		if timeline_position >= layout.offsets[candidate]: index = candidate
@@ -318,7 +324,7 @@ func pointer_input(event: InputEvent) -> void:
 			finish_pointer(event.position)
 	elif event is InputEventMouseMotion:
 		update_pointer_region(event.position)
-		if pointer_pressed and pointer_position.distance_to(pointer_origin) > 14: pointer_moved = true
+		if pointer_pressed: move_pointer(event.position)
 	elif event is InputEventScreenTouch or event is InputEventScreenDrag:
 		touch_input(event)
 
@@ -341,9 +347,7 @@ func touch_input(event: InputEvent) -> void:
 				finish_touch()
 	elif event is InputEventScreenDrag and touch_origins.has(event.index):
 		touch_positions[event.index] = event.position
-		pointer_position = event.position
-		if pointer_position.distance_to(pointer_origin) > 14: pointer_moved = true
-		cursor.queue_redraw()
+		if touch_origins.size() == 1: move_pointer(event.position)
 
 func finish_touch() -> void:
 	var direction: int = 0
@@ -366,6 +370,8 @@ func finish_touch() -> void:
 	touch_origins.clear()
 	touch_positions.clear()
 	touch_released.clear()
+	pointer_hovered = false
+	cursor.queue_redraw()
 
 func cancel_touch() -> void:
 	cancel_pointer()
@@ -373,6 +379,8 @@ func cancel_touch() -> void:
 	touch_positions.clear()
 	touch_released.clear()
 	touch_cancelled = true
+	pointer_hovered = false
+	cursor.queue_redraw()
 
 func begin_pointer(position: Vector2) -> void:
 	if not is_timeline_position(position):
@@ -382,15 +390,34 @@ func begin_pointer(position: Vector2) -> void:
 	pointer_moved = false
 	pointer_origin = position
 	pointer_position = position
+	pointer_anchor_offset = view_offset
+	pointer_scrubbing = false
+	cursor.queue_redraw()
+
+func move_pointer(position: Vector2) -> void:
+	pointer_position = position
+	if position.distance_to(pointer_origin) > 14: pointer_moved = true
+	# A horizontal score drag moves the shared transport; vertical gestures can
+	# still be used to scroll the surrounding page or cancel a touch.
+	if mode == "scroll" and pointer_moved and absf(position.x - pointer_origin.x) > absf(position.y - pointer_origin.y) * 1.5:
+		if not pointer_scrubbing:
+			pointer_scrubbing = true
+			scrub_started.emit()
+		seek_requested.emit(tick_at_timeline_position(position.x + pointer_anchor_offset))
 	cursor.queue_redraw()
 
 func finish_pointer(position: Vector2) -> void:
 	if not pointer_pressed: return
 	pointer_position = position
+	var was_scrubbing: bool = pointer_scrubbing
 	var should_seek: bool = is_timeline_position(position) and not pointer_moved and position.distance_to(pointer_origin) <= 14
 	pointer_pressed = false
+	pointer_scrubbing = false
 	cursor.queue_redraw()
-	if should_seek: seek_requested.emit(tick_at_position(position))
+	if was_scrubbing:
+		seek_requested.emit(tick_at_timeline_position(position.x + pointer_anchor_offset))
+		scrub_ended.emit()
+	elif should_seek: seek_requested.emit(tick_at_position(position))
 
 func is_timeline_position(position: Vector2) -> bool:
 	if drawing_rows().is_empty(): return true
@@ -411,6 +438,9 @@ func cancel_pointer() -> void:
 	if not pointer_pressed: return
 	pointer_pressed = false
 	pointer_moved = true
+	if pointer_scrubbing:
+		pointer_scrubbing = false
+		scrub_ended.emit()
 	cursor.queue_redraw()
 
 func _notification(what: int) -> void:
@@ -435,7 +465,9 @@ func draw_cursor(surface: Control) -> void:
 		preview_color.a = 0.7 if pointer_pressed else 0.42
 		var wash: Color = preview_color
 		wash.a = 0.12 if pointer_pressed else 0.055
-		draw_timeline_indicator(surface, preview_x, preview_color, 3 if pointer_pressed else 2, wash, 30 if pointer_pressed else 20)
+		# The preview only appears where a tap can seek or an active scrub is underway.
+		if not pointer_pressed or not pointer_moved or pointer_scrubbing:
+			draw_timeline_indicator(surface, preview_x, preview_color, 3 if pointer_pressed else 2, wash, 30 if pointer_pressed else 20)
 	if tiles.has(measure_index):
 		var tile: NotationMeasureStack = tiles[measure_index]
 		var origin: Vector2 = tile.position + strip.position
@@ -469,15 +501,15 @@ func draw_cursor(surface: Control) -> void:
 					var half: float = ui_font.get_string_size(str(placement.fret), HORIZONTAL_ALIGNMENT_LEFT, -1, row_text_size(row_index, 26)).x / 2 + 4
 					if upcoming or sounding: draw_note_mark(surface, Vector2(x, y), half, upcoming, note, minf(14, mapped_row_distance(row_index, 14)))
 					if onset_here and spark_phase >= 0: draw_particles(surface, Vector2(x, y), note, spark_phase)
-				elif type == "staff":
-					var y: float = origin.y + mapped_row_y(row_index, ScoreLayout.staff_y(int(note.pitch)))
+				elif type in ["staff", "treble", "bass"] and row_accepts_pitch(type, int(note.pitch)):
+					var y: float = origin.y + mapped_row_y(row_index, ScoreLayout.staff_y(int(note.pitch), type))
 					var top: float = origin.y + mapped_row_y(row_index, 12)
 					var bottom: float = origin.y + mapped_row_y(row_index, 172)
 					if y >= top and y <= bottom:
 						if upcoming: draw_note_mark(surface, Vector2(x, y), maxf(10, mapped_row_distance(row_index, 8)), true, note)
 						elif sounding:
-							surface.draw_arc(Vector2(x, y), maxf(11, mapped_row_distance(row_index, 8)), 0, TAU, 20, get_theme_color(ScoreLayout.placement_color_token(projection, note), "LibreTabs"), 2, true)
-						if onset_here and spark_phase >= 0: draw_particles(surface, Vector2(x, y), note, spark_phase)
+							surface.draw_arc(Vector2(x, y), maxf(11, mapped_row_distance(row_index, 8)), 0, TAU, 20, get_theme_color("ink" if type in ["treble", "bass"] else ScoreLayout.placement_color_token(projection, note), "LibreTabs"), 2, true)
+						if onset_here and spark_phase >= 0: draw_particles(surface, Vector2(x, y), note, spark_phase, type in ["treble", "bass"])
 
 	draw_live(surface)
 	draw_piano_rows(surface)
@@ -520,7 +552,7 @@ func draw_live(surface: Control) -> void:
 	for note: Dictionary in live_notes:
 		for row: Dictionary in visual_rows():
 			var row_index: int = int(row.index)
-			if row.type == "staff": draw_live_staff(surface, note, x, origin.y, row_index, color)
+			if row.type in ["staff", "treble", "bass"] and row_accepts_pitch(str(row.type), int(note.pitch)): draw_live_staff(surface, note, x, origin.y, row_index, color, str(row.type))
 			elif row.type == "tab":
 				var y: float = origin.y + mapped_row_y(row_index, ScoreLayout.tab_y(int(note.get("string", 1)), drawing_notation()))
 				var text: String = str(note.fret) if note.has("fret") else "!"
@@ -530,8 +562,8 @@ func draw_live(surface: Control) -> void:
 				surface.draw_string(font, Vector2(x - half, y + (font.get_ascent(26) - font.get_descent(26)) / 2), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 26, color)
 	surface.draw_string(font, Vector2(48, origin.y + drawing_height() - 16), tr("LIVE_NOTE"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, color)
 
-func draw_live_staff(surface: Control, note: Dictionary, x: float, origin_y: float, row_index: int, color: Color) -> void:
-	var y: float = origin_y + mapped_row_y(row_index, ScoreLayout.staff_y(int(note.pitch)))
+func draw_live_staff(surface: Control, note: Dictionary, x: float, origin_y: float, row_index: int, color: Color, clef: String = "staff") -> void:
+	var y: float = origin_y + mapped_row_y(row_index, ScoreLayout.staff_y(int(note.pitch), clef))
 	var center: float = origin_y + mapped_row_y(row_index, ScoreLayout.STAFF_BOTTOM)
 	var staff_top: float = origin_y + mapped_row_y(row_index, ScoreLayout.STAFF_TOP)
 	if y >= origin_y + mapped_row_y(row_index, 12) and y <= origin_y + mapped_row_y(row_index, 172):
@@ -555,6 +587,12 @@ func visual_rows() -> Array[Dictionary]:
 	if notation != "staff": legacy.append({"type": "tab", "index": 0})
 	return legacy
 
+func row_accepts_pitch(type: String, pitch: int) -> bool:
+	var types: Array[String] = []
+	for row: Dictionary in drawing_rows(): types.append(str(row.type))
+	if not (types.has("treble") and types.has("bass")): return true
+	return pitch >= 60 if type == "treble" else pitch < 60 if type == "bass" else true
+
 func mapped_row_y(index: int, native_y: float) -> float:
 	return native_y if drawing_rows().is_empty() else NotationRows.mapped_y(drawing_rows(), index, native_y)
 
@@ -567,9 +605,9 @@ func row_text_size(index: int, base: int) -> int:
 
 func draw_reading_guide(surface: Control, row: Dictionary) -> void:
 	var row_index: int = int(row.index)
-	if row.type == "staff":
-		surface.draw_string(music_font, Vector2(8, mapped_row_y(row_index, ScoreLayout.STAFF_TOP + 40.625)), String.chr(0xe050), HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(mapped_row_distance(row_index, ScoreLayout.STAFF_FONT)), get_theme_color("ink", "LibreTabs"))
-		surface.draw_string(ui_font, Vector2(17, mapped_row_y(row_index, 145)), "8", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, get_theme_color("ink", "LibreTabs"))
+	if row.type in ["staff", "treble", "bass"]:
+		surface.draw_string(music_font, Vector2(8, mapped_row_y(row_index, ScoreLayout.STAFF_TOP + 40.625)), String.chr(0xe062 if row.type == "bass" else 0xe050), HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(mapped_row_distance(row_index, ScoreLayout.STAFF_FONT)), get_theme_color("ink", "LibreTabs"))
+		if row.type == "staff": surface.draw_string(ui_font, Vector2(17, mapped_row_y(row_index, 145)), "8", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, get_theme_color("ink", "LibreTabs"))
 	elif row.type == "tab":
 		for string_index: int in range(6):
 			surface.draw_string(ui_font, Vector2(14, mapped_row_y(row_index, ScoreLayout.tab_y(string_index + 1, drawing_notation())) + row_text_size(row_index, 6)), str(string_index + 1), HORIZONTAL_ALIGNMENT_LEFT, -1, row_text_size(row_index, 18), get_theme_color("muted", "LibreTabs"))
@@ -637,8 +675,8 @@ func draw_note_mark(surface: Control, center: Vector2, half: float, upcoming: bo
 	else:
 		surface.draw_rect(Rect2(center - Vector2(half, half_height), Vector2(half * 2, half_height * 2)), color, false, 2)
 
-func draw_particles(surface: Control, center: Vector2, note: Dictionary, phase: float) -> void:
-	var color: Color = get_theme_color(ScoreLayout.placement_color_token(projection, note), "LibreTabs")
+func draw_particles(surface: Control, center: Vector2, note: Dictionary, phase: float, concert_staff: bool = false) -> void:
+	var color: Color = get_theme_color("ink" if concert_staff else ScoreLayout.placement_color_token(projection, note), "LibreTabs")
 	color.a = (1 - phase) * 0.85
 	for index: int in range(4):
 		var direction: Vector2 = Vector2.from_angle(-PI * (0.15 + index * 0.23))

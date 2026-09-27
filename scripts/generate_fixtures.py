@@ -52,6 +52,35 @@ def authored_melody(title, composer, pitches, durations, tempo=100, time_numerat
         cursor += duration
     return midi([track(conductor + events, cursor)], 0)
 
+def authored_piano_study():
+    """Original eight-bar two-hand exercise, one source part and two pitch ranges."""
+    conductor = [
+        (0, b'\xff\x51\x03' + round(60_000_000 / 88).to_bytes(3, 'big')),
+        (0, b'\xff\x58\x04\x04\x02\x18\x08'),
+        (0, meta(0x03, 'Two-hand piano study')),
+        (0, meta(0x01, 'bluehexagons')),
+    ]
+    upper = [
+        [60, 62, 64, 67], [64, 62, 60, 62],
+        [64, 65, 67, 72], [71, 67, 64, 62],
+        [60, 64, 67, 72], [69, 67, 65, 64],
+        [62, 64, 65, 71], [72, 67, 64, 60],
+    ]
+    lower = [(48, 43), (48, 43), (53, 48), (43, 50),
+             (48, 43), (45, 40), (43, 50), (48, 48)]
+    events = list(conductor)
+    for bar, melody in enumerate(upper):
+        start = bar * 1920
+        for beat, pitch in enumerate(melody):
+            tick = start + beat * 480
+            events.extend([(tick, bytes([0x90, pitch, 88])),
+                           (tick + 420, bytes([0x80, pitch, 0]))])
+        for half, pitch in enumerate(lower[bar]):
+            tick = start + half * 960
+            events.extend([(tick, bytes([0x90, pitch, 72])),
+                           (tick + 900, bytes([0x80, pitch, 0]))])
+    return midi([track(events, 8 * 1920)], 0)
+
 def melody(channel=0):
     pitches=[64,64,67,69,67,66,64,62,64,67,71,69,67,66,64]
     times=[0,480,960,1440,1920,2160,2400,2880,3840,4320,4800,5040,5280,6000,6720]
@@ -91,3 +120,4 @@ if __name__=='__main__':
             song['title'], song['composer'], pitches, durations, tempo=song['tempo'],
             time_numerator=song['meter'][0], time_denominator=song['meter'][1],
         ))
+    (library / 'piano_study.mid').write_bytes(authored_piano_study())

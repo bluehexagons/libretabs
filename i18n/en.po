@@ -190,6 +190,12 @@ msgstr "Pause"
 msgid "STOP"
 msgstr "Stop"
 
+msgid "RESTART"
+msgstr "Restart"
+
+msgid "TIP_RESTART"
+msgstr "Return to the start of the song, or to the first measure of an active loop. If playing, playback continues from there."
+
 msgid "SPEED"
 msgstr "Tap the track to set speed, or drag horizontally to adjust from the current value (0–999%). Dragging pans the range. At 0%, playback is paused; pitch stays the same."
 
@@ -215,7 +221,7 @@ msgid "SEEK_POSITION"
 msgstr "Measure %d · %d:%02d"
 
 msgid "TIP_SCORE_INTERACTION"
-msgstr "Point to preview a position. Click or tap to seek; drag to scroll or turn a page. In page view, swipe with two fingers or use a horizontal mouse wheel to turn pages without moving playback."
+msgstr "Tap a note to seek. In scrolling view, drag sideways across the music to scrub; drag up or down to scroll the page. In page view, swipe with two fingers or use a horizontal mouse wheel to turn pages without moving playback."
 
 msgid "LOOP"
 msgstr "Loop measures"
@@ -237,6 +243,12 @@ msgstr "Listen · your part rests here"
 
 msgid "CUE_NOTE"
 msgstr "String %d · fret %d"
+
+msgid "CUE_PITCHES"
+msgstr "Sounding notes: %s"
+
+msgid "CUE_MANY_PITCHES"
+msgstr "%d notes sounding"
 
 msgid "CUE_UNPLACED"
 msgstr "! Listen — this note has no tab placement"
@@ -577,6 +589,12 @@ msgstr "Guitar tabs"
 msgid "NOTATION_PIANO_ROW"
 msgstr "Piano · sounding notes"
 
+msgid "NOTATION_TREBLE_ROW"
+msgstr "Treble staff · sounding pitch"
+
+msgid "NOTATION_BASS_ROW"
+msgstr "Bass staff · sounding pitch"
+
 msgid "NOTATION_ROW_HEIGHT"
 msgstr "Base row height. Larger values give this row more of the available music height."
 
@@ -591,6 +609,48 @@ msgstr "Add guitar tabs"
 
 msgid "ADD_PIANO_ROW"
 msgstr "Add piano"
+
+msgid "LAYOUTS"
+msgstr "Practice layouts"
+
+msgid "CARD_LAYOUTS"
+msgstr "Practice layouts · Guitar, piano, and bass staff"
+
+msgid "PRESET_START_HINT"
+msgstr "Choose a practice layout now. You can switch later from Practice layouts in Menu."
+
+msgid "PRESET_EXPLAIN"
+msgstr "Choose how to read this song. Piano staffs show sounding notes around middle C; the bass staff is for low notes. Guitar tabs always use six-string E-standard tuning, so they are not bass-guitar fingering."
+
+msgid "PRESET_CURRENT"
+msgstr "Current · %s"
+
+msgid "PRESET_GUITAR"
+msgstr "Guitar · tabs + staff"
+
+msgid "PRESET_PICK"
+msgstr "Guitar · strum with a pick"
+
+msgid "PRESET_FINGER"
+msgstr "Guitar · fingerpick"
+
+msgid "PRESET_BASS"
+msgstr "Bass / low notes · bass staff"
+
+msgid "PRESET_PIANO"
+msgstr "Piano · treble + bass staffs"
+
+msgid "PRESET_PIANO_KEYS"
+msgstr "Piano · staffs + keys"
+
+msgid "PRESET_PIANO_EXAMPLE"
+msgstr "Try a two-hand piano exercise"
+
+msgid "PICKER_CHOICE"
+msgstr "Choose"
+
+msgid "PICKER_CURRENT"
+msgstr "Current · %s"
 
 msgid "RESTORE_NOTATION_ROWS"
 msgstr "Restore default rows"
@@ -803,7 +863,10 @@ msgid "WELCOME_PLAY"
 msgstr "2. Listen once, then join in\nPress Play. The count-in clicks give you time to get ready. Read left to right: open brackets mark upcoming notes, and full outlines mark sounding notes. Space plays or pauses with menus closed."
 
 msgid "WELCOME_PACE"
-msgstr "3. Slow down and repeat\nIn Playback (under Menu), try 50% speed: half as fast, with the same pitches. In Loop (under Menu), set From 1 and Through 2, then Turn loop on to repeat those measures. A measure is a group of beats between vertical lines."
+msgstr "3. Slow down and repeat\nIn Playback (under Menu), try 50% speed: half as fast, with the same pitches. Restart begins again; drag sideways across scrolling music to find a passage. In Loop (under Menu), set From 1 and Through 2, then Turn loop on to repeat those measures. A measure is a group of beats between vertical lines."
+
+msgid "LIBRARY_PIANO_STUDY"
+msgstr "Two-hand piano study · original exercise"
 
 msgid "WELCOME_STARTUP"
 msgstr "Show on startup"
