@@ -2,8 +2,11 @@
 class_name PracticeAudio
 extends AudioStreamPlayer
 
-const VOICES: int = 32
-const TABLE_SIZE: int = 2048
+const TABLE_SIZE: int = PracticeSynth.TABLE_SIZE
+# Push each small batch promptly so an initially empty stream can start filling
+# before a dense chord's entire 60 ms look-ahead has been rendered.
+const RENDER_QUANTUM: int = 128
+var synth: PracticeSynth = PracticeSynth.new()
 var live_notes: Dictionary = {}
 var release_timer: Timer
 var metronome_enabled: bool = true
@@ -17,14 +20,6 @@ var capacity: int = 0
 var playing_practice: bool = false
 var last_frame: int = 0
 var max_mix_usec: int = 0
-var steals: int = 0
-var phases: PackedFloat64Array = PackedFloat64Array()
-var increments: PackedFloat64Array = PackedFloat64Array()
-var gains: PackedFloat64Array = PackedFloat64Array()
-var targets: PackedFloat64Array = PackedFloat64Array()
-var releases: PackedByteArray = PackedByteArray()
-var ids: Array[String] = []
-var table: PackedFloat64Array = PackedFloat64Array()
 var click_phase: float = 0.0
 var click_gain: float = 0.0
 var click_step: float = 0.0
@@ -37,6 +32,11 @@ var active_snapshot: int = 0
 var skips_snapshot: int = 0
 var mix_snapshot: int = 0
 var steals_snapshot: int = 0
+
+func set_instrument(value: String) -> void:
+	mutex.lock()
+	synth.set_instrument(value)
+	mutex.unlock()
 
 func set_level(instrument: bool, value: float) -> void:
 	mutex.lock()
@@ -55,7 +55,7 @@ func _ready() -> void:
 	set_process(false)
 	release_timer = Timer.new()
 	release_timer.one_shot = true
-	release_timer.wait_time = 0.20
+	release_timer.wait_time = PracticeSynth.RELEASE_TAIL
 	release_timer.timeout.connect(func() -> void:
 		if not playing_practice and live_notes.is_empty(): stop_practice())
 	add_child(release_timer)
@@ -66,16 +66,6 @@ func _ready() -> void:
 	generator.buffer_length = 0.10
 	stream = generator
 	playback_type = AudioServer.PLAYBACK_TYPE_STREAM
-	phases.resize(VOICES)
-	increments.resize(VOICES)
-	gains.resize(VOICES)
-	targets.resize(VOICES)
-	releases.resize(VOICES)
-	ids.resize(VOICES)
-	ids.fill("")
-	table.resize(TABLE_SIZE)
-	for index: int in range(TABLE_SIZE):
-		table[index] = sin(TAU * index / TABLE_SIZE)
 
 func begin() -> void:
 	begin_stream(true)
@@ -83,7 +73,8 @@ func begin() -> void:
 func begin_stream(practice: bool, initial_note: Dictionary = {}) -> void:
 	stop_practice()
 	max_mix_usec = 0
-	steals = 0
+	synth.steals = 0
+	synth.out_of_range = 0
 	skips_snapshot = 0
 	play()
 	playback = get_stream_playback() as AudioStreamGeneratorPlayback
@@ -123,10 +114,7 @@ func stop_practice() -> void:
 	active_snapshot = 0
 
 func reset_voices() -> void:
-	for index: int in range(VOICES):
-		ids[index] = ""
-		gains[index] = 0.0
-		targets[index] = 0.0
+	synth.reset()
 	click_gain = 0.0
 
 func audible_frame() -> int:
@@ -175,38 +163,30 @@ func fill() -> void:
 	var events: Array[Dictionary] = []
 	if playing_practice: events = transport.take_events(frames)
 	var event_index: int = 0
-	for frame: int in range(frames):
+	var frame: int = 0
+	while frame < frames:
 		while event_index < events.size() and int(events[event_index].offset) == frame:
 			apply_event(events[event_index])
 			event_index += 1
-		var sample: float = 0.0
-		for voice: int in range(VOICES):
-			if ids[voice].is_empty():
-				continue
-			gains[voice] += (targets[voice] - gains[voice]) * 0.012
-			if releases[voice] == 1 and gains[voice] < 0.00002:
-				ids[voice] = ""
-				continue
-			phases[voice] = fmod(phases[voice] + increments[voice], TABLE_SIZE)
-			sample += table[int(phases[voice])] * gains[voice]
-		instrument_current = move_toward(instrument_current, instrument_level, 0.002)
-		metronome_current = move_toward(metronome_current, metronome_level, 0.002)
-		var click: float = 0.0
-		if click_gain > 0.00001:
-			click_phase = fmod(click_phase + click_step, TABLE_SIZE)
-			click = table[int(click_phase)] * click_gain
-			click_gain *= 0.991
-		sample = mix_levels(sample, click, instrument_current, metronome_current)
-		playback.push_frame(Vector2(sample, sample))
+		var end: int = mini(frame + RENDER_QUANTUM, int(events[event_index].offset) if event_index < events.size() else frames)
+		var samples: PackedFloat32Array = synth.render(end - frame)
+		for sample: float in samples:
+			instrument_current = move_toward(instrument_current, instrument_level, 0.002)
+			metronome_current = move_toward(metronome_current, metronome_level, 0.002)
+			var click: float = 0.0
+			if click_gain > 0.00001:
+				click_phase = fmod(click_phase + click_step, TABLE_SIZE)
+				click = synth.sine[int(click_phase)] * click_gain
+				click_gain *= 0.991
+			var mixed: float = mix_levels(sample, click, instrument_current, metronome_current)
+			playback.push_frame(Vector2(mixed, mixed))
+		frame = end
 	max_mix_usec = maxi(max_mix_usec, Time.get_ticks_usec() - started)
-	var active: int = 0
-	for id: String in ids:
-		if not id.is_empty(): active += 1
 	generated_snapshot = transport.rendered_frames
-	active_snapshot = active
+	active_snapshot = synth.active_voices()
 	skips_snapshot = playback.get_skips()
 	mix_snapshot = max_mix_usec
-	steals_snapshot = steals
+	steals_snapshot = synth.steals
 
 # Smooth bounded output keeps dense chords below full scale. The channels stay
 # independent before the limiter; neither slider changes transport or voices.
@@ -226,33 +206,11 @@ func apply_event(event: Dictionary) -> void:
 			click_step = (1200.0 if note.accent else 800.0) / PracticeTransport.RATE * TABLE_SIZE
 			click_phase = 0.0
 		"off":
-			for voice: int in range(VOICES):
-				if ids[voice] == String(note.id):
-					targets[voice] = 0.0
-					releases[voice] = 1
+			synth.note_off(String(note.id))
 		"on":
-			start_voice(note)
+			synth.note_on(note)
 		"restore":
-			start_voice(note, float(note.get("restore_seconds", 0.0)))
-
-func start_voice(note: Dictionary, restore_seconds: float = 0.0) -> void:
-	var slot: int = -1
-	for voice: int in range(VOICES):
-		if ids[voice].is_empty():
-			slot = voice
-			break
-	if slot < 0:
-		slot = 0
-		for voice: int in range(1, VOICES):
-			if gains[voice] < gains[slot]:
-				slot = voice
-		steals += 1
-	ids[slot] = String(note.id)
-	increments[slot] = 440.0 * pow(2.0, (float(note.pitch) - 69.0) / 12.0) / PracticeTransport.RATE * TABLE_SIZE
-	phases[slot] = fmod(increments[slot] * restore_seconds, TABLE_SIZE)
-	targets[slot] = 0.14 * float(note.velocity) / 127.0
-	gains[slot] = targets[slot] if restore_seconds > 0.0 else 0.0
-	releases[slot] = 0
+			synth.note_on(note, float(note.get("restore_seconds", 0.0)))
 
 func live_on(note: Dictionary) -> void:
 	if playback == null:
@@ -281,7 +239,7 @@ func release_live() -> void:
 
 func metrics() -> Dictionary:
 	mutex.lock()
-	var snapshot: Dictionary = {"queued_ms": (capacity - playback.get_frames_available()) * 1000.0 / PracticeTransport.RATE if playback != null else 0.0, "live_notes": live_notes.size(), "instrument_level": instrument_level, "metronome_level": metronome_level, "active_voices": active_snapshot, "voice_steals": steals_snapshot, "max_mix_ms": mix_snapshot / 1000.0, "underruns": skips_snapshot, "generated_frame": generated_snapshot, "rate": PracticeTransport.RATE, "worker": worker_enabled}
+	var snapshot: Dictionary = {"queued_ms": (capacity - playback.get_frames_available()) * 1000.0 / PracticeTransport.RATE if playback != null else 0.0, "live_notes": live_notes.size(), "instrument": synth.instrument, "out_of_range_notes": synth.out_of_range, "instrument_level": instrument_level, "metronome_level": metronome_level, "active_voices": active_snapshot, "voice_steals": steals_snapshot, "max_mix_ms": mix_snapshot / 1000.0, "underruns": skips_snapshot, "generated_frame": generated_snapshot, "rate": PracticeTransport.RATE, "worker": worker_enabled}
 	mutex.unlock()
 	snapshot.merge({"audible_frame": audible_frame(), "device_rate": AudioServer.get_mix_rate(), "output_latency": AudioServer.get_output_latency(), "capacity": capacity, "fps": Engine.get_frames_per_second()})
 	return snapshot

@@ -4,7 +4,7 @@ extends RefCounted
 
 const VERSION: int = 1
 const MAX_BYTES: int = 4096
-const DEFAULTS: Dictionary = {"metronome": true, "count_in": true, "count_measures": 1, "instrument_volume": 85, "click_volume": 35, "keyboard_octave": 4, "keyboard_layout": "lower"}
+const DEFAULTS: Dictionary = {"instrument": PracticeSynth.DEFAULT, "metronome": true, "count_in": true, "count_measures": 1, "instrument_volume": 85, "click_volume": 35, "keyboard_octave": 4, "keyboard_layout": "lower"}
 
 # Allow-list only device preferences: never source bytes, song names or notes.
 static func decode(raw: String) -> Dictionary:
@@ -18,16 +18,21 @@ static func decode(raw: String) -> Dictionary:
 	if not (version is int or version is float) or version != VERSION: return {"values": DEFAULTS.duplicate(), "status": "unsupported"}
 	var values: Variant = parsed.get("values")
 	if not valid(values): return {"values": DEFAULTS.duplicate(), "status": "corrupt"}
+	var complete: Dictionary = values.duplicate()
+	if not complete.has("instrument"): complete.instrument = PracticeSynth.DEFAULT
 	var clean: Dictionary = {}
-	for key: String in DEFAULTS: clean[key] = int(values[key]) if DEFAULTS[key] is int else values[key]
+	for key: String in DEFAULTS: clean[key] = int(complete[key]) if DEFAULTS[key] is int else complete[key]
 	return {"values": clean, "status": "ok"}
 
 static func valid(values: Variant) -> bool:
 	if not values is Dictionary: return false
 	for key: String in DEFAULTS:
+		if key == "instrument" and not values.has(key): continue
 		if not values.has(key): return false
 		var value: Variant = values[key]
-		if key == "keyboard_layout":
+		if key == "instrument":
+			if not value is String or value not in PracticeSynth.INSTRUMENTS: return false
+		elif key == "keyboard_layout":
 			if value not in ["lower", "home"]: return false
 		elif key in ["metronome", "count_in"]:
 			if not value is bool: return false
@@ -40,5 +45,5 @@ static func valid(values: Variant) -> bool:
 static func encode(values: Dictionary) -> String:
 	if not valid(values): return ""
 	var clean: Dictionary = {}
-	for key: String in DEFAULTS: clean[key] = int(values[key]) if DEFAULTS[key] is int else values[key]
+	for key: String in DEFAULTS: clean[key] = int(values[key]) if DEFAULTS[key] is int else values.get(key, DEFAULTS[key])
 	return JSON.stringify({"version": VERSION, "values": clean})

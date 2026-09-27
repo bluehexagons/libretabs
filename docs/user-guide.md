@@ -132,7 +132,11 @@ or practice progress. See [privacy details](privacy.md).
   Choose Replay to start again, tap an earlier passage and Play to practice from
   there, or choose **Songs** to switch tunes. A new song waits for you to press
   Play, with keyboard focus on that button.
-- **Volume & parts:** adjust instrument and click volume separately. Use
+- **Volume & parts:** choose **Synth piano** (the default), **Soft keys**,
+  **Plucked strings**, or **Pure tone**, and adjust instrument and click volume
+  separately. Your sound choice is saved on this device and applies to new notes
+  in all enabled song parts and computer-keyboard previews. These generated
+  practice sounds do not reproduce the original MIDI instruments. Use
   **Mute focused part** to play that part yourself while hearing the other one.
   **Hear Melody/Treble/Bass** controls the other part in a built-in song.
   Each mute choice is kept when you switch focus; muting changes sound, not the

@@ -228,7 +228,13 @@ Import is cancellable and transactional: a failed or cancelled replacement leave
 
 ### Local state
 
-The evaluation prototype now saves count-in, click, independent volumes and
+The evaluation prototype offers Synth piano (default), Soft keys, Plucked strings
+and Pure tone for all song parts and keyboard previews. Sound changes apply to
+new notes without restarting playback. These generated practice sounds are
+approximations, not reproduction of MIDI program instruments. See
+[decision 0022](decisions/0022-practice-instruments.md).
+
+The evaluation prototype now saves instrument sound, count-in, click, independent volumes and
 keyboard layout/octave through a versioned preference service, alongside existing
 display storage. Library, Practice and Settings provide the initial app structure.
 Song-specific state and lesson progress remain future implementation work.

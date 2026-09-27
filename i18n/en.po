@@ -1350,3 +1350,21 @@ msgstr "Listen to the focused part first. Then mute it to play that line yoursel
 
 msgid "HELP_WARNINGS"
 msgstr "A ! or △ marks an arrangement warning, not a mistake you played. Open Songs, then About this arrangement to see which notes could not fit the guitar tab. Try another part or simpler music if needed."
+
+msgid "PRACTICE_INSTRUMENT"
+msgstr "Instrument sound"
+
+msgid "PRACTICE_INSTRUMENT_HELP"
+msgstr "Choose a generated sound for all song parts and keyboard notes. Changes apply to the next notes. These practice sounds do not reproduce the original MIDI instruments."
+
+msgid "SYNTH_PIANO"
+msgstr "Synth piano"
+
+msgid "SYNTH_SOFT_KEYS"
+msgstr "Soft keys"
+
+msgid "SYNTH_PLUCKED_STRINGS"
+msgstr "Plucked strings"
+
+msgid "SYNTH_PURE_TONE"
+msgstr "Pure tone"

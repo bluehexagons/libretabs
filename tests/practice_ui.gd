@@ -206,6 +206,9 @@ func run() -> void:
 	check(app.get("count_badge").visible and app.get("count_badge").text == "1", "count-in appears inside the existing play target")
 	var stream_before: AudioStreamGeneratorPlayback = player.playback
 	var count_before: int = player.transport.count_frames
+	app.get("instrument_picker").select(2)
+	app.get("instrument_picker").item_selected.emit(2)
+	check(player.playback == stream_before and player.playing_practice and player.synth.instrument == "plucked_strings", "instrument selection keeps the active stream and transport")
 	app.call("set_metronome", false)
 	app.get("count_check").button_pressed = false
 	check(player.playback == stream_before and player.playing_practice, "metronome and count-in toggles do not restart the active stream")
@@ -287,6 +290,17 @@ func run() -> void:
 	check(app.get("play_button").text == TranslationServer.translate("PLAY"), "stop restores normal play action")
 	app.call("toggle_drawer", "SOUND")
 	check(app.get("drawer").visible and app.get("drawers")["SOUND"].visible, "sound controls open on demand")
+	var instrument_picker: OptionButton = app.get("instrument_picker")
+	var instrument_focus: Control
+	for child: Node in instrument_picker.get_children():
+		if child is OptionMenuFit: instrument_focus = child.touch_target
+	check(instrument_picker.item_count == 4 and instrument_focus != null and instrument_focus.focus_mode == Control.FOCUS_ALL and not instrument_focus.tooltip_text.is_empty(), "sound selector has four labeled keyboard-focusable choices with help")
+	for index: int in range(PracticeSynth.INSTRUMENTS.size()):
+		instrument_picker.select(index)
+		instrument_picker.item_selected.emit(index)
+		check(player.synth.instrument == PracticeSynth.INSTRUMENTS[index] and app.call("preference_values").instrument == PracticeSynth.INSTRUMENTS[index], "sound selector reaches the mixer and saved preferences")
+	app.call("reset_preferences")
+	check(instrument_picker.selected == 0 and player.synth.instrument == "synth_piano", "reset restores the piano default in UI and audio")
 	app.get("instrument_slider").value = 0
 	app.get("click_slider").value = 90
 	check(player.instrument_level == 0 and is_equal_approx(player.metronome_level, 0.9), "volume controls independently reach mixer")
@@ -689,7 +703,7 @@ func run() -> void:
 	check(player.active_snapshot == 1, "first preview buffer already contains the pressed note")
 	player.mutex.lock()
 	player.apply_event({"kind": "reset", "note": {}})
-	check(player.ids.has("keyboard:%d" % KEY_Z), "loop reset reconstructs held live voice")
+	check(player.synth.ids.has("keyboard:%d" % KEY_Z), "loop reset reconstructs held live voice")
 	player.mutex.unlock()
 	check(not player.playing_practice and app.get("source_tick") == tick_keyboard, "paused keyboard note never starts or seeks song")
 	app.call("_suspended")

@@ -113,6 +113,7 @@ var main_speed: RelativeSpeedSlider
 var speed_control: PanelContainer
 var speed_unit_layout: BoxContainer
 var keyboard: KeyboardNotes = KeyboardNotes.new()
+var instrument_picker: OptionButton
 var keyboard_picker: OptionButton
 var octave_picker: SpinBox
 var keyboard_help: Label
@@ -1246,6 +1247,17 @@ func build_drawers() -> void:
 	number_field(tempo, bpm_input, "BPM_LABEL")
 
 	var sound: VBoxContainer = section("SOUND")
+	sound.add_child(label("PRACTICE_INSTRUMENT"))
+	instrument_picker = OptionButton.new()
+	instrument_picker.custom_minimum_size.y = 56
+	instrument_picker.fit_to_longest_item = false
+	instrument_picker.tooltip_text = tr("PRACTICE_INSTRUMENT_HELP")
+	for key: String in PracticeSynth.LABELS: instrument_picker.add_item(tr(key))
+	instrument_picker.item_selected.connect(func(index: int) -> void:
+		audio.set_instrument(PracticeSynth.INSTRUMENTS[index])
+		save_preferences())
+	sound.add_child(instrument_picker)
+	sound.add_child(label("PRACTICE_INSTRUMENT_HELP", 18))
 	sound.add_child(label("SOUND_HELP", 18))
 	instrument_slider = volume_control(sound, "INSTRUMENT_VOLUME", 85, true)
 	click_slider = volume_control(sound, "CLICK_VOLUME", 35, false)
@@ -2977,10 +2989,12 @@ func update_keyboard_help() -> void:
 	keyboard_help.text = tr("KEYBOARD_HELP_LOWER" if keyboard.layout == "lower" else "KEYBOARD_HELP_HOME")
 
 func preference_values() -> Dictionary:
-	return {"metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "count_measures": int(count_length.value), "instrument_volume": roundi(instrument_slider.value), "click_volume": roundi(click_slider.value), "keyboard_octave": keyboard.octave, "keyboard_layout": keyboard.layout}
+	return {"instrument": PracticeSynth.INSTRUMENTS[instrument_picker.selected], "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "count_measures": int(count_length.value), "instrument_volume": roundi(instrument_slider.value), "click_volume": roundi(click_slider.value), "keyboard_octave": keyboard.octave, "keyboard_layout": keyboard.layout}
 
 func apply_preferences(values: Dictionary) -> void:
 	preferences_ready = false
+	instrument_picker.select(PracticeSynth.INSTRUMENTS.find(values.instrument))
+	audio.set_instrument(values.instrument)
 	metro_check.set_pressed_no_signal(values.metronome)
 	audio.set_metronome(values.metronome)
 	update_metronome()

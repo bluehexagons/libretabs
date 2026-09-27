@@ -62,6 +62,19 @@ func _initialize() -> void:
 	check(PracticeSettings.decode(PracticeSettings.encode(defaults)).values == defaults, "preference schema round trip")
 	check(PracticeSettings.decode('{"version":2}').status == "unsupported", "future preferences protected")
 	check(PracticeSettings.decode("invalid").status == "corrupt", "corrupt preferences detected")
+	var legacy: Dictionary = defaults.duplicate()
+	legacy.erase("instrument")
+	legacy.instrument_volume = 23
+	legacy.keyboard_layout = "home"
+	var migrated: Dictionary = PracticeSettings.decode(JSON.stringify({"version": 1, "values": legacy}))
+	check(migrated.status == "ok" and migrated.values.instrument == "synth_piano" and migrated.values.instrument_volume == 23 and migrated.values.keyboard_layout == "home", "legacy preferences gain piano without losing existing choices")
+	for instrument: String in PracticeSynth.INSTRUMENTS:
+		defaults.instrument = instrument
+		check(PracticeSettings.decode(PracticeSettings.encode(defaults)).values.instrument == instrument, "instrument choice survives save and reload")
+	for invalid: Variant in ["unknown", 2, null, [], {}]:
+		defaults.instrument = invalid
+		check(PracticeSettings.encode(defaults).is_empty(), "invalid saved instrument is refused")
+	defaults.instrument = PracticeSynth.DEFAULT
 	defaults.count_measures = -1
 	check(PracticeSettings.encode(defaults).is_empty(), "invalid count length rejected")
 	defaults = PracticeSettings.DEFAULTS.duplicate()

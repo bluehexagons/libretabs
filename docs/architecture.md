@@ -317,6 +317,20 @@ Map all GM programs into these few families. This will not reproduce an original
 
 An optional SoundFont backend can follow MVP. SoundFont code and banks are separate licensing decisions: do not bundle a bank based only on a claim that it is free to download. If the M0 Clef experiment needs a bank, use a documented test-only asset that is not committed until its redistribution terms have been reviewed.
 
+The evaluation palette is implemented by `PracticeSynth`, a scene-independent,
+fixed 32-voice block renderer driven exclusively by `PracticeAudio`'s existing transport
+consumer. Synth piano is the device default, with Soft keys, Plucked strings and
+Pure tone alternatives. It uses interpolated, harmonic-limited generated tables,
+velocity-sensitive attacks, decaying body/brightness and note-off releases.
+Blocks stop at each scheduled event and at most 128 frames, preserving
+sample-accurate event delivery and promptly feeding an initially empty stream.
+New notes snapshot the chosen sound; held notes keep their envelopes. Restore
+uses elapsed note seconds to reconstruct decay and phase with a short fade-in.
+The existing 22,050 Hz rate cannot represent MIDI pitches 125–127; these are
+silenced and counted in local audio diagnostics instead of aliasing to false
+pitches. Program-family mapping and the planned controller contract remain open.
+See [decision 0022](decisions/0022-practice-instruments.md).
+
 ### Post-MVP volume impulse input
 
 The first input experiment is deliberately not pitch recognition. An `ImpulseInput` adapter captures microphone or line-input samples, estimates a rolling noise floor/envelope, detects a debounced transient, and emits only `impulse(strength, monotonic_time)`. The step-practice controller may advance one cue; it never marks a note correct or computes a score.
