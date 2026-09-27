@@ -38,6 +38,7 @@ func run() -> void:
 	song_buttons[4].pressed.emit()
 	for _frame: int in range(30): await process_frame
 	check(app.get("active_library") == 4 and app.get("title") == TranslationServer.translate("LIBRARY_TWINKLE") and not app.get("menu_overlay").visible, "one song tap replaces the tune and returns to practice")
+	check(not app.get("audio").playing_practice and root.gui_get_focus_owner() == app.get("play_button"), "choosing another song waits for Play and focuses that next action")
 	app.call("toggle_drawer", "SONG_MENU")
 	song_buttons[0].pressed.emit()
 	for _frame: int in range(30): await process_frame
@@ -250,6 +251,38 @@ func run() -> void:
 	app.set("state", "STATE_COMPLETE")
 	app.call("update_play_control")
 	check(app.get("play_button").text == TranslationServer.translate("REPLAY") and not app.get("count_badge").visible, "finished playback offers replay")
+	app.get("status_toast").hide()
+	app.call("set_status", "STATE_COMPLETE")
+	check(not app.get("status_toast").visible and app.get("last_status") != "STATE_COMPLETE", "completion does not overlay music or leave a replayable toast")
+	app.call("seek_measure", 2)
+	check(app.get("state") == "STATE_READY" and app.get("play_button").text == TranslationServer.translate("PLAY"), "seeking after completion replaces Replay with Play")
+	app.call("toggle_play")
+	check(is_equal_approx(player.transport.start_seconds, song.seconds_at(song.measures[1].start)), "Play honors a section chosen after completion")
+	app.call("pause")
+	app.set("state", "STATE_COMPLETE")
+	app.call("begin_seek_drag")
+	app.call("seek_tick", float(song.measures[2].start))
+	app.call("end_seek_drag", true)
+	app.call("toggle_play")
+	check(is_equal_approx(player.transport.start_seconds, song.seconds_at(song.measures[2].start)), "scrubbing after completion also preserves the selected starting point")
+	app.call("pause")
+	app.call("repeat_song")
+	check(app.get("loop_check").button_pressed and app.get("loop_from").value == 1 and app.get("loop_to").value == song.measures.size() and app.get("source_tick") == 0 and not player.playing_practice, "repeat whole song selects all measures without starting paused audio")
+	app.get("loop_from").value = 2
+	app.get("loop_to").value = 3
+	app.get("loop_check").button_pressed = false
+	app.call("toggle_drawer", "LOOP_TOOL")
+	app.call("play_section")
+	check(player.playing_practice and player.transport.repeat and player.transport.count_frames > 0 and not app.get("menu_overlay").visible, "play section enables repetition, closes the editor and honors count-in")
+	check(is_equal_approx(player.transport.start_seconds, song.seconds_at(song.measures[1].start)) and is_equal_approx(player.transport.end_seconds, song.seconds_at(song.measures[2].end)), "play section starts at the selected first measure and includes the last")
+	app.get("count_check").button_pressed = false
+	app.call("play_section")
+	check(player.transport.count_frames == 0, "play section also respects a disabled count-in")
+	app.call("repeat_song")
+	check(player.playing_practice and player.transport.repeat and player.transport.start_seconds == 0 and is_equal_approx(player.transport.end_seconds, song.seconds_at(song.measures.back().end)), "whole-song repeat reconfigures active playback through the same transport")
+	app.call("pause")
+	app.get("loop_check").button_pressed = false
+	app.get("count_check").button_pressed = true
 	app.call("stop_practice")
 	check(app.get("play_button").text == TranslationServer.translate("PLAY"), "stop restores normal play action")
 	app.call("toggle_drawer", "SOUND")

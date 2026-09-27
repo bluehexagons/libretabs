@@ -401,7 +401,7 @@ func set_status(key: String) -> void:
 	status_key = key
 	status.text = tr(key)
 	status.hide()
-	if key in ["START_HINT", "STATE_PAUSED", "FOLLOW_HINT", "COUNTING"]:
+	if key in ["START_HINT", "STATE_PAUSED", "FOLLOW_HINT", "COUNTING", "STATE_COMPLETE"]:
 		if key == "START_HINT" and last_status == "IMPORTING" and status_toast != null:
 			status_toast.hide()
 			status_toast.timer.stop()
@@ -1259,9 +1259,13 @@ func build_drawers() -> void:
 	loops.add_child(label("LOOP_HELP", 18))
 	loop_summary = label("LOOP_OFF", 24)
 	loops.add_child(loop_summary)
+	var loop_actions: HFlowContainer = flow(loops)
 	loop_toggle = button("ENABLE_LOOP", func() -> void: loop_check.button_pressed = not loop_check.button_pressed)
-	loops.add_child(loop_toggle)
-	loops.add_child(button("REPEAT_MEASURE", func() -> void: repeat_measure(); close_menu()))
+	loop_actions.add_child(loop_toggle)
+	loop_actions.add_child(button("PLAY_SECTION", play_section))
+	var loop_presets: HFlowContainer = flow(loops)
+	loop_presets.add_child(button("REPEAT_MEASURE", func() -> void: repeat_measure(); close_menu()))
+	loop_presets.add_child(button("REPEAT_SONG", func() -> void: repeat_song(); close_menu()))
 	loop_check = check("LOOP", false)
 	loops.add_child(loop_check)
 	# The named action above is also available to touch-and-hold help.
@@ -2098,7 +2102,7 @@ func responsive() -> void:
 		item.text = "" if header_icons else tr(key)
 		item.icon = UIIcons.get_icon(key) if header_icons or size.x >= 760 else null
 		item.custom_minimum_size.x = 56 if header_icons else 0
-	songs_button.visible = not tv_active
+	songs_button.show()
 	import_button.visible = not side_dock and not tv_active
 	if not side_dock and size.x >= 600 and expanded_controls:
 		tv_button.text = tr("TV_VIEW")
@@ -2215,9 +2219,9 @@ func responsive() -> void:
 		if dock_margin.get_parent() != header: adapt_flow(dock_margin)
 		if not side_dock:
 			var action_width: float = 0
-			for action: Button in [tv_button, fullscreen_button, menu_button]:
+			for action: Button in [songs_button, tv_button, fullscreen_button, menu_button]:
 				action_width += action.get_combined_minimum_size().x
-			header_actions.custom_minimum_size.x = action_width + 2 * header_actions.get_theme_constant("h_separation")
+			header_actions.custom_minimum_size.x = action_width + 3 * header_actions.get_theme_constant("h_separation")
 	if score != null: update_page_controls()
 	if fitting_layout: fit_pending = true
 	else: update_main_scroll.call_deferred()
@@ -2533,6 +2537,7 @@ func finish_import() -> void:
 	update_play_control()
 	set_status("START_HINT")
 	if drawer.visible: close_menu()
+	play_button.grab_focus()
 	adapt_flow(panel)
 	if startup_help_pending:
 		startup_help_pending = false
@@ -2677,6 +2682,30 @@ func repeat_measure() -> void:
 	update_loop_controls()
 	seek_measure(measure)
 
+func repeat_song() -> void:
+	if song == null or importer != null: return
+	updating = true
+	loop_from.value = 1
+	loop_to.value = song.measures.size()
+	loop_check.set_pressed_no_signal(true)
+	updating = false
+	update_loop_controls()
+	seek_measure(1)
+
+func play_section() -> void:
+	if song == null or importer != null: return
+	if speed <= 0:
+		set_status("SPEED_ZERO")
+		return
+	pause()
+	loop_check.set_pressed_no_signal(true)
+	update_loop_controls()
+	source_tick = float(song.measures[int(loop_from.value) - 1].start)
+	update_position()
+	close_menu()
+	play_button.grab_focus()
+	start(count_check.button_pressed)
+
 func set_loop_boundary(first: bool) -> void:
 	if song == null: return
 	updating = true
@@ -2815,6 +2844,11 @@ func seek_tick(value: float) -> void:
 	if updating or song == null:
 		return
 	var next_tick: float = clampf(value, 0.0, float(song.end_tick))
+	# A deliberate seek after finishing chooses a fresh starting point.
+	# Leaving the completion state here also covers pointer scrubbing.
+	if state == "STATE_COMPLETE" and next_tick < song.end_tick:
+		state = "STATE_READY"
+		update_play_control()
 	if seek_dragging:
 		source_tick = next_tick
 		update_position()

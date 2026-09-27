@@ -533,7 +533,7 @@ msgid "CLICK_VOLUME"
 msgstr "Metronome · %d%%"
 
 msgid "LOOP_HELP"
-msgstr "A measure is a group of beats between vertical lines. Set From to the first measure and Through to the last, then choose Turn loop on. Both end measures are included. Close this menu and press Play. Turn loop off to continue through the song."
+msgstr "A measure is a group of beats between vertical lines. From and Through include both end measures. Play selected section repeats them with your count-in setting."
 
 msgid "HELP_STRINGS"
 msgstr "1. Read tabs from left to right. The six lines represent guitar strings. The top line is string 1, the thinnest and highest sounding; the bottom is string 6, the thickest. Tabs assume standard tuning: E–A–D–G–B–E from thickest to thinnest. Use a separate tuner if needed."
@@ -825,6 +825,18 @@ msgstr "Speed presets"
 
 msgid "REPEAT_MEASURE"
 msgstr "Repeat this measure"
+
+msgid "PLAY_SECTION"
+msgstr "Play selected section"
+
+msgid "TIP_PLAY_SECTION"
+msgstr "Start at the first selected measure and repeat the section, with your count-in setting."
+
+msgid "REPEAT_SONG"
+msgstr "Repeat whole song"
+
+msgid "TIP_REPEAT_SONG"
+msgstr "Select all measures and turn looping on. Return to the beginning; if paused, press Play when ready."
 
 msgid "PLAYBACK_RATE"
 msgstr "Playback speed: %d%%"

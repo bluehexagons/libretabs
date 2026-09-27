@@ -52,8 +52,8 @@ mirroring. Its name remains visible in tablet headers, and F9 toggles it without
 starting or seeking playback. Tablet reading exposes the music-line count and
 zoom directly. Theater settings can keep the full controls visible during
 playback; this device preference overrides automatic tucking into the edge.
-Theater uses a compact floating Play, tempo and metronome panel. Song selection
-and import remain in Menu → Songs; the header keeps Theater, Fullscreen and Menu.
+Theater uses a compact floating Play, tempo and metronome panel. The header keeps
+Songs, Theater, Fullscreen and Menu; import is available in Songs.
 Controls occupy reserved edge space so they never cover the music or title. They
 fade out as soon as Play is pressed, including during the count-in; its beat number
 stays visible on the edge Pause button. Show controls or F10 reveals controls

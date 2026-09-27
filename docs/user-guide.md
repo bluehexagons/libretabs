@@ -26,11 +26,11 @@ review; treat them as practice suggestions.
 4. Follow just a few numbers on the guitar tabs, using the reading guide below.
    It is fine to listen again before joining in.
 5. To repeat a short section, open **Menu → Loop**, set **From** to **1** and
-   **Through** to **2**, then choose **Turn loop on**. Close the menu and press
-   **Play**. Both measures repeat. Choose **Turn loop off** when you want to
+   **Through** to **2**, then choose **Play selected section**. Both measures
+   repeat after your usual count-in. Choose **Turn loop off** when you want to
    continue through the song.
 
-For another tune, choose **Songs** (or **Menu → Songs** in Theater), then tap a
+For another tune, choose **Songs** (also in the Theater header), then tap a
 song. Twinkle, Twinkle Little Star and Mary Had a Little Lamb appear first
 because they use simpler rhythms; they are still generated practice arrangements.
 Some tunes begin with silence.
@@ -85,7 +85,7 @@ so unusually detailed rhythms may not line up exactly with the simplified symbol
 
 ## Choose music or open your own file
 
-In **Songs** (or **Menu → Songs** in Theater), tap a built-in song or
+In **Songs** (also in the Theater header), tap a built-in song or
 **Open MIDI file**. A **MIDI file** contains note and timing instructions; it is not
 a recording such as an MP3, a photograph of sheet music, or a guitar-tab
 document. Use a `.mid` or `.midi` file.
@@ -124,6 +124,14 @@ or practice progress. See [privacy details](privacy.md).
 - **Loop:** From and Through include the first and last measures you choose.
   **Repeat this measure** sets and enables a one-measure loop. **Start at current
   measure** and **End at current measure** set the range from the current position.
+  **Play selected section** starts at the first selected measure and repeats,
+  using your count-in setting. **Repeat whole song** selects all measures and
+  returns to the beginning; paused playback waits for Play. Turning looping off
+  keeps the selected range for later.
+- **When a song finishes:** the music stays visible and Play becomes **Replay**.
+  Choose Replay to start again, tap an earlier passage and Play to practice from
+  there, or choose **Songs** to switch tunes. A new song waits for you to press
+  Play, with keyboard focus on that button.
 - **Volume & parts:** adjust instrument and click volume separately. Use
   **Mute focused part** to play that part yourself while hearing the other one.
   **Hear Melody/Treble/Bass** controls the other part in a built-in song.

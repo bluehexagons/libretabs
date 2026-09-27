@@ -56,7 +56,7 @@ func run() -> void:
 		check(viewport.encloses(edge.get_global_rect()), "edge controls fit " + context)
 		check(viewport.encloses(music), "music fits " + context)
 		check(not music.intersects(header.get_global_rect()) and not music.intersects(dock.get_global_rect()) and not music.intersects(edge.get_global_rect()), "reserved margins protect music " + context)
-		check(not app.get("brand_label").visible and not app.get("songs_button").visible and not app.get("import_button").visible, "Theater header removes secondary actions " + context)
+		check(not app.get("brand_label").visible and app.get("songs_button").visible and not app.get("import_button").visible, "Theater keeps Songs directly reachable " + context)
 		if config[0] == 1280 and config[1] == 720:
 			check(app.get("theater_context").visible and frame.system_count >= 2, "wide Theater shares context row and fits two music lines")
 			check(app.get("song_title").get_global_rect().end.x <= app.get("reading_tools").get_global_rect().position.x, "wide Theater title leaves room for reading controls")
