@@ -138,6 +138,7 @@ func configure_line(view: ScoreView, page: int, preview: bool) -> void:
 	view.set_note_spacing(note_spacing)
 	view.set_fitted_rows(score.fitted_rows)
 	view.reduced_motion = score.reduced_motion
+	view.effects_speed = score.effects_speed
 	view.set_shape_cues(score.shape_cues)
 	view.effects_playing = score.effects_playing
 	view.page_index = page

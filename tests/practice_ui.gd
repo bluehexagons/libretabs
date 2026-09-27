@@ -353,6 +353,16 @@ func run() -> void:
 	score.finish_pointer(score.pointer_position)
 	check(app.get("source_tick") == before_score_drag, "dragging across the music remains a scroll gesture rather than seeking")
 	score.set_view("pages", "both")
+	app.call("turn_page", -1)
+	check(score.page_index == 0 and app.get("paper").modulate.a == 1.0, "page limit does not flash when the passage stays put")
+	app.call("turn_page", 1)
+	check(score.page_index == 1 and app.get("paper").modulate.a >= 0.8 and app.get("paper").modulate.a < 1.0, "manual page turn uses a restrained fade")
+	app.set("motion_mode", "reduced")
+	app.call("apply_motion")
+	app.call("turn_page", -1)
+	check(score.page_index == 0 and app.get("paper").modulate.a == 1.0, "reduced motion changes pages without fading")
+	app.set("motion_mode", "full")
+	app.call("apply_motion")
 	var gesture_tick: float = app.get("source_tick")
 	var gesture_page: int = score.page_index
 	for index: int in range(2):
@@ -458,7 +468,14 @@ func run() -> void:
 	check(highlights.upcoming_tick == -1, "last onset has no misleading future highlight")
 	highlights.effects_playing = true
 	highlights.update_tick(576)
-	check(absf(highlights.particle_phase(highlight_song.notes[0]) - 0.1 / 0.22) < 0.001, "particles derive age from source tempo time")
+	check(absf(highlights.particle_phase(highlight_song.notes[0]) - 0.1 / ScoreView.SPARK_SECONDS) < 0.001, "sparks follow source onset time")
+	highlights.effects_speed = 2.0
+	highlights.update_tick(730)
+	check(highlights.current_tick > float(highlight_song.notes[1].end) and highlights.particle_phase(highlight_song.notes[1]) > 0 and highlights.particle_phase(highlight_song.notes[1]) < 1, "short notes keep a spark after release at faster playback")
+	highlights.effects_speed = 0.5
+	check(highlights.particle_phase(highlight_song.notes[1]) == -1, "spark duration stays brief at slower playback")
+	highlights.effects_speed = 1.0
+	highlights.update_tick(576)
 	highlights.reduced_motion = true
 	check(highlights.particle_phase(highlight_song.notes[0]) == -1, "reduced motion suppresses particles")
 	highlights.reduced_motion = false
@@ -959,6 +976,11 @@ func run() -> void:
 	toast.show_message("replacement")
 	await create_timer(0.5).timeout
 	check(toast.visible and toast.modulate.a == 1, "new status cancels a previous fade")
+	toast.expire()
+	await create_timer(0.06).timeout
+	app.set("motion_mode", "reduced")
+	app.call("apply_motion")
+	check(not toast.visible and (toast.fade == null or not toast.fade.is_running()), "enabling reduced motion ends a status fade immediately")
 	toast.reduced_motion = true
 	toast.expire()
 	check(not toast.visible, "reduced motion dismisses status without animation")

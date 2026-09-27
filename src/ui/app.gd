@@ -1702,9 +1702,10 @@ func apply_notation_rows() -> void:
 		notation_rows_notice.text = tr("NOTATION_ROWS_SAVED")
 
 func turn_page(direction: int) -> void:
+	var previous_page: int = score.page_index
 	score.turn_page(direction)
 	view_picker.select(1)
-	animate_page()
+	if score.page_index != previous_page: animate_page()
 	score_frame.update_overview()
 	update_page_controls()
 	scroll.scroll_vertical = 0
@@ -2623,9 +2624,11 @@ func update_position(animate_follow: bool = false) -> void:
 	if song == null:
 		return
 	score.effects_playing = audio.playing_practice and audio.audible_frame() >= audio.transport.count_frames
+	score.effects_speed = speed
 	score.update_tick(source_tick)
 	if capture_active:
 		capture_view.score.effects_playing = score.effects_playing
+		capture_view.score.effects_speed = speed
 		capture_view.score.update_tick(source_tick)
 	score_frame.update_overview(animate_follow)
 	update_page_controls()
@@ -2724,13 +2727,24 @@ func show_control_help(text: String) -> void:
 
 func apply_motion() -> void:
 	reduced_motion = motion_mode == "reduced" or (motion_mode == "system" and host.system_reduced_motion())
-	if status_toast != null: status_toast.reduced_motion = reduced_motion
+	if status_toast != null:
+		status_toast.reduced_motion = reduced_motion
+		if reduced_motion and status_toast.fade != null and status_toast.fade.is_running():
+			status_toast.fade.kill()
+			status_toast.hide()
 	motion_check.set_pressed_no_signal(reduced_motion)
 	motion_note.text = tr("MOTION_SYSTEM" if motion_mode == "system" else "MOTION_OVERRIDE")
 	if menu_tween != null: menu_tween.kill()
 	if page_tween != null: page_tween.kill()
 	drawer.modulate.a = 1
 	paper.modulate.a = 1
+	if reduced_motion:
+		if tv_controls_tween != null:
+			tv_controls_tween.kill()
+			tv_controls_tween = null
+		header_margin.modulate.a = 0.0 if tv_tucked else 1.0
+		if dock_margin.get_parent() != header: dock_margin.modulate.a = header_margin.modulate.a
+		if score_frame != null and score_frame.follow_tween != null: score_frame.finish_follow_transition()
 	apply_button_motion(self)
 	score.reduced_motion = reduced_motion
 	score.invalidate()
@@ -2760,9 +2774,9 @@ func animate_page() -> void:
 	if page_tween != null: page_tween.kill()
 	paper.modulate.a = 1
 	if reduced_motion: return
-	paper.modulate.a = 0.45
+	paper.modulate.a = 0.82
 	page_tween = create_tween()
-	page_tween.tween_property(paper, "modulate:a", 1.0, 0.18)
+	page_tween.tween_property(paper, "modulate:a", 1.0, 0.16).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 func build_print_menu() -> void:
 	var menu: VBoxContainer = section("PRINT")

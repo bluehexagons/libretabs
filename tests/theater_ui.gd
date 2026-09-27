@@ -94,7 +94,16 @@ func run() -> void:
 	check(is_equal_approx(header.modulate.a, alpha), "reveal reverses the fade without jumping opacity")
 	await create_timer(0.3).timeout
 	check(header.modulate.a == 1.0 and frame.get_global_rect() == music, "reversed fade completes with stable music")
+	app.call("set_tv_tucked", true)
+	await create_timer(0.06).timeout
+	app.set("motion_mode", "reduced")
+	app.call("apply_motion")
+	check(header.modulate.a == 0.0 and (app.get("tv_controls_tween") == null or not app.get("tv_controls_tween").is_running()), "enabling reduced motion finishes an active Theater fade immediately")
+	app.call("set_tv_tucked", false)
+	check(header.modulate.a == 1.0, "reduced motion reveals Theater controls without a fade")
 	app.call("pause")
+	app.set("motion_mode", "full")
+	app.call("apply_motion")
 	root.size = Vector2i(1280, 720)
 	app.set("control_position", "bottom")
 	app.call("apply_scale", 1.0)
