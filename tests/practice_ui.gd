@@ -25,7 +25,7 @@ func run() -> void:
 	check(song_buttons.size() == 13 and app.get("starter_song_grid").get_child_count() == 2, "every built-in song has a direct choice and beginner songs come first")
 	check(song_buttons[0].text == TranslationServer.translate("SONG_CURRENT_ITEM") % TranslationServer.translate("LIBRARY_ODE_TO_JOY"), "the active song has a text marker")
 	check(app.get("title") == TranslationServer.translate("LIBRARY_ODE_TO_JOY"), "default library opens with Ode to Joy")
-	check(app.get("preset_buttons").size() == 6 and app.get("preset_choice_buttons").size() == 6, "practice layouts are direct choices on the starting page and in the menu")
+	check(app.get("preset_buttons").size() == 8 and app.get("preset_choice_buttons").size() == 8, "practice layouts including compact companion staffs are direct choices on the starting page and in the menu")
 	check(app.get("opened_drawer") == "WELCOME" and app.get("startup_help_check").button_pressed, "first startup opens quick start with the opt-out enabled")
 	app.get("startup_help_check").button_pressed = false
 	check(not app.get("startup_help_enabled"), "startup help can be disabled")
@@ -66,8 +66,27 @@ func run() -> void:
 	for note: Dictionary in piano_song.notes:
 		if int(note.pitch) < 60: low_notes += 1
 		else: high_notes += 1
-	check(app.get("active_library") == 12 and low_notes >= 16 and high_notes >= 32 and piano_song.parts.size() == 1, "original two-hand example loads both pitch ranges into one source-linked part")
+	check(app.get("active_library") == 12 and low_notes >= 16 and high_notes >= 32 and piano_song.parts.size() == 2 and piano_song.staff_pair() == [0, 1], "original two-hand example loads separate source-linked treble and bass parts")
 	check(app.get("score").tiles[0].canvases.size() == 2 and app.get("cue").text.contains("Sounding notes"), "piano practice shows both staffs and pitch cues instead of guitar frets")
+	check(app.get("score").tiles[0].canvases[0].part == 0 and app.get("score").tiles[0].canvases[1].part == 1, "grand staff shows both source parts at their shared transport tick")
+	app.set("source_tick", 480.0)
+	app.call("apply_preset", "treble_focus")
+	check(app.get("part") == 0 and app.get("score").tiles[0].canvases[1].part == 1 and app.get("notation_rows")[1].type == "mini_bass", "treble focus retains the bass part on a compact staff")
+	app.get("mute_check").button_pressed = true
+	check(app.get("muted").has(0) and not app.get("muted").has(1), "focused treble can be muted independently")
+	app.call("apply_preset", "bass_focus")
+	check(app.get("part") == 1 and app.get("score").tiles[0].canvases[1].part == 0 and app.get("notation_rows")[1].type == "mini_treble", "bass focus retains the treble part on a compact staff")
+	check(is_equal_approx(app.get("source_tick"), 480.0), "changing focus layouts preserves the shared song position")
+	check(not app.get("mute_check").button_pressed and app.get("muted").has(0), "changing focus preserves each part's mute setting")
+	app.get("mute_check").button_pressed = true
+	check(app.get("muted").has(0) and app.get("muted").has(1), "both parts can be muted separately")
+	app.get("mute_check").button_pressed = false
+	app.call("apply_preset", "piano")
+	check(app.get("part") == 1, "opening the full piano layout keeps the learner's focused part")
+	app.get("part_picker").select(0)
+	app.call("select_part", 0)
+	app.get("mute_check").button_pressed = false
+	check(app.get("muted").is_empty(), "both parts can be restored without reopening the song")
 	app.call("apply_preset", "pick")
 	check(app.get("projection").style == TabProjection.PICK and app.get("notation_rows") == NotationRows.defaults(), "pick preset selects the guitar arrangement and paired score")
 	app.call("apply_preset", "bass")

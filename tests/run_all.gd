@@ -71,6 +71,8 @@ func _initialize() -> void:
 	check(NotationRows.decode(NotationRows.encode(notation_defaults)).rows == notation_defaults, "notation row schema round trip")
 	var custom_rows: Array[Dictionary] = [{"type": "piano", "height": 160}, {"type": "staff", "height": 240}, {"type": "tab", "height": 112}, {"type": "staff", "height": 144}]
 	check(NotationRows.valid(custom_rows) and NotationRows.total_height(custom_rows) == 656, "notation rows allow repeats, arbitrary order and individual heights")
+	var mini_rows: Array[Dictionary] = [{"type": "treble", "height": 240}, {"type": "mini_bass", "height": 112}]
+	check(NotationRows.decode(NotationRows.encode(mini_rows)).rows == mini_rows and NotationRows.has_staff_pair(mini_rows), "compact companion staff survives v1 settings and pairs with treble")
 	check(NotationRows.decode('{"version":2,"rows":[]}').status == "unsupported", "future notation row schema protected")
 	check(NotationRows.decode('{"version":1,"rows":[{"type":"video","height":160}]}').status == "corrupt", "unknown notation row type recovers safely")
 	check(NotationRows.encode([{"type": "piano", "height": 20}]).is_empty(), "unsafe notation height rejected")
@@ -103,10 +105,23 @@ func _initialize() -> void:
 	for name: String in ["ode_to_joy", "fur_elise", "spring", "canon_in_d", "twinkle", "the_entertainer", "mary_had_a_little_lamb", "frere_jacques", "auld_lang_syne", "yankee_doodle", "brahms_lullaby", "minuet_in_g"]:
 		var library_import: MidiImport = parse(library_file(name))
 		check(library_import.error.is_empty(), "%s default library MIDI imports" % name)
-		check(library_import.document.parts.size() == 1 and library_import.document.notes.size() >= 8, "%s is a single-line practice excerpt" % name)
+		var library_song: SongDocument = library_import.document
+		check(library_song.parts.size() == 2 and library_song.staff_pair() == [0, 1] and library_song.notes.size() >= 8, "%s has distinct higher melody and lower bass parts" % name)
+		var low_notes: int = 0
+		for note: Dictionary in library_song.notes:
+			if int(note.part) == 1 and int(note.pitch) < 60: low_notes += 1
+		check(low_notes >= library_song.measures.size(), "%s provides bass notes throughout the practice excerpt" % name)
 		var library_projection: TabProjection = TabProjection.new()
 		library_projection.build(library_import.document, 0)
 		check(library_projection.placed == library_projection.eligible, "%s stays within the default guitar range" % name)
+	var duet: SongDocument = parse(library_file("ode_to_joy")).document
+	var duet_transport: PracticeTransport = PracticeTransport.new()
+	for muted_part: int in [0, 1]:
+		duet_transport.configure(duet, 0, 1920, 1.0, false, false, false, [muted_part])
+		var heard: Array[int] = []
+		for event: Dictionary in duet_transport.take_events(PracticeTransport.RATE * 2):
+			if event.kind == "on": heard.append(int(event.note.part))
+		check(not heard.is_empty() and not heard.has(muted_part) and heard.has(1 - muted_part), "separate melody and bass source parts mute independently")
 	var auld_lang_syne: SongDocument = parse(library_file("auld_lang_syne")).document
 	check(auld_lang_syne.measures[0].numerator == 4 and auld_lang_syne.measures[0].denominator == 4, "Auld Lang Syne keeps its 4/4 meter")
 	var brahms_lullaby: SongDocument = parse(library_file("brahms_lullaby")).document

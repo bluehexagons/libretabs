@@ -1,9 +1,12 @@
 # Default music library
 
-These are project-authored, single-line teaching arrangements of public-domain
-compositions, with music data dedicated under CC0-1.0. They contain no downloaded
-MIDI, recordings, accompaniment, or score graphics. They are melodies and selected
-themes, not complete arrangements of the larger instrumental works.
+These are project-authored teaching arrangements of public-domain compositions,
+with music data dedicated under CC0-1.0. They contain no downloaded MIDI,
+recordings, or score graphics. The melody and a simple original practice bass
+occupy separate MIDI parts and can be muted independently. Bass lines are new
+editorial additions, not transcriptions of a composer's accompaniment. These
+remain selected themes and teaching excerpts, not complete arrangements of
+larger instrumental works.
 
 The readable recipe is [library_scores.py](../../scripts/library_scores.py).
 Every bar is checked against its meter before MIDI generation. Durations use
@@ -11,7 +14,9 @@ sixteenth-note units; rests are explicit and ties extend the original attack.
 Pickups (notes before the first full measure) begin after padding rests in the
 first MIDI measure so the following downbeat aligns correctly. Tempos are chosen
 for practice, not claims about an authoritative performance. Ornamentation and
-accompaniment are omitted. No swing or human timing is added.
+original historical accompaniment are omitted. The practice bass plays a low
+root followed by its fifth in each bar; the first bass note waits for a pickup
+melody to enter. No swing or human timing is added.
 
 | File | Scope and rhythm review | Meter / quarter-note BPM |
 | --- | --- | --- |
@@ -27,7 +32,7 @@ accompaniment are omitted. No swing or human timing is added.
 | yankee_doodle | Verse and chorus twice, with dotted chorus rhythm | 2/4 · 100 |
 | brahms_lullaby | Complete vocal melody in C, preserving pickup, rests and dotted rhythm; piano introduction omitted | 3/4 · 84 |
 | minuet_in_g | Both 16-bar sections, without repeats or ornaments, down one octave | 3/4 · 100 |
-| piano_study | Original eight-bar two-hand C-major exercise with a quarter-note melody and alternating low half notes; both pitch ranges share one MIDI part | 4/4 · 88 |
+| piano_study | Original eight-bar two-hand C-major exercise with a quarter-note melody and alternating low half notes on separate treble and bass MIDI parts | 4/4 · 88 |
 
 ## Score references checked 2026-09-11
 

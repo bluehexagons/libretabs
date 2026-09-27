@@ -12,6 +12,31 @@ var measures: Array[Dictionary] = []
 var diagnostics: Array[String] = []
 var end_tick: int = 0
 
+# A two-part song can present its higher and lower parts together. This is a
+# display choice only; each note retains its original source part and timing.
+func staff_pair() -> Array[int]:
+	var totals: Dictionary = {}
+	var counts: Dictionary = {}
+	for index: int in range(parts.size()):
+		if not bool(parts[index].get("percussion", false)):
+			totals[index] = 0
+			counts[index] = 0
+	if totals.size() != 2: return []
+	for note: Dictionary in notes:
+		var index: int = int(note.part)
+		if totals.has(index):
+			totals[index] = int(totals[index]) + int(note.pitch)
+			counts[index] = int(counts[index]) + 1
+	var indices: Array[int] = []
+	for index: int in totals:
+		if int(counts[index]) == 0: return []
+		indices.append(index)
+	indices.sort_custom(func(a: int, b: int) -> bool:
+		var left: float = float(totals[a]) / int(counts[a])
+		var right: float = float(totals[b]) / int(counts[b])
+		return a < b if is_equal_approx(left, right) else left > right)
+	return indices
+
 func warn(code: String) -> void:
 	if not diagnostics.has(code):
 		diagnostics.append(code)

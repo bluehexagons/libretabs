@@ -7,7 +7,7 @@ const MAX_ROWS: int = 32
 const MIN_HEIGHT: int = 96
 const MAX_HEIGHT: int = 480
 const MAX_BYTES: int = 2048
-const TYPES: Array[String] = ["staff", "tab", "piano", "treble", "bass"]
+const TYPES: Array[String] = ["staff", "tab", "piano", "treble", "bass", "mini_treble", "mini_bass"]
 const DEFAULT_ROWS: Array[Dictionary] = [
 	{"type": "staff", "height": 144},
 	{"type": "tab", "height": 176},
@@ -62,6 +62,25 @@ static func total_height(rows: Array) -> float:
 
 static func native_height(type: String) -> float:
 	return 160.0 if type == "piano" else 176.0
+
+static func clef(type: String) -> String:
+	if type == "mini_treble": return "treble"
+	if type == "mini_bass": return "bass"
+	return type
+
+static func has_staff_pair(rows: Array) -> bool:
+	var high: bool = false
+	var low: bool = false
+	for row: Dictionary in rows:
+		high = high or row.type in ["treble", "mini_treble"]
+		low = low or row.type in ["bass", "mini_bass"]
+	return high and low
+
+static func part_for_row(type: String, selected: int, pair: Array[int], rows: Array) -> int:
+	if pair.size() != 2: return selected
+	if type == "mini_treble" or (type == "treble" and has_staff_pair(rows)): return pair[0]
+	if type == "mini_bass" or (type == "bass" and has_staff_pair(rows)): return pair[1]
+	return selected
 
 static func row_top(rows: Array, index: int) -> float:
 	var result: float = 0

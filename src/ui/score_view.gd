@@ -27,6 +27,7 @@ var music_font: Font = preload("res://assets/fonts/Bravura.otf")
 var song: SongDocument
 var projection: TabProjection
 var part: int = 0
+var staff_pair: Array[int] = []
 var live_notes: Array[Dictionary] = []
 var current_tick: float = 0.0
 var measure_index: int = 0
@@ -84,6 +85,7 @@ func _ready() -> void:
 func set_document(document: SongDocument, selection: int, tab: TabProjection) -> void:
 	song = document
 	part = selection
+	staff_pair = song.staff_pair()
 	projection = tab
 	page_index = 0
 	page_capacity = 0
@@ -268,6 +270,7 @@ func refresh() -> void:
 			var tile: NotationMeasureStack = NotationMeasureStack.new()
 			tile.song = song
 			tile.part = part
+			tile.staff_pair = staff_pair
 			tile.projection = projection
 			tile.index = index
 			tile.continuous = true
@@ -478,8 +481,8 @@ func draw_cursor(surface: Control) -> void:
 		# Keep onset sparks for a fixed screen-time window at every playback speed.
 		spark_start_tick = song.tick_at(song.seconds_at(current_tick) - SPARK_SECONDS * effects_speed)
 	for note: Dictionary in song.notes:
-		if int(note.part) != part: continue
-		var upcoming: bool = float(note.start) == upcoming_tick
+		if int(note.part) != part and not staff_pair.has(int(note.part)): continue
+		var upcoming: bool = int(note.part) == part and float(note.start) == upcoming_tick
 		var sounding: bool = current_tick >= float(note.start) and current_tick < float(note.end)
 		var spark_phase: float = -1.0
 		if float(note.start) >= spark_start_tick and float(note.start) <= current_tick:
@@ -495,21 +498,23 @@ func draw_cursor(surface: Control) -> void:
 			for row: Dictionary in visual_rows():
 				var type: String = str(row.type)
 				var row_index: int = int(row.index)
+				if not row_accepts_note(type, note): continue
 				if type == "tab" and projection.placements.has(note.id):
 					var placement: Dictionary = projection.placements[note.id]
 					var y: float = origin.y + mapped_row_y(row_index, ScoreLayout.tab_y(int(placement.string), drawing_notation()))
 					var half: float = ui_font.get_string_size(str(placement.fret), HORIZONTAL_ALIGNMENT_LEFT, -1, row_text_size(row_index, 26)).x / 2 + 4
 					if upcoming or sounding: draw_note_mark(surface, Vector2(x, y), half, upcoming, note, minf(14, mapped_row_distance(row_index, 14)))
 					if onset_here and spark_phase >= 0: draw_particles(surface, Vector2(x, y), note, spark_phase)
-				elif type in ["staff", "treble", "bass"] and row_accepts_pitch(type, int(note.pitch)):
-					var y: float = origin.y + mapped_row_y(row_index, ScoreLayout.staff_y(int(note.pitch), type))
+				elif type in ["staff", "treble", "bass", "mini_treble", "mini_bass"]:
+					var clef: String = NotationRows.clef(type)
+					var y: float = origin.y + mapped_row_y(row_index, ScoreLayout.staff_y(int(note.pitch), clef))
 					var top: float = origin.y + mapped_row_y(row_index, 12)
 					var bottom: float = origin.y + mapped_row_y(row_index, 172)
 					if y >= top and y <= bottom:
 						if upcoming: draw_note_mark(surface, Vector2(x, y), maxf(10, mapped_row_distance(row_index, 8)), true, note)
 						elif sounding:
-							surface.draw_arc(Vector2(x, y), maxf(11, mapped_row_distance(row_index, 8)), 0, TAU, 20, get_theme_color("ink" if type in ["treble", "bass"] else ScoreLayout.placement_color_token(projection, note), "LibreTabs"), 2, true)
-						if onset_here and spark_phase >= 0: draw_particles(surface, Vector2(x, y), note, spark_phase, type in ["treble", "bass"])
+							surface.draw_arc(Vector2(x, y), maxf(11, mapped_row_distance(row_index, 8)), 0, TAU, 20, get_theme_color("ink" if clef in ["treble", "bass"] else ScoreLayout.placement_color_token(projection, note), "LibreTabs"), 2, true)
+						if onset_here and spark_phase >= 0: draw_particles(surface, Vector2(x, y), note, spark_phase, clef in ["treble", "bass"])
 
 	draw_live(surface)
 	draw_piano_rows(surface)
@@ -552,7 +557,7 @@ func draw_live(surface: Control) -> void:
 	for note: Dictionary in live_notes:
 		for row: Dictionary in visual_rows():
 			var row_index: int = int(row.index)
-			if row.type in ["staff", "treble", "bass"] and row_accepts_pitch(str(row.type), int(note.pitch)): draw_live_staff(surface, note, x, origin.y, row_index, color, str(row.type))
+			if row.type in ["staff", "treble", "bass", "mini_treble", "mini_bass"] and row_accepts_live(str(row.type), int(note.pitch)): draw_live_staff(surface, note, x, origin.y, row_index, color, NotationRows.clef(str(row.type)))
 			elif row.type == "tab":
 				var y: float = origin.y + mapped_row_y(row_index, ScoreLayout.tab_y(int(note.get("string", 1)), drawing_notation()))
 				var text: String = str(note.fret) if note.has("fret") else "!"
@@ -587,11 +592,14 @@ func visual_rows() -> Array[Dictionary]:
 	if notation != "staff": legacy.append({"type": "tab", "index": 0})
 	return legacy
 
-func row_accepts_pitch(type: String, pitch: int) -> bool:
-	var types: Array[String] = []
-	for row: Dictionary in drawing_rows(): types.append(str(row.type))
-	if not (types.has("treble") and types.has("bass")): return true
-	return pitch >= 60 if type == "treble" else pitch < 60 if type == "bass" else true
+func row_accepts_note(type: String, note: Dictionary) -> bool:
+	var row_part: int = NotationRows.part_for_row(type, part, staff_pair, drawing_rows())
+	if int(note.part) != row_part: return false
+	if not staff_pair.is_empty() or not NotationRows.has_staff_pair(drawing_rows()): return true
+	return int(note.pitch) >= 60 if NotationRows.clef(type) == "treble" else int(note.pitch) < 60 if NotationRows.clef(type) == "bass" else true
+
+func row_accepts_live(type: String, pitch: int) -> bool:
+	return row_accepts_note(type, {"part": part, "pitch": pitch})
 
 func mapped_row_y(index: int, native_y: float) -> float:
 	return native_y if drawing_rows().is_empty() else NotationRows.mapped_y(drawing_rows(), index, native_y)
@@ -605,8 +613,8 @@ func row_text_size(index: int, base: int) -> int:
 
 func draw_reading_guide(surface: Control, row: Dictionary) -> void:
 	var row_index: int = int(row.index)
-	if row.type in ["staff", "treble", "bass"]:
-		surface.draw_string(music_font, Vector2(8, mapped_row_y(row_index, ScoreLayout.STAFF_TOP + 40.625)), String.chr(0xe062 if row.type == "bass" else 0xe050), HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(mapped_row_distance(row_index, ScoreLayout.STAFF_FONT)), get_theme_color("ink", "LibreTabs"))
+	if row.type in ["staff", "treble", "bass", "mini_treble", "mini_bass"]:
+		surface.draw_string(music_font, Vector2(8, mapped_row_y(row_index, ScoreLayout.STAFF_TOP + 40.625)), String.chr(0xe062 if NotationRows.clef(str(row.type)) == "bass" else 0xe050), HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(mapped_row_distance(row_index, ScoreLayout.STAFF_FONT)), get_theme_color("ink", "LibreTabs"))
 		if row.type == "staff": surface.draw_string(ui_font, Vector2(17, mapped_row_y(row_index, 145)), "8", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, get_theme_color("ink", "LibreTabs"))
 	elif row.type == "tab":
 		for string_index: int in range(6):
@@ -628,7 +636,7 @@ func draw_piano(surface: Control, row_index: int) -> void:
 	for pitch: int in range(PIANO_FIRST_PITCH, PIANO_LAST_PITCH + 1):
 		if posmod(pitch, 12) not in [1, 3, 6, 8, 10]: white_pitches.append(pitch)
 	var white_width: float = (right - left) / white_pitches.size()
-	var active: Array[int] = active_pitches()
+	var active: Array[int] = visible_pitches()
 	for white_index: int in range(white_pitches.size()):
 		var pitch: int = white_pitches[white_index]
 		var rect: Rect2 = Rect2(left + white_index * white_width, key_top, white_width + 1, key_bottom - key_top)
@@ -651,9 +659,15 @@ func draw_piano(surface: Control, row_index: int) -> void:
 	surface.draw_string(ui_font, Vector2(left, top + 20), caption, HORIZONTAL_ALIGNMENT_LEFT, right - left, 15, get_theme_color("ink", "LibreTabs"))
 
 func active_pitches() -> Array[int]:
+	return sounding_pitches(false)
+
+func visible_pitches() -> Array[int]:
+	return sounding_pitches(NotationRows.has_staff_pair(drawing_rows()))
+
+func sounding_pitches(include_companion: bool) -> Array[int]:
 	var result: Array[int] = []
 	for note: Dictionary in song.notes:
-		if int(note.part) == part and current_tick >= float(note.start) and current_tick < float(note.end) and not result.has(int(note.pitch)):
+		if (int(note.part) == part or (include_companion and staff_pair.has(int(note.part)))) and current_tick >= float(note.start) and current_tick < float(note.end) and not result.has(int(note.pitch)):
 			result.append(int(note.pitch))
 	for note: Dictionary in live_notes:
 		if not result.has(int(note.pitch)): result.append(int(note.pitch))

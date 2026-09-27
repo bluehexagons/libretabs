@@ -244,6 +244,8 @@ const PRACTICE_PRESETS: Array[Dictionary] = [
 	{"id": "pick", "key": "PRESET_PICK", "rows": [{"type": "staff", "height": 144}, {"type": "tab", "height": 176}], "style": 1},
 	{"id": "finger", "key": "PRESET_FINGER", "rows": [{"type": "staff", "height": 144}, {"type": "tab", "height": 176}], "style": 2},
 	{"id": "piano_keys", "key": "PRESET_PIANO_KEYS", "rows": [{"type": "treble", "height": 176}, {"type": "bass", "height": 176}, {"type": "piano", "height": 144}], "style": 0},
+	{"id": "treble_focus", "key": "PRESET_TREBLE_FOCUS", "rows": [{"type": "treble", "height": 240}, {"type": "mini_bass", "height": 112}], "style": 0},
+	{"id": "bass_focus", "key": "PRESET_BASS_FOCUS", "rows": [{"type": "bass", "height": 240}, {"type": "mini_treble", "height": 112}], "style": 0},
 ]
 
 func _ready() -> void:
@@ -1067,12 +1069,27 @@ func apply_preset(id: String) -> void:
 		arrangement_picker.select(int(preset.style))
 		apply_notation_rows()
 		rebuild_notation_rows_editor()
-		if song != null: update_arrangement()
+		if song != null:
+			var focus: int = preset_focus_part(id, part)
+			if focus != part:
+				var keep_tick: float = source_tick
+				part_picker.select(focus)
+				select_part(focus)
+				source_tick = keep_tick
+			else: update_arrangement()
 		update_position()
 		update_preset_buttons()
 		if menu_overlay.visible: close_menu()
 		if was_playing: start(false)
 		return
+
+func preset_focus_part(id: String, fallback: int) -> int:
+	if song == null: return fallback
+	var pair: Array[int] = song.staff_pair()
+	if pair.size() != 2: return fallback
+	if id in ["bass", "bass_focus"]: return pair[1]
+	if id == "treble_focus": return pair[0]
+	return fallback
 
 func open_piano_example() -> void:
 	apply_preset("piano")
@@ -1133,6 +1150,8 @@ func build_drawers() -> void:
 	row_actions.add_child(button("ADD_STAFF_ROW", func() -> void: add_notation_row("staff")))
 	row_actions.add_child(button("ADD_TAB_ROW", func() -> void: add_notation_row("tab")))
 	row_actions.add_child(button("ADD_PIANO_ROW", func() -> void: add_notation_row("piano")))
+	row_actions.add_child(button("ADD_MINI_TREBLE_ROW", func() -> void: add_notation_row("mini_treble")))
+	row_actions.add_child(button("ADD_MINI_BASS_ROW", func() -> void: add_notation_row("mini_bass")))
 	views.add_child(button("RESTORE_NOTATION_ROWS", restore_notation_rows))
 	notation_rows_notice = label("NOTATION_ROWS_SAVED", 16)
 	if notation_rows_load_status != "ok": notation_rows_notice.text = tr("NOTATION_ROWS_RECOVERED")
@@ -1231,7 +1250,7 @@ func build_drawers() -> void:
 	sound.add_child(mute_check)
 	sound.add_child(label("BACKING", 18))
 	backing_box = flow(sound)
-	mute_check.toggled.connect(func(_pressed: bool) -> void: restart_if_playing())
+	mute_check.toggled.connect(func(pressed: bool) -> void: set_part_enabled(part, not pressed))
 
 	var loops: VBoxContainer = section("LOOP_TOOL")
 	loops.add_child(label("LOOP_HELP", 18))
@@ -1801,7 +1820,7 @@ func rebuild_notation_rows_editor() -> void:
 		type.custom_minimum_size = Vector2(150, 56)
 		type.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		type.fit_to_longest_item = false
-		for key: String in ["NOTATION_STAFF_ROW", "NOTATION_TAB_ROW", "NOTATION_PIANO_ROW", "NOTATION_TREBLE_ROW", "NOTATION_BASS_ROW"]: type.add_item(tr(key))
+		for key: String in ["NOTATION_STAFF_ROW", "NOTATION_TAB_ROW", "NOTATION_PIANO_ROW", "NOTATION_TREBLE_ROW", "NOTATION_BASS_ROW", "NOTATION_MINI_TREBLE_ROW", "NOTATION_MINI_BASS_ROW"]: type.add_item(tr(key))
 		type.select(NotationRows.TYPES.find(str(notation_rows[index].type)))
 		type.tooltip_text = tr("NOTATION_ROW_TYPE")
 		type.item_selected.connect(func(selected: int) -> void:
@@ -1843,7 +1862,7 @@ func rebuild_notation_rows_editor() -> void:
 
 func add_notation_row(type: String) -> void:
 	if notation_rows.size() >= NotationRows.MAX_ROWS: return
-	notation_rows.append({"type": type, "height": 160 if type == "piano" else (144 if type == "staff" else 176)})
+	notation_rows.append({"type": type, "height": 112 if type.begins_with("mini_") else (160 if type == "piano" else (144 if type == "staff" else 176))})
 	apply_notation_rows()
 	rebuild_notation_rows_editor()
 
@@ -2467,10 +2486,11 @@ func finish_import() -> void:
 	speed_picker.select(SPEEDS.find(1.0))
 	update_tempo()
 	muted.clear()
+	mute_check.set_pressed_no_signal(false)
 	part_picker.clear()
 	for index: int in range(song.parts.size()):
 		var info: Dictionary = song.parts[index]
-		part_picker.add_item(tr("PART_VALUE") % [index + 1, info.name if not String(info.name).is_empty() else tr("UNNAMED_PART"), int(info.channel) + 1])
+		part_picker.add_item(tr("PART_VALUE") % [index + 1, part_display_name(index), int(info.channel) + 1])
 		part_picker.set_item_disabled(index, bool(info.percussion))
 	updating = true
 	seek.max_value = song.end_tick
@@ -2481,6 +2501,7 @@ func finish_import() -> void:
 	loop_check.button_pressed = false
 	updating = false
 	update_loop_controls()
+	first = preset_focus_part(active_preset, first)
 	part_picker.select(first)
 	select_part(first)
 	state = "STATE_READY"
@@ -2492,11 +2513,18 @@ func finish_import() -> void:
 		startup_help_pending = false
 		toggle_drawer("WELCOME")
 
+func part_display_name(index: int) -> String:
+	var name: String = str(song.parts[index].name)
+	return tr("UNNAMED_PART") if name.is_empty() else name
+
 func select_part(index: int) -> void:
+	if song == null or index < 0 or index >= song.parts.size() or bool(song.parts[index].percussion): return
 	pause()
 	print_html = ""
 	print_save.disabled = true
 	part = index
+	mute_check.set_pressed_no_signal(muted.has(part))
+	mute_check.text = tr("MUTE_FOCUSED_PART") % [part_display_name(part), part + 1]
 	var first_measure: int = song.first_sounding_measure(part)
 	source_tick = float(song.measures[first_measure].start) if not song.measures.is_empty() else 0.0
 	update_arrangement()
@@ -2506,13 +2534,18 @@ func select_part(index: int) -> void:
 		if part_index == part or song.parts[part_index].percussion:
 			continue
 		var item: CheckButton = check("BACKING", not muted.has(part_index))
-		item.text = tr("BACKING_VALUE") % (part_index + 1)
+		item.text = tr("BACKING_NAMED") % [part_display_name(part_index), part_index + 1]
 		item.toggled.connect(func(enabled: bool) -> void:
-			if enabled: muted.erase(part_index)
-			elif not muted.has(part_index): muted.append(part_index)
-			restart_if_playing())
+			set_part_enabled(part_index, enabled))
 		backing_box.add_child(item)
 	update_position()
+
+func set_part_enabled(index: int, enabled: bool) -> void:
+	if song == null or index < 0 or index >= song.parts.size(): return
+	if enabled: muted.erase(index)
+	elif not muted.has(index): muted.append(index)
+	if index == part: mute_check.set_pressed_no_signal(not enabled)
+	restart_if_playing()
 
 func set_arrangement_style(_index: int) -> void:
 	if song == null: return
@@ -2570,9 +2603,7 @@ func start(count_in: bool) -> void:
 		end_tick = float(song.measures[int(loop_to.value) - 1].end)
 		if start_tick < loop_start_tick or start_tick >= end_tick:
 			start_tick = loop_start_tick
-	var filtered: Array[int] = muted.duplicate()
-	if mute_check.button_pressed and not filtered.has(part): filtered.append(part)
-	audio.transport.configure(song, start_tick, end_tick, speed, loop_check.button_pressed, count_in, true, filtered, loop_start_tick, int(count_length.value))
+	audio.transport.configure(song, start_tick, end_tick, speed, loop_check.button_pressed, count_in, true, muted.duplicate(), loop_start_tick, int(count_length.value))
 	audio.begin()
 	set_activity(true)
 	started_msec = Time.get_ticks_msec()

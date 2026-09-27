@@ -31,7 +31,7 @@ def midi(tracks, fmt=1):
     return b'MThd'+struct.pack('>IHHH',6,fmt,len(tracks),480)+b''.join(tracks)
 
 
-def authored_melody(title, composer, pitches, durations, tempo=100, time_numerator=4, time_denominator=4):
+def authored_melody(title, composer, pitches, durations, bass_roots, tempo=100, time_numerator=4, time_denominator=4):
     if len(pitches) != len(durations):
         raise ValueError(f'{title}: pitch and duration counts differ')
     microseconds = round(60_000_000 / tempo)
@@ -41,19 +41,41 @@ def authored_melody(title, composer, pitches, durations, tempo=100, time_numerat
         (0, meta(0x03, title)),
         (0, meta(0x01, composer)),
     ]
-    events = []
+    melody_events = [(0, meta(0x03, 'Melody'))]
     cursor = 0
+    first_onset = None
     for pitch, duration in zip(pitches, durations):
         if pitch is not None:
-            events.extend([
+            if first_onset is None:
+                first_onset = cursor
+            melody_events.extend([
                 (cursor, bytes([0x90, pitch, 88])),
                 (cursor + duration, bytes([0x80, pitch, 0])),
             ])
         cursor += duration
-    return midi([track(conductor + events, cursor)], 0)
+    bar_ticks = 480 * 4 * time_numerator // time_denominator
+    beat_ticks = 480 * 4 // time_denominator
+    if len(bass_roots) * bar_ticks != cursor:
+        raise ValueError(f'{title}: bass bars do not match melody duration')
+    if first_onset is None:
+        raise ValueError(f'{title}: melody has no notes')
+    bass_events = [(0, meta(0x03, 'Bass'))]
+    for bar, root in enumerate(bass_roots):
+        if not 36 <= root <= 55 or root + 7 >= 60:
+            raise ValueError(f'{title}: bass root is outside the intended low range')
+        bar_start = bar * bar_ticks
+        if first_onset >= bar_start + bar_ticks:
+            continue
+        start = max(bar_start, first_onset)
+        second = bar_start + ((time_numerator + 1) // 2) * beat_ticks
+        spans = [(start, second, root), (second, bar_start + bar_ticks, root + 7)] if start < second else [(start, bar_start + bar_ticks, root)]
+        for tick, finish, pitch in spans:
+            bass_events.extend([(tick, bytes([0x91, pitch, 70])),
+                                (finish - 30, bytes([0x81, pitch, 0]))])
+    return midi([track(conductor, cursor), track(melody_events, cursor), track(bass_events, cursor)])
 
 def authored_piano_study():
-    """Original eight-bar two-hand exercise, one source part and two pitch ranges."""
+    """Original eight-bar two-hand exercise with separately selectable MIDI parts."""
     conductor = [
         (0, b'\xff\x51\x03' + round(60_000_000 / 88).to_bytes(3, 'big')),
         (0, b'\xff\x58\x04\x04\x02\x18\x08'),
@@ -68,18 +90,20 @@ def authored_piano_study():
     ]
     lower = [(48, 43), (48, 43), (53, 48), (43, 50),
              (48, 43), (45, 40), (43, 50), (48, 48)]
-    events = list(conductor)
+    upper_events = [(0, meta(0x03, 'Treble'))]
+    lower_events = [(0, meta(0x03, 'Bass'))]
     for bar, melody in enumerate(upper):
         start = bar * 1920
         for beat, pitch in enumerate(melody):
             tick = start + beat * 480
-            events.extend([(tick, bytes([0x90, pitch, 88])),
-                           (tick + 420, bytes([0x80, pitch, 0]))])
+            upper_events.extend([(tick, bytes([0x90, pitch, 88])),
+                                 (tick + 420, bytes([0x80, pitch, 0]))])
         for half, pitch in enumerate(lower[bar]):
             tick = start + half * 960
-            events.extend([(tick, bytes([0x90, pitch, 72])),
-                           (tick + 900, bytes([0x80, pitch, 0]))])
-    return midi([track(events, 8 * 1920)], 0)
+            lower_events.extend([(tick, bytes([0x91, pitch, 72])),
+                                 (tick + 900, bytes([0x81, pitch, 0]))])
+    return midi([track(conductor, 8 * 1920), track(upper_events, 8 * 1920),
+                 track(lower_events, 8 * 1920)])
 
 def melody(channel=0):
     pitches=[64,64,67,69,67,66,64,62,64,67,71,69,67,66,64]
@@ -117,7 +141,7 @@ if __name__=='__main__':
     for filename, song in SONGS.items():
         pitches, durations = zip(*song['notes'])
         (library / f'{filename}.mid').write_bytes(authored_melody(
-            song['title'], song['composer'], pitches, durations, tempo=song['tempo'],
+            song['title'], song['composer'], pitches, durations, song['bass_roots'], tempo=song['tempo'],
             time_numerator=song['meter'][0], time_denominator=song['meter'][1],
         ))
     (library / 'piano_study.mid').write_bytes(authored_piano_study())

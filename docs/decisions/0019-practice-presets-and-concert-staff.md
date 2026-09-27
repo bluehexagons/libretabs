@@ -4,6 +4,9 @@
 - Date: 2026-09-27
 - Scope: practice presentation, touch navigation, and project-authored examples
 
+The later [decision 0020](0020-paired-example-parts-and-mini-staff.md) replaces
+this record's one-part piano example and adds paired-source mini staffs.
+
 ## Context
 
 Learners reported that the score's touch preview looked like an action but only a

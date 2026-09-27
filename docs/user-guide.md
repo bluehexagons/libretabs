@@ -85,13 +85,14 @@ so unusually detailed rhythms may not line up exactly with the simplified symbol
 
 ## Choose music or open your own file
 
-In **Songs** (or **Menu → Songs** in Theater), tap a built-in melody or
+In **Songs** (or **Menu → Songs** in Theater), tap a built-in song or
 **Open MIDI file**. A **MIDI file** contains note and timing instructions; it is not
 a recording such as an MP3, a photograph of sheet music, or a guitar-tab
 document. Use a `.mid` or `.midi` file.
 
 If several parts appear, use **Choose the part to practice**. A part is one line
-of music or instrument from the file. The score shows the selected part. Try a
+of music or instrument from the file. The main score shows the selected part;
+paired staff layouts can also show its companion part. Try a
 simple melody first; a whole piano or orchestral part may be difficult to fit on
 a guitar. Drum-only files have no pitched part to turn into guitar tabs.
 
@@ -124,9 +125,10 @@ or practice progress. See [privacy details](privacy.md).
   **Repeat this measure** sets and enables a one-measure loop. **Start at current
   measure** and **End at current measure** set the range from the current position.
 - **Volume & parts:** adjust instrument and click volume separately. Use
-  **Mute my part** to play your selected part yourself while hearing enabled
-  other parts. Uncheck it to hear the reference again. **Hear part** controls
-  the other parts; it does not change the selected score.
+  **Mute focused part** to play that part yourself while hearing the other one.
+  **Hear Melody/Treble/Bass** controls the other part in a built-in song.
+  Each mute choice is kept when you switch focus; muting changes sound, not the
+  displayed notes.
 
 ## Understand the arrangement choices
 
@@ -149,13 +151,19 @@ transcription of someone's guitar performance.
 
 Open **Menu → Practice layouts** (or choose a layout in **Quick start**) for
 one-step guitar tabs, pick strumming, fingerpicking, bass-staff reading, or
-piano treble-plus-bass staff reading. **Try a two-hand piano exercise** loads
-an original short piece with high and low notes in one MIDI part. Piano keys
+piano treble-plus-bass staff reading. **Treble focus** and **Bass focus** give
+the selected part more room and show the other part on a smaller five-line
+**mini staff**. The built-in songs have original simple bass lines on separate
+MIDI parts; these are practice additions, not historical accompaniments.
+**Try a two-hand piano exercise** loads an original short piece with separately
+selectable treble and bass parts. Piano keys
 can also show which notes sound now. Piano and bass staffs show actual sounding
 pitches; guitar tabs still describe six-string E-standard guitar and are not
-bass-guitar fingering. In the piano layout, notes at or above middle C use the
-treble staff and lower notes use the bass staff. Separate MIDI tracks are not
-automatically merged into two piano hands.
+bass-guitar fingering. A two-part piano layout places the higher and lower
+parts on the respective staffs. With a single MIDI part, it splits notes at
+middle C as a reading aid. A file with more than two pitched parts still
+requires selecting one practice part; it is not automatically arranged for two
+hands.
 
 Menu and dropdown lists scroll at the distance you drag with a finger. Drag
 through a choice list to browse it, then tap a choice to select it.
@@ -170,7 +178,7 @@ Open **Menu → Score view** for reading and layout choices:
 - **Music lines** controls how many consecutive lines fit on screen. Fewer lines
   give each line more height. **Note spacing** changes the horizontal gaps;
   **Staff height** changes the height of the five-line sheet music reference.
-- Add, reorder or resize guitar, concert-pitch treble or bass, guitar-tab, and
+- Add, reorder or resize guitar, concert-pitch treble or bass, compact mini-staff, guitar-tab, and
   piano rows. The piano row
   shows sounding notes; it is not a connected MIDI keyboard or a playing test.
   **Restore default rows** returns to the initial row layout.
@@ -218,7 +226,7 @@ arrows move one beat, Page Up/Down one measure, and Home/End to the start/end.
 
 | Problem | Try this |
 | --- | --- |
-| No sound | Press Play, check device/browser volume, raise Instrument volume in Volume & parts, and turn off Mute my part. Try a built-in exercise. |
+| No sound | Press Play, check device/browser volume, raise Instrument volume in Volume & parts, and enable the part you want to hear. Try a built-in exercise. |
 | Playback will not advance | Check that speed is above 0%, then press Play. Returning from a hidden browser tab also requires Play. |
 | The tune keeps repeating | Open Loop and choose Turn loop off. |
 | The page stopped following | Turning a page manually disables following. Enable Follow playback in Score view. |

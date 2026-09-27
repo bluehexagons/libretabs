@@ -5,6 +5,7 @@ extends Control
 var song: SongDocument
 var projection: TabProjection
 var part: int = 0
+var staff_pair: Array[int] = []
 var index: int = 0
 var continuous: bool = true
 var notation: String = "both"
@@ -22,26 +23,26 @@ func configure() -> void:
 		return
 	var top: float = 0
 	var has_title: bool = false
-	var split_staff: bool = false
-	var row_types: Array[String] = []
-	for row: Dictionary in notation_rows: row_types.append(str(row.type))
-	split_staff = row_types.has("treble") and row_types.has("bass")
+	var split_staff: bool = NotationRows.has_staff_pair(notation_rows)
+	var pair: Array[int] = staff_pair if not staff_pair.is_empty() else song.staff_pair()
 	for row: Dictionary in notation_rows:
 		var height: float = float(row.height)
 		if row.type != "piano":
-			add_canvas(str(row.type), top, height, NotationRows.native_height(str(row.type)), not has_title, split_staff)
+			var row_part: int = NotationRows.part_for_row(str(row.type), part, pair, notation_rows)
+			add_canvas(str(row.type), top, height, NotationRows.native_height(str(row.type)), not has_title, split_staff and pair.is_empty(), row_part)
 			has_title = true
 		top += height
 
-func add_canvas(type: String, top: float, height: float, native_height: float, show_title: bool = true, split_staff: bool = false) -> void:
+func add_canvas(type: String, top: float, height: float, native_height: float, show_title: bool = true, split_staff: bool = false, row_part: int = -1) -> void:
 	var canvas: MeasureCanvas = MeasureCanvas.new()
 	canvas.song = song
-	canvas.part = part
+	canvas.part = part if row_part < 0 else row_part
 	canvas.projection = projection
 	canvas.index = index
 	canvas.continuous = continuous
-	canvas.notation = type
-	canvas.split_staff = split_staff and type in ["treble", "bass"]
+	canvas.notation = NotationRows.clef(type)
+	canvas.compact_staff = type in ["mini_treble", "mini_bass"]
+	canvas.split_staff = split_staff and NotationRows.clef(type) in ["treble", "bass"]
 	canvas.shape_cues = shape_cues
 	canvas.tab_y_offset = -48 if type == "tab" and not notation_rows.is_empty() else 0
 	canvas.show_measure_title = show_title

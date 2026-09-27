@@ -211,6 +211,9 @@ msgstr "Beat clicks (metronome)"
 msgid "MUTE_MY_PART"
 msgstr "Mute my part"
 
+msgid "MUTE_FOCUSED_PART"
+msgstr "Mute focused part: %s (part %d)"
+
 msgid "SEEK"
 msgstr "Seek to a measure"
 
@@ -306,6 +309,9 @@ msgstr "Other parts"
 
 msgid "BACKING_VALUE"
 msgstr "Hear part %d"
+
+msgid "BACKING_NAMED"
+msgstr "Hear %s (part %d)"
 
 msgid "HELP_TITLE"
 msgstr "How to follow along"
@@ -572,7 +578,7 @@ msgid "PAGE_NOTATION"
 msgstr "Show on pages"
 
 msgid "NOTATION_ROWS_HELP"
-msgstr "Build the score from any number of rows. Put them in the order you want, and give more height to the view you are learning from. Base heights control the balance between rows; the player fits them into the available music height."
+msgstr "Build the score from any number of rows. Give more height to the part you are learning. A mini staff is a smaller five-line guide for the other part in a two-part song. With a single part, treble and bass split notes at middle C."
 
 msgid "NOTATION_ROW_NUMBER"
 msgstr "Row %d"
@@ -595,6 +601,18 @@ msgstr "Treble staff · sounding pitch"
 msgid "NOTATION_BASS_ROW"
 msgstr "Bass staff · sounding pitch"
 
+msgid "NOTATION_MINI_TREBLE_ROW"
+msgstr "Mini treble staff · higher part"
+
+msgid "NOTATION_MINI_BASS_ROW"
+msgstr "Mini bass staff · lower part"
+
+msgid "MINI_TREBLE_LABEL"
+msgstr "Treble"
+
+msgid "MINI_BASS_LABEL"
+msgstr "Bass"
+
 msgid "NOTATION_ROW_HEIGHT"
 msgstr "Base row height. Larger values give this row more of the available music height."
 
@@ -610,6 +628,12 @@ msgstr "Add guitar tabs"
 msgid "ADD_PIANO_ROW"
 msgstr "Add piano"
 
+msgid "ADD_MINI_TREBLE_ROW"
+msgstr "Add mini treble"
+
+msgid "ADD_MINI_BASS_ROW"
+msgstr "Add mini bass"
+
 msgid "LAYOUTS"
 msgstr "Practice layouts"
 
@@ -620,7 +644,7 @@ msgid "PRESET_START_HINT"
 msgstr "Choose a practice layout now. You can switch later from Practice layouts in Menu."
 
 msgid "PRESET_EXPLAIN"
-msgstr "Choose how to read this song. Piano staffs show sounding notes around middle C; the bass staff is for low notes. Guitar tabs always use six-string E-standard tuning, so they are not bass-guitar fingering."
+msgstr "Choose how to read this song. The treble staff shows higher notes; the bass staff shows lower notes. In two-part songs, either part can be focused and muted separately. A mini staff keeps the other part in view. Guitar tabs use six-string E-standard tuning, not bass-guitar fingering."
 
 msgid "PRESET_CURRENT"
 msgstr "Current · %s"
@@ -642,6 +666,12 @@ msgstr "Piano · treble + bass staffs"
 
 msgid "PRESET_PIANO_KEYS"
 msgstr "Piano · staffs + keys"
+
+msgid "PRESET_TREBLE_FOCUS"
+msgstr "Treble focus · mini bass"
+
+msgid "PRESET_BASS_FOCUS"
+msgstr "Bass focus · mini treble"
 
 msgid "PRESET_PIANO_EXAMPLE"
 msgstr "Try a two-hand piano exercise"
@@ -1274,7 +1304,7 @@ msgid "SONG_FILE_HELP"
 msgstr "MIDI files (.mid or .midi) contain note and timing instructions, not recorded audio. MP3s, PDFs and photos cannot be opened here. Choose a part below if the file has several instruments. Imports stay on this device and must be reopened after restarting."
 
 msgid "SOUND_HELP"
-msgstr "Listen to your selected part first. Then turn on Mute my part to play it yourself while hearing the enabled other parts. Turn it off to hear the reference again. Instrument and metronome volumes are separate."
+msgstr "Listen to the focused part first. Then mute it to play that line yourself while hearing enabled other parts. Each part keeps its own mute choice if you change focus. Instrument and beat-click volumes are separate."
 
 msgid "HELP_WARNINGS"
 msgstr "A ! or △ marks an arrangement warning, not a mistake you played. Open Songs, then About this arrangement to see which notes could not fit the guitar tab. Try another part or simpler music if needed."

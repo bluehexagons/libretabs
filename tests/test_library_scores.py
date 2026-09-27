@@ -20,7 +20,9 @@ class LibraryScores(unittest.TestCase):
                 self.assertEqual(sum(durations) % (1920 * song['meter'][0] // song['meter'][1]), 0)
                 self.assertEqual((ROOT / 'content/library' / f'{key}.mid').read_bytes(),
                     authored_melody(song['title'], song['composer'], pitches, durations,
-                        song['tempo'], *song['meter']))
+                        song['bass_roots'], song['tempo'], *song['meter']))
+                self.assertEqual(len(song['bass_roots']), len(song['bars'].split('|')))
+                self.assertTrue(all(36 <= root <= 52 for root in song['bass_roots']))
 
     def test_distinctive_rhythms(self):
         self.assertEqual(SONGS['canon_in_d']['notes'][:4], [(78, 480), (76, 480), (74, 480), (73, 480)])

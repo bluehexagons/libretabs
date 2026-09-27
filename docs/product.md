@@ -107,6 +107,7 @@ These choices keep the first usable release bounded. The product owner confirmed
 - **Practice feedback:** guided visual/audio play-along is sufficient for MVP; no microphone pitch detection or live grading. A non-grading volume-impulse progression mode is the first post-MVP input experiment.
 - **Instrument:** six-string guitar in E2-A2-D3-G3-B3-E4 tuning, with the tuning represented as data so alternate tunings do not require an algorithm rewrite.
 - **Import contract:** best-effort arrangement of one selected pitched part (a source track/channel pair), not guaranteed conversion of a complete orchestral arrangement.
+- **Prototype paired examples:** project-authored two-part songs may show the companion part on a concert-pitch staff or mini staff while the selected part remains the sole source of tab and arrangement coverage. See [decision 0020](decisions/0020-paired-example-parts-and-mini-staff.md).
 - **Notation:** tablature is the primary, larger representation. Synchronized standard staff notation is shown above it in scrolling practice for reference; manual pages may show either or both, with a concise reading guide in Help. Treble is the guitar default, with bass and automatic clef selection available.
 - **Content language:** English lessons first, but all UI/content structures are localization-ready from their first implementation.
 - **Connectivity:** no backend, accounts, telemetry, content catalog, or third-party song search.
@@ -207,7 +208,7 @@ Import is cancellable and transactional: a failed or cancelled replacement leave
 - Dragging the speed control adjusts relative to the press position and pans its range; tapping the track selects a position and tapping the percentage opens Playback. Zero pauses at the current position.
 - Slower/faster steps change speed by five percentage points within 0–999%; Original speed restores 100%. Repeat this measure initializes the existing loop range from the current playback measure.
 - Metronome toggling leaves the active stream and position intact; count-in remains independent. Changing the count-in option affects the next start, not an ongoing phrase.
-- Per-part mute/solo and a one-action **Mute my part** control.
+- Per-part mute/solo and a one-action **Mute focused part** control.
 - A procedural practice synthesizer with bounded polyphony and clear part distinction; pitch must not change when tempo changes.
 - The audio scheduler, cursor, loop boundaries, and display all use the same tempo-aware transport.
 - Audio starts only after a user gesture on web and has an explicit, recoverable muted/blocked state.
@@ -374,6 +375,8 @@ still use the one shared transport tick, and the piano is a visualization rather
 than recorded input or a second musical timeline.
 
 The prototype also offers [practice presets and concert-pitch staff rows](decisions/0019-practice-presets-and-concert-staff.md)
-for guitar, pick, bass-staff reading, and piano grand-staff reading. The
-project-authored two-hand example has one MIDI part; these views do not add bass
-fingering or multi-part piano reduction to the MVP contract.
+for guitar, pick, bass-staff reading, and piano grand-staff reading. Under
+[decision 0020](decisions/0020-paired-example-parts-and-mini-staff.md), original
+examples have separate higher and lower source parts and optional compact
+companion staffs. These views do not add bass fingering or general multi-part
+piano reduction to the MVP contract.

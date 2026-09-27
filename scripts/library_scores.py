@@ -113,3 +113,27 @@ add('minuet_in_g', 'Minuet in G - both sections', 'Christian Petzold',
     'D4:2 E4:2 F#4:2 G4:2 A4:2 B4:2 | C5 B4 A4 | B4:2 D5:2 G4 F#4 | G4:12', (3, 4), 100)
 # Bring the whole Minuet down one octave, preserving every interval.
 SONGS['minuet_in_g']['notes'] = [(p - 12 if p is not None else None, d) for p, d in SONGS['minuet_in_g']['notes']]
+
+# Original, deliberately simple practice basses. These are editorial additions,
+# not transcriptions of the composers' accompaniment. Each root lasts one bar;
+# the MIDI recipe plays it, then its fifth, as two separate low notes.
+BASS_ROOTS = {
+    'ode_to_joy': [48, 43, 48, 43, 48, 43, 48, 48, 43, 43, 48, 48, 43, 43, 48, 48],
+    'fur_elise': [45, 52, 45, 52, 45, 52, 45, 52, 45, 52, 45, 52, 45, 52, 45, 45, 45],
+    'spring': [40, 40, 47, 40, 45, 40, 47, 40, 45, 40, 47, 40, 45, 47],
+    'canon_in_d': [50, 45, 47, 42, 43, 50, 43, 45] * 2,
+    'twinkle': [48, 48, 41, 48, 43, 48, 43, 48, 48, 48, 41, 48],
+    'the_entertainer': [48, 48, 43, 48, 41, 48, 43, 48, 43, 48, 43, 48, 41, 48, 43, 48, 48],
+    'mary_had_a_little_lamb': [48, 48, 43, 48, 48, 48, 43, 48] * 2,
+    'frere_jacques': [48, 48, 43, 43, 41, 41, 48, 48] * 2,
+    'auld_lang_syne': [48, 48, 43, 48, 41, 48, 43, 48, 48, 48, 43, 48, 41, 48, 43, 48, 48],
+    'yankee_doodle': [48, 43, 48, 43, 48, 41, 43, 48, 41, 48, 43, 48, 41, 48, 43, 48] * 2,
+    'brahms_lullaby': [48, 48, 43, 48, 41, 43, 48, 43, 48, 41, 48, 41, 48, 41, 43, 48, 48],
+    'minuet_in_g': [43, 43, 48, 43, 48, 43, 50, 43, 43, 48, 43, 48, 43, 50, 43, 43,
+                    43, 50, 43, 48, 43, 50, 43, 50, 43, 48, 43, 48, 43, 50, 43, 43],
+}
+for key, song in SONGS.items():
+    roots = BASS_ROOTS[key]
+    if len(roots) != len(song['bars'].split('|')):
+        raise ValueError(f'{key}: bass progression must cover every bar')
+    song['bass_roots'] = roots

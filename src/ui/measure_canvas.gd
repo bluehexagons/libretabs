@@ -17,6 +17,7 @@ var index: int = 0
 var continuous: bool = true
 var notation: String = "both"
 var split_staff: bool = false
+var compact_staff: bool = false
 var tab_y_offset: float = 0
 var show_measure_title: bool = true
 var draw_count: int = 0
@@ -73,6 +74,8 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 		if ui_font.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, 16).x > width - 16: title = tr("MEASURE_SHORT") % (index + 1)
 		if ui_font.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, 16).x > width - 16: title = tr("MEASURE_NUMBER_ONLY") % (index + 1)
 		text_at(origin + Vector2(8, 22), title, 16)
+	elif compact_staff:
+		text_at(origin + Vector2(8, 22), tr("MINI_BASS_LABEL" if clef == "bass" else "MINI_TREBLE_LABEL"), 15, muted)
 	if has_staff:
 		for line: int in range(5):
 			draw_line(Vector2(left, top + line * ScoreLayout.STAFF_SPACE), Vector2(right, top + line * ScoreLayout.STAFF_SPACE), ink.lerp(get_theme_color("paper", "LibreTabs"), 0.30), 1.0, true)
