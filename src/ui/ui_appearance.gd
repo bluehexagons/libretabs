@@ -25,7 +25,7 @@ const MIDNIGHT: Dictionary = {
 const BUTTON_ROLES: Dictionary = {
 	"SONG_MENU": "library", "IMPORT_MIDI": "library", "OPEN": "library", "PRINT": "library",
 	"LOOP_TOOL": "practice", "KEYBOARD": "practice",
-	"TEMPO": "sound", "SOUND": "sound", "CLICK_ON": "sound", "CLICK_OFF": "sound",
+	"TEMPO": "sound", "SOUND": "sound", "SOUND_EFFECTS": "sound", "CLICK_ON": "sound", "CLICK_OFF": "sound",
 	"SCORE_VIEW": "reading", "MENU": "reading", "DISPLAY": "reading", "CAPTURE": "reading"
 }
 

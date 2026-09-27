@@ -63,11 +63,24 @@ func _initialize() -> void:
 	check(PracticeSettings.decode('{"version":2}').status == "unsupported", "future preferences protected")
 	check(PracticeSettings.decode("invalid").status == "corrupt", "corrupt preferences detected")
 	var legacy: Dictionary = defaults.duplicate()
-	legacy.erase("instrument")
+	for key: String in PracticeSettings.OPTIONAL: legacy.erase(key)
 	legacy.instrument_volume = 23
 	legacy.keyboard_layout = "home"
 	var migrated: Dictionary = PracticeSettings.decode(JSON.stringify({"version": 1, "values": legacy}))
 	check(migrated.status == "ok" and migrated.values.instrument == "synth_piano" and migrated.values.instrument_volume == 23 and migrated.values.keyboard_layout == "home", "legacy preferences gain piano without losing existing choices")
+	check(migrated.values.reverb and migrated.values.reverb_amount == 18 and not migrated.values.chorus, "older preferences gain gentle room and no chorus")
+	var effect_settings: Dictionary = defaults.duplicate()
+	effect_settings.reverb = false
+	effect_settings.reverb_amount = 35
+	effect_settings.chorus = true
+	check(PracticeSettings.decode(PracticeSettings.encode(effect_settings)).values == effect_settings, "effect switches and amount round trip independently")
+	for key: String in ["reverb", "chorus", "reverb_amount"]:
+		var invalid_effect: Dictionary = defaults.duplicate()
+		invalid_effect[key] = "bad"
+		check(PracticeSettings.decode(JSON.stringify({"version":1, "values":invalid_effect})).status == "corrupt", "invalid effect setting recovers safely")
+	for invalid: Variant in [-1, 41, 3.5, true, null]:
+		effect_settings.reverb_amount = invalid
+		check(PracticeSettings.encode(effect_settings).is_empty(), "invalid effect amount cannot be saved")
 	for instrument: String in PracticeSynth.INSTRUMENTS:
 		defaults.instrument = instrument
 		check(PracticeSettings.decode(PracticeSettings.encode(defaults)).values.instrument == instrument, "instrument choice survives save and reload")

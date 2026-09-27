@@ -301,6 +301,16 @@ func run() -> void:
 		check(player.synth.instrument == PracticeSynth.INSTRUMENTS[index] and app.call("preference_values").instrument == PracticeSynth.INSTRUMENTS[index], "sound selector reaches the mixer and saved preferences")
 	app.call("reset_preferences")
 	check(instrument_picker.selected == 0 and player.synth.instrument == "synth_piano", "reset restores the piano default in UI and audio")
+	app.call("toggle_drawer", "SOUND_EFFECTS")
+	check(app.get("reverb_check").button_pressed and app.get("reverb_amount").value == 18 and not app.get("chorus_check").button_pressed, "effects start with gentle room and optional chorus off")
+	app.get("chorus_check").button_pressed = true
+	app.get("reverb_amount").value = 32
+	check(player.effects.chorus_enabled and player.effects.reverb_amount == 32 and app.call("preference_values").chorus, "effect controls reach the mixer and saved preferences")
+	app.get("reverb_check").button_pressed = false
+	check(not player.effects.reverb_enabled and not app.get("reverb_amount").editable and not app.get("reverb_amount").scrollable, "room switch bypasses DSP and disables amount without wheel edits")
+	app.call("reset_preferences")
+	check(player.effects.reverb_enabled and player.effects.reverb_amount == 18 and not player.effects.chorus_enabled, "reset restores the effect defaults")
+	app.call("toggle_drawer", "SOUND")
 	app.get("instrument_slider").value = 0
 	app.get("click_slider").value = 90
 	check(player.instrument_level == 0 and is_equal_approx(player.metronome_level, 0.9), "volume controls independently reach mixer")

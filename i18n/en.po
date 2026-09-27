@@ -1368,3 +1368,27 @@ msgstr "Plucked strings"
 
 msgid "SYNTH_PURE_TONE"
 msgstr "Pure tone"
+
+msgid "SOUND_EFFECTS"
+msgstr "Sound effects"
+
+msgid "ROOM_REVERB"
+msgstr "Room ambience (reverb)"
+
+msgid "REVERB_HELP"
+msgstr "Reverb adds a short room echo around the instrument notes. Beat clicks stay clear and unchanged."
+
+msgid "REVERB_AMOUNT"
+msgstr "Room amount · %d%%"
+
+msgid "SOFT_CHORUS"
+msgstr "Soft chorus"
+
+msgid "CHORUS_HELP"
+msgstr "Chorus blends gently moving copies of each note for a wider, softer sound. Leave this off if playback stutters."
+
+msgid "EFFECTS_HELP"
+msgstr "Effects apply to all instruments and keyboard notes. Turn them off to reduce processing. Your choices are saved on this device."
+
+msgid "EFFECTS_DRY"
+msgstr "Turn both effects off"

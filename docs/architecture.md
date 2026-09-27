@@ -331,6 +331,15 @@ silenced and counted in local audio diagnostics instead of aliasing to false
 pitches. Program-family mapping and the planned controller contract remain open.
 See [decision 0022](decisions/0022-practice-instruments.md).
 
+`PracticeEffects` adds a short stereo room and optional soft chorus to the
+instrument block before instrument volume and the final limiter. Metronome
+clicks bypass these effects. The fixed delay buffers use under 20 KiB, run on
+the existing sample clock and bypass processing when disabled. Changes fade
+smoothly; discontinuities clear all delay history. Natural completion retains a
+bounded release/room tail after musical transport stops, then closes the stream.
+The cleanup timer owns no musical position. See
+[decision 0023](decisions/0023-practice-effects.md).
+
 ### Post-MVP volume impulse input
 
 The first input experiment is deliberately not pitch recognition. An `ImpulseInput` adapter captures microphone or line-input samples, estimates a rolling noise floor/envelope, detects a debounced transient, and emits only `impulse(strength, monotonic_time)`. The step-practice controller may advance one cue; it never marks a note correct or computes a score.
@@ -448,7 +457,8 @@ before activation, disables unused navigation preload, and pins each document's
 asset requests to its release across updates. See
 [decision 0007](decisions/0007-offline-release-updates.md). Keyboard preview seeds
 its first audio block with the pressed note; threaded queue targets are 30 ms for
-preview and 60 ms for practice, independently of ring capacity and device latency.
+preview and 60 ms for practice (90 ms with optional chorus), independently of ring
+capacity and device latency. Audible position subtracts the actual queued frames.
 
 
 [Decision 0008](decisions/0008-friendly-player-and-print.md) adds adapter-owned

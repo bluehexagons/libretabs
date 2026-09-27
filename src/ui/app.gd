@@ -113,6 +113,10 @@ var main_speed: RelativeSpeedSlider
 var speed_control: PanelContainer
 var speed_unit_layout: BoxContainer
 var keyboard: KeyboardNotes = KeyboardNotes.new()
+var reverb_check: CheckButton
+var reverb_amount: HSlider
+var reverb_caption: Label
+var chorus_check: CheckButton
 var instrument_picker: OptionButton
 var keyboard_picker: OptionButton
 var octave_picker: SpinBox
@@ -1258,6 +1262,7 @@ func build_drawers() -> void:
 		save_preferences())
 	sound.add_child(instrument_picker)
 	sound.add_child(label("PRACTICE_INSTRUMENT_HELP", 18))
+	sound.add_child(button("SOUND_EFFECTS", func() -> void: toggle_drawer("SOUND_EFFECTS")))
 	sound.add_child(label("SOUND_HELP", 18))
 	instrument_slider = volume_control(sound, "INSTRUMENT_VOLUME", 85, true)
 	click_slider = volume_control(sound, "CLICK_VOLUME", 35, false)
@@ -1266,6 +1271,32 @@ func build_drawers() -> void:
 	sound.add_child(label("BACKING", 18))
 	backing_box = flow(sound)
 	mute_check.toggled.connect(func(pressed: bool) -> void: set_part_enabled(part, not pressed))
+
+	var effects: VBoxContainer = section("SOUND_EFFECTS")
+	effects.add_child(label("REVERB_HELP", 18))
+	reverb_check = check("ROOM_REVERB", true)
+	effects.add_child(reverb_check)
+	reverb_caption = label("REVERB_AMOUNT", 18)
+	effects.add_child(reverb_caption)
+	reverb_amount = HSlider.new()
+	reverb_amount.min_value = 0
+	reverb_amount.max_value = PracticeEffects.MAX_AMOUNT
+	reverb_amount.step = 1
+	reverb_amount.value = PracticeEffects.DEFAULT_AMOUNT
+	reverb_amount.custom_minimum_size.y = 44
+	reverb_amount.scrollable = false
+	effects.add_child(reverb_amount)
+	effects.add_child(label("CHORUS_HELP", 18))
+	chorus_check = check("SOFT_CHORUS", false)
+	effects.add_child(chorus_check)
+	effects.add_child(label("EFFECTS_HELP", 18))
+	effects.add_child(button("EFFECTS_DRY", func() -> void:
+		reverb_check.set_pressed_no_signal(false)
+		chorus_check.set_pressed_no_signal(false)
+		update_effects()))
+	reverb_check.toggled.connect(func(_value: bool) -> void: update_effects())
+	chorus_check.toggled.connect(func(_value: bool) -> void: update_effects())
+	reverb_amount.value_changed.connect(func(_value: float) -> void: update_effects())
 
 	var loops: VBoxContainer = section("LOOP_TOOL")
 	loops.add_child(label("LOOP_HELP", 18))
@@ -1313,7 +1344,7 @@ func build_drawers() -> void:
 	warning = label("PROTOTYPE_LIMIT", 18)
 	details.add_child(warning)
 	var settings: VBoxContainer = section("SETTINGS")
-	for key: String in ["TEMPO", "SCORE_VIEW", "LOOP_TOOL", "SOUND", "DISPLAY", "KEYBOARD", "TV_VIEW"]: settings.add_child(button(key, func() -> void: toggle_drawer(key)))
+	for key: String in ["TEMPO", "SCORE_VIEW", "LOOP_TOOL", "SOUND", "SOUND_EFFECTS", "DISPLAY", "KEYBOARD", "TV_VIEW"]: settings.add_child(button(key, func() -> void: toggle_drawer(key)))
 	settings_notice = label("SETTINGS_SAVED", 18)
 	settings.add_child(settings_notice)
 	settings.add_child(button("RESET_PRACTICE", reset_preferences))
@@ -2660,6 +2691,8 @@ func pause() -> void:
 		audio.stop_practice()
 		state = "STATE_PAUSED"
 		update_position()
+	elif audio != null and audio.playback != null:
+		audio.stop_practice()
 	set_activity(importer != null)
 	if play_button != null: update_play_control()
 	if status != null and state == "STATE_PAUSED": set_status("STATE_PAUSED")
@@ -2856,6 +2889,7 @@ func seek_tick(value: float) -> void:
 	if updating or song == null:
 		return
 	var next_tick: float = clampf(value, 0.0, float(song.end_tick))
+	if not audio.playing_practice and audio.playback != null and state == "STATE_COMPLETE": audio.stop_practice()
 	# A deliberate seek after finishing chooses a fresh starting point.
 	# Leaving the completion state here also covers pointer scrubbing.
 	if state == "STATE_COMPLETE" and next_tick < song.end_tick:
@@ -2900,7 +2934,7 @@ func _process(_delta: float) -> void:
 		source_tick = song.tick_at(audio.transport.seconds_at_frame(frame))
 		set_status("FOLLOW_HINT")
 		if audio.transport.complete(frame):
-			audio.stop_practice()
+			audio.finish_practice()
 			update_position()
 			set_activity(false)
 			state = "STATE_COMPLETE"
@@ -2988,11 +3022,22 @@ func release_keyboard() -> void:
 func update_keyboard_help() -> void:
 	keyboard_help.text = tr("KEYBOARD_HELP_LOWER" if keyboard.layout == "lower" else "KEYBOARD_HELP_HOME")
 
+func update_effects() -> void:
+	reverb_amount.editable = reverb_check.button_pressed
+	reverb_caption.text = tr("REVERB_AMOUNT") % roundi(reverb_amount.value)
+	reverb_amount.tooltip_text = reverb_caption.text
+	audio.set_effects(reverb_check.button_pressed, roundi(reverb_amount.value), chorus_check.button_pressed)
+	save_preferences()
+
 func preference_values() -> Dictionary:
-	return {"instrument": PracticeSynth.INSTRUMENTS[instrument_picker.selected], "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "count_measures": int(count_length.value), "instrument_volume": roundi(instrument_slider.value), "click_volume": roundi(click_slider.value), "keyboard_octave": keyboard.octave, "keyboard_layout": keyboard.layout}
+	return {"reverb": reverb_check.button_pressed, "reverb_amount": roundi(reverb_amount.value), "chorus": chorus_check.button_pressed, "instrument": PracticeSynth.INSTRUMENTS[instrument_picker.selected], "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "count_measures": int(count_length.value), "instrument_volume": roundi(instrument_slider.value), "click_volume": roundi(click_slider.value), "keyboard_octave": keyboard.octave, "keyboard_layout": keyboard.layout}
 
 func apply_preferences(values: Dictionary) -> void:
 	preferences_ready = false
+	reverb_check.set_pressed_no_signal(values.reverb)
+	chorus_check.set_pressed_no_signal(values.chorus)
+	reverb_amount.set_value_no_signal(values.reverb_amount)
+	update_effects()
 	instrument_picker.select(PracticeSynth.INSTRUMENTS.find(values.instrument))
 	audio.set_instrument(values.instrument)
 	metro_check.set_pressed_no_signal(values.metronome)

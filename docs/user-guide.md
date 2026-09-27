@@ -129,6 +129,7 @@ or practice progress. See [privacy details](privacy.md).
   returns to the beginning; paused playback waits for Play. Turning looping off
   keeps the selected range for later.
 - **When a song finishes:** the music stays visible and Play becomes **Replay**.
+  The final notes and their room echo fade out briefly.
   Choose Replay to start again, tap an earlier passage and Play to practice from
   there, or choose **Songs** to switch tunes. A new song waits for you to press
   Play, with keyboard focus on that button.
@@ -141,6 +142,15 @@ or practice progress. See [privacy details](privacy.md).
   **Hear Melody/Treble/Bass** controls the other part in a built-in song.
   Each mute choice is kept when you switch focus; muting changes sound, not the
   displayed notes.
+- **Sound effects:** open **Menu → Settings → Sound effects**, also reachable
+  from Volume & parts. **Room ambience (reverb)** adds a short room echo and
+  starts at a gentle 18%; its amount slider ranges from 0 to 40%.
+  **Soft chorus** blends gently moving copies of each note for a wider sound
+  and starts off. Effects apply to every instrument and keyboard preview, while
+  metronome clicks remain clear. Changes are saved on this device. Use the
+  separate switches or **Turn both effects off** to reduce audio processing.
+  If a dense song stutters, leave Soft chorus off.
+  Instrument volume also controls the echoes; stopping or seeking clears them.
 
 ## Understand the arrangement choices
 

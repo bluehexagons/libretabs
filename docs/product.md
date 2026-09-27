@@ -234,7 +234,14 @@ new notes without restarting playback. These generated practice sounds are
 approximations, not reproduction of MIDI program instruments. See
 [decision 0022](decisions/0022-practice-instruments.md).
 
-The evaluation prototype now saves instrument sound, count-in, click, independent volumes and
+Sound effects offers a gentle room echo (reverb), enabled at 18% by default,
+and optional soft chorus, which blends slightly moving copies of a note.
+Both apply to instruments and keyboard previews; beat clicks stay dry. Separate
+switches, a room amount slider and a combined off button let learners reduce
+processing. Natural song endings fade briefly; stopping or seeking clears sound.
+See [decision 0023](decisions/0023-practice-effects.md).
+
+The evaluation prototype now saves instrument sound, effects, count-in, click, independent volumes and
 keyboard layout/octave through a versioned preference service, alongside existing
 display storage. Library, Practice and Settings provide the initial app structure.
 Song-specific state and lesson progress remain future implementation work.

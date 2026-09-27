@@ -49,3 +49,5 @@ and the linked Pages deployment.
 [0021 — Midnight palette and player backgrounds](0021-midnight-and-backgrounds.md) extends appearance with an OLED black choice and three saved backdrop styles.
 
 [0022 — Generated practice instruments](0022-practice-instruments.md) adds a saved synth-piano default and three alternate sounds within the existing audio backend.
+
+[0023 — Optional practice sound effects](0023-practice-effects.md) adds saved room ambience and chorus controls, processing bypass and natural end-of-song decay.

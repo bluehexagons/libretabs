@@ -4,9 +4,10 @@ extends AudioStreamPlayer
 
 const TABLE_SIZE: int = PracticeSynth.TABLE_SIZE
 # Push each small batch promptly so an initially empty stream can start filling
-# before a dense chord's entire 60 ms look-ahead has been rendered.
+# before a dense chord's entire look-ahead has been rendered.
 const RENDER_QUANTUM: int = 128
 var synth: PracticeSynth = PracticeSynth.new()
+var effects: PracticeEffects = PracticeEffects.new()
 var live_notes: Dictionary = {}
 var release_timer: Timer
 var metronome_enabled: bool = true
@@ -37,6 +38,28 @@ func set_instrument(value: String) -> void:
 	mutex.lock()
 	synth.set_instrument(value)
 	mutex.unlock()
+
+func set_effects(room: bool, amount: int, chorus: bool) -> void:
+	mutex.lock()
+	effects.configure(room, amount, chorus)
+	mutex.unlock()
+	if playback != null and not playing_practice and live_notes.is_empty(): start_tail()
+
+# Device scheduling headroom is included so the final quiet samples can be heard.
+func start_tail() -> void:
+	mutex.lock()
+	var seconds: float = PracticeSynth.RELEASE_TAIL + effects.tail_seconds() + 0.10
+	mutex.unlock()
+	release_timer.start(seconds)
+
+func finish_practice() -> void:
+	mutex.lock()
+	playing_practice = false
+	for id: String in synth.ids:
+		if not id.is_empty() and not live_notes.has(id): synth.note_off(id)
+	click_gain = 0.0
+	mutex.unlock()
+	if live_notes.is_empty(): start_tail()
 
 func set_level(instrument: bool, value: float) -> void:
 	mutex.lock()
@@ -115,6 +138,7 @@ func stop_practice() -> void:
 
 func reset_voices() -> void:
 	synth.reset()
+	effects.reset()
 	click_gain = 0.0
 
 func audible_frame() -> int:
@@ -149,15 +173,18 @@ func _exit_tree() -> void:
 
 # Capacity is headroom, not a requirement to queue the entire ring buffer.
 # Main-thread comparison builds retain more headroom for frame scheduling.
-static func refill_frames(buffer_capacity: int, available: int, threaded: bool, practice: bool) -> int:
-	var seconds: float = (0.060 if practice else 0.030) if threaded else 0.090
+static func refill_frames(buffer_capacity: int, available: int, threaded: bool, practice: bool, with_chorus: bool = false) -> int:
+	# Optional chorus uses more of the existing ring for scheduling headroom. Preview
+	# latency stays short, and audible position still subtracts the actual queue.
+	var practice_seconds: float = 0.090 if with_chorus else 0.060
+	var seconds: float = (practice_seconds if practice else 0.030) if threaded else 0.090
 	var target: int = mini(buffer_capacity, ceili(PracticeTransport.RATE * seconds))
 	return clampi(target - (buffer_capacity - available), 0, available)
 
 func fill() -> void:
 	var started: int = Time.get_ticks_usec()
 	var available: int = playback.get_frames_available()
-	var frames: int = refill_frames(capacity, available, worker_enabled, playing_practice)
+	var frames: int = refill_frames(capacity, available, worker_enabled, playing_practice, effects.chorus_enabled or effects.chorus_mix > 0)
 	if frames <= 0:
 		return
 	var events: Array[Dictionary] = []
@@ -170,7 +197,10 @@ func fill() -> void:
 			event_index += 1
 		var end: int = mini(frame + RENDER_QUANTUM, int(events[event_index].offset) if event_index < events.size() else frames)
 		var samples: PackedFloat32Array = synth.render(end - frame)
-		for sample: float in samples:
+		var stereo: PackedVector2Array = effects.render(samples)
+		var dry: bool = stereo.is_empty()
+		if dry: stereo.resize(samples.size())
+		for index: int in range(samples.size()):
 			instrument_current = move_toward(instrument_current, instrument_level, 0.002)
 			metronome_current = move_toward(metronome_current, metronome_level, 0.002)
 			var click: float = 0.0
@@ -178,8 +208,17 @@ func fill() -> void:
 				click_phase = fmod(click_phase + click_step, TABLE_SIZE)
 				click = synth.sine[int(click_phase)] * click_gain
 				click_gain *= 0.991
-			var mixed: float = mix_levels(sample, click, instrument_current, metronome_current)
-			playback.push_frame(Vector2(mixed, mixed))
+			if dry:
+				var mixed: float = mix_levels(samples[index], click, instrument_current, metronome_current)
+				stereo[index] = Vector2(mixed, mixed)
+			else:
+				# Same limiter as mix_levels, without two GDScript calls per frame.
+				var pulse: float = click * metronome_current
+				var left: float = stereo[index].x * instrument_current + pulse
+				var right: float = stereo[index].y * instrument_current + pulse
+				stereo[index] = Vector2(0.9 * left / (0.9 + absf(left)), 0.9 * right / (0.9 + absf(right)))
+		# One native handoff per small block, rather than per stereo sample.
+		playback.push_buffer(stereo)
 		frame = end
 	max_mix_usec = maxi(max_mix_usec, Time.get_ticks_usec() - started)
 	generated_snapshot = transport.rendered_frames
@@ -198,6 +237,12 @@ func apply_event(event: Dictionary) -> void:
 	var note: Dictionary = event.note
 	match String(event.kind):
 		"reset":
+			# Natural completion releases the final notes and retains their room tail.
+			# Loop wraps and explicit transport discontinuities still clear everything.
+			if playing_practice and not transport.repeat and int(event.get("frame", -1)) >= transport.count_frames + transport.initial_frames:
+				for id: String in synth.ids:
+					if not id.is_empty() and not live_notes.has(id): synth.note_off(id)
+				return
 			reset_voices()
 			for held: Dictionary in live_notes.values(): apply_event({"kind": "on", "note": held})
 		"click":
@@ -228,18 +273,19 @@ func live_off(note: Dictionary) -> void:
 	apply_event({"kind": "off", "note": note})
 	var finished: bool = live_notes.is_empty()
 	mutex.unlock()
-	if finished and not playing_practice: release_timer.start()
+	if finished and not playing_practice: start_tail()
 
 func release_live() -> void:
 	mutex.lock()
+	var had_live_notes: bool = not live_notes.is_empty()
 	for note: Dictionary in live_notes.values(): apply_event({"kind": "off", "note": note})
 	live_notes.clear()
 	mutex.unlock()
-	if not playing_practice and playback != null: release_timer.start()
+	if had_live_notes and not playing_practice and playback != null: start_tail()
 
 func metrics() -> Dictionary:
 	mutex.lock()
-	var snapshot: Dictionary = {"queued_ms": (capacity - playback.get_frames_available()) * 1000.0 / PracticeTransport.RATE if playback != null else 0.0, "live_notes": live_notes.size(), "instrument": synth.instrument, "out_of_range_notes": synth.out_of_range, "instrument_level": instrument_level, "metronome_level": metronome_level, "active_voices": active_snapshot, "voice_steals": steals_snapshot, "max_mix_ms": mix_snapshot / 1000.0, "underruns": skips_snapshot, "generated_frame": generated_snapshot, "rate": PracticeTransport.RATE, "worker": worker_enabled}
+	var snapshot: Dictionary = {"queued_ms": (capacity - playback.get_frames_available()) * 1000.0 / PracticeTransport.RATE if playback != null else 0.0, "live_notes": live_notes.size(), "instrument": synth.instrument, "reverb": effects.reverb_enabled, "reverb_amount": effects.reverb_amount, "chorus": effects.chorus_enabled, "effects_active": effects.active(), "effects_frames": effects.processed_frames, "tail_playing": playback != null and not playing_practice and live_notes.is_empty(), "out_of_range_notes": synth.out_of_range, "instrument_level": instrument_level, "metronome_level": metronome_level, "active_voices": active_snapshot, "voice_steals": steals_snapshot, "max_mix_ms": mix_snapshot / 1000.0, "underruns": skips_snapshot, "generated_frame": generated_snapshot, "rate": PracticeTransport.RATE, "worker": worker_enabled}
 	mutex.unlock()
 	snapshot.merge({"audible_frame": audible_frame(), "device_rate": AudioServer.get_mix_rate(), "output_latency": AudioServer.get_output_latency(), "capacity": capacity, "fps": Engine.get_frames_per_second()})
 	return snapshot
