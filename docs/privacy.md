@@ -16,3 +16,12 @@ Screenshots, printed pages and support reports can reveal song information. Revi
 anything you share and use original or legally redistributable examples. The optional
 `?trace` web mode exposes local technical counters for development; it does not
 transmit them. Downloaded builds do not contain telemetry or automatic update checks.
+
+Playing inputs are optional. MIDI device access and microphone capture start only
+when you explicitly connect/start them. Controller notes, detected pitches,
+feedback, device selections and setup values remain session-only. Microphone
+samples are held in bounded temporary buffers for local analysis and are never
+recorded, saved or uploaded. The browser/OS owns device permissions; stopping
+capture releases the audio stream but does not revoke a permission already granted.
+Capture also stops on suspension or loss of focus after activation. Start it again
+to resume. The tuner works without uploading a song or audio.

@@ -45,6 +45,17 @@ func run() -> void:
 	feedback.configure(song, 0)
 	check(feedback.compare(60, 0.5, 1, true).kind == "polyphonic", "microphone does not assess chords")
 	check(feedback.compare(60, 0.5, 1).kind == "match" and feedback.compare(64, 0.51, 1).kind == "match", "discrete input can match chord tones independently")
+	var midi: MidiLiveState = MidiLiveState.new()
+	check(midi.receive("a", 0, 9, 60, 100)[0].kind == "on", "MIDI note on")
+	midi.receive("a", 0, 11, 64, 127)
+	check(midi.receive("a", 0, 9, 60, 0).is_empty(), "zero-velocity note off respects sustain")
+	check(midi.receive("a", 0, 11, 64, 0)[0].kind == "off" and midi.held.is_empty(), "pedal release stops sustained note")
+	midi.receive("a", 0, 9, 60, 100)
+	check(midi.receive("a", 0, 9, 60, 90).size() == 2, "repeated MIDI attack releases its prior voice")
+	midi.receive("b", 1, 9, 60, 100)
+	check(midi.receive("a", 0, 11, 123, 0).size() == 1 and midi.held.size() == 1, "all-notes-off is channel and device scoped")
+	check(midi.clear().size() == 1 and midi.held.is_empty(), "disconnect clears remaining MIDI notes")
+	check(midi.receive("a", 16, 9, 60, 100).is_empty(), "invalid channels rejected")
 	var piano: PlayablePiano = PlayablePiano.new()
 	root.add_child(piano)
 	piano.size = Vector2(320, 112)
@@ -76,6 +87,25 @@ func run() -> void:
 	app.call("toggle_drawer", "INPUTS")
 	for _frame: int in range(30): await process_frame
 	check(app.get("drawer").size.x <= 360, "input menu fits narrow 200 percent text")
+	app.call("toggle_drawer", "TUNER")
+	for _frame: int in range(30): await process_frame
+	check(app.get("drawer").size.x <= 360, "tuner fits narrow 200 percent text")
+	var audio: PracticeAudio = app.get("audio")
+	audio.transport.repeat = true
+	audio.transport.count_frames = 0
+	audio.transport.initial_frames = PracticeTransport.RATE
+	audio.transport.cycle_frames = PracticeTransport.RATE
+	audio.last_frame = PracticeTransport.RATE + 500
+	audio.playing_practice = true
+	check(not app.call("input_context", 100).playing, "delayed observation from the prior loop is not assessed in this loop")
+	audio.playing_practice = false
+	audio.transport.repeat = false
+	var listening: ListeningControls = app.get("listening")
+	check(not listening.listener.capture.enabled and not listening.listen_check.button_pressed, "tuner opening never requests microphone or enables listening")
+	listening.show_observation({"valid": true, "hz": 442.0, "pitch": PitchDetector.midi_pitch(442), "rms": 0.1, "peak": 0.2})
+	check(listening.gauge.active and listening.gauge.cents > 7, "tuner shows independent frequency and detuning")
+	listening.show_observation({"valid": false})
+	check(not listening.gauge.active, "uncertain capture clears the tuner needle")
 	app.queue_free()
 	await process_frame
 	print("Live input: %d checks, %d failures" % [checks, failures])

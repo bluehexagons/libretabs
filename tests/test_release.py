@@ -25,7 +25,7 @@ release_request = module('validate_release_request')
 
 class ReleaseTests(unittest.TestCase):
     def test_export_presets_embed_the_source_bridge(self):
-        source = (ROOT / 'src/platform/bridge.js').read_text()
+        source = '\n'.join((ROOT / 'src/platform' / name).read_text() for name in ('bridge.js', 'playing_bridge.js'))
         expected = '<script>\n' + source + '\n</script>'
         includes = []
         for line in (ROOT / 'export_presets.cfg').read_text().splitlines():

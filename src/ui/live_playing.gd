@@ -15,6 +15,7 @@ var latest: Dictionary = {}
 var latest_until: int = 0
 var epoch: String = ""
 var feedback_enabled: bool = true
+var midi_sound: bool = true
 var range_picker: OptionButton
 var octave: int = 4
 
@@ -57,6 +58,7 @@ func _ready() -> void:
 	message = Label.new()
 	message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	message.add_theme_font_size_override("font_size", 16)
+	message.set_meta("base_font_size", 16)
 	message.text = tr("INPUT_IDLE")
 	add_child(message)
 	piano = PlayablePiano.new()
@@ -73,7 +75,7 @@ func configure(song: SongDocument, part: int) -> void:
 func press(id: String, pitch: int, velocity: int = 100, source: String = "keys", delay_ms: float = 0, precise: bool = true) -> void:
 	var note: Dictionary = notes.press(id, pitch, velocity, source)
 	if note.is_empty(): return
-	if source != "microphone": note_on.emit(note)
+	if source != "microphone" and (source != "midi" or midi_sound): note_on.emit(note)
 	assess(note, float(pitch), delay_ms, precise, true)
 	refresh()
 
@@ -91,6 +93,20 @@ func assess(note: Dictionary, pitch: float, delay_ms: float, precise: bool, onse
 		if latest.has("expected"): notes.held[note.id]["expected"] = latest.expected
 	message.text = describe(latest)
 	set_process(true)
+
+func observe_pitch(result: Dictionary, delay_ms: float, timing: bool) -> void:
+	if not bool(result.get("valid", false)):
+		release("microphone:0")
+		if visible and feedback_enabled: message.text = tr("INPUT_RESULT_UNCERTAIN")
+		return
+	var pitch: float = float(result.pitch)
+	var nearest: int = roundi(pitch)
+	if notes.held.has("microphone:0") and int(notes.held["microphone:0"].pitch) != nearest: release("microphone:0")
+	if not notes.held.has("microphone:0"): notes.press("microphone:0", nearest, 100, "microphone")
+	var note: Dictionary = notes.held.get("microphone:0", {})
+	if note.is_empty(): return
+	assess(note, pitch, delay_ms + float(result.get("age_ms", 0)), timing, bool(result.get("onset", false)))
+	refresh()
 
 func release(id: String) -> void:
 	var note: Dictionary = notes.release(id)

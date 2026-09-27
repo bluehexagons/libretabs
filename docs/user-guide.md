@@ -4,8 +4,9 @@
 
 LibreTabs shows you where to play notes on a six-string guitar, plays a reference
 sound, and helps you repeat music at your own pace. You can start with the built-in
-music; you do not need a music file or an account. It does not listen to your
-guitar, tell you whether you played correctly, or tune your instrument.
+music; you do not need a music file or an account. Optional playing inputs add
+keyboard/MIDI feedback and experimental single-note microphone listening. The
+tuner estimates pitch; it does not adjust your instrument for you.
 
 This guide describes the current prototype. The planned six-lesson course is
 not yet available. Generated guitar arrangements and notation still need musician
@@ -58,7 +59,7 @@ then pluck that string. **0** means pluck the open string without pressing it.
 Numbers lined up vertically ask for notes at the same time; this is a **chord**.
 
 The tabs assume **standard tuning**: E–A–D–G–B–E from thickest to thinnest string.
-Use a separate tuner if needed. Changing the app's handed layout changes where
+Use Menu → Tuner & listening, or a separate tuner. Changing the app's handed layout changes where
 controls sit; it does not reverse the tab lines or change the tuning.
 
 ## Follow the timing
@@ -284,3 +285,57 @@ the selected practice part. Different notes and octave errors are distinguished.
 Staff diamonds show your pitch, with a hollow expected pitch when different.
 Tab positions are suggestions, not evidence of which string you actually played.
 Use Stop all input notes to release input sound. Input state is session-only.
+
+## MIDI controllers
+
+Menu → Playing inputs → Connect MIDI requests access to connected controllers.
+Choose one device/channel or all inputs. The on-screen piano opens automatically;
+return to practice to play it. Notes, velocity and sustain are supported. Turn off
+“Play MIDI notes through the app” if your electronic instrument already produces
+sound. Pitch bend, expression and instrument changes are not interpreted.
+
+MIDI reports which keys were played, so simultaneous notes can be compared
+individually. It cannot measure the acoustic tuning of the instrument. Browser
+MIDI availability varies; an unsupported browser retains the other input modes.
+Denied access has a recovery message. For an embedded player, opening the player
+in its own tab may allow permissions that the embedding site does not grant.
+
+## Tuner and single-note listening
+
+1. Open Menu → Tuner & listening. This pauses playback. Press **Start microphone /
+   tuner**, grant permission, and choose the input and instrument. Selecting a
+   different device stops capture; press Start again. Use headphones, or silence
+   speaker playback, so detection hears your instrument rather than the app.
+2. Play one clear, steady note. The tuner shows a note, its frequency in Hz, and
+   its distance from the target in **cents** (100 cents is one semitone). Negative
+   means low/flat; positive means high/sharp. An uncertain signal clears the needle.
+3. Choose automatic nearest-note tuning, a guitar string, or **Hold the current
+   note as target**. A4 defaults to 440 Hz and can be changed to match a physical
+   tuner. The app measures pitch; it does not turn tuning pegs or automatically
+   correct an instrument's tuning.
+4. **Run input setup again** measures three seconds of background noise, then
+   asks for three separate steady notes with silence between them. Rerun it after
+   moving rooms or changing instruments. Sensitivity can accept softer notes at
+   the cost of more background sound. Setup never changes the tuning reference.
+5. Enable **Use microphone for practice feedback**, close the menu, and press Play.
+   Playback continues. Only the selected practice part is compared. Chords and
+   overlapping source notes show a single-note limitation instead of a result.
+
+Listening is designed for one note at a time. Dampen ringing guitar strings and
+avoid piano sustain during these exercises. Even when a song expects one note,
+other audible sounds can confuse the detector; it cannot reliably recognize and
+reject every chord. Clean electric guitar through an interface is a useful setup.
+Initial evaluation ranges are approximately A1–C7 for piano and D2–F6 for guitars.
+Distortion, effects, very low piano notes and real-device accuracy remain testing
+boundaries. These range profiles do not change imported pitches or tuning.
+
+Microphone timing is off by default. After measuring an input/output setup, enter
+its additional input-delay compensation and enable approximate attack timing.
+Detection tracks the attack separately from the later stable-pitch estimate.
+Uncertain or unassociated attacks remain unassessed. A tap-along exercise cannot
+separate human timing error from device latency. Setup or device changes disable
+microphone timing again. Keyboard/MIDI timing is also approximate.
+
+Stop microphone releases the stream. Hiding the app or leaving its window stops
+active capture; returning does not restart it automatically. Input choices and
+setup last for this session; audio is never saved or uploaded.

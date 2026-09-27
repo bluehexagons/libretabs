@@ -10,7 +10,7 @@ root = Path(__file__).resolve().parents[1]
 
 def prepare(presets=None):
     presets = presets or root / 'export_presets.cfg'
-    head = '<script>\n' + (root / 'src/platform/bridge.js').read_text() + '\n</script>'
+    head = '<script>\n' + '\n'.join((root / 'src/platform' / name).read_text() for name in ('bridge.js', 'playing_bridge.js')) + '\n</script>'
     text = presets.read_text()
     updated, count = re.subn(
         r'^html/head_include=.*$',

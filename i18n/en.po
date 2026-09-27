@@ -536,7 +536,7 @@ msgid "LOOP_HELP"
 msgstr "A measure is a group of beats between vertical lines. From and Through include both end measures. Play selected section repeats them with your count-in setting."
 
 msgid "HELP_STRINGS"
-msgstr "1. Read tabs from left to right. The six lines represent guitar strings. The top line is string 1, the thinnest and highest sounding; the bottom is string 6, the thickest. Tabs assume standard tuning: E–A–D–G–B–E from thickest to thinnest. Use a separate tuner if needed."
+msgstr "1. Read tabs from left to right. The six lines represent guitar strings. The top line is string 1, the thinnest and highest sounding; the bottom is string 6, the thickest. Tabs assume standard tuning: E–A–D–G–B–E from thickest to thinnest. Use Menu → Tuner & listening, or a separate tuner."
 
 msgid "HELP_FRETS"
 msgstr "2. A fret is a metal strip across the guitar neck. A tab number tells you which fret to use, not which finger. For 3, press just behind the third fret toward the headstock, then pluck that string. A 0 means pluck without pressing. Vertically aligned numbers are played together: a chord."
@@ -923,7 +923,7 @@ msgid "CARD_WELCOME"
 msgstr "Quick start · Getting started"
 
 msgid "WELCOME_INTRO"
-msgstr "An exercise is ready. Start practicing closes this guide; press Play afterward to hear it. LibreTabs does not listen to or grade your guitar playing."
+msgstr "An exercise is ready. Start practicing closes this guide; press Play afterward to hear it. Optional Playing inputs and Tuner & listening tools are available in Menu. Listening checks one note at a time."
 
 msgid "WELCOME_PRACTICE"
 msgstr "Start practicing"
@@ -1482,3 +1482,231 @@ msgstr "In time"
 
 msgid "INPUT_RESULT_COMBINED"
 msgstr "%s · %s"
+
+msgid "INPUT_MIDI_TITLE"
+msgstr "MIDI controller"
+
+msgid "INPUT_MIDI_HELP"
+msgstr "MIDI sends key presses from an electronic instrument. Connect it, then return to practice to play. Your controller lights the on-screen piano."
+
+msgid "INPUT_MIDI_CONNECT"
+msgstr "Connect MIDI"
+
+msgid "INPUT_MIDI_DISCONNECT"
+msgstr "Disconnect MIDI"
+
+msgid "INPUT_MIDI_OFF"
+msgstr "MIDI is off."
+
+msgid "INPUT_MIDI_CONNECTING"
+msgstr "Waiting for MIDI access…"
+
+msgid "INPUT_MIDI_READY"
+msgstr "MIDI connected. Return to practice to play."
+
+msgid "INPUT_MIDI_EMPTY"
+msgstr "No MIDI inputs found. Connect a controller; the list refreshes automatically."
+
+msgid "INPUT_MIDI_UNSUPPORTED"
+msgstr "This browser does not provide MIDI input. You can still use on-screen keys, computer keys, or microphone listening."
+
+msgid "INPUT_MIDI_DENIED"
+msgstr "MIDI access was blocked. Check this site’s permissions, or open the player directly instead of inside another site. Then connect again."
+
+msgid "INPUT_MIDI_ERROR"
+msgstr "Could not open MIDI input. Check the device connection and try again."
+
+msgid "INPUT_MIDI_DEVICE"
+msgstr "MIDI device"
+
+msgid "INPUT_MIDI_ALL"
+msgstr "All connected inputs"
+
+msgid "INPUT_MIDI_UNNAMED"
+msgstr "Unnamed controller"
+
+msgid "INPUT_MIDI_MISSING"
+msgstr "Selected device disconnected"
+
+msgid "INPUT_MIDI_CHANNEL"
+msgstr "MIDI channel"
+
+msgid "INPUT_MIDI_CHANNELS"
+msgstr "All channels"
+
+msgid "INPUT_MIDI_CHANNEL_NUMBER"
+msgstr "Channel %d"
+
+msgid "INPUT_MIDI_SOUND"
+msgstr "Play MIDI notes through the app"
+
+msgid "INPUT_MIDI_LIMIT"
+msgstr "Note presses, velocity and sustain pedal are supported. Pitch bend, expression and instrument changes are not interpreted. A connected keyboard reports keys, not its acoustic tuning."
+
+msgid "INPUT_OFFSET"
+msgstr "Input delay compensation (milliseconds)"
+
+msgid "INPUT_OFFSET_HELP"
+msgstr "Subtract a measured input delay before comparing attacks with playback. Leave at 0 unless you have measured this setup. Timing feedback is approximate; this setting does not change the song."
+
+msgid "TUNER"
+msgstr "Tuner & listening"
+
+msgid "CARD_TUNER"
+msgstr "Tuner & listening · one note at a time"
+
+msgid "INPUT_MIC_HELP"
+msgstr "Use a microphone for piano or acoustic guitar, or an audio interface for electric guitar. Play one note at a time and damp other ringing notes. Use headphones or turn off speaker playback so the app does not hear itself."
+
+msgid "INPUT_MIC_START"
+msgstr "Start microphone / tuner"
+
+msgid "INPUT_MIC_STOP"
+msgstr "Stop microphone"
+
+msgid "INPUT_MIC_OFF"
+msgstr "Microphone is off."
+
+msgid "INPUT_MIC_CONNECTING"
+msgstr "Waiting for microphone access…"
+
+msgid "INPUT_MIC_READY"
+msgstr "Microphone is active. Audio stays on this device."
+
+msgid "INPUT_MIC_UNSUPPORTED"
+msgstr "Microphone capture is unavailable here. Use a current browser over HTTPS, or a Windows/Linux app."
+
+msgid "INPUT_MIC_DENIED"
+msgstr "Microphone access was blocked. Check this site’s permissions, or open the player directly instead of inside another site. Then start again."
+
+msgid "INPUT_MIC_EMPTY"
+msgstr "No audio input was found. Connect a microphone or interface and try again."
+
+msgid "INPUT_MIC_ERROR"
+msgstr "Could not start audio input. Check system microphone permissions and the selected device, then start again."
+
+msgid "INPUT_MIC_ENDED"
+msgstr "The microphone disconnected or access ended. Choose an available device and start again."
+
+msgid "INPUT_MIC_NO_SIGNAL"
+msgstr "No audio frames arrived. Check the device and microphone permissions, then stop and start again."
+
+msgid "INPUT_MIC_DEVICE"
+msgstr "Audio input device (changing it stops capture)"
+
+msgid "INPUT_MIC_DEFAULT"
+msgstr "System default input"
+
+msgid "INPUT_MIC_UNNAMED"
+msgstr "Unnamed audio input"
+
+msgid "INPUT_MIC_MISSING"
+msgstr "Selected audio input unavailable"
+
+msgid "INPUT_MIC_INSTRUMENT"
+msgstr "Instrument setup"
+
+msgid "INPUT_MIC_PIANO"
+msgstr "Piano · electronic or acoustic"
+
+msgid "INPUT_MIC_ACOUSTIC"
+msgstr "Acoustic guitar"
+
+msgid "INPUT_MIC_ELECTRIC"
+msgstr "Electric guitar · clean tone"
+
+msgid "INPUT_MIC_RANGE"
+msgstr "Evaluation range: piano A1–C7; guitars D2–F6. Very low piano notes, distortion, effects and overlapping sounds may not give a reliable estimate. These choices never change the song’s pitches."
+
+msgid "INPUT_LEVEL_QUIET"
+msgstr "Input level: quiet — play a clear note"
+
+msgid "INPUT_LEVEL_OK"
+msgstr "Input level: sound detected"
+
+msgid "INPUT_LEVEL_CLIP"
+msgstr "Input level: too loud — reduce the input gain"
+
+msgid "INPUT_LEVEL_HELP"
+msgstr "Current input level. Sound detected does not mean a note has been identified."
+
+msgid "INPUT_TUNER_WAIT"
+msgstr "Waiting for a clear, steady note…"
+
+msgid "INPUT_TUNER_TARGET"
+msgstr "Tuning target"
+
+msgid "INPUT_TUNER_AUTO"
+msgstr "Nearest note automatically"
+
+msgid "INPUT_TUNER_STRING"
+msgstr "String %d · %s"
+
+msgid "INPUT_TUNER_LOCK"
+msgstr "Hold the current note as target"
+
+msgid "INPUT_TUNER_LOCKED"
+msgstr "Held target · %s"
+
+msgid "INPUT_REFERENCE"
+msgstr "Tuning reference: A4 frequency (Hz)"
+
+msgid "INPUT_CENTS_HELP"
+msgstr "Frequency in Hz measures vibrations per second. Cents measure tuning: 100 cents is one semitone. A negative reading is low (flat); positive is high (sharp). Center means the selected target pitch. Match the A4 reference on your physical tuner before comparing."
+
+msgid "INPUT_TUNER_LOW"
+msgstr "Low / flat"
+
+msgid "INPUT_TUNER_HIGH"
+msgstr "High / sharp"
+
+msgid "INPUT_TUNER_VALUE"
+msgstr "%s · %.1f Hz · %+.1f cents"
+
+msgid "INPUT_SETUP_RUN"
+msgstr "Run input setup again"
+
+msgid "INPUT_SETUP_CANCEL"
+msgstr "Reset input setup"
+
+msgid "INPUT_SETUP_IDLE"
+msgstr "Setup is optional. Run it after changing rooms, microphones or instruments. It measures background noise, then checks three notes; it never retunes the instrument or hides tuning errors."
+
+msgid "INPUT_SETUP_START_FIRST"
+msgstr "Start the microphone and wait for it to become active, then run setup."
+
+msgid "INPUT_SETUP_QUIET"
+msgstr "Stay quiet for three seconds while background noise is measured."
+
+msgid "INPUT_SETUP_NOTES"
+msgstr "Play three separate, steady notes with silence between them."
+
+msgid "INPUT_SETUP_NOTE_COUNT"
+msgstr "Play three separate, steady notes with silence between them. Clear notes checked: %d of 3."
+
+msgid "INPUT_SETUP_DONE"
+msgstr "Input setup complete. You can rerun it whenever the room or instrument changes."
+
+msgid "INPUT_SETUP_FAILED"
+msgstr "Setup could not find a quiet background. Reduce background sound, check the input, then run setup again."
+
+msgid "INPUT_SENSITIVITY"
+msgstr "Listening sensitivity"
+
+msgid "INPUT_SENSITIVITY_HELP"
+msgstr "Higher sensitivity accepts softer notes but may also hear more background sound."
+
+msgid "INPUT_LISTEN"
+msgstr "Use microphone for practice feedback"
+
+msgid "INPUT_LISTEN_HELP"
+msgstr "Return to practice and press Play. Listening checks single notes in the selected part while playback continues. Chords and overlapping source notes are not assessed. Piano sustain, ringing strings and other sounds can still confuse detection; unclear readings are not marked correct or wrong."
+
+msgid "INPUT_MIC_TIMING"
+msgstr "Estimate attack timing for this measured setup"
+
+msgid "INPUT_MIC_TIMING_HELP"
+msgstr "Off by default. Pitch detection takes time. Enable timing only after measuring this input/output setup; enter its remaining delay above. Early/late is an estimate, not a score. Tapping along cannot separate your timing from device delay. A device change or new setup disables timing again."
+
+msgid "INPUT_MIC_PRIVACY"
+msgstr "Audio is processed locally in short temporary buffers. It is never saved or uploaded. Capture stops when the app is hidden; press Start to resume. Setup and input choices last only for this session."
