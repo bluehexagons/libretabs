@@ -6,6 +6,8 @@ extends Control
 var ribbon: Texture2D
 var wash: GradientTexture2D
 var dark: bool = false
+var midnight: bool = false
+var background_style: String = "ribbon"
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -33,19 +35,25 @@ func _ready() -> void:
 	set_palette(dark)
 	resized.connect(queue_redraw)
 
-func set_palette(value: bool) -> void:
+func set_palette(value: bool, oled: bool = false, style: String = "ribbon") -> void:
 	dark = value
+	midnight = oled
+	background_style = style
 	if wash == null: return
 	var gradient: Gradient = Gradient.new()
 	gradient.colors = PackedColorArray([
-		UIAppearance.color("background", dark),
-		UIAppearance.color("background", dark).lerp(UIAppearance.color("library", dark), 0.32)])
+		UIAppearance.color("background", dark, midnight),
+		UIAppearance.color("background", dark, midnight).lerp(UIAppearance.color("library", dark, midnight), 0.32)])
 	wash.gradient = gradient
 	queue_redraw()
 
 func _draw() -> void:
 	if ribbon == null: return
+	if midnight or background_style == "solid":
+		draw_rect(Rect2(Vector2.ZERO, size), UIAppearance.color("background", dark, midnight))
+		return
 	draw_texture_rect(wash, Rect2(Vector2.ZERO, size), false)
-	var tint: Color = UIAppearance.color("ink", dark)
-	tint.a = 0.09 if dark else 0.065
-	draw_texture_rect(ribbon, Rect2(Vector2.ZERO, size), true, tint)
+	if background_style == "ribbon":
+		var tint: Color = UIAppearance.color("ink", dark)
+		tint.a = 0.09 if dark else 0.065
+		draw_texture_rect(ribbon, Rect2(Vector2.ZERO, size), true, tint)

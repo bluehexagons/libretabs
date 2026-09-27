@@ -191,6 +191,8 @@ var scroll: ScrollContainer
 var appearance_mode: String = "system"
 var dark_mode: bool = false
 var appearance_picker: OptionButton
+var background_style: String = "ribbon"
+var background_picker: OptionButton
 var paper: PanelContainer
 var theater_context: HBoxContainer
 var reading_tools: HFlowContainer
@@ -293,6 +295,7 @@ func _ready() -> void:
 	add_child(capture_view)
 	resized.connect(responsive)
 	appearance_mode = host.load_appearance()
+	background_style = host.load_display_choice("background_style", ["ribbon", "gradient", "solid"], "ribbon")
 	host.appearance_changed.connect(apply_appearance)
 	apply_appearance()
 	apply_motion()
@@ -1342,9 +1345,19 @@ func build_drawers() -> void:
 	appearance_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	appearance_picker.fit_to_longest_item = false
 	appearance_picker.custom_minimum_size.y = 56
-	for key: String in ["APPEARANCE_SYSTEM", "APPEARANCE_LIGHT", "APPEARANCE_DARK"]: appearance_picker.add_item(tr(key))
+	for key: String in ["APPEARANCE_SYSTEM", "APPEARANCE_LIGHT", "APPEARANCE_DARK", "APPEARANCE_MIDNIGHT"]: appearance_picker.add_item(tr(key))
 	appearance_picker.item_selected.connect(change_appearance)
 	display.add_child(appearance_picker)
+	display.add_child(label("BACKGROUND_STYLE"))
+	background_picker = OptionButton.new()
+	background_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	background_picker.fit_to_longest_item = false
+	background_picker.custom_minimum_size.y = 56
+	for key: String in ["BACKGROUND_RIBBON", "BACKGROUND_GRADIENT", "BACKGROUND_SOLID"]: background_picker.add_item(tr(key))
+	background_picker.item_selected.connect(change_background_style)
+	background_picker.tooltip_text = tr("BACKGROUND_STYLE_HELP")
+	display.add_child(background_picker)
+	display.add_child(label("BACKGROUND_STYLE_HELP", 18))
 	motion_check = check("REDUCED_MOTION", false)
 	motion_check.toggled.connect(func(value: bool) -> void:
 		motion_mode = "reduced" if value else "full"
@@ -1545,7 +1558,7 @@ func enter_capture() -> void:
 	capture_view.show_title = capture_choice("capture_title") == "on"
 	capture_view.zoom = float(capture_choice("capture_zoom")) / 100
 	capture_view.placement = capture_choice("capture_position")
-	capture_view.configure(score, title, dark_mode)
+	capture_view.configure(score, title, dark_mode, appearance_mode == "midnight")
 	capture_active = true
 	root_box.hide()
 	tv_controls_layer.hide()
@@ -1567,7 +1580,7 @@ func leave_capture() -> void:
 
 func apply_capture_background() -> void:
 	var mode: String = capture_view.background if capture_active else "solid"
-	host.apply_capture_background(mode, Color("00ff00") if mode == "green" else UIAppearance.color("background", dark_mode))
+	host.apply_capture_background(mode, Color("00ff00") if mode == "green" else UIAppearance.color("background", dark_mode, appearance_mode == "midnight"))
 
 func go_back() -> void:
 	if drawer_history.is_empty():
@@ -1943,35 +1956,44 @@ func update_page_controls() -> void:
 	page_follow.text = tr("PAGE_FOLLOW_ACTIVE" if score.follow_pages else "PAGE_FOLLOW")
 
 func change_appearance(index: int) -> void:
-	appearance_mode = ["system", "light", "dark"][index]
+	appearance_mode = ["system", "light", "dark", "midnight"][index]
 	apply_appearance()
-	if not host.save_appearance(appearance_mode): set_status("STORAGE_SESSION")
+	if persist_preferences and not host.save_appearance(appearance_mode): set_status("STORAGE_SESSION")
+
+func change_background_style(index: int) -> void:
+	background_style = ["ribbon", "gradient", "solid"][index]
+	backdrop.set_palette(dark_mode, appearance_mode == "midnight", background_style)
+	if persist_preferences and not host.save_display_choice("background_style", background_style): set_status("STORAGE_SESSION")
 
 func apply_appearance() -> void:
-	dark_mode = appearance_mode == "dark" or (appearance_mode == "system" and host.system_dark())
+	dark_mode = appearance_mode in ["dark", "midnight"] or (appearance_mode == "system" and host.system_dark())
+	var midnight: bool = appearance_mode == "midnight"
 	var font_size: int = theme.default_font_size if theme != null else 20
-	theme = UIAppearance.make_theme(dark_mode, font_size, font_style)
-	UIAppearance.apply_roles(self, dark_mode)
+	theme = UIAppearance.make_theme(dark_mode, font_size, font_style, midnight)
+	UIAppearance.apply_roles(self, dark_mode, midnight)
 	for child: Node in drawers["WELCOME"].get_children():
 		if child.has_meta("welcome_card"):
-			child.add_theme_stylebox_override("panel", UIAppearance.role_style("reading", dark_mode, "normal"))
-	backdrop.set_palette(dark_mode)
+			child.add_theme_stylebox_override("panel", UIAppearance.role_style("reading", dark_mode, "normal", midnight))
+	backdrop.set_palette(dark_mode, midnight, background_style)
 	brand_label.add_theme_font_override("font", UIAppearance.ui_font(font_style, true))
 	song_title.add_theme_font_override("font", UIAppearance.ui_font(font_style, true))
-	RenderingServer.set_default_clear_color(UIAppearance.color("background", dark_mode))
-	host.apply_appearance(dark_mode)
+	var background: Color = UIAppearance.color("background", dark_mode, midnight)
+	RenderingServer.set_default_clear_color(background)
+	host.apply_appearance(dark_mode, background)
 	update_color_legend()
-	appearance_picker.select(["system", "light", "dark"].find(appearance_mode))
-	drawer.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 16))
-	picker_panel.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 12))
-	paper.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 8))
-	dock_panel.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 12))
-	speed_control.add_theme_stylebox_override("panel", UIAppearance.tempo_unit_style(dark_mode))
-	status_toast.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 12))
-	tv_edge.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 8))
+	appearance_picker.select(["system", "light", "dark", "midnight"].find(appearance_mode))
+	background_picker.select(["ribbon", "gradient", "solid"].find(background_style))
+	background_picker.disabled = midnight
+	drawer.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 16, midnight))
+	picker_panel.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 12, midnight))
+	paper.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 8, midnight))
+	dock_panel.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 12, midnight))
+	speed_control.add_theme_stylebox_override("panel", UIAppearance.tempo_unit_style(dark_mode, 7, midnight))
+	status_toast.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 12, midnight))
+	tv_edge.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 8, midnight))
 	for action: Button in [play_button, welcome_practice, tv_edge_pause]:
 		for state_name: String in ["normal", "hover", "pressed", "hover_pressed"]:
-			action.add_theme_stylebox_override(state_name, UIAppearance.primary_style(dark_mode, state_name))
+			action.add_theme_stylebox_override(state_name, UIAppearance.primary_style(dark_mode, state_name, midnight))
 		for token: String in ["font_color", "font_focus_color", "font_hover_color", "font_pressed_color", "font_hover_pressed_color"]:
 			action.add_theme_color_override(token, Color.WHITE)
 	play_button.add_theme_color_override("font_hover_pressed_color", Color.WHITE)
@@ -1983,7 +2005,7 @@ func apply_appearance() -> void:
 		score.cursor.queue_redraw()
 	responsive()
 	if capture_active:
-		capture_view.configure(score, title, dark_mode)
+		capture_view.configure(score, title, dark_mode, midnight)
 		apply_capture_background()
 
 func apply_scale(factor: float) -> void:
@@ -2094,10 +2116,10 @@ func responsive() -> void:
 	metro_button.text = tr("CLICK_ON" if metro_check.button_pressed else "CLICK_OFF") if not side_dock and size.x >= 760 else ""
 	metro_button.custom_minimum_size.x = 56
 	update_loop_controls()
-	dock_panel.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 4 if side_dock else 10))
-	speed_control.add_theme_stylebox_override("panel", UIAppearance.tempo_unit_style(dark_mode, 2 if side_dock else 7))
+	dock_panel.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 4 if side_dock else 10, appearance_mode == "midnight"))
+	speed_control.add_theme_stylebox_override("panel", UIAppearance.tempo_unit_style(dark_mode, 2 if side_dock else 7, appearance_mode == "midnight"))
 	# Keep score drawing (including the opaque clef gutter) inside the rounded border.
-	paper.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 10))
+	paper.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 10, appearance_mode == "midnight"))
 	for side: String in ["left", "right", "top", "bottom"]:
 		var inset: int = 8 if side_dock else (12 if side in ["left", "right", "bottom"] else 4)
 		if not side_dock and side in ["left", "right"]: inset = (inset if tv_active else maxi(inset, int((size.x - 1320) / 2)))
@@ -2841,7 +2863,7 @@ func report_state() -> void:
 	if song == null: return
 	if host.trace_enabled():
 		var evidence: Dictionary = audio.metrics()
-		evidence.merge({"tv_active": tv_active, "tv_tucked": tv_tucked, "tv_zoom": tv_zoom, "status_visible": status_toast.visible, "tv_systems": score_frame.visible_systems(), "page_slide_count": score_frame.follow_slide_count, "page_slide_offset": score_frame.follow_offset, "music_lines": score_frame.music_lines, "note_spacing": score_frame.note_spacing, "staff_height": score_frame.staff_height, "score_height": score.drawing_height(), "fitted_rows": score.fitted_rows, "fullscreen": host.is_fullscreen(), "follow_pages": score.follow_pages, "upcoming_tick": score.upcoming_tick, "count_beat": int(count_badge.text) if count_badge.visible else 0, "capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "shape_cues": shape_cues, "font_style": font_style, "control_position": control_position, "handedness": handedness, "controls_on_side": controls_on_side, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "notation_rows": notation_rows, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "arrangement_style": projection.style, "placed": projection.placed, "eligible": projection.eligible, "omitted": projection.omitted.size(), "mute_marks": projection.mute_marks, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
+		evidence.merge({"tv_active": tv_active, "tv_tucked": tv_tucked, "tv_zoom": tv_zoom, "status_visible": status_toast.visible, "tv_systems": score_frame.visible_systems(), "page_slide_count": score_frame.follow_slide_count, "page_slide_offset": score_frame.follow_offset, "music_lines": score_frame.music_lines, "note_spacing": score_frame.note_spacing, "staff_height": score_frame.staff_height, "score_height": score.drawing_height(), "fitted_rows": score.fitted_rows, "fullscreen": host.is_fullscreen(), "follow_pages": score.follow_pages, "upcoming_tick": score.upcoming_tick, "count_beat": int(count_badge.text) if count_badge.visible else 0, "capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "shape_cues": shape_cues, "font_style": font_style, "control_position": control_position, "handedness": handedness, "controls_on_side": controls_on_side, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "background_style": background_style, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "notation_rows": notation_rows, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "arrangement_style": projection.style, "placed": projection.placed, "eligible": projection.eligible, "omitted": projection.omitted.size(), "mute_marks": projection.mute_marks, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
 		host.report(evidence)
 	offline.text = tr("OFFLINE_READY") if host.offline_ready() else tr("OFFLINE_PENDING")
 	if host.offline_ready() and not host.trace_enabled(): idle_timer.stop()

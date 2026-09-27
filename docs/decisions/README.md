@@ -45,3 +45,5 @@ and the linked Pages deployment.
 [0019 — Practice presets and concert-pitch staff rows](0019-practice-presets-and-concert-staff.md) records direct layout choices, the one-part two-hand example, and touch navigation behavior.
 
 [0020 — Paired example parts and mini staffs](0020-paired-example-parts-and-mini-staff.md) records separate original bass parts, independent mute state, and compact companion staffs.
+
+[0021 — Midnight palette and player backgrounds](0021-midnight-and-backgrounds.md) extends appearance with an OLED black choice and three saved backdrop styles.

@@ -16,6 +16,11 @@ const DARK: Dictionary = {
 	"library": "4d3d2b", "practice": "50333e", "sound": "24483f", "reading": "413659",
 	"note_open": "63d9ed", "note_first": "b7f075", "note_move": "ff9f5b", "rest": "d6c8ec", "warning": "ff9eaa"
 }
+const MIDNIGHT: Dictionary = {
+	"background": "000000", "paper": "000000", "control": "101016",
+	"hover": "24232e", "pressed": "343040", "disabled": "15141c",
+	"library": "17130d", "practice": "1c1015", "sound": "0d1b18", "reading": "171220"
+}
 
 const BUTTON_ROLES: Dictionary = {
 	"SONG_MENU": "library", "IMPORT_MIDI": "library", "OPEN": "library", "PRINT": "library",
@@ -32,7 +37,8 @@ static func ui_font(style: String = "rounded", heading: bool = false) -> Font:
 	font.fallbacks = [ThemeDB.fallback_font]
 	return font
 
-static func color(key: String, dark: bool) -> Color:
+static func color(key: String, dark: bool, midnight: bool = false) -> Color:
+	if dark and midnight and MIDNIGHT.has(key): return Color(MIDNIGHT[key])
 	return Color((DARK if dark else LIGHT)[key])
 
 static func box(fill: Color, padding: int = 12) -> StyleBoxFlat:
@@ -45,51 +51,51 @@ static func box(fill: Color, padding: int = 12) -> StyleBoxFlat:
 	style.content_margin_bottom = padding
 	return style
 
-static func panel_style(dark: bool, padding: int = 12) -> StyleBoxFlat:
-	var style: StyleBoxFlat = box(color("paper", dark), padding)
+static func panel_style(dark: bool, padding: int = 12, midnight: bool = false) -> StyleBoxFlat:
+	var style: StyleBoxFlat = box(color("paper", dark, midnight), padding)
 	style.set_border_width_all(1)
-	style.border_color = color("line", dark)
+	style.border_color = color("line", dark, midnight)
 	style.shadow_color = Color(0.08, 0.04, 0.14, 0.16 if dark else 0.09)
 	style.shadow_size = 3
 	style.shadow_offset = Vector2(0, 2)
 	return style
 
-static func tempo_unit_style(dark: bool, padding: int = 7) -> StyleBoxFlat:
-	var style: StyleBoxFlat = box(color("sound", dark), padding)
+static func tempo_unit_style(dark: bool, padding: int = 7, midnight: bool = false) -> StyleBoxFlat:
+	var style: StyleBoxFlat = box(color("sound", dark, midnight), padding)
 	style.set_corner_radius_all(16)
 	style.set_border_width_all(1)
-	style.border_color = color("primary", dark).lerp(color("line", dark), 0.35)
+	style.border_color = color("primary", dark, midnight).lerp(color("line", dark, midnight), 0.35)
 	style.shadow_color = Color(0, 0, 0, 0.12)
 	style.shadow_size = 2
 	style.shadow_offset = Vector2(0, 1)
 	return style
 
-static func role_style(role: String, dark: bool, state: String) -> StyleBoxFlat:
-	var fill: Color = color(role, dark)
-	if state == "disabled": fill = color("disabled", dark)
-	elif state in ["pressed", "hover_pressed"]: fill = fill.lerp(color("accent", dark), 0.16)
+static func role_style(role: String, dark: bool, state: String, midnight: bool = false) -> StyleBoxFlat:
+	var fill: Color = color(role, dark, midnight)
+	if state == "disabled": fill = color("disabled", dark, midnight)
+	elif state in ["pressed", "hover_pressed"]: fill = fill.lerp(color("accent", dark, midnight), 0.16)
 	elif state == "hover": fill = fill.lightened(0.08) if dark else fill.darkened(0.04)
 	var style: StyleBoxFlat = box(fill)
 	style.set_border_width_all(2 if state in ["hover", "pressed", "hover_pressed"] else 1)
-	style.border_color = color("accent" if state in ["hover", "pressed", "hover_pressed"] else "line", dark)
+	style.border_color = color("accent" if state in ["hover", "pressed", "hover_pressed"] else "line", dark, midnight)
 	if state in ["pressed", "hover_pressed"]:
 		style.content_margin_top += 2
 		style.content_margin_bottom -= 2
 	return style
 
-static func apply_roles(node: Node, dark: bool) -> void:
+static func apply_roles(node: Node, dark: bool, midnight: bool = false) -> void:
 	if node is Button and node.has_meta("color_role"):
 		for state: String in ["normal", "hover", "pressed", "hover_pressed", "disabled"]:
-			node.add_theme_stylebox_override(state, role_style(str(node.get_meta("color_role")), dark, state))
-	for child: Node in node.get_children(): apply_roles(child, dark)
+			node.add_theme_stylebox_override(state, role_style(str(node.get_meta("color_role")), dark, state, midnight))
+	for child: Node in node.get_children(): apply_roles(child, dark, midnight)
 
-static func apply_slider(result: Theme, kind: String, fill: Color, dark: bool) -> void:
+static func apply_slider(result: Theme, kind: String, fill: Color, dark: bool, midnight: bool = false) -> void:
 	var rail: StyleBoxFlat = StyleBoxFlat.new()
-	rail.bg_color = color("line", dark).lerp(color("paper", dark), 0.28)
+	rail.bg_color = color("line", dark, midnight).lerp(color("paper", dark, midnight), 0.28)
 	rail.set_corner_radius_all(6)
 	rail.content_margin_top = 5
 	rail.content_margin_bottom = 5
-	rail.border_color = color("line", dark)
+	rail.border_color = color("line", dark, midnight)
 	rail.set_border_width_all(1)
 	result.set_stylebox("slider", kind, rail)
 	for state: String in ["grabber_area", "grabber_area_highlight"]:
@@ -98,12 +104,12 @@ static func apply_slider(result: Theme, kind: String, fill: Color, dark: bool) -
 		active.set_corner_radius_all(6)
 		active.content_margin_top = 5
 		active.content_margin_bottom = 5
-		active.border_color = color("paper", dark)
+		active.border_color = color("paper", dark, midnight)
 		active.set_border_width_all(1)
 		result.set_stylebox(state, kind, active)
 	var focus: StyleBoxFlat = StyleBoxFlat.new()
 	focus.bg_color = Color.TRANSPARENT
-	focus.border_color = color("accent", dark)
+	focus.border_color = color("accent", dark, midnight)
 	focus.set_border_width_all(2)
 	focus.set_corner_radius_all(8)
 	focus.expand_margin_left = 3
@@ -111,36 +117,36 @@ static func apply_slider(result: Theme, kind: String, fill: Color, dark: bool) -
 	focus.expand_margin_top = 3
 	focus.expand_margin_bottom = 3
 	result.set_stylebox("focus", kind, focus)
-	var svg: String = '<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30"><circle cx="15" cy="16" r="11" fill="#%s" fill-opacity="0.24"/><circle cx="15" cy="14" r="11" fill="#%s" stroke="#%s" stroke-width="3"/><circle cx="12" cy="11" r="2.5" fill="#ffffff" fill-opacity="0.72"/></svg>' % [fill.to_html(false), fill.to_html(false), color("paper", dark).to_html(false)]
+	var svg: String = '<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30"><circle cx="15" cy="16" r="11" fill="#%s" fill-opacity="0.24"/><circle cx="15" cy="14" r="11" fill="#%s" stroke="#%s" stroke-width="3"/><circle cx="12" cy="11" r="2.5" fill="#ffffff" fill-opacity="0.72"/></svg>' % [fill.to_html(false), fill.to_html(false), color("paper", dark, midnight).to_html(false)]
 	var highlighted_svg: String = svg.replace('r="11" fill="#%s" stroke' % fill.to_html(false), 'r="12" fill="#%s" stroke' % fill.to_html(false))
 	for entry: Array in [["grabber", svg], ["grabber_highlight", highlighted_svg], ["grabber_disabled", svg]]:
 		var image: Image = Image.new()
 		image.load_svg_from_string(entry[1])
 		result.set_icon(entry[0], kind, ImageTexture.create_from_image(image))
 
-static func make_theme(dark: bool, font_size: int, font_style: String = "rounded") -> Theme:
+static func make_theme(dark: bool, font_size: int, font_style: String = "rounded", midnight: bool = false) -> Theme:
 	var result: Theme = Theme.new()
 	result.default_font_size = font_size
 	result.default_font = ui_font(font_style)
-	for key: String in LIGHT: result.set_color(key, "LibreTabs", color(key, dark))
+	for key: String in LIGHT: result.set_color(key, "LibreTabs", color(key, dark, midnight))
 	# The engine's dark unchecked glyph disappears against our dark controls.
 	for checked: bool in [false, true]:
-		var svg: String = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><rect x="2" y="2" width="20" height="20" rx="4" fill="%s" stroke="#%s" stroke-width="2"/>%s</svg>' % ["#" + color("primary", dark).to_html(false) if checked else "none", color("ink", dark).to_html(false), '<path d="m6 12 4 4 8-9" fill="none" stroke="white" stroke-width="3"/>' if checked else ""]
+		var svg: String = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><rect x="2" y="2" width="20" height="20" rx="4" fill="%s" stroke="#%s" stroke-width="2"/>%s</svg>' % ["#" + color("primary", dark, midnight).to_html(false) if checked else "none", color("ink", dark, midnight).to_html(false), '<path d="m6 12 4 4 8-9" fill="none" stroke="white" stroke-width="3"/>' if checked else ""]
 		var glyph: Image = Image.new()
 		glyph.load_svg_from_string(svg)
 		result.set_icon("checked" if checked else "unchecked", "CheckBox", ImageTexture.create_from_image(glyph))
 	for kind: String in ["Label", "Button", "CheckButton", "CheckBox", "OptionButton", "LineEdit", "SpinBox", "PopupMenu", "TextEdit"]:
 		for state: String in ["font_color", "font_focus_color", "font_hover_color", "font_pressed_color", "font_hover_pressed_color", "caret_color", "icon_normal_color", "icon_hover_color", "icon_pressed_color", "icon_focus_color", "icon_hover_pressed_color"]:
-			result.set_color(state, kind, color("ink", dark))
-		result.set_color("font_disabled_color", kind, color("muted", dark))
-		result.set_color("icon_disabled_color", kind, color("muted", dark))
-		result.set_color("font_uneditable_color", kind, color("muted", dark))
-		result.set_color("selection_color", kind, color("pressed", dark))
+			result.set_color(state, kind, color("ink", dark, midnight))
+		result.set_color("font_disabled_color", kind, color("muted", dark, midnight))
+		result.set_color("icon_disabled_color", kind, color("muted", dark, midnight))
+		result.set_color("font_uneditable_color", kind, color("muted", dark, midnight))
+		result.set_color("selection_color", kind, color("pressed", dark, midnight))
 	for kind: String in ["Button", "CheckButton", "CheckBox", "OptionButton", "LineEdit", "TextEdit"]:
 		for state: String in ["normal", "hover", "pressed", "disabled", "read_only"]:
 			var token: String = "control" if state == "normal" else ("disabled" if state == "read_only" else state)
-			var style: StyleBoxFlat = box(color(token, dark))
-			style.border_color = color("accent" if state in ["hover", "pressed"] else "line", dark)
+			var style: StyleBoxFlat = box(color(token, dark, midnight))
+			style.border_color = color("accent" if state in ["hover", "pressed"] else "line", dark, midnight)
 			style.set_border_width_all(2 if state in ["hover", "pressed"] else 1)
 			if state == "pressed":
 				style.content_margin_top += 2
@@ -148,37 +154,37 @@ static func make_theme(dark: bool, font_size: int, font_style: String = "rounded
 			result.set_stylebox(state, kind, style)
 		result.set_stylebox("hover_pressed", kind, result.get_stylebox("pressed", kind))
 		var focus: StyleBoxFlat = box(Color.TRANSPARENT)
-		focus.border_color = color("accent", dark)
+		focus.border_color = color("accent", dark, midnight)
 		focus.set_border_width_all(3)
 		result.set_stylebox("focus", kind, focus)
 	result.set_type_variation("TempoSlider", "HSlider")
 	result.set_type_variation("VolumeSlider", "HSlider")
 	result.set_type_variation("TempoDisplayButton", "Button")
 	result.set_constant("h_separation", "TempoDisplayButton", 4)
-	apply_slider(result, "HSlider", color("accent", dark), dark)
-	apply_slider(result, "TempoSlider", color("primary", dark), dark)
-	apply_slider(result, "VolumeSlider", color("live", dark), dark)
+	apply_slider(result, "HSlider", color("accent", dark, midnight), dark, midnight)
+	apply_slider(result, "TempoSlider", color("primary", dark, midnight), dark, midnight)
+	apply_slider(result, "VolumeSlider", color("live", dark, midnight), dark, midnight)
 	for state: String in ["normal", "hover", "pressed", "hover_pressed"]:
 		var tempo_display: StyleBoxFlat = box(Color.TRANSPARENT, 4)
-		if state == "hover": tempo_display.bg_color = color("paper", dark).lerp(color("sound", dark), 0.45)
-		elif state in ["pressed", "hover_pressed"]: tempo_display.bg_color = color("pressed", dark).lerp(color("sound", dark), 0.35)
+		if state == "hover": tempo_display.bg_color = color("paper", dark, midnight).lerp(color("sound", dark, midnight), 0.45)
+		elif state in ["pressed", "hover_pressed"]: tempo_display.bg_color = color("pressed", dark, midnight).lerp(color("sound", dark, midnight), 0.35)
 		result.set_stylebox(state, "TempoDisplayButton", tempo_display)
 	var tempo_focus: StyleBoxFlat = box(Color.TRANSPARENT, 4)
 	tempo_focus.set_border_width_all(2)
-	tempo_focus.border_color = color("accent", dark)
+	tempo_focus.border_color = color("accent", dark, midnight)
 	result.set_stylebox("focus", "TempoDisplayButton", tempo_focus)
 	result.set_constant("h_separation", "Button", 10)
 	result.set_constant("v_separation", "PopupMenu", 36)
-	result.set_stylebox("panel", "PopupMenu", box(color("paper", dark), 8))
-	result.set_stylebox("hover", "PopupMenu", box(color("hover", dark), 8))
-	result.set_stylebox("panel", "TooltipPanel", box(color("control", dark), 8))
-	result.set_color("font_color", "TooltipLabel", color("ink", dark))
+	result.set_stylebox("panel", "PopupMenu", box(color("paper", dark, midnight), 8))
+	result.set_stylebox("hover", "PopupMenu", box(color("hover", dark, midnight), 8))
+	result.set_stylebox("panel", "TooltipPanel", box(color("control", dark, midnight), 8))
+	result.set_color("font_color", "TooltipLabel", color("ink", dark, midnight))
 	return result
 
-static func primary_style(dark: bool, state: String) -> StyleBoxFlat:
+static func primary_style(dark: bool, state: String, midnight: bool = false) -> StyleBoxFlat:
 	var pressed: bool = state in ["pressed", "hover_pressed"]
-	var style: StyleBoxFlat = box(color("primary_pressed" if pressed else ("primary_hover" if state == "hover" else "primary"), dark))
-	style.border_color = color("accent", dark)
+	var style: StyleBoxFlat = box(color("primary_pressed" if pressed else ("primary_hover" if state == "hover" else "primary"), dark, midnight))
+	style.border_color = color("accent", dark, midnight)
 	style.set_border_width_all(2 if state != "normal" else 0)
 	style.shadow_color = Color(0, 0, 0, 0.18)
 	style.shadow_size = 0 if pressed else 3

@@ -763,6 +763,24 @@ msgstr "Light"
 msgid "APPEARANCE_DARK"
 msgstr "Dark"
 
+msgid "APPEARANCE_MIDNIGHT"
+msgstr "Midnight (OLED black)"
+
+msgid "BACKGROUND_STYLE"
+msgstr "Background"
+
+msgid "BACKGROUND_RIBBON"
+msgstr "Ribbon pattern"
+
+msgid "BACKGROUND_GRADIENT"
+msgstr "Soft gradient"
+
+msgid "BACKGROUND_SOLID"
+msgstr "Solid color"
+
+msgid "BACKGROUND_STYLE_HELP"
+msgstr "Choose the space around the music. Midnight always uses black."
+
 msgid "TEXT_SIZE"
 msgstr "Text size"
 

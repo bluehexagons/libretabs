@@ -162,10 +162,10 @@ func load_appearance() -> String:
 		var config: ConfigFile = ConfigFile.new()
 		if config.load(display_path) == OK:
 			value = str(config.get_value("display", "appearance", "system"))
-	return value if value in ["system", "light", "dark"] else "system"
+	return value if value in ["system", "light", "dark", "midnight"] else "system"
 
 func save_appearance(value: String) -> bool:
-	if value not in ["system", "light", "dark"]: return false
+	if value not in ["system", "light", "dark", "midnight"]: return false
 	if web != null: return bool(web.saveAppearance(value))
 	var config: ConfigFile = ConfigFile.new()
 	config.load(display_path)
@@ -176,8 +176,8 @@ func system_dark() -> bool:
 	if web != null: return bool(web.prefersDark())
 	return DisplayServer.is_dark_mode_supported() and DisplayServer.is_dark_mode()
 
-func apply_appearance(dark: bool) -> void:
-	if web != null: web.applyAppearance(dark)
+func apply_appearance(dark: bool, background: Color) -> void:
+	if web != null: web.applyAppearance(dark, "#" + background.to_html(false))
 
 func apply_capture_background(mode: String, color: Color) -> void:
 	# Window capture uses chroma key; only web surfaces promise alpha margins.

@@ -78,11 +78,11 @@
       try { localStorage.setItem('libretabs.appearance.v1', value); return true; } catch (_) { return false; }
     },
     loadDisplayChoice(key, fallback) {
-      if (!['motion', 'font', 'shape_cues', 'startup_help', 'control_position', 'handedness', 'tv_zoom', 'theater_controls', 'music_lines', 'music_spacing', 'music_staff', 'tv_music_lines', 'tv_music_spacing', 'tv_music_staff', 'notation_rows', 'capture_notation', 'capture_background', 'capture_title', 'capture_zoom', 'capture_position'].includes(key)) return fallback;
+      if (!['motion', 'font', 'shape_cues', 'startup_help', 'control_position', 'handedness', 'background_style', 'tv_zoom', 'theater_controls', 'music_lines', 'music_spacing', 'music_staff', 'tv_music_lines', 'tv_music_spacing', 'tv_music_staff', 'notation_rows', 'capture_notation', 'capture_background', 'capture_title', 'capture_zoom', 'capture_position'].includes(key)) return fallback;
       try { return localStorage.getItem('libretabs.' + key + '.v1') || fallback; } catch (_) { return fallback; }
     },
     saveDisplayChoice(key, value) {
-      if (!['motion', 'font', 'shape_cues', 'startup_help', 'control_position', 'handedness', 'tv_zoom', 'theater_controls', 'music_lines', 'music_spacing', 'music_staff', 'tv_music_lines', 'tv_music_spacing', 'tv_music_staff', 'notation_rows', 'capture_notation', 'capture_background', 'capture_title', 'capture_zoom', 'capture_position'].includes(key)) return false;
+      if (!['motion', 'font', 'shape_cues', 'startup_help', 'control_position', 'handedness', 'background_style', 'tv_zoom', 'theater_controls', 'music_lines', 'music_spacing', 'music_staff', 'tv_music_lines', 'tv_music_spacing', 'tv_music_staff', 'notation_rows', 'capture_notation', 'capture_background', 'capture_title', 'capture_zoom', 'capture_position'].includes(key)) return false;
       try { localStorage.setItem('libretabs.' + key + '.v1', value); return true; } catch (_) { return false; }
     },
     prefersReducedMotion() { return matchMedia('(prefers-reduced-motion: reduce)').matches; },
@@ -100,9 +100,9 @@
     },
     prefersDark() { return matchMedia('(prefers-color-scheme: dark)').matches; },
     onAppearance(callback) { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => callback()); },
-    applyAppearance(dark) {
+    applyAppearance(dark, background) {
       document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
-      document.body.style.backgroundColor = dark ? '#101e20' : '#f4efe5';
+      document.body.style.backgroundColor = background;
     },
     applyCaptureBackground(mode, color) {
       document.body.style.backgroundColor = mode === 'transparent' ? 'transparent' : color;

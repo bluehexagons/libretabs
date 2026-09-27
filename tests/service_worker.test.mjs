@@ -187,17 +187,17 @@ test('fullscreen adapter follows confirmed browser state and reports denial', as
 });
 
 
-test('music layout profiles persist independently through the web adapter', () => {
+test('display choices persist independently through the web adapter', () => {
   const stored = new Map();
   const localStorage = {getItem: key => stored.get(key) ?? null, setItem: (key, value) => stored.set(key, value)};
   const window = {addEventListener() {}};
   const document = {documentElement: {}, addEventListener() {}};
   vm.runInNewContext(bridge, {window, document, localStorage, navigator: {}, location: {search: ''}, URLSearchParams});
   const host = window.libretabsHost;
-  for (const [key, value] of Object.entries({music_lines: '2', music_spacing: '80', music_staff: '200', tv_music_lines: '3', tv_music_spacing: '50', tv_music_staff: '150', tv_zoom: '85', theater_controls: 'keep'})) {
+  for (const [key, value] of Object.entries({music_lines: '2', music_spacing: '80', music_staff: '200', tv_music_lines: '3', tv_music_spacing: '50', tv_music_staff: '150', tv_zoom: '85', theater_controls: 'keep', background_style: 'solid'})) {
     assert.equal(host.saveDisplayChoice(key, value), true);
     assert.equal(host.loadDisplayChoice(key, 'missing'), value);
   }
-  assert.equal(stored.size, 8);
+  assert.equal(stored.size, 9);
   assert.equal(host.saveDisplayChoice('unknown_display_key', '1'), false);
 });

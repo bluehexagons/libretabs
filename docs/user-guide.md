@@ -190,7 +190,11 @@ when playback starts; **Show controls** or **F10** brings them back. In
 **Fullscreen** is a separate button; press it again or Escape to leave fullscreen.
 Theater does not connect to a TV itself; use your device's screen-mirroring controls.
 
-**Menu → Appearance & text** includes lettering, text size, light/dark appearance,
+**Menu → Appearance & text** includes lettering, text size, Device setting, Light,
+Dark and Midnight appearance. Device setting follows the device's light or dark
+preference. Midnight uses black around and behind the music for OLED screens.
+Choose Ribbon pattern, Soft gradient or Solid color for the space around the music
+in Light and Dark; Midnight always remains black. The menu also includes
 reduced motion, optional shape cues, control location and preferred hand. Text size
 changes controls; use score layout or music zoom to improve music readability.
 For a stationary reading view, choose Manual pages as well as reduced motion.

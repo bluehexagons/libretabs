@@ -687,6 +687,8 @@ func run() -> void:
 	check(settings.save_scale(1.5) and settings.save_appearance("dark"), "native settings save")
 	check(settings.load_scale() == 1.5 and settings.load_appearance() == "dark", "appearance save preserves text size")
 	check(settings.save_scale(2.0) and settings.load_appearance() == "dark", "text size save preserves appearance")
+	check(settings.save_appearance("midnight") and settings.load_appearance() == "midnight", "midnight appearance persists")
+	check(settings.save_display_choice("background_style", "solid") and settings.load_display_choice("background_style", ["ribbon", "gradient", "solid"], "ribbon") == "solid", "background style persists independently of appearance")
 	check(HostAdapter.validated_scale(INF) == 1.0 and HostAdapter.validated_scale(1.25) == 1.0, "invalid display scales recover without corrupting layout")
 	check(not settings.save_scale(NAN) and not settings.save_scale(1.25) and settings.load_scale() == 2.0, "invalid display scales cannot overwrite a saved choice")
 	check(settings.save_display_choice("shape_cues", "on") and settings.load_display_choice("shape_cues", ["off", "on"], "off") == "on", "shape cues persist through the display adapter")
@@ -708,6 +710,17 @@ func run() -> void:
 	check(app.get("dark_mode") and app.get_theme_color("ink", "LibreTabs") == UIAppearance.color("ink", true), "dark palette applied to app and score")
 	check(score.get_theme_color("paper", "LibreTabs") == UIAppearance.color("paper", true), "engraving inherits dark paper")
 	check(app.get("source_tick") == tick_before and not app.is_processing(), "theme change preserves transport and idle processing")
+	app.call("change_appearance", 3)
+	check(app.get("appearance_mode") == "midnight" and app.get("dark_mode"), "midnight is a direct appearance choice")
+	check(app.get_theme_color("background", "LibreTabs") == Color.BLACK and score.get_theme_color("paper", "LibreTabs") == Color.BLACK, "midnight keeps the backdrop and engraving surface black")
+	check(app.get("background_picker").disabled and app.get("backdrop").midnight, "midnight suppresses decorative backgrounds")
+	check(app.get("source_tick") == tick_before and not app.is_processing(), "midnight switch preserves transport and idle processing")
+	app.call("change_appearance", 2)
+	app.call("change_background_style", 2)
+	check(app.get("background_style") == "solid" and app.get("backdrop").background_style == "solid", "solid background applies without rebuilding the score")
+	app.call("change_background_style", 1)
+	check(app.get("backdrop").background_style == "gradient", "gradient background applies")
+	app.call("change_background_style", 0)
 	app.call("set_shape_cues", true)
 	check(app.get("shape_cues") and score.shape_cues and app.get("shape_cue_check").button_pressed, "shape-cue setting updates the primary score")
 	for tile: NotationMeasureStack in score.tiles.values():
@@ -728,6 +741,13 @@ func run() -> void:
 				var style: StyleBoxFlat = UIAppearance.role_style(role, dark, state)
 				var token: String = "muted" if state == "disabled" else "ink"
 				check(contrast(UIAppearance.color(token, dark), style.bg_color) >= 4.5, "colored control text keeps contrast: %s / %s / %s" % [role, state, dark])
+	for token: String in ["ink", "muted", "accent", "note_open", "note_first", "note_move", "rest", "warning"]:
+		check(contrast(UIAppearance.color(token, true, true), UIAppearance.color("paper", true, true)) >= 4.5, "midnight score contrast: %s" % token)
+	for role: String in ["library", "practice", "sound", "reading"]:
+		for state: String in ["normal", "hover", "pressed", "hover_pressed", "disabled"]:
+			var style: StyleBoxFlat = UIAppearance.role_style(role, true, state, true)
+			var token: String = "muted" if state == "disabled" else "ink"
+			check(contrast(UIAppearance.color(token, true, true), style.bg_color) >= 4.5, "midnight control contrast: %s / %s" % [role, state])
 	app.set("appearance_mode", "light")
 	app.call("apply_appearance")
 	root.size = Vector2i(390, 844)

@@ -43,14 +43,14 @@ func _ready() -> void:
 	resized.connect(arrange)
 	hide()
 
-func configure(source: ScoreView, song_title: String, dark: bool) -> void:
+func configure(source: ScoreView, song_title: String, dark: bool, midnight: bool = false) -> void:
 	var chosen_font: Font = get_theme_font("font", "Label")
 	if chosen_font != heading_source:
 		heading_source = chosen_font
 		heading.add_theme_font_override("font", capture_font(chosen_font))
 	heading.text = song_title
 	heading.visible = show_title
-	card.add_theme_stylebox_override("panel", UIAppearance.box(UIAppearance.color("paper", dark), 8))
+	card.add_theme_stylebox_override("panel", UIAppearance.box(UIAppearance.color("paper", dark, midnight), 8))
 	score.reduced_motion = source.reduced_motion
 	score.effects_speed = source.effects_speed
 	score.set_shape_cues(source.shape_cues)
