@@ -85,7 +85,9 @@ var count_badge: Label
 var play_control_key: String = ""
 var part_picker: OptionButton
 var demo_picker: OptionButton
-var library_picker: OptionButton
+var library_song_buttons: Dictionary = {}
+var starter_song_grid: GridContainer
+var more_song_grid: GridContainer
 var active_demo: int = -1
 var pending_demo: int = -1
 var active_library: int = -1
@@ -221,6 +223,7 @@ const BUILT_IN_LIBRARY: Array[Dictionary] = [
 	{"file": "brahms_lullaby", "title_key": "LIBRARY_BRAHMS_LULLABY"},
 	{"file": "minuet_in_g", "title_key": "LIBRARY_MINUET_IN_G"},
 ]
+const STARTER_SONGS: Array[int] = [4, 6]
 
 func _ready() -> void:
 	host = HostAdapter.new()
@@ -524,6 +527,24 @@ func flow(parent: Node) -> HFlowContainer:
 	row.add_theme_constant_override("v_separation", 8)
 	parent.add_child(row)
 	return row
+
+func build_song_grid(parent: VBoxContainer) -> GridContainer:
+	var grid: GridContainer = GridContainer.new()
+	grid.columns = 2
+	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid.add_theme_constant_override("h_separation", 8)
+	grid.add_theme_constant_override("v_separation", 8)
+	parent.add_child(grid)
+	return grid
+
+func add_song_button(grid: GridContainer, index: int) -> void:
+	var key: String = str(BUILT_IN_LIBRARY[index].title_key)
+	var item: Button = button(key, func() -> void: load_library_item(index))
+	item.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	item.custom_minimum_size.y = 72
+	item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid.add_child(item)
+	library_song_buttons[index] = item
 
 func build_color_legend(parent: Control) -> void:
 	color_legend = HFlowContainer.new()
@@ -901,7 +922,7 @@ func set_startup_help(enabled: bool) -> void:
 
 func build_drawers() -> void:
 	var menu_index: VBoxContainer = section("MENU")
-	for key: String in ["WELCOME", "SETTINGS", "TV_VIEW", "SONG_MENU", "TEMPO", "SCORE_VIEW", "PRINT", "CAPTURE", "LOOP_TOOL", "SOUND", "DISPLAY", "KEYBOARD", "HELP", "ABOUT"]:
+	for key: String in ["SONG_MENU", "WELCOME", "SETTINGS", "TV_VIEW", "TEMPO", "SCORE_VIEW", "PRINT", "CAPTURE", "LOOP_TOOL", "SOUND", "DISPLAY", "KEYBOARD", "HELP", "ABOUT"]:
 		var entry: Button = button(key, func() -> void: toggle_drawer(key))
 		entry.text = tr("CARD_" + key)
 		entry.alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -950,22 +971,21 @@ func build_drawers() -> void:
 	rebuild_notation_rows_editor()
 	views.add_child(button("PRINT", func() -> void: toggle_drawer("PRINT")))
 	var library: VBoxContainer = section("SONG_MENU")
-	library.add_child(button("OPEN", open_midi))
-	library.add_child(label("SONG_FILE_HELP", 18))
 	library.add_child(label("CURRENT_SONG", 18))
 	library_title = label("LIBRARY_ODE_TO_JOY", 24)
+	library_title.max_lines_visible = 2
+	library_title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	library.add_child(library_title)
-	library.add_child(label("CLASSICS", 18))
-	library.add_child(label("BEGINNER_LIBRARY_NOTE", 14))
-	library_picker = OptionButton.new()
-	library_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
-	library_picker.fit_to_longest_item = false
-	library_picker.clip_text = true
-	library_picker.custom_minimum_size.y = 56
-	for item: Dictionary in BUILT_IN_LIBRARY:
-		library_picker.add_item(tr(String(item.title_key)))
-	library_picker.item_selected.connect(load_library_item)
-	library.add_child(library_picker)
+	library.add_child(label("SONG_STARTERS", 18))
+	starter_song_grid = build_song_grid(library)
+	for index: int in STARTER_SONGS: add_song_button(starter_song_grid, index)
+	library.add_child(button("OPEN", open_midi))
+	library.add_child(label("SONG_FILE_BRIEF", 16))
+	library.add_child(label("SONG_MORE", 18))
+	more_song_grid = build_song_grid(library)
+	for index: int in range(BUILT_IN_LIBRARY.size()):
+		if index not in STARTER_SONGS: add_song_button(more_song_grid, index)
+	library.add_child(label("SONG_FILE_HELP", 18))
 	library.add_child(label("DEMOS", 18))
 	demo_picker = OptionButton.new()
 	demo_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
@@ -1920,6 +1940,9 @@ func responsive() -> void:
 	dock.vertical = side_dock or (size.x < 900 and not tight_controls)
 	drawer.position = Vector2(0 if handedness == "left" else maxf(0, size.x - 560), 0)
 	drawer.size = Vector2(minf(size.x, 560), size.y)
+	var song_columns: int = 2 if size.x >= 600 and theme.default_font_size < 30 else 1
+	starter_song_grid.columns = song_columns
+	more_song_grid.columns = song_columns
 	if opened_drawer == "WELCOME":
 		var inset: float = 8 if size.x < 600 else 24
 		drawer.size = Vector2(minf(size.x - inset * 2, 720), minf(size.y - inset * 2, 760))
@@ -2200,11 +2223,11 @@ func update_song_picker() -> void:
 	else:
 		demo_picker.select(-1)
 		demo_picker.text = tr("CHOOSE_EXERCISE")
-	if active_library >= 0:
-		library_picker.select(active_library)
-	else:
-		library_picker.select(-1)
-		library_picker.text = tr("CHOOSE_CLASSIC")
+	for index: int in library_song_buttons:
+		var item: Button = library_song_buttons[index]
+		var title_text: String = tr(str(BUILT_IN_LIBRARY[index].title_key))
+		item.text = tr("SONG_CURRENT_ITEM") % title_text if index == active_library else title_text
+		item.tooltip_text = title_text
 
 func _file_picked(name_value: String, bytes: PackedByteArray, error: String) -> void:
 	if not error.is_empty():
@@ -2246,6 +2269,7 @@ func finish_import() -> void:
 	song_title.text = title
 	song_title.tooltip_text = title
 	library_title.text = title
+	library_title.tooltip_text = title
 	active_demo = pending_demo
 	active_library = pending_library
 	update_song_picker()

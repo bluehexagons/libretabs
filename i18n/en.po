@@ -22,6 +22,18 @@ msgstr "Choose a built-in example"
 msgid "CLASSICS"
 msgstr "Classical & familiar melodies"
 
+msgid "SONG_STARTERS"
+msgstr "Good first songs"
+
+msgid "SONG_MORE"
+msgstr "More built-in songs"
+
+msgid "SONG_CURRENT_ITEM"
+msgstr "Current · %s"
+
+msgid "SONG_FILE_BRIEF"
+msgstr "A MIDI file (.mid or .midi) holds notes and timing. Your file stays on this device."
+
 msgid "BEGINNER_LIBRARY_NOTE"
 msgstr "New to guitar? Try Twinkle, Twinkle Little Star or Mary Had a Little Lamb first. Some tunes begin with silence before the first notes."
 

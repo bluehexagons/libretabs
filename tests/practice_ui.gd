@@ -21,13 +21,26 @@ func run() -> void:
 	root.add_child(app)
 	for _frame: int in range(30): await process_frame
 	check(app.get("song") != null, "initial sample is ready")
-	check(app.get("library_picker").item_count == 12 and app.get("library_picker").selected == 0, "default classics and starter library is visible and selected")
+	var song_buttons: Dictionary = app.get("library_song_buttons")
+	check(song_buttons.size() == 12 and app.get("starter_song_grid").get_child_count() == 2, "every built-in song has a direct choice and beginner songs come first")
+	check(song_buttons[0].text == TranslationServer.translate("SONG_CURRENT_ITEM") % TranslationServer.translate("LIBRARY_ODE_TO_JOY"), "the active song has a text marker")
 	check(app.get("title") == TranslationServer.translate("LIBRARY_ODE_TO_JOY"), "default library opens with Ode to Joy")
 	check(app.get("opened_drawer") == "WELCOME" and app.get("startup_help_check").button_pressed, "first startup opens quick start with the opt-out enabled")
 	app.get("startup_help_check").button_pressed = false
 	check(not app.get("startup_help_enabled"), "startup help can be disabled")
 	app.get("welcome_practice").pressed.emit()
 	check(not app.get("menu_overlay").visible and not app.get("audio").playing_practice, "welcome practice action returns to the player without unexpected audio")
+	var menu_index: VBoxContainer = app.get("drawers")["MENU"]
+	check((menu_index.get_child(0) as Button).text == TranslationServer.translate("CARD_SONG_MENU"), "Songs is the first Menu choice for compact Theater")
+	app.call("toggle_drawer", "SONG_MENU")
+	check(song_buttons[4].is_visible_in_tree() and app.get("starter_song_grid").columns == 2, "wide song chooser exposes beginner melodies directly")
+	song_buttons[4].pressed.emit()
+	for _frame: int in range(30): await process_frame
+	check(app.get("active_library") == 4 and app.get("title") == TranslationServer.translate("LIBRARY_TWINKLE") and not app.get("menu_overlay").visible, "one song tap replaces the tune and returns to practice")
+	app.call("toggle_drawer", "SONG_MENU")
+	song_buttons[0].pressed.emit()
+	for _frame: int in range(30): await process_frame
+	check(app.get("active_library") == 0 and song_buttons[0].text == TranslationServer.translate("SONG_CURRENT_ITEM") % app.get("title"), "switching again updates the current song marker")
 	app.call("toggle_drawer", "DETAILS")
 	var arrangement_picker: OptionButton = app.get("arrangement_picker")
 	check(arrangement_picker.item_count == 3 and arrangement_picker.selected == 0, "arrangement details expose three modes with basic tab as the default")
@@ -505,6 +518,7 @@ func run() -> void:
 	check(app.get("dock_margin").get_parent() == app.get("root_box") and app.get("dock_panel").get_parent() == app.get("dock_margin"), "rotation restores inset dock parent")
 	check(app.get("menu_button").size.x >= 56 and app.get("menu_button").size.y <= 100, "portrait menu retains a readable shape after rotation")
 	check(app.get("songs_button").is_visible_in_tree() and app.get("import_button").is_visible_in_tree() and app.get("loop_button").is_visible_in_tree(), "phone exposes song switching, import and looping")
+	check(app.get("starter_song_grid").columns == 1 and app.get("more_song_grid").columns == 1, "phone song choices use one readable column")
 	check(app.get("menu_button").get_global_rect().end.x <= 374 and app.get("menu_button").global_position.y >= 8, "portrait header has comfortable edge spacing")
 	check(app.get("dock_panel").global_position.x >= 12 and app.get("dock_panel").get_global_rect().end.x <= 378 and app.get("dock_panel").get_global_rect().end.y <= 832, "portrait transport card is inset from every screen edge")
 	check(app.get("speed_control").get_child(0) == app.get("speed_unit_layout") and app.get("speed_unit_layout").get_child_count() == 2, "tempo display and slider form one control unit")

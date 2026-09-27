@@ -28,9 +28,10 @@ review; treat them as practice suggestions.
    **Play**. Both measures repeat. Choose **Turn loop off** when you want to
    continue through the song.
 
-For another tune, open **Menu → Songs** and try
-Twinkle, Twinkle Little Star or Mary Had a Little Lamb. These use simpler rhythms;
-they are still generated practice arrangements. Some tunes begin with silence.
+For another tune, choose **Songs** (or **Menu → Songs** in Theater), then tap a
+song. Twinkle, Twinkle Little Star and Mary Had a Little Lamb appear first
+because they use simpler rhythms; they are still generated practice arrangements.
+Some tunes begin with silence.
 Wait for the moving line to reach the first note.
 
 ## Read the guitar tabs
@@ -82,9 +83,10 @@ so unusually detailed rhythms may not line up exactly with the simplified symbol
 
 ## Choose music or open your own file
 
-In **Menu → Songs**, choose a built-in melody or **Open MIDI file**. A **MIDI file**
-contains note and timing instructions; it is not a recording such as an MP3,
-a photograph of sheet music, or a guitar-tab document. Use a `.mid` or `.midi` file.
+In **Songs** (or **Menu → Songs** in Theater), tap a built-in melody or
+**Open MIDI file**. A **MIDI file** contains note and timing instructions; it is not
+a recording such as an MP3, a photograph of sheet music, or a guitar-tab
+document. Use a `.mid` or `.midi` file.
 
 If several parts appear, use **Choose the part to practice**. A part is one line
 of music or instrument from the file. The score shows the selected part. Try a
