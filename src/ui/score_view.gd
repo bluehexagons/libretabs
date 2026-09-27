@@ -561,6 +561,7 @@ func draw_live(surface: Control) -> void:
 			elif row.type == "tab":
 				var y: float = origin.y + mapped_row_y(row_index, ScoreLayout.tab_y(int(note.get("string", 1)), drawing_notation()))
 				var text: String = str(note.fret) if note.has("fret") else "!"
+				if note.get("feedback_kind", "") in ["wrong", "octave"]: text += " ×"
 				var half: float = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x / 2
 				surface.draw_style_box(UIAppearance.box(get_theme_color("paper", "LibreTabs"), 0), Rect2(x - half - 5, y - 16, half * 2 + 10, 32))
 				surface.draw_rect(Rect2(x - half - 5, y - 16, half * 2 + 10, 32), color, false, 3)
@@ -569,6 +570,10 @@ func draw_live(surface: Control) -> void:
 
 func draw_live_staff(surface: Control, note: Dictionary, x: float, origin_y: float, row_index: int, color: Color, clef: String = "staff") -> void:
 	var y: float = origin_y + mapped_row_y(row_index, ScoreLayout.staff_y(int(note.pitch), clef))
+	if note.has("expected") and int(note.expected) != int(note.pitch):
+		var expected_y: float = origin_y + mapped_row_y(row_index, ScoreLayout.staff_y(int(note.expected), clef))
+		if expected_y >= origin_y and expected_y <= origin_y + drawing_height():
+			surface.draw_circle(Vector2(x + 15, expected_y), 7, color, false, 2)
 	var center: float = origin_y + mapped_row_y(row_index, ScoreLayout.STAFF_BOTTOM)
 	var staff_top: float = origin_y + mapped_row_y(row_index, ScoreLayout.STAFF_TOP)
 	if y >= origin_y + mapped_row_y(row_index, 12) and y <= origin_y + mapped_row_y(row_index, 172):

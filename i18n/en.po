@@ -1392,3 +1392,93 @@ msgstr "Effects apply to all instruments and keyboard notes. Turn them off to re
 
 msgid "EFFECTS_DRY"
 msgstr "Turn both effects off"
+
+msgid "INPUTS"
+msgstr "Playing inputs"
+
+msgid "CARD_INPUTS"
+msgstr "Playing inputs · keys, MIDI & listening"
+
+msgid "INPUT_SHOW"
+msgstr "Show playable keyboard"
+
+msgid "INPUT_FEEDBACK"
+msgstr "Show practice feedback"
+
+msgid "INPUT_FEEDBACK_HELP"
+msgstr "Compare notes with the selected practice part while playback continues. Timing is approximate and is hidden when uncertain."
+
+msgid "INPUT_EXPLAIN"
+msgstr "Play using the on-screen piano, computer keys, a MIDI controller, or single-note listening. Playback continues while you practice. Input and feedback stay in this session."
+
+msgid "INPUT_PANIC"
+msgstr "Stop all input notes"
+
+msgid "INPUT_RETURN"
+msgstr "Show keyboard & return to practice"
+
+msgid "INPUT_TREBLE"
+msgstr "Treble / higher notes"
+
+msgid "INPUT_BASS"
+msgstr "Bass / lower notes"
+
+msgid "INPUT_RANGE_HELP"
+msgstr "Choose the visible piano range. This does not transpose MIDI input or change the song."
+
+msgid "INPUT_OCTAVE_DOWN"
+msgstr "Octave −"
+
+msgid "INPUT_OCTAVE_UP"
+msgstr "Octave +"
+
+msgid "INPUT_NOTE_NAME"
+msgstr "%s%d"
+
+msgid "INPUT_IDLE"
+msgstr "Play a note. Outlined keys are yours; circles show the song’s notes."
+
+msgid "INPUT_PIANO_HELP"
+msgstr "Tap or hold piano keys; several fingers can play together. Focus the piano and use Left/Right to choose a key, then hold Space or Enter to play. Octave controls move the visible range by twelve notes."
+
+msgid "INPUT_TAB_HELP"
+msgstr "Filled diamonds show your notes; hollow circles show a different expected pitch. Tab numbers suggest a place to play that pitch, not the string or fret you actually used. A × marks a different pitch. Feedback checks the selected practice part only."
+
+msgid "INPUT_RESULT_MATCH"
+msgstr "Matching note: %s"
+
+msgid "INPUT_RESULT_WRONG"
+msgstr "Played %s; expected %s"
+
+msgid "INPUT_RESULT_OCTAVE"
+msgstr "Played %s; expected %s in a different octave"
+
+msgid "INPUT_RESULT_LOW"
+msgstr "%s is low by %d cents"
+
+msgid "INPUT_RESULT_HIGH"
+msgstr "%s is high by %d cents"
+
+msgid "INPUT_RESULT_POLYPHONIC"
+msgstr "This passage has overlapping notes. Listening checks one note at a time; playback continues."
+
+msgid "INPUT_RESULT_UNCERTAIN"
+msgstr "Can’t identify a clear note. Try one note at a time."
+
+msgid "INPUT_RESULT_REST"
+msgstr "No note is expected here."
+
+msgid "INPUT_TIME_UNKNOWN"
+msgstr "Timing not assessed"
+
+msgid "INPUT_TIME_EARLY"
+msgstr "Early"
+
+msgid "INPUT_TIME_LATE"
+msgstr "Late"
+
+msgid "INPUT_TIME_ON_TIME"
+msgstr "In time"
+
+msgid "INPUT_RESULT_COMBINED"
+msgstr "%s · %s"

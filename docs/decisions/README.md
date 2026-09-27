@@ -51,3 +51,5 @@ and the linked Pages deployment.
 [0022 — Generated practice instruments](0022-practice-instruments.md) adds a saved synth-piano default and three alternate sounds within the existing audio backend.
 
 [0023 — Optional practice sound effects](0023-practice-effects.md) adds saved room ambience and chorus controls, processing bypass and natural end-of-song decay.
+
+[0024 — Playing inputs and single-note listening](0024-live-playing-inputs.md) adds playable keys, MIDI, continuous practice feedback, microphone setup and a tuner as an evaluation milestone.

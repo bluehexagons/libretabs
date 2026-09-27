@@ -113,6 +113,9 @@ var main_speed: RelativeSpeedSlider
 var speed_control: PanelContainer
 var speed_unit_layout: BoxContainer
 var keyboard: KeyboardNotes = KeyboardNotes.new()
+var live: LivePlaying
+var input_epoch: int = 0
+var input_show: CheckButton
 var reverb_check: CheckButton
 var reverb_amount: HSlider
 var reverb_caption: Label
@@ -838,6 +841,16 @@ func build_ui() -> void:
 	score_frame.add_child(score)
 	score_frame.score = score
 	panel.move_child(details, panel.get_children().find(paper) + 1)
+	live = LivePlaying.new()
+	live.context = input_context
+	panel.add_child(live)
+	live.settings_requested.connect(func() -> void: toggle_drawer("INPUTS"))
+	live.note_on.connect(audio.live_on)
+	live.note_off.connect(audio.live_off)
+	live.live_changed.connect(func(notes: Array[Dictionary]) -> void:
+		score.set_live(notes)
+		score_frame.update_overview()
+		if capture_active: capture_view.score.set_live(notes))
 	var navigation: HBoxContainer = HBoxContainer.new()
 	navigation.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	seek_navigation = navigation
@@ -1110,7 +1123,7 @@ func set_startup_help(enabled: bool) -> void:
 
 func build_drawers() -> void:
 	var menu_index: VBoxContainer = section("MENU")
-	for key: String in ["SONG_MENU", "WELCOME", "LAYOUTS", "SETTINGS", "TV_VIEW", "TEMPO", "SCORE_VIEW", "PRINT", "CAPTURE", "LOOP_TOOL", "SOUND", "DISPLAY", "KEYBOARD", "HELP", "ABOUT"]:
+	for key: String in ["SONG_MENU", "WELCOME", "LAYOUTS", "INPUTS", "SETTINGS", "TV_VIEW", "TEMPO", "SCORE_VIEW", "PRINT", "CAPTURE", "LOOP_TOOL", "SOUND", "DISPLAY", "KEYBOARD", "HELP", "ABOUT"]:
 		var entry: Button = button(key, func() -> void: toggle_drawer(key))
 		entry.text = tr("CARD_" + key)
 		entry.alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -1344,10 +1357,35 @@ func build_drawers() -> void:
 	warning = label("PROTOTYPE_LIMIT", 18)
 	details.add_child(warning)
 	var settings: VBoxContainer = section("SETTINGS")
-	for key: String in ["TEMPO", "SCORE_VIEW", "LOOP_TOOL", "SOUND", "SOUND_EFFECTS", "DISPLAY", "KEYBOARD", "TV_VIEW"]: settings.add_child(button(key, func() -> void: toggle_drawer(key)))
+	for key: String in ["TEMPO", "SCORE_VIEW", "LOOP_TOOL", "SOUND", "SOUND_EFFECTS", "DISPLAY", "KEYBOARD", "INPUTS", "TV_VIEW"]: settings.add_child(button(key, func() -> void: toggle_drawer(key)))
 	settings_notice = label("SETTINGS_SAVED", 18)
 	settings.add_child(settings_notice)
 	settings.add_child(button("RESET_PRACTICE", reset_preferences))
+	var inputs: VBoxContainer = section("INPUTS")
+	inputs.add_child(label("INPUT_EXPLAIN", 18))
+	input_show = check("INPUT_SHOW", false)
+	input_show.text = tr("INPUT_SHOW")
+	input_show.tooltip_text = tr("INPUT_SHOW")
+	input_show.custom_minimum_size.y = 48
+	input_show.toggled.connect(func(enabled: bool) -> void:
+		live.visible = enabled
+		if not enabled: live.piano.release_all()
+		update_main_scroll.call_deferred())
+	inputs.add_child(input_show)
+	var feedback_check: CheckButton = check("INPUT_FEEDBACK", true)
+	feedback_check.text = tr("INPUT_FEEDBACK")
+	feedback_check.tooltip_text = tr("INPUT_FEEDBACK_HELP")
+	feedback_check.button_pressed = true
+	feedback_check.toggled.connect(func(enabled: bool) -> void:
+		live.feedback_enabled = enabled
+		live.clear())
+	inputs.add_child(feedback_check)
+	inputs.add_child(button("INPUT_PANIC", release_keyboard))
+	inputs.add_child(button("INPUT_RETURN", func() -> void:
+		input_show.button_pressed = true
+		close_menu()))
+	inputs.add_child(label("INPUT_PIANO_HELP", 18))
+	inputs.add_child(label("INPUT_TAB_HELP", 18))
 	var keys: VBoxContainer = section("KEYBOARD")
 	keys.add_child(label("KEYBOARD_LAYOUT"))
 	keyboard_picker = OptionButton.new()
@@ -1717,6 +1755,9 @@ func _input(event: InputEvent) -> void:
 			choices[posmod(choices.find(focused) + step, choices.size())].grab_focus()
 			get_viewport().set_input_as_handled()
 		return
+	if event is InputEventKey and live != null and not menu_overlay.visible and live.piano.handle_key(event):
+		get_viewport().set_input_as_handled()
+		return
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE and host.is_fullscreen():
 		host.set_fullscreen(false)
 		get_viewport().set_input_as_handled()
@@ -1772,8 +1813,7 @@ func _input(event: InputEvent) -> void:
 		if not event.pressed:
 			var note: Dictionary = keyboard.release(physical)
 			if not note.is_empty():
-				audio.live_off(note)
-				update_live_visual()
+				live.release(str(note.id))
 				get_viewport().set_input_as_handled()
 		elif not menu_overlay.visible and importer == null and not event.echo and not event.ctrl_pressed and not event.alt_pressed and not event.meta_pressed:
 			var focus: Control = get_viewport().gui_get_focus_owner()
@@ -1784,8 +1824,7 @@ func _input(event: InputEvent) -> void:
 				else:
 					var note: Dictionary = keyboard.press(physical)
 					if not note.is_empty():
-						audio.live_on(note)
-						update_live_visual()
+						live.press(str(note.id), int(note.pitch), int(note.velocity))
 						get_viewport().set_input_as_handled()
 	if not menu_overlay.visible or not event is InputEventKey or not event.pressed: return
 	if event.keycode == KEY_ESCAPE:
@@ -2362,6 +2401,7 @@ func content_height_budget() -> float:
 	return size.y if tv_active else maxf(0, size.y - header_margin.get_combined_minimum_size().y - dock_margin.get_combined_minimum_size().y)
 
 func adapt_flow(node: Node) -> void:
+	if node.has_meta("input_actions"): return
 	if node != page_navigation and (node is HFlowContainer or (node is BoxContainer and not node.vertical)):
 		for child: Node in node.get_children():
 			if child is Button:
@@ -2630,6 +2670,7 @@ func set_arrangement_style(_index: int) -> void:
 	update_position()
 
 func update_arrangement() -> void:
+	live.configure(song, part)
 	var style: String = [TabProjection.BASIC, TabProjection.PICK, TabProjection.FINGER][arrangement_picker.selected]
 	projection.build(song, part, style)
 	score.set_document(song, part, projection)
@@ -2946,7 +2987,7 @@ func report_state() -> void:
 	if song == null: return
 	if host.trace_enabled():
 		var evidence: Dictionary = audio.metrics()
-		evidence.merge({"tv_active": tv_active, "tv_tucked": tv_tucked, "tv_zoom": tv_zoom, "status_visible": status_toast.visible, "tv_systems": score_frame.visible_systems(), "page_slide_count": score_frame.follow_slide_count, "page_slide_offset": score_frame.follow_offset, "music_lines": score_frame.music_lines, "note_spacing": score_frame.note_spacing, "staff_height": score_frame.staff_height, "score_height": score.drawing_height(), "fitted_rows": score.fitted_rows, "fullscreen": host.is_fullscreen(), "follow_pages": score.follow_pages, "upcoming_tick": score.upcoming_tick, "count_beat": int(count_badge.text) if count_badge.visible else 0, "capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "shape_cues": shape_cues, "font_style": font_style, "control_position": control_position, "handedness": handedness, "controls_on_side": controls_on_side, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "background_style": background_style, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "notation_rows": notation_rows, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "arrangement_style": projection.style, "placed": projection.placed, "eligible": projection.eligible, "omitted": projection.omitted.size(), "mute_marks": projection.mute_marks, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
+		evidence.merge({"tv_active": tv_active, "tv_tucked": tv_tucked, "tv_zoom": tv_zoom, "status_visible": status_toast.visible, "tv_systems": score_frame.visible_systems(), "page_slide_count": score_frame.follow_slide_count, "page_slide_offset": score_frame.follow_offset, "music_lines": score_frame.music_lines, "note_spacing": score_frame.note_spacing, "staff_height": score_frame.staff_height, "score_height": score.drawing_height(), "fitted_rows": score.fitted_rows, "fullscreen": host.is_fullscreen(), "follow_pages": score.follow_pages, "upcoming_tick": score.upcoming_tick, "count_beat": int(count_badge.text) if count_badge.visible else 0, "capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "shape_cues": shape_cues, "font_style": font_style, "control_position": control_position, "handedness": handedness, "controls_on_side": controls_on_side, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "input_visible": live.visible, "piano_held": live.piano.pointers.size(), "input_result": live.latest, "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "background_style": background_style, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "notation_rows": notation_rows, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "arrangement_style": projection.style, "placed": projection.placed, "eligible": projection.eligible, "omitted": projection.omitted.size(), "mute_marks": projection.mute_marks, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
 		host.report(evidence)
 	offline.text = tr("OFFLINE_READY") if host.offline_ready() else tr("OFFLINE_PENDING")
 	if host.offline_ready() and not host.trace_enabled(): idle_timer.stop()
@@ -2958,6 +2999,7 @@ func update_position(animate_follow: bool = false) -> void:
 	score.effects_playing = audio.playing_practice and audio.audible_frame() >= audio.transport.count_frames
 	score.effects_speed = speed
 	score.update_tick(source_tick)
+	if live != null: live.set_expected(score.active_pitches())
 	if capture_active:
 		capture_view.score.effects_playing = score.effects_playing
 		capture_view.score.effects_speed = speed
@@ -3007,6 +3049,14 @@ func show_notices() -> void:
 	popup.confirmed.connect(popup.queue_free)
 	popup.close_requested.connect(popup.queue_free)
 
+func input_context(delay_ms: float = 0) -> Dictionary:
+	var frame: int = audio.audible_frame()
+	var observation: int = frame - roundi(maxf(0, delay_ms) * PracticeTransport.RATE / 1000)
+	var cycle: int = 0
+	if audio.transport.repeat and observation >= audio.transport.count_frames + audio.transport.initial_frames:
+		cycle = 1 + (observation - audio.transport.count_frames - audio.transport.initial_frames) / audio.transport.cycle_frames
+	return {"playing": audio.playing_practice and observation >= audio.transport.count_frames and not audio.transport.complete(observation), "seconds": audio.transport.seconds_at_frame(observation), "speed": speed, "epoch": "%d:%d" % [input_epoch, cycle]}
+
 func update_live_visual() -> void:
 	var notes: Array[Dictionary] = []
 	for note: Dictionary in keyboard.held.values(): notes.append(note)
@@ -3014,7 +3064,9 @@ func update_live_visual() -> void:
 	if capture_active: capture_view.score.set_live(notes)
 
 func release_keyboard() -> void:
+	input_epoch += 1
 	keyboard.held.clear()
+	if live != null: live.clear()
 	if audio != null: audio.release_live()
 	if score != null: score.set_live([])
 	if capture_view != null: capture_view.score.set_live([])

@@ -270,3 +270,17 @@ player linked from the [public guide](https://bluehexagons.github.io/libretabs/)
 For a problem you cannot resolve, [report it](https://github.com/bluehexagons/libretabs/issues)
 with the app version, device/browser, what you tried and what happened. Use a
 built-in song or a redistributable example so someone else can reproduce it.
+
+## Playing along with keys
+
+Open Menu → Playing inputs → Show keyboard & return to practice. Tap or hold
+keys, or use the existing computer-keyboard note layout. On the focused piano,
+Left/Right selects a note and Space/Enter holds it. Higher/lower range presets and
+the −/+ octave buttons change the visible range without transposing the song.
+Outlined keys show your notes; small circles show the song's sounding pitches.
+
+Playback continues while pitch and approximate attack timing are compared with
+the selected practice part. Different notes and octave errors are distinguished.
+Staff diamonds show your pitch, with a hollow expected pitch when different.
+Tab positions are suggestions, not evidence of which string you actually played.
+Use Stop all input notes to release input sound. Input state is session-only.

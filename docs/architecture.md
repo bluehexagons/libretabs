@@ -1,5 +1,10 @@
 # Technical architecture
 
+The owner-requested [live playing milestone](decisions/0024-live-playing-inputs.md)
+brings forward keyboard/MIDI feedback, single-note microphone listening and a
+tuner for evaluation. It supersedes the input deferrals and impulse-first
+sequencing below for this bounded milestone; existing MVP gates remain open.
+
 Status: Godot retained by owner decision 0005; M0 technical validation remains incomplete
 
 ## Decision summary
