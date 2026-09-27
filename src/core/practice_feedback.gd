@@ -40,7 +40,9 @@ func compare(pitch: float, seconds: float, speed: float, microphone: bool = fals
 		if visited > 256: return {"kind": "uncertain"}
 		var note: Dictionary = targets[index]
 		if float(note.start) <= seconds and seconds < float(note.end): active_count += 1
-		if float(note.end) > seconds - margin: candidates.append(note)
+		# A held microphone tone describes the pitch sounding now. Only a fresh
+		# attack gets the early/late margin around neighboring source notes.
+		if float(note.end) > seconds - margin and (onset or (float(note.start) <= seconds and seconds < float(note.end))): candidates.append(note)
 		index -= 1
 	if microphone and active_count > 1: return {"kind": "polyphonic"}
 	if candidates.is_empty(): return {"kind": "rest"}

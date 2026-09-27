@@ -37,8 +37,10 @@ synthetic or browser rendering evidence. Missing devices remain missing evidence
   observations, and does not inspect expected song pitches. Measured maximum
   analysis was about 8 ms alone and 14 ms during concurrent export/browser work.
   Those figures describe this VM, not a low-end device performance guarantee.
-- Web uses a project-owned AudioWorklet: four 1,024-frame blocks at most, silence
-  at its output, no network/storage. Old/backlogged data resets recognition. Native
+- Web uses a project-owned AudioWorklet: about 200 ms of queued samples, capped
+  at 32 × 1,024 mono frames (128 KiB), with at most 8,192 frames per bridge batch.
+  It emits silence at its output and uses no network/storage. Old/backlogged data
+  resets recognition. Native
   uses the pinned engine's raw AudioServer input-frame API and never connects the
   microphone to the playback mixer. No new dependency is included.
 - VM-local Chromium 152 rendered the tuner and reported a clear missing-audio-input
@@ -53,6 +55,32 @@ synthetic or browser rendering evidence. Missing devices remain missing evidence
   both device adapters available; this does not establish physical-device support.
 - Windows and Linux packages exported successfully. The exported Linux package
   booted headlessly. Windows runtime and native physical input remain unverified.
+
+## Follow-up review
+
+- Regression fixtures reproduced and now prevent held microphone tones matching
+  expired/future notes, reuse of pitch stability after a capture stall, a no-signal
+  microphone surviving focus loss, and piano touches bypassing an open menu.
+  Recovery samples restore the ready state; stopped capture rejects late samples.
+- `python3 scripts/verify.py` passes with 42 live-input checks, 58 pitch/listener
+  checks and nine bridge tests. The queue tests include 192 kHz capture, sample
+  order, bounded batches and overflow. Both web presets export and pass gateway
+  checks. Current Chromium reported no application console errors.
+- Exported compatibility-build pointer checks held two independent piano keys,
+  released both, and confirmed that a subsequent menu click left zero live notes
+  while the song remained stopped at tick zero.
+- A browser-only generated 442 Hz sine at 44.1 kHz was supplied using Web Audio's
+  MediaStream destination in place of `getUserMedia`. It reached the real
+  AudioWorklet and bridge (measured sample RMS about 0.141). Suspending the capture
+  AudioContext produced `INPUT_MIC_NO_SIGNAL`; resuming restored `INPUT_MIC_READY`.
+  Stop closed the context and ended the synthetic media track. This is platform
+  integration evidence, not microphone permission or physical-instrument evidence.
+- Sustained browser tuner lock remains unverified in this follow-up. The managed
+  software-rendered browser fell to roughly 1–4 FPS, including in the compatibility
+  build, and discarded delayed audio. Smaller viewports briefly reached 30–60 FPS
+  but did not establish sustained detection. Do not loosen the 250 ms stale-data
+  cutoff to turn this into a pass. Repeat on a normally performing browser/device
+  and profile the capture/UI path before making a real-time support claim.
 
 ## Physical validation procedure (still required)
 

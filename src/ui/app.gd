@@ -267,7 +267,9 @@ func _ready() -> void:
 	host.hidden.connect(_suspended)
 	host.focus_lost.connect(func() -> void:
 		release_keyboard()
-		if listening != null and listening.listener.capture.status == "INPUT_MIC_READY": listening.suspend_capture())
+		# A permission prompt may temporarily take focus while connecting. Every
+		# established capture, including one with no signal, must stop on blur.
+		if listening != null and listening.listener.capture.enabled and listening.listener.capture.status != "INPUT_MIC_CONNECTING": listening.suspend_capture())
 	host.fullscreen_changed.connect(update_fullscreen)
 	host.fullscreen_failed.connect(func() -> void: set_status("FULLSCREEN_UNAVAILABLE"))
 	motion_mode = host.load_display_choice("motion", ["system", "reduced", "full"], "system")

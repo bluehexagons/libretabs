@@ -48,12 +48,12 @@ test('device changes update the list and invalidate queued note state',async()=>
   const report=JSON.parse(api.midiStatus());assert.ok(report.revision>revision);assert.equal(report.devices.length,0);
   assert.deepEqual(JSON.parse(api.midiPull()),[]);
 });
-function microphoneHost(getUserMedia) {
+function microphoneHost(getUserMedia, sampleRate=48000) {
   let node, stopped=0, closed=0;
   const track={stop(){stopped++;}};
   const stream={getTracks:()=>[track]};
   class Context {
-    sampleRate=48000;currentTime=2;destination={};
+    sampleRate=sampleRate;currentTime=2;destination={};
     audioWorklet={addModule:async()=>{}};
     resume=async()=>{};close=async()=>{closed++;};
     createMediaStreamSource(){return {connect(){},disconnect(){}};}
@@ -74,14 +74,25 @@ test('microphone unavailable and permission denial are explicit states',async()=
 test('microphone capture is bounded, discards stale data and releases hardware',async()=>{
   const env=microphoneHost();await env.api.micStart('');
   assert.equal(JSON.parse(env.api.micStatus()).status,'INPUT_MIC_READY');
-  for(let i=0;i<9;i++)env.node.port.onmessage({data:{samples:new Float32Array(1024).buffer,at:1.98}});
-  assert.ok(JSON.parse(env.api.micStatus()).dropped>=2);
-  assert.equal(env.api.micPull().samples.byteLength,4096);
+  for(let i=0;i<25;i++)env.node.port.onmessage({data:{samples:new Float32Array(1024).fill(i).buffer,at:1.98}});
+  assert.equal(JSON.parse(env.api.micStatus()).dropped,15);
+  const batch=env.api.micPull();assert.equal(batch.samples.byteLength,32768);
+  assert.equal(new Float32Array(batch.samples)[0],15); // Oldest retained block, in order.
+  assert.equal(new Float32Array(batch.samples)[7*1024],22);
+  assert.equal(env.api.micPull().samples.byteLength,8192);
   assert.equal(env.api.micPull(),null);
   env.node.port.onmessage({data:{samples:new Float32Array(1024).buffer,at:1}});
   assert.equal(env.api.micPull(),null);
   env.api.micStop();assert.equal(env.stopped,1);assert.equal(env.closed,1);
   assert.equal(JSON.parse(env.api.micStatus()).status,'INPUT_MIC_OFF');
+});
+test('high sample-rate capture retains a full detection window within the memory cap',async()=>{
+  const env=microphoneHost(undefined,192000);await env.api.micStart('');
+  for(let i=0;i<40;i++)env.node.port.onmessage({data:{samples:new Float32Array(1024).buffer,at:1.98}});
+  assert.equal(JSON.parse(env.api.micStatus()).dropped,8);
+  for(let i=0;i<4;i++)assert.equal(env.api.micPull().samples.byteLength,32768);
+  assert.equal(env.api.micPull(),null);
+  env.api.micStop();
 });
 test('canceling pending microphone permission stops the late stream',async()=>{
   let resolve, requested;

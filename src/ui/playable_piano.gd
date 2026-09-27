@@ -98,7 +98,9 @@ func _input(event: InputEvent) -> void:
 		point = event.position
 		moving = true
 	else: return
-	if moving and not pointers.has(id): return
+	# Only track existing gestures globally. New presses go through GUI hit
+	# testing so menus, popups and clipped scroll areas can intercept them.
+	if not pointers.has(id): return
 	var local: Vector2 = get_global_transform_with_canvas().affine_inverse() * point
 	if not pointers.has(id) and (not down or pitch_at(local) < 0): return
 	if down:
@@ -106,6 +108,22 @@ func _input(event: InputEvent) -> void:
 		selected = pitch_at(local)
 	pointer(id, pitch_at(local) if down or moving else -1)
 	get_viewport().set_input_as_handled()
+
+func _gui_input(event: InputEvent) -> void:
+	var id: int = -1
+	var point: Vector2
+	if event is InputEventScreenTouch and event.pressed and not event.canceled:
+		id = event.index
+		point = event.position
+	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed and event.device != -1:
+		point = event.position
+	else: return
+	var pitch: int = pitch_at(point)
+	if pitch < 0: return
+	grab_focus()
+	selected = pitch
+	pointer(id, pitch)
+	accept_event()
 
 func _draw() -> void:
 	var keys: Array[Dictionary] = key_rects()

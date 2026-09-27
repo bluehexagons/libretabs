@@ -70,9 +70,11 @@
         if(generation!==micGeneration) return;
         const node=new window.AudioWorkletNode(context,'libretabs-capture',{numberOfInputs:1,numberOfOutputs:1,outputChannelCount:[1]});
         micNode=node;
+        // Keep about 200 ms across sample rates, with a hard 128 KiB ceiling.
+        const queueLimit=Math.min(32,Math.max(4,Math.ceil(context.sampleRate*0.2/1024)));
         node.port.onmessage=event=>{
           if(generation!==micGeneration)return;
-          if(micQueue.length>=4){micQueue=[];micDropped++;}
+          if(micQueue.length>=queueLimit){micQueue.shift();micDropped++;}
           micQueue.push({...event.data,rate:context.sampleRate});
         };
         micSource=context.createMediaStreamSource(stream);
@@ -97,7 +99,12 @@
       const block=micQueue.shift();if(!block)return null;
       const age=Math.max(0,(micContext.currentTime-block.at)*1000);
       if(age>250){micQueue=[];micDropped++;return null;}
-      return {samples:block.samples,rate:block.rate,age};
+      // Batch bridge crossings, while keeping each detector push <=8192 frames.
+      const blocks=[block,...micQueue.splice(0,7)];
+      const samples=new Float32Array(blocks.length*1024);
+      blocks.forEach((item,index)=>samples.set(new Float32Array(item.samples),index*1024));
+      const latest=blocks[blocks.length-1];
+      return {samples:samples.buffer,rate:block.rate,age:Math.max(0,(micContext.currentTime-latest.at)*1000)};
     },
     async midiStart() {
       this.midiStop();

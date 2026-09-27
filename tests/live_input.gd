@@ -41,6 +41,12 @@ func run() -> void:
 	check(feedback.compare(60, 1.5, 1).note_id == "n2", "repeated pitch matches its new source note")
 	feedback.reset()
 	check(feedback.compare(60, 0.5, 1, true, false).timing == "unknown", "uncertain microphone timing is withheld")
+	check(feedback.compare(60, 0.8, 1, true, false, false).kind == "rest", "sustained microphone pitch cannot match an ended note")
+	check(feedback.compare(62, 0.8, 1, true, false, false).kind == "rest", "sustained microphone pitch cannot anticipate a future note")
+	song.notes.append({"id": "next", "part": 0, "channel": 0, "pitch": 62, "start": 720, "end": 960})
+	feedback.configure(song, 0)
+	var held_result: Dictionary = feedback.compare(60, 0.8, 1, true, false, false)
+	check(held_result.kind == "wrong" and held_result.note_id == "next", "holding the previous microphone pitch is wrong after a melody change")
 	song.notes.append({"id": "chord", "part": 0, "channel": 0, "pitch": 64, "start": 480, "end": 720})
 	feedback.configure(song, 0)
 	check(feedback.compare(60, 0.5, 1, true).kind == "polyphonic", "microphone does not assess chords")
@@ -83,6 +89,22 @@ func run() -> void:
 	check(app.get("audio").live_notes.size() == 1 and app.get("score").live_notes.size() == 1, "touch input reaches sound and score")
 	playing.release("piano:test")
 	check(app.get("audio").live_notes.is_empty(), "touch release reaches mixer")
+	var touch: InputEventScreenTouch = InputEventScreenTouch.new()
+	touch.index = 7
+	touch.pressed = true
+	touch.position = playing.piano.get_global_transform_with_canvas() * Vector2(10, 80)
+	root.push_input(touch)
+	check(playing.notes.held.size() == 1, "GUI-routed touch starts a visible piano key")
+	touch.pressed = false
+	root.push_input(touch)
+	check(playing.notes.held.is_empty(), "tracked touch release reaches the piano")
+	app.call("toggle_drawer", "INPUTS")
+	for _frame: int in range(20): await process_frame
+	touch.pressed = true
+	root.push_input(touch)
+	check(playing.notes.held.is_empty(), "menu touches cannot play the keyboard behind the overlay")
+	touch.pressed = false
+	root.push_input(touch)
 	app.call("apply_scale", 2.0)
 	app.call("toggle_drawer", "INPUTS")
 	for _frame: int in range(30): await process_frame
@@ -106,6 +128,10 @@ func run() -> void:
 	check(listening.gauge.active and listening.gauge.cents > 7, "tuner shows independent frequency and detuning")
 	listening.show_observation({"valid": false})
 	check(not listening.gauge.active, "uncertain capture clears the tuner needle")
+	listening.listener.capture.enabled = true
+	listening.listener.capture.status = "INPUT_MIC_NO_SIGNAL"
+	app.get("host").focus_lost.emit()
+	check(not listening.listener.capture.enabled and listening.suspended, "focus loss stops a microphone that has no signal")
 	app.queue_free()
 	await process_frame
 	print("Live input: %d checks, %d failures" % [checks, failures])

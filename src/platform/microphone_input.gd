@@ -81,8 +81,7 @@ func _process(_delta: float) -> void:
 			var bytes: PackedByteArray = JavaScriptBridge.js_buffer_to_packed_byte_array(block.samples)
 			if bytes.size() > 32768: continue
 			rate = float(block.rate)
-			samples_ready.emit(bytes.to_float32_array(), rate, float(block.age))
-			last_data_msec = now
+			deliver_samples(bytes.to_float32_array(), float(block.age), now)
 	else:
 		var available: int = AudioServer.get_input_frames_available()
 		if available > 8192 or now - last_poll_msec > 250:
@@ -96,16 +95,20 @@ func _process(_delta: float) -> void:
 			mono.resize(frames.size())
 			for index: int in range(frames.size()): mono[index] = (frames[index].x + frames[index].y) * 0.5
 			rate = AudioServer.get_input_mix_rate()
-			samples_ready.emit(mono, rate, 0)
-			last_data_msec = now
-			if status != "INPUT_MIC_READY":
-				status = "INPUT_MIC_READY"
-				changed.emit()
+			deliver_samples(mono, 0, now)
 	last_poll_msec = now
 	if now - last_data_msec > 3000 and status in ["INPUT_MIC_READY", "INPUT_MIC_CONNECTING"]:
 		status = "INPUT_MIC_NO_SIGNAL"
 		interrupted.emit()
 		changed.emit()
+
+func deliver_samples(samples: PackedFloat32Array, age_ms: float, now: int) -> void:
+	if not enabled: return
+	last_data_msec = now
+	if status != "INPUT_MIC_READY":
+		status = "INPUT_MIC_READY"
+		changed.emit()
+	samples_ready.emit(samples, rate, age_ms)
 
 func _exit_tree() -> void:
 	stop()

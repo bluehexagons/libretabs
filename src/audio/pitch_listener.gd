@@ -74,8 +74,13 @@ func calibrate() -> void:
 	setup_changed.emit()
 
 func accept_samples(block: PackedFloat32Array, rate: float, age_ms: float, clock_msec: int = -1) -> void:
+	var now: int = Time.get_ticks_msec() if clock_msec < 0 else clock_msec
+	if not is_finite(age_ms) or age_ms < 0 or age_ms > 250:
+		reset()
+		return
+	if last_block > 0 and now - last_block > 250: reset()
 	detector.push(block, rate)
-	last_block = Time.get_ticks_msec() if clock_msec < 0 else clock_msec
+	last_block = now
 	last_age = age_ms
 	if setup_state == "INPUT_SETUP_QUIET":
 		if setup_levels.size() < 512: setup_levels.append(detector.rms)
@@ -103,6 +108,9 @@ func analyze_at(now: int) -> void:
 	if now - analyzed_at < 100: return
 	analyzed_at = now
 	if last_block == 0 or now - last_block > 250 or setup_state == "INPUT_SETUP_QUIET":
+		if last_block > 0 and now - last_block > 250:
+			reset()
+			return
 		latest = {"valid": false}
 		observation.emit(latest)
 		return

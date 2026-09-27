@@ -67,6 +67,19 @@ func run() -> void:
 	check(listener.latest.valid and absf(listener.latest.pitch - 69) < 0.03, "stable pitch listener works with injected time")
 	listener.analyze_at(clock + 500)
 	check(not listener.latest.valid, "stale input never holds a tuner reading")
+	check(listener.detector.samples.is_empty() and listener.stable == 0, "capture stall discards old samples and pitch stability")
+	listener.accept_samples(signal_samples.slice(0, 1024), 48000, 0, clock + 600)
+	listener.analyze_at(clock + 600)
+	check(not listener.latest.valid, "one returning block cannot reuse the pre-stall tuner lock")
+	# The main thread can stall too, skipping the stale-analysis check entirely.
+	feed(listener.detector, signal_samples, 48000)
+	listener.stable = 8
+	listener.candidate = 69
+	listener.accept_samples(signal_samples.slice(0, 1024), 48000, 0, clock + 1200)
+	listener.analyze_at(clock + 1200)
+	check(not listener.latest.valid and listener.detector.samples.size() < PitchDetector.WINDOW, "first block after a polling gap starts a fresh detection window")
+	listener.accept_samples(signal_samples.slice(0, 1024), 48000, 300, clock + 1210)
+	check(listener.detector.samples.is_empty(), "old queued audio cannot refill the detector")
 	listener.setup_state = "INPUT_SETUP_QUIET"
 	listener.setup_until = clock
 	listener.setup_levels.assign([0.002, 0.002, 0.002, 0.002, 0.002, 0.002, 0.002, 0.002, 0.002, 0.002])
@@ -75,6 +88,14 @@ func run() -> void:
 	check(listener.reference == 440, "noise setup never changes tuning reference")
 	listener.set_profile(1)
 	check(listener.setup_state == "INPUT_SETUP_IDLE" and listener.detector.samples.is_empty(), "instrument change invalidates setup and pitch history")
+	listener.capture.enabled = true
+	listener.capture.status = "INPUT_MIC_NO_SIGNAL"
+	listener.capture.rate = 48000
+	listener.capture.deliver_samples(signal_samples.slice(0, 1024), 0, 12345)
+	check(listener.capture.status == "INPUT_MIC_READY" and listener.capture.last_data_msec == 12345, "new samples recover the capture status after no signal")
+	listener.capture.stop()
+	listener.capture.deliver_samples(signal_samples.slice(0, 1024), 0, 12346)
+	check(listener.capture.status == "INPUT_MIC_OFF" and listener.detector.samples.is_empty() and not listener.is_processing(), "late samples cannot reactivate stopped capture")
 	listener.queue_free()
 	await process_frame
 	print("Pitch detection: %d checks, %d failures; maximum analysis %.2f ms" % [checks, failures, maximum_ms])
