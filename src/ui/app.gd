@@ -174,6 +174,7 @@ var picker_choices: VBoxContainer
 var picker_source: OptionButton
 var picker_close: Button
 var menu_button: Button
+var tuner_button: Button
 var menu_scroll: ScrollContainer
 var page_label: Label
 var page_navigation: HBoxContainer
@@ -253,10 +254,10 @@ const STARTER_SONGS: Array[int] = [4, 6]
 const PRACTICE_PRESETS: Array[Dictionary] = [
 	{"id": "guitar", "key": "PRESET_GUITAR", "rows": [{"type": "staff", "height": 144}, {"type": "tab", "height": 176}], "style": 0},
 	{"id": "piano", "key": "PRESET_PIANO", "rows": [{"type": "treble", "height": 176}, {"type": "bass", "height": 176}], "style": 0},
+	{"id": "piano_keys", "key": "PRESET_PIANO_KEYS", "rows": [{"type": "treble", "height": 176}, {"type": "bass", "height": 176}], "style": 0, "keyboard": true},
 	{"id": "bass", "key": "PRESET_BASS", "rows": [{"type": "bass", "height": 240}], "style": 0},
 	{"id": "pick", "key": "PRESET_PICK", "rows": [{"type": "staff", "height": 144}, {"type": "tab", "height": 176}], "style": 1},
 	{"id": "finger", "key": "PRESET_FINGER", "rows": [{"type": "staff", "height": 144}, {"type": "tab", "height": 176}], "style": 2},
-	{"id": "piano_keys", "key": "PRESET_PIANO_KEYS", "rows": [{"type": "treble", "height": 176}, {"type": "bass", "height": 176}, {"type": "piano", "height": 144}], "style": 0},
 	{"id": "treble_focus", "key": "PRESET_TREBLE_FOCUS", "rows": [{"type": "treble", "height": 240}, {"type": "mini_bass", "height": 112}], "style": 0},
 	{"id": "bass_focus", "key": "PRESET_BASS_FOCUS", "rows": [{"type": "bass", "height": 240}, {"type": "mini_treble", "height": 112}], "style": 0},
 ]
@@ -763,6 +764,8 @@ func build_ui() -> void:
 	tv_button.gui_input.connect(theater_pointer_options)
 	fullscreen_button = button("FULLSCREEN", toggle_fullscreen)
 	header_actions.add_child(fullscreen_button)
+	tuner_button = button("TUNER", func() -> void: toggle_drawer("TUNER"))
+	header_actions.add_child(tuner_button)
 	menu_button = button("MENU", func() -> void: toggle_drawer("MENU"))
 	header_actions.add_child(menu_button)
 	song_title = label("DEMO_0", 32)
@@ -842,8 +845,6 @@ func build_ui() -> void:
 	score.shape_cues = shape_cues
 	score.set_notation_rows(notation_rows)
 	score.seek_requested.connect(seek_tick)
-	score.scrub_started.connect(begin_seek_drag)
-	score.scrub_ended.connect(func() -> void: end_seek_drag(true))
 	score.page_turn_requested.connect(turn_page)
 	score_frame.add_child(score)
 	score_frame.score = score
@@ -1087,7 +1088,7 @@ func sync_preset_marker() -> void:
 	active_preset = ""
 	var style: int = arrangement_picker.selected if arrangement_picker != null else 0
 	for preset: Dictionary in PRACTICE_PRESETS:
-		if notation_rows == preset.rows and style == int(preset.style):
+		if notation_rows == preset.rows and style == int(preset.style) and bool(preset.get("keyboard", false)) == (input_show != null and input_show.button_pressed):
 			active_preset = str(preset.id)
 			break
 	update_preset_buttons()
@@ -1116,8 +1117,8 @@ func apply_preset(id: String) -> void:
 				source_tick = keep_tick
 			else: update_arrangement()
 		update_position()
+		input_show.button_pressed = bool(preset.get("keyboard", false))
 		update_preset_buttons()
-		if menu_overlay.visible: close_menu()
 		if was_playing: start(false)
 		return
 
@@ -1140,11 +1141,16 @@ func set_startup_help(enabled: bool) -> void:
 
 func build_drawers() -> void:
 	var menu_index: VBoxContainer = section("MENU")
-	for key: String in ["SONG_MENU", "WELCOME", "LAYOUTS", "INPUTS", "TUNER", "SETTINGS", "TV_VIEW", "TEMPO", "SCORE_VIEW", "PRINT", "CAPTURE", "LOOP_TOOL", "SOUND", "DISPLAY", "KEYBOARD", "HELP", "ABOUT"]:
+	for key: String in ["SONG_MENU", "LAYOUTS", "INPUTS", "TUNER", "SETTINGS", "HELP"]:
 		var entry: Button = button(key, func() -> void: toggle_drawer(key))
-		entry.text = tr("CARD_" + key)
 		entry.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		entry.custom_minimum_size.y = 76
+		entry.custom_minimum_size.y = 56
+		menu_index.add_child(entry)
+	menu_index.add_child(label("MENU_MORE", 18))
+	for key: String in ["WELCOME", "TV_VIEW", "PRINT", "CAPTURE", "ABOUT"]:
+		var entry: Button = button(key, func() -> void: toggle_drawer(key))
+		entry.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		entry.custom_minimum_size.y = 56
 		menu_index.add_child(entry)
 	build_welcome_menu()
 	var control_help: VBoxContainer = section("CONTROL_HELP")
@@ -1156,6 +1162,7 @@ func build_drawers() -> void:
 	var presets: VBoxContainer = section("LAYOUTS")
 	presets.add_child(label("PRESET_EXPLAIN", 18))
 	layout_preset_grid = build_preset_grid(presets, preset_choice_buttons)
+	presets.add_child(button("LAYOUT_DONE", close_menu))
 	presets.add_child(button("PRESET_PIANO_EXAMPLE", open_piano_example))
 	presets.add_child(button("SCORE_VIEW", func() -> void: toggle_drawer("SCORE_VIEW")))
 	var views: VBoxContainer = section("SCORE_VIEW")
@@ -1374,7 +1381,7 @@ func build_drawers() -> void:
 	warning = label("PROTOTYPE_LIMIT", 18)
 	details.add_child(warning)
 	var settings: VBoxContainer = section("SETTINGS")
-	for key: String in ["TEMPO", "SCORE_VIEW", "LOOP_TOOL", "SOUND", "SOUND_EFFECTS", "DISPLAY", "KEYBOARD", "INPUTS", "AUDIO_COMMANDS", "TV_VIEW"]: settings.add_child(button(key, func() -> void: toggle_drawer(key)))
+	for key: String in ["TEMPO", "SCORE_VIEW", "LAYOUTS", "LOOP_TOOL", "SOUND", "SOUND_EFFECTS", "DISPLAY", "KEYBOARD", "INPUTS", "TUNER", "AUDIO_COMMANDS", "TV_VIEW"]: settings.add_child(button(key, func() -> void: toggle_drawer(key)))
 	settings_notice = label("SETTINGS_SAVED", 18)
 	settings.add_child(settings_notice)
 	settings.add_child(button("RESET_PRACTICE", reset_preferences))
@@ -1387,6 +1394,7 @@ func build_drawers() -> void:
 	input_show.toggled.connect(func(enabled: bool) -> void:
 		live.visible = enabled
 		if not enabled: live.piano.release_all()
+		sync_preset_marker()
 		update_main_scroll.call_deferred())
 	inputs.add_child(input_show)
 	var feedback_check: CheckButton = check("INPUT_FEEDBACK", true)
@@ -2311,6 +2319,7 @@ func responsive() -> void:
 	if welcome_step_pair != null: welcome_step_pair.vertical = song_columns == 1
 	if layout_preset_grid != null: layout_preset_grid.columns = song_columns
 	if layout_button != null: layout_button.visible = not tv_active and size.x >= 900
+	if tuner_button != null: tuner_button.visible = not tv_active and size.x >= 900 and size.y >= 600
 	if opened_drawer == "WELCOME":
 		var inset: float = 8 if size.x < 600 else 24
 		drawer.size = Vector2(minf(size.x - inset * 2, 720), minf(size.y - inset * 2, 760))
@@ -2371,7 +2380,7 @@ func apply_control_layout(position: String) -> void:
 	if side_dock: header.move_child(dock_margin, 0 if handedness == "left" else header.get_child_count() - 1)
 	# Hand preference changes reach order without changing text direction.
 	header.move_child(brand_label, header.get_child_count() - 1 if handedness == "left" else 0)
-	set_child_order(header_actions, [menu_button, fullscreen_button, tv_button, import_button, songs_button] if handedness == "left" else [songs_button, import_button, tv_button, fullscreen_button, menu_button])
+	set_child_order(header_actions, [menu_button, tuner_button, fullscreen_button, tv_button, import_button, songs_button] if handedness == "left" else [songs_button, import_button, tv_button, fullscreen_button, tuner_button, menu_button])
 	set_child_order(transport_row, [metro_button, loop_button, play_button, stop_button] if handedness == "left" else [play_button, loop_button, metro_button, stop_button])
 	set_child_order(dock, [quick_row, transport_row] if handedness == "left" else [transport_row, quick_row])
 	set_child_order(seek_navigation, [seek_label, seek] if handedness == "left" else [seek, seek_label])
@@ -2776,6 +2785,7 @@ func start(count_in: bool) -> void:
 	release_keyboard()
 	if song == null:
 		return
+	score.resume_follow()
 	var start_tick: float = source_tick
 	var end_tick: float = float(song.measures.back().end)
 	var loop_start_tick: float = -1.0
@@ -2997,6 +3007,7 @@ func end_seek_drag(_changed: bool) -> void:
 func seek_tick(value: float) -> void:
 	if updating or song == null:
 		return
+	score.resume_follow()
 	var next_tick: float = clampf(value, 0.0, float(song.end_tick))
 	if not audio.playing_practice and audio.playback != null and state == "STATE_COMPLETE": audio.stop_practice()
 	# A deliberate seek after finishing chooses a fresh starting point.

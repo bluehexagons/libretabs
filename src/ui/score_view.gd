@@ -3,8 +3,6 @@ class_name ScoreView
 extends Control
 
 signal seek_requested(tick: float)
-signal scrub_started
-signal scrub_ended
 signal page_turn_requested(direction: int)
 
 const PIANO_FIRST_PITCH: int = 21
@@ -54,7 +52,9 @@ var pointer_origin: Vector2
 var pointer_position: Vector2
 var pointer_moved: bool = false
 var pointer_anchor_offset: float = 0.0
-var pointer_scrubbing: bool = false
+var pointer_started_on_timeline: bool = false
+var manual_pan: bool = false
+var pan_offset: float = 0.0
 var touch_origins: Dictionary = {}
 var touch_positions: Dictionary = {}
 var touch_released: Dictionary = {}
@@ -83,6 +83,7 @@ func _ready() -> void:
 		if not pointer_pressed: cursor.queue_redraw())
 
 func set_document(document: SongDocument, selection: int, tab: TabProjection) -> void:
+	manual_pan = false
 	song = document
 	part = selection
 	staff_pair = song.staff_pair()
@@ -105,6 +106,7 @@ func invalidate() -> void:
 	refresh()
 
 func set_view(value: String, symbols: String) -> void:
+	manual_pan = false
 	fitted_rows.clear()
 	var enter_pages: bool = mode != "pages" and value == "pages"
 	mode = value
@@ -251,7 +253,8 @@ func refresh() -> void:
 	custom_minimum_size.y = row_height
 	# Functional scrolling stays continuous even with decorative motion disabled.
 	# Paged reading uses exactly the same geometry, with a partial next page.
-	view_offset = maxf(-64, layout.timeline_x(current_tick) - playhead_x()) if mode == "scroll" else layout.offsets[page_start()] - 64
+	var follow_offset: float = maxf(-64, layout.timeline_x(current_tick) - playhead_x())
+	view_offset = clampf(pan_offset, -64, max_pan_offset()) if manual_pan and mode == "scroll" else (follow_offset if mode == "scroll" else layout.offsets[page_start()] - 64)
 	strip.position = Vector2(-view_offset, 0)
 	var wanted: Array[int] = []
 	for index: int in range(song.measures.size()):
@@ -301,6 +304,16 @@ func engraving_draws() -> int:
 
 func tick_at_position(local_position: Vector2) -> float:
 	return tick_at_timeline_position(local_position.x + view_offset)
+
+func max_pan_offset() -> float:
+	if layout.offsets.is_empty(): return -64
+	var last: int = layout.offsets.size() - 1
+	return maxf(-64, layout.offsets[last] + layout.widths[last] - size.x + 64)
+
+func resume_follow() -> void:
+	if not manual_pan: return
+	manual_pan = false
+	refresh()
 
 func tick_at_timeline_position(timeline_position: float) -> float:
 	if song == null or song.measures.is_empty(): return 0
@@ -386,41 +399,32 @@ func cancel_touch() -> void:
 	cursor.queue_redraw()
 
 func begin_pointer(position: Vector2) -> void:
-	if not is_timeline_position(position):
-		cancel_pointer()
-		return
 	pointer_pressed = true
 	pointer_moved = false
 	pointer_origin = position
 	pointer_position = position
 	pointer_anchor_offset = view_offset
-	pointer_scrubbing = false
+	pointer_started_on_timeline = is_timeline_position(position)
 	cursor.queue_redraw()
 
 func move_pointer(position: Vector2) -> void:
 	pointer_position = position
 	if position.distance_to(pointer_origin) > 14: pointer_moved = true
-	# A horizontal score drag moves the shared transport; vertical gestures can
-	# still be used to scroll the surrounding page or cancel a touch.
+	# Move the score under the finger without changing the shared transport.
+	# Vertical touch movement remains available to the surrounding page.
 	if mode == "scroll" and pointer_moved and absf(position.x - pointer_origin.x) > absf(position.y - pointer_origin.y) * 1.5:
-		if not pointer_scrubbing:
-			pointer_scrubbing = true
-			scrub_started.emit()
-		seek_requested.emit(tick_at_timeline_position(position.x + pointer_anchor_offset))
+		manual_pan = true
+		pan_offset = clampf(pointer_anchor_offset + pointer_origin.x - position.x, -64, max_pan_offset())
+		refresh()
 	cursor.queue_redraw()
 
 func finish_pointer(position: Vector2) -> void:
 	if not pointer_pressed: return
 	pointer_position = position
-	var was_scrubbing: bool = pointer_scrubbing
-	var should_seek: bool = is_timeline_position(position) and not pointer_moved and position.distance_to(pointer_origin) <= 14
+	var should_seek: bool = pointer_started_on_timeline and is_timeline_position(position) and not pointer_moved and position.distance_to(pointer_origin) <= 14
 	pointer_pressed = false
-	pointer_scrubbing = false
 	cursor.queue_redraw()
-	if was_scrubbing:
-		seek_requested.emit(tick_at_timeline_position(position.x + pointer_anchor_offset))
-		scrub_ended.emit()
-	elif should_seek: seek_requested.emit(tick_at_position(position))
+	if should_seek: seek_requested.emit(tick_at_position(position))
 
 func is_timeline_position(position: Vector2) -> bool:
 	if drawing_rows().is_empty(): return true
@@ -441,9 +445,6 @@ func cancel_pointer() -> void:
 	if not pointer_pressed: return
 	pointer_pressed = false
 	pointer_moved = true
-	if pointer_scrubbing:
-		pointer_scrubbing = false
-		scrub_ended.emit()
 	cursor.queue_redraw()
 
 func _notification(what: int) -> void:
@@ -468,8 +469,8 @@ func draw_cursor(surface: Control) -> void:
 		preview_color.a = 0.7 if pointer_pressed else 0.42
 		var wash: Color = preview_color
 		wash.a = 0.12 if pointer_pressed else 0.055
-		# The preview only appears where a tap can seek or an active scrub is underway.
-		if not pointer_pressed or not pointer_moved or pointer_scrubbing:
+		# A drag pans the score; only a stationary tap previews a seek.
+		if not pointer_pressed or not pointer_moved:
 			draw_timeline_indicator(surface, preview_x, preview_color, 3 if pointer_pressed else 2, wash, 30 if pointer_pressed else 20)
 	if tiles.has(measure_index):
 		var tile: NotationMeasureStack = tiles[measure_index]

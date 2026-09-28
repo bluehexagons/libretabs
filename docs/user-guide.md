@@ -119,8 +119,8 @@ or practice progress. See [privacy details](privacy.md).
   after Pause continues immediately. Use **Menu → Playback → Stop**, then Play,
   when you want a new count-in.
 - **Move to a passage:** click or tap the music to move playback there. In
-  scrolling view, drag sideways across the music to scrub. The position slider
-  also lets you move through the song. **Restart** returns to the beginning of
+  scrolling view, drag sideways across the music to browse without changing playback.
+  The position slider lets you seek through the song. **Restart** returns to the beginning of
   the song, or the beginning of an enabled loop.
 - **Loop:** From and Through include the first and last measures you choose.
   **Repeat this measure** sets and enables a one-measure loop. **Start at current
@@ -174,7 +174,10 @@ transcription of someone's guitar performance.
 
 Open **Menu → Practice layouts** (or choose a layout in **Quick start**) for
 one-step guitar tabs, pick strumming, fingerpicking, bass-staff reading, or
-piano treble-plus-bass staff reading. **Treble focus** and **Bass focus** give
+piano treble-plus-bass staff reading. Choose **Piano · staffs + playable keys**
+to show both staffs and the on-screen keyboard. The layout menu stays open as
+you compare choices; choose **Done · return to practice** when ready.
+**Treble focus** and **Bass focus** give
 the selected part more room and show the other part on a smaller five-line
 **mini staff**. The built-in songs have original simple bass lines on separate
 MIDI parts; these are practice additions, not historical accompaniments.
@@ -198,6 +201,8 @@ Open **Menu → Score view** for reading and layout choices:
 - Use the page arrows or swipe horizontally to turn a page. Turning pages
   manually turns off following without moving playback. Enable **Follow playback**
   to resume automatic turns. Tapping a position on the music does move playback.
+- In smooth scrolling, drag sideways on the music to browse without seeking.
+  Tap a note to play from it. Press Play to return to following playback.
 - **Music lines** controls how many consecutive lines fit on screen. Fewer lines
   give each line more height. **Note spacing** changes the horizontal gaps;
   **Staff height** changes the height of the five-line sheet music reference.
@@ -274,7 +279,8 @@ built-in song or a redistributable example so someone else can reproduce it.
 
 ## Playing along with keys
 
-Open Menu → Playing inputs → Show keyboard & return to practice. Tap or hold
+Open Menu → Playing inputs → Show keyboard & return to practice, or choose the
+**Piano · staffs + playable keys** layout. Tap or hold
 keys, or use the existing computer-keyboard note layout. On the focused piano,
 Left/Right selects a note and Space/Enter holds it. Higher/lower range presets and
 the −/+ octave buttons change the visible range without transposing the song.
@@ -302,7 +308,8 @@ in its own tab may allow permissions that the embedding site does not grant.
 
 ## Tuner and single-note listening
 
-1. Open Menu → Tuner & listening. This pauses playback. Press **Start microphone /
+1. Open **Tuner & listening** from the main Menu, or use the header Tuner button
+   on wider screens. This pauses playback. Press **Start microphone /
    tuner**, grant permission, and choose the input and instrument. Selecting a
    different device stops capture; press Start again. Use headphones, or silence
    speaker playback, so detection hears your instrument rather than the app.

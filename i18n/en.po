@@ -224,7 +224,7 @@ msgid "SEEK_POSITION"
 msgstr "Measure %d · %d:%02d"
 
 msgid "TIP_SCORE_INTERACTION"
-msgstr "Tap a note to seek. In scrolling view, drag sideways across the music to scrub; drag up or down to scroll the page. In page view, swipe with two fingers or use a horizontal mouse wheel to turn pages without moving playback."
+msgstr "Tap a note to select where to play. In scrolling view, drag sideways to browse the music without moving playback; drag up or down to scroll the page. Press Play to follow the music again. In page view, swipe with two fingers or use a horizontal mouse wheel to turn pages."
 
 msgid "LOOP"
 msgstr "Loop measures"
@@ -559,6 +559,9 @@ msgstr "Speed %d%%"
 msgid "MENU"
 msgstr "Menu"
 
+msgid "MENU_MORE"
+msgstr "More tools"
+
 msgid "MENU_BACK"
 msgstr "Back"
 
@@ -641,7 +644,10 @@ msgid "CARD_LAYOUTS"
 msgstr "Practice layouts · Guitar, piano, and bass staff"
 
 msgid "PRESET_EXPLAIN"
-msgstr "Choose how to read this song. The treble staff shows higher notes; the bass staff shows lower notes. In two-part songs, either part can be focused and muted separately. A mini staff keeps the other part in view. Guitar tabs use six-string E-standard tuning, not bass-guitar fingering."
+msgstr "Choose a layout, then try another without leaving this menu. Treble shows higher notes; bass shows lower notes. Guitar tabs use six-string tuning."
+
+msgid "LAYOUT_DONE"
+msgstr "Done · return to practice"
 
 msgid "PRESET_CURRENT"
 msgstr "Current · %s"
@@ -662,7 +668,7 @@ msgid "PRESET_PIANO"
 msgstr "Piano · treble + bass staffs"
 
 msgid "PRESET_PIANO_KEYS"
-msgstr "Piano · staffs + keys"
+msgstr "Piano · staffs + playable keys"
 
 msgid "PRESET_TREBLE_FOCUS"
 msgstr "Treble focus · mini bass"
