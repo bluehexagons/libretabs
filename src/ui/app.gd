@@ -157,9 +157,9 @@ var tempo_button: Button
 var metro_button: Button
 var stop_button: Button
 var layout_button: Button
-var preset_buttons: Dictionary = {}
 var preset_choice_buttons: Dictionary = {}
-var welcome_preset_grid: GridContainer
+var welcome_step_pair: BoxContainer
+var welcome_cards: Array[PanelContainer] = []
 var layout_preset_grid: GridContainer
 var active_preset: String = "guitar"
 var quick_row: HFlowContainer
@@ -1018,28 +1018,38 @@ func section(key: String) -> VBoxContainer:
 
 func build_welcome_menu() -> void:
 	var welcome: VBoxContainer = section("WELCOME")
-	welcome.add_child(label("WELCOME_INTRO"))
 	welcome_practice = button("WELCOME_PRACTICE", func() -> void:
 		close_menu()
 		play_button.grab_focus())
 	welcome.add_child(welcome_practice)
-	welcome.add_child(label("PRESET_START_HINT", 18))
-	welcome_preset_grid = build_preset_grid(welcome, preset_buttons)
-	welcome.add_child(button("PRESET_PIANO_EXAMPLE", open_piano_example))
-	for key: String in ["WELCOME_READ", "WELCOME_PLAY", "WELCOME_PACE"]:
+	var welcome_steps: VBoxContainer = VBoxContainer.new()
+	welcome_steps.add_theme_constant_override("separation", 10)
+	welcome.add_child(welcome_steps)
+	welcome_step_pair = BoxContainer.new()
+	welcome_step_pair.add_theme_constant_override("separation", 10)
+	welcome_steps.add_child(welcome_step_pair)
+	for step: String in ["READ", "PLAY", "PACE"]:
 		var card: PanelContainer = PanelContainer.new()
 		card.add_theme_stylebox_override("panel", UIAppearance.role_style("reading", dark_mode, "normal"))
 		card.set_meta("welcome_card", true)
-		card.add_child(label(key, 20))
-		welcome.add_child(card)
+		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var content: VBoxContainer = VBoxContainer.new()
+		content.add_theme_constant_override("separation", 5)
+		content.add_child(label("WELCOME_" + step + "_TITLE", 20))
+		content.add_child(label("WELCOME_" + step + "_BODY", 18))
+		card.add_child(content)
+		welcome_cards.append(card)
+		if step == "PACE": welcome_steps.add_child(card)
+		else: welcome_step_pair.add_child(card)
+	welcome.add_child(label("WELCOME_MORE", 18))
+	var actions: HFlowContainer = flow(welcome)
+	actions.add_child(button("LAYOUTS", func() -> void: toggle_drawer("LAYOUTS")))
+	actions.add_child(button("SONG_MENU", func() -> void: toggle_drawer("SONG_MENU")))
+	actions.add_child(button("HELP", func() -> void: toggle_drawer("HELP")))
 	welcome.add_child(label("THEATER_RECOMMEND", 18))
 	welcome.add_child(button("THEATER_TRY", func() -> void:
 		if not tv_active: enter_tv()
 		else: close_menu()))
-	var actions: HFlowContainer = flow(welcome)
-	actions.add_child(button("SONG_MENU", func() -> void: toggle_drawer("SONG_MENU")))
-	actions.add_child(button("IMPORT_MIDI", open_midi))
-	actions.add_child(button("HELP", func() -> void: toggle_drawer("HELP")))
 	startup_help_check = CheckBox.new()
 	startup_help_check.text = tr("WELCOME_STARTUP")
 	startup_help_check.tooltip_text = tr("WELCOME_STARTUP_HELP")
@@ -1048,7 +1058,6 @@ func build_welcome_menu() -> void:
 	startup_help_check.set_pressed_no_signal(startup_help_enabled)
 	startup_help_check.toggled.connect(set_startup_help)
 	welcome.add_child(startup_help_check)
-	welcome.move_child(startup_help_check, 2)
 	welcome_storage = label("STORAGE_SESSION", 18)
 	welcome_storage.hide()
 	welcome.add_child(welcome_storage)
@@ -1070,10 +1079,9 @@ func build_preset_grid(parent: VBoxContainer, targets: Dictionary) -> GridContai
 	return grid
 
 func update_preset_buttons() -> void:
-	for group: Dictionary in [preset_buttons, preset_choice_buttons]:
-		for id: String in group:
-			var choice: Button = group[id]
-			choice.text = tr("PRESET_CURRENT") % tr(preset_key(id)) if id == active_preset else tr(preset_key(id))
+	for id: String in preset_choice_buttons:
+		var choice: Button = preset_choice_buttons[id]
+		choice.text = tr("PRESET_CURRENT") % tr(preset_key(id)) if id == active_preset else tr(preset_key(id))
 
 func sync_preset_marker() -> void:
 	active_preset = ""
@@ -1762,7 +1770,10 @@ func reset_menu_scroll(key: String) -> void:
 	var navigation: int = drawer_navigation
 	# Initial focus can scroll before wrapped text has its final height.
 	for _frame: int in range(3): await get_tree().process_frame
-	if opened_drawer == key and navigation == drawer_navigation: menu_scroll.scroll_vertical = 0
+	if opened_drawer == key and navigation == drawer_navigation:
+		# The first narrow startup layout settles after its wrapped cards appear.
+		if key == "WELCOME": responsive()
+		menu_scroll.scroll_vertical = 0
 
 func close_menu() -> void:
 	if audio_commands != null: audio_commands.cancel()
@@ -2098,9 +2109,8 @@ func apply_appearance() -> void:
 	var font_size: int = theme.default_font_size if theme != null else 20
 	theme = UIAppearance.make_theme(dark_mode, font_size, font_style, midnight)
 	UIAppearance.apply_roles(self, dark_mode, midnight)
-	for child: Node in drawers["WELCOME"].get_children():
-		if child.has_meta("welcome_card"):
-			child.add_theme_stylebox_override("panel", UIAppearance.role_style("reading", dark_mode, "normal", midnight))
+	for card: PanelContainer in welcome_cards:
+		card.add_theme_stylebox_override("panel", UIAppearance.role_style("reading", dark_mode, "normal", midnight))
 	backdrop.set_palette(dark_mode, midnight, background_style)
 	brand_label.add_theme_font_override("font", UIAppearance.ui_font(font_style, true))
 	song_title.add_theme_font_override("font", UIAppearance.ui_font(font_style, true))
@@ -2298,7 +2308,7 @@ func responsive() -> void:
 	var song_columns: int = 2 if size.x >= 600 and theme.default_font_size < 30 else 1
 	starter_song_grid.columns = song_columns
 	more_song_grid.columns = song_columns
-	if welcome_preset_grid != null: welcome_preset_grid.columns = song_columns
+	if welcome_step_pair != null: welcome_step_pair.vertical = song_columns == 1
 	if layout_preset_grid != null: layout_preset_grid.columns = song_columns
 	if layout_button != null: layout_button.visible = not tv_active and size.x >= 900
 	if opened_drawer == "WELCOME":

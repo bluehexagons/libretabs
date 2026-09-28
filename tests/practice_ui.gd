@@ -25,8 +25,25 @@ func run() -> void:
 	check(song_buttons.size() == 13 and app.get("starter_song_grid").get_child_count() == 2, "every built-in song has a direct choice and beginner songs come first")
 	check(song_buttons[0].text == TranslationServer.translate("SONG_CURRENT_ITEM") % TranslationServer.translate("LIBRARY_ODE_TO_JOY"), "the active song has a text marker")
 	check(app.get("title") == TranslationServer.translate("LIBRARY_ODE_TO_JOY"), "default library opens with Ode to Joy")
-	check(app.get("preset_buttons").size() == 8 and app.get("preset_choice_buttons").size() == 8, "practice layouts including compact companion staffs are direct choices on the starting page and in the menu")
+	check(app.get("preset_choice_buttons").size() == 8, "all eight practice layouts remain available in their own menu")
 	check(app.get("opened_drawer") == "WELCOME" and app.get("startup_help_check").button_pressed, "first startup opens quick start with the opt-out enabled")
+	check(app.get("welcome_cards").size() == 3 and not app.get("welcome_step_pair").vertical, "wide quick start shows three short guidance cards")
+	for factor: float in [1.0, 2.0]:
+		app.call("apply_scale", factor)
+		for viewport: Vector2i in [Vector2i(360, 640), Vector2i(480, 320), Vector2i(1280, 720)]:
+			root.size = viewport
+			app.call("responsive")
+			for _frame: int in range(5): await process_frame
+			var practice: Button = app.get("welcome_practice")
+			var scroll: ScrollContainer = app.get("menu_scroll")
+			var drawer: PanelContainer = app.get("drawer")
+			check(drawer.get_global_rect().position.y >= -1 and drawer.get_global_rect().end.y <= viewport.y + 1, "quick start dialog stays inside %s and %s text scale: %s" % [viewport, factor, drawer.get_global_rect()])
+			check(practice.get_global_rect().end.y <= scroll.get_global_rect().end.y + 1 and practice.get_global_rect().end.x <= viewport.x + 1, "first practice action is visible before scrolling at %s and %s text scale" % [viewport, factor])
+			check(app.get("welcome_step_pair").vertical == (viewport.x < 600 or factor >= 2), "guidance cards reflow at %s and %s text scale" % [viewport, factor])
+	root.size = Vector2i(1100, 850)
+	app.call("apply_scale", 1.0)
+	app.call("responsive")
+	for _frame: int in range(5): await process_frame
 	app.get("startup_help_check").button_pressed = false
 	check(not app.get("startup_help_enabled"), "startup help can be disabled")
 	app.get("welcome_practice").pressed.emit()
@@ -766,6 +783,8 @@ func run() -> void:
 	var tick_before: float = app.get("source_tick")
 	app.call("apply_appearance")
 	check(app.get("dark_mode") and app.get_theme_color("ink", "LibreTabs") == UIAppearance.color("ink", true), "dark palette applied to app and score")
+	for card: PanelContainer in app.get("welcome_cards"):
+		check((card.get_theme_stylebox("panel") as StyleBoxFlat).bg_color == UIAppearance.role_style("reading", true, "normal").bg_color, "quick start cards follow dark appearance")
 	check(score.get_theme_color("paper", "LibreTabs") == UIAppearance.color("paper", true), "engraving inherits dark paper")
 	check(app.get("source_tick") == tick_before and not app.is_processing(), "theme change preserves transport and idle processing")
 	app.call("change_appearance", 3)
@@ -1130,6 +1149,16 @@ func run() -> void:
 	toast.expire()
 	check(not toast.visible, "reduced motion dismisses status without animation")
 	app.queue_free()
+	await process_frame
+	root.size = Vector2i(480, 320)
+	var short_start: Control = load("res://src/ui/main.tscn").instantiate() as Control
+	short_start.set("persist_preferences", false)
+	root.add_child(short_start)
+	for _frame: int in range(30): await process_frame
+	var short_drawer: PanelContainer = short_start.get("drawer")
+	check(short_start.get("opened_drawer") == "WELCOME" and short_drawer.get_global_rect().position.y >= -1 and short_drawer.get_global_rect().end.y <= 321, "short landscape first launch keeps quick start inside the window: %s" % short_drawer.get_global_rect())
+	check(short_start.get("welcome_practice").get_global_rect().end.y <= short_start.get("menu_scroll").get_global_rect().end.y + 1, "short landscape first launch shows Start practicing before scrolling")
+	short_start.queue_free()
 	await process_frame
 	print("Practice UI: %d checks, %d failures" % [checks, failures])
 	quit(1 if failures else 0)

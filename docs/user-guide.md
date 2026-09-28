@@ -14,9 +14,9 @@ review; treat them as practice suggestions.
 
 ## Your first five minutes
 
-1. Open the player. An exercise is already loaded. In **Quick start**, choose a
-   practice layout or keep the guitar default, then choose **Start practicing**.
-   This does not start the sound.
+1. Open the player. An exercise is already loaded. Choose **Start practicing**
+   in **Quick start**. This does not start the sound. To change how the music is
+   shown, choose **Practice layouts** in Quick start or Menu.
 2. Press **Play** and listen once without playing your guitar. The clicks before
    the music are a **count-in**: time to get ready. The moving line follows the
    music, and outlined numbers show the notes sounding now.

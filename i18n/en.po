@@ -640,9 +640,6 @@ msgstr "Practice layouts"
 msgid "CARD_LAYOUTS"
 msgstr "Practice layouts · Guitar, piano, and bass staff"
 
-msgid "PRESET_START_HINT"
-msgstr "Choose a practice layout now. You can switch later from Practice layouts in Menu."
-
 msgid "PRESET_EXPLAIN"
 msgstr "Choose how to read this song. The treble staff shows higher notes; the bass staff shows lower notes. In two-part songs, either part can be focused and muted separately. A mini staff keeps the other part in view. Guitar tabs use six-string E-standard tuning, not bass-guitar fingering."
 
@@ -922,20 +919,29 @@ msgstr "Quick start"
 msgid "CARD_WELCOME"
 msgstr "Quick start · Getting started"
 
-msgid "WELCOME_INTRO"
-msgstr "An exercise is ready. Start practicing closes this guide; press Play afterward to hear it. Optional Playing inputs and Tuner & listening tools are available in Menu. Listening checks one note at a time."
-
 msgid "WELCOME_PRACTICE"
 msgstr "Start practicing"
 
-msgid "WELCOME_READ"
-msgstr "1. Read the guitar tabs\nThe six lines represent strings: the top is string 1, the thinnest. A number tells you which fret to use, not which finger. Press just behind that metal fret and pluck the string. A 0 means pluck without pressing."
+msgid "WELCOME_READ_TITLE"
+msgstr "1. Read a number"
 
-msgid "WELCOME_PLAY"
-msgstr "2. Listen once, then join in\nPress Play. The count-in clicks give you time to get ready. Read left to right: open brackets mark upcoming notes, and full outlines mark sounding notes. Space plays or pauses with menus closed."
+msgid "WELCOME_READ_BODY"
+msgstr "On guitar tabs, each line is a string. A 0 means pluck that string without pressing a fret."
 
-msgid "WELCOME_PACE"
-msgstr "3. Slow down and repeat\nIn Playback (under Menu), try 50% speed: half as fast, with the same pitches. Restart begins again; drag sideways across scrolling music to find a passage. In Loop (under Menu), set From 1 and Through 2, then Turn loop on to repeat those measures. A measure is a group of beats between vertical lines."
+msgid "WELCOME_PLAY_TITLE"
+msgstr "2. Listen, then join in"
+
+msgid "WELCOME_PLAY_BODY"
+msgstr "Press Play. The clicks give you time to get ready; follow the notes from left to right."
+
+msgid "WELCOME_PACE_TITLE"
+msgstr "3. Find your pace"
+
+msgid "WELCOME_PACE_BODY"
+msgstr "Open Playback in Menu to slow the tune down, then try playing along."
+
+msgid "WELCOME_MORE"
+msgstr "Want to change the view or song?"
 
 msgid "LIBRARY_PIANO_STUDY"
 msgstr "Two-hand piano study · original exercise"
