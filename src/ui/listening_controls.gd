@@ -22,6 +22,8 @@ var latency: SpinBox
 var mic_reference: SpinBox
 var last_result: Dictionary = {}
 var suspended: bool = false
+var command_status: Label
+signal commands_requested
 
 func _ready() -> void:
 	add_theme_constant_override("separation", 8)
@@ -44,6 +46,9 @@ func _ready() -> void:
 		listen_check.button_pressed = false
 		listener.capture.stop())
 	mic_status = caption("INPUT_MIC_OFF")
+	command_status = caption("AUDIO_COMMANDS_OFF")
+	command_status.hide()
+	action(self, "AUDIO_COMMANDS", func() -> void: commands_requested.emit())
 	mic_picker = choice("INPUT_MIC_DEVICE", ["INPUT_MIC_DEFAULT"], func(index: int) -> void:
 		listener.capture.stop()
 		listener.capture.selected = str(mic_picker.get_item_metadata(index))

@@ -339,3 +339,39 @@ microphone timing again. Keyboard/MIDI timing is also approximate.
 Stop microphone releases the stream. Hiding the app or leaving its window stops
 active capture; returning does not restart it automatically. Input choices and
 setup last for this session; audio is never saved or uploaded.
+
+## Hands-free note commands
+
+Enable **Menu → Settings → Hands-free note commands** to control practice while
+your hands stay on an instrument. This is off by default. Start the microphone
+separately in **Tuner & listening**; the setting never starts it for you. Use
+headphones or mute playback speakers to avoid commands triggered by the app's own
+sound. The switch is remembered on this device and can be turned off at any time.
+
+Wait through the three-second settling period, then leave about a second of
+quiet. Play **E4 → Bb4 → F4 → B4**, one note at a time. Bb4 is also shown as A#4 on the tuner. On a standard-tuned guitar,
+these are frets **0 → 6 → 1 → 7** on the thinnest string. Hold each note for roughly
+three quarters of a second, then damp it for roughly a third of a second before the next.
+Release the final note to open the command menu. You can start on a different
+note as long as the pitch distances remain the same; the menu adapts its notes.
+
+With the E4 activation phrase, choose:
+
+| Play twice, with a quiet gap | Action |
+| --- | --- |
+| E4 | Play or pause |
+| F#4 | Replay the current loop, or the song, from its start |
+| G#4 | Reduce speed by five percentage points |
+| A4 | Increase speed by five percentage points |
+
+The first command note shows a confirmation prompt. Repeat it and release it to
+execute. You have eight seconds to choose, then four seconds to confirm. A wrong
+note, uncertain or interrupted detection, closing the menu or pressing Cancel
+cancels the pending action. Wait three seconds and a quiet gap before another
+phrase. Calibration, import, unrelated menus and capture presentation temporarily
+block commands; ordinary tuning and practice controls continue to work.
+
+These are separate notes, not chords. The unusual activation phrase and quiet
+gaps reduce accidental matches but do not guarantee that a song or noisy room
+cannot trigger them. Reliable real-instrument and browser detection remains an
+evaluation goal; disable note commands if they interfere with tuning or practice.

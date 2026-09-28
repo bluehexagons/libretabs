@@ -25,3 +25,7 @@ recorded, saved or uploaded. The browser/OS owns device permissions; stopping
 capture releases the audio stream but does not revoke a permission already granted.
 Capture also stops on suspension or loss of focus after activation. Start it again
 to resume. The tuner works without uploading a song or audio.
+
+Optional hands-free note commands reuse the active microphone's transient pitch
+observations. Only their on/off preference is saved. Activation phrases, command
+history and audio are not retained; the feature cannot start microphone capture.

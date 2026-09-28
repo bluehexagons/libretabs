@@ -117,6 +117,9 @@ func analyze_at(now: int) -> void:
 	var started: int = Time.get_ticks_usec()
 	detector.gate = gate * sensitivity
 	var result: Dictionary = detector.estimate()
+	# Commands require measured silence; missing capture is not silence.
+	result["fresh"] = true
+	result["quiet"] = float(result.rms) < detector.gate * 0.8 and float(result.peak) < 0.98
 	max_analysis_ms = maxf(max_analysis_ms, (Time.get_ticks_usec() - started) / 1000.0)
 	if result.valid:
 		var pitch: float = PitchDetector.midi_pitch(float(result.hz), reference)

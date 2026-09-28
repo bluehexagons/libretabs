@@ -4,8 +4,8 @@ extends RefCounted
 
 const VERSION: int = 1
 const MAX_BYTES: int = 4096
-const OPTIONAL: Array[String] = ["instrument", "reverb", "reverb_amount", "chorus"]
-const DEFAULTS: Dictionary = {"reverb": true, "reverb_amount": PracticeEffects.DEFAULT_AMOUNT, "chorus": false, "instrument": PracticeSynth.DEFAULT, "metronome": true, "count_in": true, "count_measures": 1, "instrument_volume": 85, "click_volume": 35, "keyboard_octave": 4, "keyboard_layout": "lower"}
+const OPTIONAL: Array[String] = ["instrument", "reverb", "reverb_amount", "chorus", "audio_commands"]
+const DEFAULTS: Dictionary = {"audio_commands": false, "reverb": true, "reverb_amount": PracticeEffects.DEFAULT_AMOUNT, "chorus": false, "instrument": PracticeSynth.DEFAULT, "metronome": true, "count_in": true, "count_measures": 1, "instrument_volume": 85, "click_volume": 35, "keyboard_octave": 4, "keyboard_layout": "lower"}
 
 # Allow-list only device preferences: never source bytes, song names or notes.
 static func decode(raw: String) -> Dictionary:
@@ -36,7 +36,7 @@ static func valid(values: Variant) -> bool:
 			if not value is String or value not in PracticeSynth.INSTRUMENTS: return false
 		elif key == "keyboard_layout":
 			if value not in ["lower", "home"]: return false
-		elif key in ["metronome", "count_in", "reverb", "chorus"]:
+		elif key in ["metronome", "count_in", "reverb", "chorus", "audio_commands"]:
 			if not value is bool: return false
 		else:
 			if not (value is float or value is int) or not is_finite(float(value)) or float(value) != floorf(float(value)): return false

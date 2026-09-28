@@ -53,3 +53,5 @@ and the linked Pages deployment.
 [0023 — Optional practice sound effects](0023-practice-effects.md) adds saved room ambience and chorus controls, processing bypass and natural end-of-song decay.
 
 [0024 — Playing inputs and single-note listening](0024-live-playing-inputs.md) adds playable keys, MIDI, continuous practice feedback, microphone setup and a tuner as an evaluation milestone.
+
+[0025 — Optional hands-free note commands](0025-hands-free-note-commands.md) adds an opt-in activation phrase and confirmed practice controls using the already-active microphone.

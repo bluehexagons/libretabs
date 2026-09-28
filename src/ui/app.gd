@@ -118,6 +118,7 @@ var input_epoch: int = 0
 var input_show: CheckButton
 var playing_devices: PlayingDevices
 var listening: ListeningControls
+var audio_commands: AudioCommandControls
 var reverb_check: CheckButton
 var reverb_amount: HSlider
 var reverb_caption: Label
@@ -1365,7 +1366,7 @@ func build_drawers() -> void:
 	warning = label("PROTOTYPE_LIMIT", 18)
 	details.add_child(warning)
 	var settings: VBoxContainer = section("SETTINGS")
-	for key: String in ["TEMPO", "SCORE_VIEW", "LOOP_TOOL", "SOUND", "SOUND_EFFECTS", "DISPLAY", "KEYBOARD", "INPUTS", "TV_VIEW"]: settings.add_child(button(key, func() -> void: toggle_drawer(key)))
+	for key: String in ["TEMPO", "SCORE_VIEW", "LOOP_TOOL", "SOUND", "SOUND_EFFECTS", "DISPLAY", "KEYBOARD", "INPUTS", "AUDIO_COMMANDS", "TV_VIEW"]: settings.add_child(button(key, func() -> void: toggle_drawer(key)))
 	settings_notice = label("SETTINGS_SAVED", 18)
 	settings.add_child(settings_notice)
 	settings.add_child(button("RESET_PRACTICE", reset_preferences))
@@ -1405,6 +1406,19 @@ func build_drawers() -> void:
 	listening.show_keyboard.connect(func() -> void: input_show.button_pressed = true)
 	listening.stop_playback.connect(pause)
 	tuner_section.add_child(listening)
+	listening.commands_requested.connect(func() -> void: toggle_drawer("AUDIO_COMMANDS"))
+	var command_section: VBoxContainer = section("AUDIO_COMMANDS")
+	audio_commands = AudioCommandControls.new()
+	audio_commands.available = audio_commands_available
+	audio_commands.activated.connect(func() -> void: toggle_drawer("AUDIO_COMMANDS"))
+	audio_commands.command_requested.connect(run_audio_command)
+	audio_commands.preference_changed.connect(save_preferences)
+	audio_commands.status_changed.connect(func() -> void:
+		listening.command_status.visible = audio_commands.enabled
+		listening.command_status.text = audio_commands.status_label.text)
+	command_section.add_child(audio_commands)
+	command_section.add_child(button("TUNER", func() -> void: toggle_drawer("TUNER")))
+	listening.listener.observation.connect(audio_commands.observe)
 	tuner_section.add_child(button("INPUT_RETURN", func() -> void:
 		input_show.button_pressed = true
 		close_menu()))
@@ -1705,6 +1719,7 @@ func restore_drawer(navigation: int, destination: Dictionary) -> void:
 	menu_scroll.scroll_vertical = destination.scroll
 
 func toggle_drawer(key: String, remember: bool = true) -> void:
+	if audio_commands != null and key != "AUDIO_COMMANDS": audio_commands.cancel()
 	if menu_overlay.visible and opened_drawer == key: return
 	if tv_tucked: reveal_tv_controls()
 	if remember and menu_overlay.visible:
@@ -1750,6 +1765,7 @@ func reset_menu_scroll(key: String) -> void:
 	if opened_drawer == key and navigation == drawer_navigation: menu_scroll.scroll_vertical = 0
 
 func close_menu() -> void:
+	if audio_commands != null: audio_commands.cancel()
 	drawer_history.clear()
 	drawer_navigation += 1
 	score_frame.cancel_pointers()
@@ -2718,6 +2734,21 @@ func update_arrangement() -> void:
 	if not projection.barres.is_empty(): warning.text += "\n" + tr("BARRE_FOUND") % projection.barres.size()
 	for diagnostic: String in song.diagnostics: warning.text += "\n" + tr(diagnostic)
 
+func audio_commands_available() -> bool:
+	return listening != null and listening.listener.capture.enabled and listening.listener.capture.status == "INPUT_MIC_READY" and not listening.suspended and listening.listener.setup_state not in ["INPUT_SETUP_QUIET", "INPUT_SETUP_NOTES"] and song != null and importer == null and not capture_active and (not menu_overlay.visible or opened_drawer in ["TUNER", "AUDIO_COMMANDS"]) and (picker_overlay == null or not picker_overlay.visible)
+
+func run_audio_command(command: String) -> void:
+	if audio_commands == null or not audio_commands.enabled or not audio_commands_available() or command not in AudioCommands.CHOICES.values(): return
+	close_menu()
+	match command:
+		"play_pause": toggle_play()
+		"replay":
+			stop_practice()
+			start(count_check.button_pressed)
+		"slower": step_speed(-1)
+		"faster": step_speed(1)
+	if speed > 0: set_status("AUDIO_COMMANDS_DONE_" + command.to_upper())
+
 func toggle_play() -> void:
 	if song == null or importer != null:
 		return
@@ -2728,6 +2759,7 @@ func toggle_play() -> void:
 		start(count_check.button_pressed and (state != "STATE_PAUSED" or paused_in_count))
 
 func start(count_in: bool) -> void:
+	if audio_commands != null: audio_commands.cancel()
 	if speed <= 0:
 		set_status("SPEED_ZERO")
 		return
@@ -2750,6 +2782,7 @@ func start(count_in: bool) -> void:
 	update_play_control()
 
 func pause() -> void:
+	if audio_commands != null: audio_commands.cancel()
 	release_keyboard()
 	if audio != null and audio.playing_practice:
 		paused_in_count = audio.audible_frame() < audio.transport.count_frames
@@ -3112,10 +3145,11 @@ func update_effects() -> void:
 	save_preferences()
 
 func preference_values() -> Dictionary:
-	return {"reverb": reverb_check.button_pressed, "reverb_amount": roundi(reverb_amount.value), "chorus": chorus_check.button_pressed, "instrument": PracticeSynth.INSTRUMENTS[instrument_picker.selected], "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "count_measures": int(count_length.value), "instrument_volume": roundi(instrument_slider.value), "click_volume": roundi(click_slider.value), "keyboard_octave": keyboard.octave, "keyboard_layout": keyboard.layout}
+	return {"audio_commands": audio_commands.enabled, "reverb": reverb_check.button_pressed, "reverb_amount": roundi(reverb_amount.value), "chorus": chorus_check.button_pressed, "instrument": PracticeSynth.INSTRUMENTS[instrument_picker.selected], "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "count_measures": int(count_length.value), "instrument_volume": roundi(instrument_slider.value), "click_volume": roundi(click_slider.value), "keyboard_octave": keyboard.octave, "keyboard_layout": keyboard.layout}
 
 func apply_preferences(values: Dictionary) -> void:
 	preferences_ready = false
+	audio_commands.set_enabled(bool(values.audio_commands))
 	reverb_check.set_pressed_no_signal(values.reverb)
 	chorus_check.set_pressed_no_signal(values.chorus)
 	reverb_amount.set_value_no_signal(values.reverb_amount)

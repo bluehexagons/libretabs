@@ -1710,3 +1710,78 @@ msgstr "Off by default. Pitch detection takes time. Enable timing only after mea
 
 msgid "INPUT_MIC_PRIVACY"
 msgstr "Audio is processed locally in short temporary buffers. It is never saved or uploaded. Capture stops when the app is hidden; press Start to resume. Setup and input choices last only for this session."
+
+msgid "AUDIO_COMMANDS"
+msgstr "Hands-free note commands"
+
+msgid "AUDIO_COMMANDS_ENABLE"
+msgstr "Enable hands-free note commands"
+
+msgid "AUDIO_COMMANDS_HELP"
+msgstr "Optional controls while the microphone is active. Start the microphone in Tuner & listening first. Use headphones or mute the speakers so playback cannot trigger commands. This switch is saved on this device; it never starts the microphone."
+
+msgid "AUDIO_COMMANDS_WAKE"
+msgstr "To open the command menu, first stay quiet for a second, then play E4, Bb4, F4, B4 in that order. Bb, also shown as A#, means B-flat: the key just below B. Hold each note for about three quarters of a second and silence it for about a third of a second before the next. On a guitar, use the thinnest string at frets 0, 6, 1, 7. You can start elsewhere: keep the same distances between pitches and the menu will adapt."
+
+msgid "AUDIO_COMMANDS_LIMIT"
+msgstr "Play separate notes, never a chord. After the menu opens, you have eight seconds to choose a command. Play its note twice, silencing it between repetitions; the second release confirms the action. A different note, a timeout or interrupted detection cancels. This unusual phrase reduces accidental activation but cannot guarantee it. Disable these controls whenever you prefer ordinary tuning."
+
+msgid "AUDIO_COMMANDS_OFF"
+msgstr "Note commands are off."
+
+msgid "AUDIO_COMMANDS_UNAVAILABLE"
+msgstr "Commands need an active microphone and steady detection. They are unavailable during setup, import, capture presentation or other menus."
+
+msgid "AUDIO_COMMANDS_IDLE"
+msgstr "Ready for the activation phrase."
+
+msgid "AUDIO_COMMANDS_WAKE_PROGRESS"
+msgstr "Activation phrase: %d of 4 notes."
+
+msgid "AUDIO_COMMANDS_ARMED"
+msgstr "Listening for a command. Play one of the notes below twice."
+
+msgid "AUDIO_COMMANDS_CONFIRM"
+msgstr "Play %s once more, then silence it to confirm."
+
+msgid "AUDIO_COMMANDS_COOLDOWN"
+msgstr "Waiting before the next phrase. Allow three seconds and a quiet gap."
+
+msgid "AUDIO_COMMANDS_CANCEL"
+msgstr "Cancel pending note command"
+
+msgid "AUDIO_COMMANDS_CHOICE_PLAY_PAUSE"
+msgstr "%s twice — Play or pause"
+
+msgid "AUDIO_COMMANDS_CHOICE_REPLAY"
+msgstr "%s twice — Replay the loop or song from its start"
+
+msgid "AUDIO_COMMANDS_CHOICE_SLOWER"
+msgstr "%s twice — Slower by 5 percentage points"
+
+msgid "AUDIO_COMMANDS_CHOICE_FASTER"
+msgstr "%s twice — Faster by 5 percentage points"
+
+msgid "AUDIO_COMMANDS_DONE_PLAY_PAUSE"
+msgstr "Note command: Play / Pause."
+
+msgid "AUDIO_COMMANDS_DONE_REPLAY"
+msgstr "Note command: replay from the start."
+
+msgid "AUDIO_COMMANDS_DONE_SLOWER"
+msgstr "Note command: slower."
+
+msgid "AUDIO_COMMANDS_DONE_FASTER"
+msgstr "Note command: faster."
+
+msgid "AUDIO_COMMANDS_SHORT_PLAY_PAUSE"
+msgstr "%s twice — Play / Pause"
+
+msgid "AUDIO_COMMANDS_SHORT_REPLAY"
+msgstr "%s twice — Replay"
+
+msgid "AUDIO_COMMANDS_SHORT_SLOWER"
+msgstr "%s twice — Slower"
+
+msgid "AUDIO_COMMANDS_SHORT_FASTER"
+msgstr "%s twice — Faster"
