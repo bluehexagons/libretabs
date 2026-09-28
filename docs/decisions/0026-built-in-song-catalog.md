@@ -28,6 +28,14 @@ the intended teaching arrangement, not verified physical playability. Levels
 are suggestions, not graded outcomes. Search, filters, and sorting affect only the displayed
 catalog; they do not change MIDI bytes, song timing, or the practice arrangement.
 
+Each result offers a short, local Listen preview and a separate Try action.
+Listen parses the bundled MIDI through the same bounded importer and plays at
+the song's default speed for at most 12 seconds through the practice transport,
+without changing the loaded song or its position. A second preview replaces
+the first, and leaving the library stops preview audio. This lets learners
+recognize a melody before choosing it while keeping practice playback and
+preview playback mutually exclusive.
+
 ## Consequences
 
 Metadata and recipes must stay synchronized. Tests check generated MIDI, song

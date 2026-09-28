@@ -13,7 +13,16 @@ const PATHS: Dictionary = {
 	"REPLAY": "M4 9a8 8 0 1 1 0 6M4 3v6h6",
 	"NUMBER_LESS": "M5 12h14", "NUMBER_MORE": "M5 12h14M12 5v14",
 	"SCORE_VIEW": "M3 4h7l2 2 2-2h7v16h-7l-2 2-2-2H3zM12 6v16",
-	"SONG_MENU": "M3 6h7l2 3h9v11H3zM3 6V4h7l2 2h7v3",
+	"SONG_MENU": "M3 4h18v16H3zM7 8h10M7 12h7M7 16h5M18 15l3 2-3 2z",
+	"SONG_PREVIEW": "M8 4l12 8-12 8z", "SONG_PREVIEW_STOP": "M5 5h14v14H5z",
+	"SONG_TRY": "M8 4l12 8-12 8zM4 4v16",
+	"SONG_FILTERS_SHOW": "M3 5h18l-7 8v5l-4 2v-7z",
+	"SONG_FILTERS_HIDE": "M3 5h18l-7 8v5l-4 2v-7z",
+	"SONG_IMPORT_SHORT": "M12 3v12M7 10l5 5 5-5M4 16v5h16v-5",
+	"SONG_SEARCH": "M11 3a8 8 0 1 0 0 16 8 8 0 0 0 0-16M17 17l4 4",
+	"SONG_TIME": "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18M12 7v5l3 2",
+	"SONG_LEVEL": "M4 20v-5h4v5M10 20V10h4v10M16 20V4h4v16",
+	"SONG_INSTRUMENT": "M5 16V8l7-4 7 4v8l-7 4zM12 4v16",
 	"IMPORT_MIDI": "M12 3v12M7 10l5 5 5-5M4 16v5h16v-5",
 	"CAPTURE": "M3 5h13v14H3zM16 10l5-4v12l-5-4",
 	"LOOP_TOOL": "M5 6h13l-3-3M19 18H6l3 3M18 6a7 7 0 0 1 3 9M6 18a7 7 0 0 1-3-9",
@@ -30,9 +39,13 @@ const PATHS: Dictionary = {
 static var textures: Dictionary = {}
 
 static func get_icon(key: String) -> Texture2D:
+	return get_tinted_icon(key, Color.WHITE)
+
+static func get_tinted_icon(key: String, tint: Color) -> Texture2D:
 	if not PATHS.has(key): return null
-	if not textures.has(key):
+	var cache_key: String = key + tint.to_html(false)
+	if not textures.has(cache_key):
 		var image: Image = Image.new()
-		image.load_svg_from_string('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="%s" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' % PATHS[key])
-		textures[key] = ImageTexture.create_from_image(image)
-	return textures[key]
+		image.load_svg_from_string('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="%s" fill="none" stroke="#%s" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' % [PATHS[key], tint.to_html(false)])
+		textures[cache_key] = ImageTexture.create_from_image(image)
+	return textures[cache_key]

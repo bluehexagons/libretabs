@@ -90,8 +90,12 @@ so unusually detailed rhythms may not line up exactly with the simplified symbol
 
 ## Choose music or open your own file
 
-In **Songs** (also in the Theater header), tap a built-in song or
-**Open MIDI file**. A **MIDI file** contains note and timing instructions; it is not
+In **Songs** (also in the Theater header), use **Listen** to hear up to 12 seconds
+from the first note of a built-in song. Listen keeps your current song open and
+pauses any playing practice audio. Use **Try** to open the song for practice.
+Search by title or composer, or expand the filters to browse by suggested level,
+length, starting speed, and instrument. **Open MIDI file** loads your own music.
+A **MIDI file** contains note and timing instructions; it is not
 a recording such as an MP3, a photograph of sheet music, or a guitar-tab
 document. Use a `.mid` or `.midi` file.
 

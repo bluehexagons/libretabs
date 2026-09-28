@@ -86,6 +86,13 @@ var play_control_key: String = ""
 var part_picker: OptionButton
 var demo_picker: OptionButton
 var library_song_buttons: Dictionary = {}
+var library_preview_buttons: Dictionary = {}
+var library_song_titles: Dictionary = {}
+var preview_audio: PracticeAudio
+var preview_importer: MidiImport
+var preview_index: int = -1
+var preview_document: SongDocument
+var preview_status: Label
 var more_song_grid: GridContainer
 var catalog_filter_grid: GridContainer
 var catalog_search: LineEdit
@@ -301,6 +308,8 @@ func _ready() -> void:
 	host.export_cancelled.connect(func() -> void: print_status.text = tr("CANCELLED"))
 	audio = PracticeAudio.new()
 	add_child(audio)
+	preview_audio = PracticeAudio.new()
+	add_child(preview_audio)
 	for prefix: String in ["music_", "tv_music_"]:
 		var profile: Dictionary = music_layout if prefix == "music_" else tv_music_layout
 		for key: String in MUSIC_LAYOUT_VALUES:
@@ -668,13 +677,49 @@ func build_song_grid(parent: VBoxContainer) -> GridContainer:
 
 func add_song_button(grid: GridContainer, index: int) -> void:
 	var key: String = str(BUILT_IN_LIBRARY[index].title_key)
-	var item: Button = button(key, func() -> void: load_library_item(index))
-	item.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	item.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	item.custom_minimum_size.y = 88
+	var card: PanelContainer = PanelContainer.new()
+	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	card.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 8, appearance_mode == "midnight"))
+	card.add_to_group("catalog_card")
+	grid.add_child(card)
+	var content: VBoxContainer = VBoxContainer.new()
+	content.add_theme_constant_override("separation", 5)
+	card.add_child(content)
+	var title_label: Label = label(key, 20)
+	content.add_child(title_label)
+	library_song_titles[index] = title_label
+	var details: HFlowContainer = flow(content)
+	var entry: Dictionary = BUILT_IN_LIBRARY[index]
+	var level_key: String = ["SONG_LEVEL_FIRST", "SONG_LEVEL_GROWING", "SONG_LEVEL_CHALLENGE"][int(entry.level)]
+	var view_key: String = "SONG_VIEW_BOTH" if entry.views.size() > 1 else "SONG_VIEW_PIANO"
+	for spec: Array in [["SONG_LEVEL", tr("SONG_LEVEL_GROWING_SHORT") if int(entry.level) == 1 else tr(level_key)], ["SONG_TIME", "%d:%02d" % [int(entry.seconds) / 60, int(entry.seconds) % 60]], ["TEMPO", tr("SONG_CARD_BPM") % int(entry.bpm)], ["SONG_INSTRUMENT", tr("SONG_VIEW_BOTH_SHORT") if entry.views.size() > 1 else tr(view_key)]]:
+		var chip: HBoxContainer = HBoxContainer.new()
+		chip.add_theme_constant_override("separation", 3)
+		chip.tooltip_text = tr(view_key) if str(spec[0]) == "SONG_INSTRUMENT" else (tr(level_key) if str(spec[0]) == "SONG_LEVEL" else str(spec[1]))
+		var glyph: TextureRect = TextureRect.new()
+		glyph.texture = UIIcons.get_icon(str(spec[0]))
+		glyph.modulate = UIAppearance.color("ink", dark_mode, appearance_mode == "midnight")
+		glyph.add_to_group("catalog_meta_icon")
+		glyph.custom_minimum_size = Vector2(18, 18)
+		glyph.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		chip.add_child(glyph)
+		var value: Label = Label.new()
+		value.text = str(spec[1])
+		value.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+		chip.add_child(value)
+		details.add_child(chip)
+	var actions: HFlowContainer = flow(content)
+	var preview: Button = button("SONG_PREVIEW", func() -> void: toggle_song_preview(index))
+	preview.icon = UIIcons.get_icon("SONG_PREVIEW")
+	preview.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	actions.add_child(preview)
+	library_preview_buttons[index] = preview
+	var item: Button = button("SONG_TRY", func() -> void: load_library_item(index))
+	item.icon = UIIcons.get_icon("SONG_TRY")
 	item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	grid.add_child(item)
+	actions.add_child(item)
 	library_song_buttons[index] = item
+	UIAppearance.apply_roles(card, dark_mode, appearance_mode == "midnight")
 	update_song_button(index)
 
 func catalog_choice(parent: VBoxContainer, title_key: String, keys: Array[String]) -> OptionButton:
@@ -718,10 +763,13 @@ func catalog_indices() -> Array[int]:
 
 func refresh_song_catalog() -> void:
 	if more_song_grid == null: return
+	if preview_index >= 0: stop_song_preview()
 	for child: Node in more_song_grid.get_children():
 		more_song_grid.remove_child(child)
 		child.queue_free()
 	library_song_buttons.clear()
+	library_preview_buttons.clear()
+	library_song_titles.clear()
 	var indices: Array[int] = catalog_indices()
 	for index: int in indices: add_song_button(more_song_grid, index)
 	catalog_count.text = tr("SONG_CATALOG_COUNT") % [indices.size(), BUILT_IN_LIBRARY.size()]
@@ -732,12 +780,15 @@ func update_song_button(index: int) -> void:
 	if not library_song_buttons.has(index): return
 	var item: Button = library_song_buttons[index]
 	var entry: Dictionary = BUILT_IN_LIBRARY[index]
-	var level_key: String = ["SONG_LEVEL_FIRST", "SONG_LEVEL_GROWING", "SONG_LEVEL_CHALLENGE"][int(entry.level)]
-	var view_key: String = "SONG_VIEW_BOTH" if entry.views.size() > 1 else "SONG_VIEW_PIANO"
 	var title_text: String = tr(str(entry.title_key))
 	var heading: String = tr("SONG_CURRENT_ITEM") % title_text if index == active_library else title_text
-	item.text = tr("SONG_CATALOG_CARD") % [heading, tr(level_key), int(entry.seconds) / 60, int(entry.seconds) % 60, int(entry.bpm), tr(view_key)]
-	item.tooltip_text = tr("SONG_CATALOG_CARD_HELP") % [title_text, tr(level_key), int(entry.bpm), tr(view_key)]
+	library_song_titles[index].text = heading
+	item.tooltip_text = tr("SONG_TRY_HELP") % title_text
+	var preview: Button = library_preview_buttons[index]
+	var playing: bool = index == preview_index and preview_audio != null and preview_audio.playing_practice
+	preview.text = tr("SONG_PREVIEW_STOP" if playing else "SONG_PREVIEW")
+	preview.icon = UIIcons.get_icon("SONG_PREVIEW_STOP" if playing else "SONG_PREVIEW")
+	preview.tooltip_text = tr("SONG_PREVIEW_STOP_HELP" if playing else "SONG_PREVIEW_HELP") % title_text
 
 func build_color_legend(parent: Control) -> void:
 	color_legend = HFlowContainer.new()
@@ -1279,23 +1330,29 @@ func build_drawers() -> void:
 	rebuild_notation_rows_editor()
 	views.add_child(button("PRINT", func() -> void: toggle_drawer("PRINT")))
 	var library: VBoxContainer = section("SONG_MENU")
-	library.add_child(label("CURRENT_SONG", 18))
-	library_title = label("LIBRARY_ODE_TO_JOY", 24)
-	library_title.max_lines_visible = 2
+	library_title = label("SONG_CURRENT_ITEM", 18)
+	library_title.max_lines_visible = 1
 	library_title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	library.add_child(library_title)
-	library.add_child(button("OPEN", open_midi))
-	library.add_child(label("SONG_CATALOG_SEARCH", 18))
 	catalog_search = LineEdit.new()
+	catalog_search.right_icon = UIIcons.get_tinted_icon("SONG_SEARCH", UIAppearance.color("ink", dark_mode, appearance_mode == "midnight"))
+	catalog_search.add_theme_color_override("font_placeholder_color", UIAppearance.color("muted", dark_mode, appearance_mode == "midnight"))
 	catalog_search.placeholder_text = tr("SONG_CATALOG_SEARCH_PLACEHOLDER")
 	catalog_search.tooltip_text = tr("SONG_CATALOG_SEARCH_HELP")
 	catalog_search.custom_minimum_size.y = 56
 	catalog_search.text_changed.connect(func(_value: String) -> void: refresh_song_catalog())
 	library.add_child(catalog_search)
+	var catalog_actions: HFlowContainer = flow(library)
+	var import_short: Button = button("SONG_IMPORT_SHORT", open_midi)
+	import_short.tooltip_text = tr("OPEN")
+	import_short.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	catalog_actions.add_child(import_short)
 	catalog_filter_toggle = button("SONG_FILTERS_SHOW", func() -> void:
 		catalog_filter_panel.visible = not catalog_filter_panel.visible
-		catalog_filter_toggle.text = tr("SONG_FILTERS_HIDE" if catalog_filter_panel.visible else "SONG_FILTERS_SHOW"))
-	library.add_child(catalog_filter_toggle)
+		catalog_filter_toggle.text = tr("SONG_FILTERS_CLOSE" if catalog_filter_panel.visible else "SONG_FILTERS_SHORT"))
+	catalog_filter_toggle.text = tr("SONG_FILTERS_SHORT")
+	catalog_filter_toggle.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	catalog_actions.add_child(catalog_filter_toggle)
 	catalog_filter_panel = VBoxContainer.new()
 	catalog_filter_panel.add_theme_constant_override("separation", 10)
 	library.add_child(catalog_filter_panel)
@@ -1327,6 +1384,9 @@ func build_drawers() -> void:
 	catalog_filter_panel.add_child(label("SONG_LEVEL_HELP", 16))
 	catalog_count = label("SONG_CATALOG_COUNT", 18)
 	library.add_child(catalog_count)
+	preview_status = label("SONG_PREVIEW_READY", 16)
+	library.add_child(preview_status)
+	preview_status.hide()
 	more_song_grid = build_song_grid(library)
 	refresh_song_catalog()
 	library.add_child(label("SONG_FILE_BRIEF", 16))
@@ -1847,6 +1907,7 @@ func restore_drawer(navigation: int, destination: Dictionary) -> void:
 	menu_scroll.scroll_vertical = destination.scroll
 
 func toggle_drawer(key: String, remember: bool = true) -> void:
+	if key != "SONG_MENU": stop_song_preview()
 	if audio_commands != null and key != "AUDIO_COMMANDS": audio_commands.cancel()
 	if menu_overlay.visible and opened_drawer == key: return
 	if tv_tucked: reveal_tv_controls()
@@ -1896,6 +1957,7 @@ func reset_menu_scroll(key: String) -> void:
 		menu_scroll.scroll_vertical = 0
 
 func close_menu() -> void:
+	stop_song_preview()
 	if audio_commands != null: audio_commands.cancel()
 	drawer_history.clear()
 	drawer_navigation += 1
@@ -2229,6 +2291,13 @@ func apply_appearance() -> void:
 	var font_size: int = theme.default_font_size if theme != null else 20
 	theme = UIAppearance.make_theme(dark_mode, font_size, font_style, midnight)
 	UIAppearance.apply_roles(self, dark_mode, midnight)
+	for glyph: Node in get_tree().get_nodes_in_group("catalog_meta_icon"):
+		if glyph is TextureRect: glyph.modulate = UIAppearance.color("ink", dark_mode, midnight)
+	for card: Node in get_tree().get_nodes_in_group("catalog_card"):
+		if card is PanelContainer: card.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 8, midnight))
+	if catalog_search != null:
+		catalog_search.right_icon = UIIcons.get_tinted_icon("SONG_SEARCH", UIAppearance.color("ink", dark_mode, midnight))
+		catalog_search.add_theme_color_override("font_placeholder_color", UIAppearance.color("muted", dark_mode, midnight))
 	for card: PanelContainer in welcome_cards:
 		card.add_theme_stylebox_override("panel", UIAppearance.role_style("reading", dark_mode, "normal", midnight))
 	backdrop.set_palette(dark_mode, midnight, background_style)
@@ -2689,6 +2758,7 @@ func set_activity(active: bool) -> void:
 	host.configure_activity(active)
 
 func load_demo(index: int) -> void:
+	stop_song_preview()
 	pause()
 	pending_demo = index
 	pending_library = -1
@@ -2697,6 +2767,7 @@ func load_demo(index: int) -> void:
 
 func load_library_item(index: int) -> void:
 	if index < 0 or index >= BUILT_IN_LIBRARY.size(): return
+	stop_song_preview()
 	pause()
 	pending_demo = -1
 	pending_library = index
@@ -2704,7 +2775,68 @@ func load_library_item(index: int) -> void:
 	var bytes: PackedByteArray = FileAccess.get_file_as_bytes("res://content/library/%s.mid" % item.file)
 	_file_picked(tr(String(item.title_key)), bytes, "")
 
+func toggle_song_preview(index: int) -> void:
+	if index < 0 or index >= BUILT_IN_LIBRARY.size(): return
+	if preview_index == index:
+		stop_song_preview()
+		return
+	stop_song_preview()
+	pause()
+	preview_index = index
+	var item: Dictionary = BUILT_IN_LIBRARY[index]
+	var bytes: PackedByteArray = FileAccess.get_file_as_bytes("res://content/library/%s.mid" % item.file)
+	preview_importer = MidiImport.new(bytes)
+	preview_status.text = tr("SONG_PREVIEW_LOADING") % tr(str(item.title_key))
+	preview_status.show()
+	update_song_button(index)
+	set_activity(true)
+
+func stop_song_preview() -> void:
+	if preview_index < 0 and preview_importer == null and (preview_audio == null or not preview_audio.playing_practice): return
+	var previous: int = preview_index
+	preview_index = -1
+	preview_importer = null
+	preview_document = null
+	if preview_audio != null: preview_audio.stop_practice()
+	if preview_status != null: preview_status.hide()
+	if previous >= 0: update_song_button(previous)
+	if audio != null and not audio.playing_practice and importer == null: set_activity(false)
+
+func finish_song_preview_import() -> void:
+	if preview_importer == null or preview_index < 0: return
+	if not preview_importer.error.is_empty():
+		preview_status.text = tr("SONG_PREVIEW_FAILED")
+		preview_status.show()
+		var failed: int = preview_index
+		preview_index = -1
+		preview_importer = null
+		update_song_button(failed)
+		set_activity(false)
+		return
+	preview_document = preview_importer.document
+	preview_importer = null
+	var first_tick: float = float(preview_document.measures.back().end)
+	for note: Dictionary in preview_document.notes:
+		if int(note.channel) != 9: first_tick = minf(first_tick, float(note.start))
+	var last_tick: float = float(preview_document.measures.back().end)
+	if first_tick >= last_tick:
+		preview_status.text = tr("SONG_PREVIEW_FAILED")
+		preview_status.show()
+		var failed: int = preview_index
+		preview_index = -1
+		preview_document = null
+		update_song_button(failed)
+		set_activity(false)
+		return
+	var end_tick: float = minf(last_tick, preview_document.tick_at(preview_document.seconds_at(first_tick) + 12.0))
+	preview_audio.transport.configure(preview_document, first_tick, end_tick, 1.0, false, false, false, [], -1.0, 1)
+	preview_audio.begin()
+	preview_status.text = tr("SONG_PREVIEW_PLAYING") % tr(str(BUILT_IN_LIBRARY[preview_index].title_key))
+	preview_status.show()
+	update_song_button(preview_index)
+
 func open_midi() -> void:
+	stop_song_preview()
 	pause()
 	pending_demo = -1
 	pending_library = -1
@@ -2757,7 +2889,7 @@ func finish_import() -> void:
 	title = import_name
 	song_title.text = title
 	song_title.tooltip_text = title
-	library_title.text = title
+	library_title.text = tr("SONG_CURRENT_ITEM") % title
 	library_title.tooltip_text = title
 	active_demo = pending_demo
 	active_library = pending_library
@@ -3135,6 +3267,7 @@ func seek_tick(value: float) -> void:
 	update_position()
 
 func _suspended() -> void:
+	stop_song_preview()
 	if listening != null: listening.suspend_capture()
 	seek_dragging = false
 	seek_resume_playback = false
@@ -3146,6 +3279,11 @@ func _suspended() -> void:
 	if status != null: set_status("SUSPENDED")
 
 func _process(_delta: float) -> void:
+	if preview_importer != null:
+		preview_importer.step()
+		if preview_importer.done: finish_song_preview_import()
+	if preview_audio != null and preview_audio.playing_practice and preview_audio.transport.complete(preview_audio.audible_frame()):
+		stop_song_preview()
 	if importer != null:
 		var started: int = Time.get_ticks_usec()
 		importer.step()

@@ -23,7 +23,7 @@ func run() -> void:
 	check(app.get("song") != null, "initial sample is ready")
 	var song_buttons: Dictionary = app.get("library_song_buttons")
 	check(song_buttons.size() == 16 and app.get("more_song_grid").get_child_count() == 16, "every built-in song has a browsable catalog choice")
-	check(song_buttons[0].text.contains(TranslationServer.translate("SONG_CURRENT_ITEM") % TranslationServer.translate("LIBRARY_ODE_TO_JOY")), "the active song has a text marker")
+	check(app.get("library_song_titles")[0].text.contains(TranslationServer.translate("SONG_CURRENT_ITEM") % TranslationServer.translate("LIBRARY_ODE_TO_JOY")), "the active song has a text marker")
 	check(app.call("catalog_indices").size() == 16, "unfiltered catalog includes all songs")
 	check(not app.get("catalog_filter_panel").visible and app.get("catalog_filter_toggle").is_visible_in_tree() == false, "filters start folded until Songs opens")
 	app.get("catalog_search").text = "Greensleeves"
@@ -82,10 +82,24 @@ func run() -> void:
 	app.call("toggle_drawer", "SONG_MENU")
 	check(app.get("catalog_filter_toggle").is_visible_in_tree() and not app.get("catalog_filter_panel").visible, "song results are not hidden behind filters on first open")
 	app.get("catalog_filter_toggle").pressed.emit()
-	check(app.get("catalog_filter_panel").visible and app.get("catalog_filter_toggle").text == TranslationServer.translate("SONG_FILTERS_HIDE"), "filters can be expanded from the song menu")
+	check(app.get("catalog_filter_panel").visible and app.get("catalog_filter_toggle").text == TranslationServer.translate("SONG_FILTERS_CLOSE"), "filters can be expanded from the song menu")
 	app.get("catalog_filter_toggle").pressed.emit()
 	check(not app.get("catalog_filter_panel").visible, "filters can be folded after sorting")
 	check(song_buttons[4].is_visible_in_tree() and app.get("more_song_grid").columns == 2, "wide catalog exposes beginner melodies directly")
+	var preview_buttons: Dictionary = app.get("library_preview_buttons")
+	check(preview_buttons.size() == 16 and preview_buttons[4].text == TranslationServer.translate("SONG_PREVIEW"), "every song offers a labeled listen action")
+	preview_buttons[4].pressed.emit()
+	for _frame: int in range(30): await process_frame
+	check(app.get("preview_audio").playing_practice and app.get("active_library") == 0 and app.get("title") == TranslationServer.translate("LIBRARY_ODE_TO_JOY"), "preview plays without replacing the current song")
+	check(preview_buttons[4].text == TranslationServer.translate("SONG_PREVIEW_STOP"), "playing preview exposes a stop action")
+	preview_buttons[4].pressed.emit()
+	check(not app.get("preview_audio").playing_practice and preview_buttons[4].text == TranslationServer.translate("SONG_PREVIEW"), "preview stops on request")
+	preview_buttons[4].pressed.emit()
+	preview_buttons[3].pressed.emit()
+	check(app.get("preview_index") == 3 and app.get("preview_importer") != null, "choosing another preview replaces the pending one")
+	app.call("close_menu")
+	check(app.get("preview_index") == -1 and app.get("preview_importer") == null and not app.get("preview_audio").playing_practice, "leaving Songs cancels preview work and audio")
+	app.call("toggle_drawer", "SONG_MENU")
 	song_buttons[4].pressed.emit()
 	for _frame: int in range(30): await process_frame
 	check(app.get("active_library") == 4 and app.get("title") == TranslationServer.translate("LIBRARY_TWINKLE") and not app.get("menu_overlay").visible, "one song tap replaces the tune and returns to practice")
@@ -93,7 +107,7 @@ func run() -> void:
 	app.call("toggle_drawer", "SONG_MENU")
 	song_buttons[0].pressed.emit()
 	for _frame: int in range(30): await process_frame
-	check(app.get("active_library") == 0 and song_buttons[0].text.contains(TranslationServer.translate("SONG_CURRENT_ITEM") % app.get("title")), "switching again updates the current song marker")
+	check(app.get("active_library") == 0 and app.get("library_song_titles")[0].text.contains(TranslationServer.translate("SONG_CURRENT_ITEM") % app.get("title")), "switching again updates the current song marker")
 	app.call("toggle_drawer", "DETAILS")
 	var arrangement_picker: OptionButton = app.get("arrangement_picker")
 	check(arrangement_picker.item_count == 3 and arrangement_picker.selected == 0, "arrangement details expose three modes with basic tab as the default")
@@ -473,7 +487,7 @@ func run() -> void:
 	check(app.get("demo_picker").selected == 1, "cancelled exercise change restores current selection")
 	app.call("_file_picked", "invalid.mid", PackedByteArray([0, 1, 2]), "")
 	for _frame: int in range(30): await process_frame
-	check(app.get("song") == song and app.get("demo_picker").selected == 1 and app.get("library_title").text == app.get("title"), "failed import preserves song context in the song chooser")
+	check(app.get("song") == song and app.get("demo_picker").selected == 1 and app.get("library_title").text == TranslationServer.translate("SONG_CURRENT_ITEM") % app.get("title"), "failed import preserves song context in the song chooser")
 	app.call("set_status", "START_HINT")
 
 	var score: ScoreView = app.get("score")

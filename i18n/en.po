@@ -88,6 +88,39 @@ msgstr "Greensleeves · melody study · traditional"
 msgid "SONG_CATALOG_INTRO"
 msgstr "Browse built-in songs by name, suggested practice level, playing time, starting speed, or instrument."
 
+msgid "SONG_PREVIEW_INTRO"
+msgstr "Hear the opening 12 seconds, then try the song when it sounds familiar."
+
+msgid "SONG_PREVIEW"
+msgstr "Listen"
+
+msgid "SONG_PREVIEW_STOP"
+msgstr "Stop"
+
+msgid "SONG_TRY"
+msgstr "Try"
+
+msgid "SONG_PREVIEW_READY"
+msgstr "Previews play here without changing your current song."
+
+msgid "SONG_PREVIEW_LOADING"
+msgstr "Preparing %s…"
+
+msgid "SONG_PREVIEW_PLAYING"
+msgstr "Playing a short preview of %s"
+
+msgid "SONG_PREVIEW_FAILED"
+msgstr "This preview could not be played. Try opening the song."
+
+msgid "SONG_PREVIEW_HELP"
+msgstr "Listen to a short opening preview of %s. Your current song stays open."
+
+msgid "SONG_PREVIEW_STOP_HELP"
+msgstr "Stop the preview of %s."
+
+msgid "SONG_TRY_HELP"
+msgstr "Open %s for practice."
+
 msgid "SONG_CATALOG_SEARCH"
 msgstr "Search songs"
 
@@ -99,6 +132,15 @@ msgstr "Find a built-in song by title or composer."
 
 msgid "SONG_FILTERS_SHOW"
 msgstr "Show filters & sort"
+
+msgid "SONG_FILTERS_SHORT"
+msgstr "Filters"
+
+msgid "SONG_FILTERS_CLOSE"
+msgstr "Hide filters"
+
+msgid "SONG_IMPORT_SHORT"
+msgstr "Import MIDI"
 
 msgid "SONG_FILTERS_HIDE"
 msgstr "Hide filters & sort"
@@ -126,6 +168,9 @@ msgstr "First steps"
 
 msgid "SONG_LEVEL_GROWING"
 msgstr "Building skills"
+
+msgid "SONG_LEVEL_GROWING_SHORT"
+msgstr "Growing"
 
 msgid "SONG_LEVEL_CHALLENGE"
 msgstr "Challenge"
@@ -157,6 +202,9 @@ msgstr "Piano"
 msgid "SONG_VIEW_BOTH"
 msgstr "Guitar or piano"
 
+msgid "SONG_VIEW_BOTH_SHORT"
+msgstr "Both"
+
 msgid "SONG_SORT_LEVEL"
 msgstr "Suggested level"
 
@@ -174,6 +222,9 @@ msgstr "Practice levels and instruments are suggestions for these short teaching
 
 msgid "SONG_CATALOG_COUNT"
 msgstr "%d of %d songs"
+
+msgid "SONG_CARD_BPM"
+msgstr "%d BPM"
 
 msgid "SONG_CATALOG_EMPTY"
 msgstr "No songs match. Change a filter or clear the search."
