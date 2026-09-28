@@ -30,10 +30,10 @@ func reset() -> void:
 	peak = 0
 	rms = 0
 
-func push(block: PackedFloat32Array, rate: float) -> void:
+func push(block: PackedFloat32Array, rate: float) -> bool:
 	if not is_finite(rate) or rate < RATE or rate > 192000 or block.is_empty() or block.size() > 8192:
 		reset()
-		return
+		return false
 	if rate != input_rate:
 		reset()
 		input_rate = rate
@@ -44,7 +44,7 @@ func push(block: PackedFloat32Array, rate: float) -> void:
 	for value: float in block:
 		if not is_finite(value):
 			reset()
-			return
+			return false
 		energy += value * value
 		peak = maxf(peak, absf(value))
 		filter_a += alpha * (value - filter_a)
@@ -59,6 +59,7 @@ func push(block: PackedFloat32Array, rate: float) -> void:
 			count = 0
 	if not block.is_empty(): rms = sqrt(energy / block.size())
 	if samples.size() > WINDOW: samples = samples.slice(samples.size() - WINDOW)
+	return true
 
 func estimate() -> Dictionary:
 	var result: Dictionary = {"valid": false, "hz": 0.0, "confidence": 0.0, "rms": rms, "peak": peak}

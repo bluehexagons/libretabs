@@ -79,7 +79,9 @@ func accept_samples(block: PackedFloat32Array, rate: float, age_ms: float, clock
 		reset()
 		return
 	if last_block > 0 and now - last_block > 250: reset()
-	detector.push(block, rate)
+	if not detector.push(block, rate):
+		reset()
+		return
 	last_block = now
 	last_age = age_ms
 	if setup_state == "INPUT_SETUP_QUIET":

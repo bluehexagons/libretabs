@@ -80,6 +80,12 @@ func run() -> void:
 	check(not listener.latest.valid and listener.detector.samples.size() < PitchDetector.WINDOW, "first block after a polling gap starts a fresh detection window")
 	listener.accept_samples(signal_samples.slice(0, 1024), 48000, 300, clock + 1210)
 	check(listener.detector.samples.is_empty(), "old queued audio cannot refill the detector")
+	var invalid_block: PackedFloat32Array = signal_samples.slice(0, 1024)
+	invalid_block[512] = NAN
+	listener.accept_samples(invalid_block, 48000, 0, clock + 1300)
+	check(not listener.latest.get("fresh", false) and listener.detector.samples.is_empty(), "non-finite capture is missing data, not measured quiet")
+	listener.accept_samples(signal_samples.slice(0, 1024), 8000, 0, clock + 1400)
+	check(not listener.latest.get("fresh", false) and listener.last_block == 0, "unsupported sample rate cannot report measured quiet")
 	listener.setup_state = "INPUT_SETUP_QUIET"
 	listener.setup_until = clock
 	listener.setup_levels.assign([0.002, 0.002, 0.002, 0.002, 0.002, 0.002, 0.002, 0.002, 0.002, 0.002])
