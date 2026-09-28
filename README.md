@@ -7,9 +7,10 @@ Listen to a built-in tune, slow it down, and repeat a short section while you pl
 along. Guitar tablature (tabs) gives the string and fret numbers; sheet music
 shows pitch and rhythm alongside it. No account or music file is needed to start.
 
-This is an early prototype, not a complete guitar course. It does not listen to
-or grade your playing. The planned six lessons and musical, timing, accessibility
-and device checks are still in progress.
+This is an early prototype, not a complete guitar course. Optional microphone
+listening estimates one note at a time, and MIDI or on-screen piano input can
+show pitch and timing feedback. Chords are not assessed reliably. The planned
+six lessons and musical, timing, accessibility and device checks remain open.
 
 ## Your first session
 
@@ -19,7 +20,7 @@ and device checks are still in progress.
    thinnest guitar string. Numbers tell you which fret to press; **0** means
    pluck the string without pressing it.
 3. Open **Menu → Playback → Speed presets** and try **50%** for half speed.
-   The notes keep the same pitch. Choose **Stop**, then **Play** to start again.
+   The notes keep the same pitch. Choose **Restart**, then **Play** to start again.
 4. Open **Menu → Loop**, set **From 1** and **Through 2**, and choose
    **Turn loop on** to repeat the first two measures (groups of beats).
 5. Open **Menu → Songs** for another tune. Try Twinkle, Twinkle Little Star.
