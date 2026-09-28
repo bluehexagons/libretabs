@@ -763,7 +763,7 @@ func catalog_indices() -> Array[int]:
 
 func refresh_song_catalog() -> void:
 	if more_song_grid == null: return
-	if preview_index >= 0: stop_song_preview()
+	stop_song_preview()
 	for child: Node in more_song_grid.get_children():
 		more_song_grid.remove_child(child)
 		child.queue_free()
@@ -2777,6 +2777,9 @@ func load_library_item(index: int) -> void:
 
 func toggle_song_preview(index: int) -> void:
 	if index < 0 or index >= BUILT_IN_LIBRARY.size(): return
+	if importer != null:
+		set_status("IMPORTING")
+		return
 	if preview_index == index:
 		stop_song_preview()
 		return
@@ -2792,7 +2795,9 @@ func toggle_song_preview(index: int) -> void:
 	set_activity(true)
 
 func stop_song_preview() -> void:
-	if preview_index < 0 and preview_importer == null and (preview_audio == null or not preview_audio.playing_practice): return
+	if preview_index < 0 and preview_importer == null and (preview_audio == null or not preview_audio.playing_practice):
+		if preview_status != null: preview_status.hide()
+		return
 	var previous: int = preview_index
 	preview_index = -1
 	preview_importer = null
@@ -2829,6 +2834,9 @@ func finish_song_preview_import() -> void:
 		set_activity(false)
 		return
 	var end_tick: float = minf(last_tick, preview_document.tick_at(preview_document.seconds_at(first_tick) + 12.0))
+	preview_audio.set_instrument(audio.synth.instrument)
+	preview_audio.set_level(true, audio.instrument_level)
+	preview_audio.set_effects(audio.effects.reverb_enabled, audio.effects.reverb_amount, audio.effects.chorus_enabled)
 	preview_audio.transport.configure(preview_document, first_tick, end_tick, 1.0, false, false, false, [], -1.0, 1)
 	preview_audio.begin()
 	preview_status.text = tr("SONG_PREVIEW_PLAYING") % tr(str(BUILT_IN_LIBRARY[preview_index].title_key))

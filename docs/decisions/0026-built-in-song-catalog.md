@@ -34,7 +34,9 @@ the song's default speed for at most 12 seconds through the practice transport,
 without changing the loaded song or its position. A second preview replaces
 the first, and leaving the library stops preview audio. This lets learners
 recognize a melody before choosing it while keeping practice playback and
-preview playback mutually exclusive.
+preview playback mutually exclusive. Preview sound uses the current practice
+instrument, instrument volume, and effect settings; it cannot start while a
+MIDI file is still importing.
 
 ## Consequences
 
