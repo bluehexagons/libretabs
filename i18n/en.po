@@ -76,6 +76,114 @@ msgstr "Lullaby · Johannes Brahms"
 msgid "LIBRARY_MINUET_IN_G"
 msgstr "Minuet in G · Christian Petzold"
 
+msgid "LIBRARY_ROW_YOUR_BOAT"
+msgstr "Row, Row, Row Your Boat · twice · traditional"
+
+msgid "LIBRARY_JINGLE_BELLS"
+msgstr "Jingle Bells · simplified refrain · James Lord Pierpont"
+
+msgid "LIBRARY_GREENSLEEVES"
+msgstr "Greensleeves · melody study · traditional"
+
+msgid "SONG_CATALOG_INTRO"
+msgstr "Browse built-in songs by name, suggested practice level, playing time, starting speed, or instrument."
+
+msgid "SONG_CATALOG_SEARCH"
+msgstr "Search songs"
+
+msgid "SONG_CATALOG_SEARCH_PLACEHOLDER"
+msgstr "Title or composer"
+
+msgid "SONG_CATALOG_SEARCH_HELP"
+msgstr "Find a built-in song by title or composer."
+
+msgid "SONG_FILTERS_SHOW"
+msgstr "Show filters & sort"
+
+msgid "SONG_FILTERS_HIDE"
+msgstr "Hide filters & sort"
+
+msgid "SONG_CATALOG_LEVEL"
+msgstr "Suggested level"
+
+msgid "SONG_CATALOG_DURATION"
+msgstr "Playing time"
+
+msgid "SONG_CATALOG_TEMPO"
+msgstr "Starting speed"
+
+msgid "SONG_CATALOG_INSTRUMENT"
+msgstr "Suggested instrument"
+
+msgid "SONG_CATALOG_SORT"
+msgstr "Sort songs"
+
+msgid "SONG_FILTER_ALL"
+msgstr "All"
+
+msgid "SONG_LEVEL_FIRST"
+msgstr "First steps"
+
+msgid "SONG_LEVEL_GROWING"
+msgstr "Building skills"
+
+msgid "SONG_LEVEL_CHALLENGE"
+msgstr "Challenge"
+
+msgid "SONG_DURATION_SHORT"
+msgstr "Under 30 seconds"
+
+msgid "SONG_DURATION_MEDIUM"
+msgstr "30–44 seconds"
+
+msgid "SONG_DURATION_LONG"
+msgstr "45 seconds or longer"
+
+msgid "SONG_TEMPO_SLOW"
+msgstr "Under 90 BPM"
+
+msgid "SONG_TEMPO_MIDDLE"
+msgstr "90–105 BPM"
+
+msgid "SONG_TEMPO_FAST"
+msgstr "Over 105 BPM"
+
+msgid "SONG_VIEW_GUITAR"
+msgstr "Guitar"
+
+msgid "SONG_VIEW_PIANO"
+msgstr "Piano"
+
+msgid "SONG_VIEW_BOTH"
+msgstr "Guitar or piano"
+
+msgid "SONG_SORT_LEVEL"
+msgstr "Suggested level"
+
+msgid "SONG_SORT_TITLE"
+msgstr "Title A–Z"
+
+msgid "SONG_SORT_DURATION"
+msgstr "Shortest first"
+
+msgid "SONG_SORT_BPM"
+msgstr "Slowest starting speed first"
+
+msgid "SONG_LEVEL_HELP"
+msgstr "Practice levels and instruments are suggestions for these short teaching arrangements, not tested performance grades. BPM means beats per minute; you can change playback speed after opening a song."
+
+msgid "SONG_CATALOG_COUNT"
+msgstr "%d of %d songs"
+
+msgid "SONG_CATALOG_EMPTY"
+msgstr "No songs match. Change a filter or clear the search."
+
+msgid "SONG_CATALOG_CARD"
+msgstr "%s\n%s · %d:%02d · %d BPM · %s"
+
+msgid "SONG_CATALOG_CARD_HELP"
+msgstr "%s. Suggested level: %s. Starting speed: %d beats per minute. Suggested instrument: %s."
+
 msgid "DEMO_0"
 msgstr "First melody"
 

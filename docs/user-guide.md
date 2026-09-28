@@ -31,10 +31,14 @@ review; treat them as practice suggestions.
    repeat after your usual count-in. Choose **Turn loop off** when you want to
    continue through the song.
 
-For another tune, choose **Songs** (also in the Theater header), then tap a
-song. Twinkle, Twinkle Little Star and Mary Had a Little Lamb appear first
-because they use simpler rhythms; they are still generated practice arrangements.
-Some tunes begin with silence.
+For another tune, choose **Songs** (also in the Theater header). Search by title
+or composer, or open **Show filters & sort** to narrow by suggested level,
+playing time, starting BPM or suggested instrument. **First steps** songs appear first
+by default.
+The level is a teaching suggestion for this short arrangement, not a tested
+performance grade. The guitar and piano suggestions describe the intended
+practice arrangement; they do not claim every song has been checked on a
+physical instrument. Some tunes begin with silence.
 Wait for the moving line to reach the first note.
 
 ## Read the guitar tabs

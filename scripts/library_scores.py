@@ -114,6 +114,24 @@ add('minuet_in_g', 'Minuet in G - both sections', 'Christian Petzold',
 # Bring the whole Minuet down one octave, preserving every interval.
 SONGS['minuet_in_g']['notes'] = [(p - 12 if p is not None else None, d) for p, d in SONGS['minuet_in_g']['notes']]
 
+row = ('C4 C4 C4 D4 | E4:8 E4 D4 | E4 F4 G4:8 | C5 C5 C5 G4 | '
+       'G4 G4 E4 E4 | E4 C4 C4 C4 | G4 F4 E4 D4 | C4:16')
+add('row_your_boat', 'Row, Row, Row Your Boat - twice', 'Traditional', f'{row} | {row}', tempo=96)
+
+jingle = ('E4 E4 E4:8 | E4 E4 E4:8 | E4 G4 C4 D4 | E4:16 | '
+          'F4 F4 F4 F4 | F4 E4 E4:8 | E4 D4 D4 E4 | D4:8 G4:8')
+jingle_end = ('E4 E4 E4:8 | E4 E4 E4:8 | E4 G4 C4 D4 | E4:16 | '
+              'F4 F4 F4 F4 | F4 E4 E4:8 | G4 G4 F4 D4 | C4:16')
+add('jingle_bells', 'Jingle Bells - simplified refrain', 'James Lord Pierpont',
+    f'{jingle} | {jingle_end}', tempo=116)
+
+greensleeves = ('R:8 A4 | C5 D5 E5 | F5:8 E5 | D5 B4 G4 | A4:8 R:4 | '
+               'C5 D5 E5 | F5:8 E5 | D5 B4 G4 | A4:8 R:4 | '
+               'A4 G4 A4 | B4:8 G4 | A4 B4 C5 | A4:8 R:4 | '
+               'G4 E4 F4 | G4:8 E4 | F4 E4 D4 | E4:8 R:4')
+add('greensleeves', 'Greensleeves - melody study', 'Traditional', greensleeves,
+    (3, 4), 90)
+
 # Original, deliberately simple practice basses. These are editorial additions,
 # not transcriptions of the composers' accompaniment. Each root lasts one bar;
 # the MIDI recipe plays it, then its fifth, as two separate low notes.
@@ -131,6 +149,9 @@ BASS_ROOTS = {
     'brahms_lullaby': [48, 48, 43, 48, 41, 43, 48, 43, 48, 41, 48, 41, 48, 41, 43, 48, 48],
     'minuet_in_g': [43, 43, 48, 43, 48, 43, 50, 43, 43, 48, 43, 48, 43, 50, 43, 43,
                     43, 50, 43, 48, 43, 50, 43, 50, 43, 48, 43, 48, 43, 50, 43, 43],
+    'row_your_boat': [48, 48, 41, 48, 48, 48, 43, 48] * 2,
+    'jingle_bells': [48, 48, 48, 48, 41, 48, 43, 43, 48, 48, 48, 48, 41, 48, 43, 48],
+    'greensleeves': [45, 45, 43, 45, 45, 45, 43, 45, 45, 43, 45, 45, 48, 43, 45, 45, 45],
 }
 for key, song in SONGS.items():
     roots = BASS_ROOTS[key]

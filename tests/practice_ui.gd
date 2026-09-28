@@ -22,8 +22,36 @@ func run() -> void:
 	for _frame: int in range(30): await process_frame
 	check(app.get("song") != null, "initial sample is ready")
 	var song_buttons: Dictionary = app.get("library_song_buttons")
-	check(song_buttons.size() == 13 and app.get("starter_song_grid").get_child_count() == 2, "every built-in song has a direct choice and beginner songs come first")
-	check(song_buttons[0].text == TranslationServer.translate("SONG_CURRENT_ITEM") % TranslationServer.translate("LIBRARY_ODE_TO_JOY"), "the active song has a text marker")
+	check(song_buttons.size() == 16 and app.get("more_song_grid").get_child_count() == 16, "every built-in song has a browsable catalog choice")
+	check(song_buttons[0].text.contains(TranslationServer.translate("SONG_CURRENT_ITEM") % TranslationServer.translate("LIBRARY_ODE_TO_JOY")), "the active song has a text marker")
+	check(app.call("catalog_indices").size() == 16, "unfiltered catalog includes all songs")
+	check(not app.get("catalog_filter_panel").visible and app.get("catalog_filter_toggle").is_visible_in_tree() == false, "filters start folded until Songs opens")
+	app.get("catalog_search").text = "Greensleeves"
+	check(app.call("catalog_indices") == [14], "title search finds a new traditional song")
+	app.get("catalog_search").text = "Fur Elise"
+	check(app.call("catalog_indices") == [1], "search also accepts unaccented song names")
+	app.get("catalog_search").text = ""
+	app.get("catalog_level").select(2)
+	check(app.call("catalog_indices").has(14) == false and app.call("catalog_indices").has(13), "suggested-level filter separates developing songs from challenges")
+	app.get("catalog_level").select(0)
+	app.get("catalog_duration").select(3)
+	check(app.call("catalog_indices").has(3) and not app.call("catalog_indices").has(1), "playing-time filter uses the actual default-tempo duration band")
+	app.get("catalog_duration").select(0)
+	app.get("catalog_tempo").select(3)
+	check(app.call("catalog_indices") == [13], "fast starting-BPM filter finds the new refrain")
+	app.get("catalog_tempo").select(0)
+	app.get("catalog_instrument").select(1)
+	check(not app.call("catalog_indices").has(15), "guitar filter excludes the two-hand piano-only study")
+	app.get("catalog_instrument").select(0)
+	app.get("catalog_sort").select(2)
+	check(app.call("catalog_indices")[0] == 1, "duration sort puts the shortest song first")
+	app.get("catalog_sort").select(0)
+	app.call("refresh_song_catalog")
+	app.get("catalog_search").text = "no song has this name"
+	app.call("refresh_song_catalog")
+	check(app.get("library_song_buttons").is_empty() and app.get("catalog_count").text == TranslationServer.translate("SONG_CATALOG_EMPTY"), "empty searches give an actionable recovery hint")
+	app.get("catalog_search").text = ""
+	app.call("refresh_song_catalog")
 	check(app.get("title") == TranslationServer.translate("LIBRARY_ODE_TO_JOY"), "default library opens with Ode to Joy")
 	check(app.get("preset_choice_buttons").size() == 8, "all eight practice layouts remain available in their own menu")
 	check(app.get("opened_drawer") == "WELCOME" and app.get("startup_help_check").button_pressed, "first startup opens quick start with the opt-out enabled")
@@ -52,7 +80,12 @@ func run() -> void:
 	check((menu_index.get_child(0) as Button).text == TranslationServer.translate("SONG_MENU"), "Songs is the first Menu choice for compact Theater")
 	check((menu_index.get_child(1) as Button).text == TranslationServer.translate("LAYOUTS") and (menu_index.get_child(3) as Button).text == TranslationServer.translate("TUNER"), "layouts and tuner are visible among the first menu actions")
 	app.call("toggle_drawer", "SONG_MENU")
-	check(song_buttons[4].is_visible_in_tree() and app.get("starter_song_grid").columns == 2, "wide song chooser exposes beginner melodies directly")
+	check(app.get("catalog_filter_toggle").is_visible_in_tree() and not app.get("catalog_filter_panel").visible, "song results are not hidden behind filters on first open")
+	app.get("catalog_filter_toggle").pressed.emit()
+	check(app.get("catalog_filter_panel").visible and app.get("catalog_filter_toggle").text == TranslationServer.translate("SONG_FILTERS_HIDE"), "filters can be expanded from the song menu")
+	app.get("catalog_filter_toggle").pressed.emit()
+	check(not app.get("catalog_filter_panel").visible, "filters can be folded after sorting")
+	check(song_buttons[4].is_visible_in_tree() and app.get("more_song_grid").columns == 2, "wide catalog exposes beginner melodies directly")
 	song_buttons[4].pressed.emit()
 	for _frame: int in range(30): await process_frame
 	check(app.get("active_library") == 4 and app.get("title") == TranslationServer.translate("LIBRARY_TWINKLE") and not app.get("menu_overlay").visible, "one song tap replaces the tune and returns to practice")
@@ -60,7 +93,7 @@ func run() -> void:
 	app.call("toggle_drawer", "SONG_MENU")
 	song_buttons[0].pressed.emit()
 	for _frame: int in range(30): await process_frame
-	check(app.get("active_library") == 0 and song_buttons[0].text == TranslationServer.translate("SONG_CURRENT_ITEM") % app.get("title"), "switching again updates the current song marker")
+	check(app.get("active_library") == 0 and song_buttons[0].text.contains(TranslationServer.translate("SONG_CURRENT_ITEM") % app.get("title")), "switching again updates the current song marker")
 	app.call("toggle_drawer", "DETAILS")
 	var arrangement_picker: OptionButton = app.get("arrangement_picker")
 	check(arrangement_picker.item_count == 3 and arrangement_picker.selected == 0, "arrangement details expose three modes with basic tab as the default")
@@ -92,7 +125,7 @@ func run() -> void:
 	for note: Dictionary in piano_song.notes:
 		if int(note.pitch) < 60: low_notes += 1
 		else: high_notes += 1
-	check(app.get("active_library") == 12 and low_notes >= 16 and high_notes >= 32 and piano_song.parts.size() == 2 and piano_song.staff_pair() == [0, 1], "original two-hand example loads separate source-linked treble and bass parts")
+	check(app.get("active_library") == 15 and low_notes >= 16 and high_notes >= 32 and piano_song.parts.size() == 2 and piano_song.staff_pair() == [0, 1], "original two-hand example loads separate source-linked treble and bass parts")
 	check(app.get("score").tiles[0].canvases.size() == 2 and app.get("cue").text.contains("Sounding notes"), "piano practice shows both staffs and pitch cues instead of guitar frets")
 	check(app.get("score").tiles[0].canvases[0].part == 0 and app.get("score").tiles[0].canvases[1].part == 1, "grand staff shows both source parts at their shared transport tick")
 	app.set("source_tick", 480.0)
@@ -686,7 +719,7 @@ func run() -> void:
 	check(app.get("dock_margin").get_parent() == app.get("root_box") and app.get("dock_panel").get_parent() == app.get("dock_margin"), "rotation restores inset dock parent")
 	check(app.get("menu_button").size.x >= 56 and app.get("menu_button").size.y <= 100, "portrait menu retains a readable shape after rotation")
 	check(app.get("songs_button").is_visible_in_tree() and app.get("import_button").is_visible_in_tree() and app.get("loop_button").is_visible_in_tree(), "phone exposes song switching, import and looping")
-	check(app.get("starter_song_grid").columns == 1 and app.get("more_song_grid").columns == 1, "phone song choices use one readable column")
+	check(app.get("catalog_filter_grid").columns == 1 and app.get("more_song_grid").columns == 1, "phone catalog filters and songs use one readable column")
 	check(app.get("menu_button").get_global_rect().end.x <= 374 and app.get("menu_button").global_position.y >= 8, "portrait header has comfortable edge spacing")
 	check(app.get("dock_panel").global_position.x >= 12 and app.get("dock_panel").get_global_rect().end.x <= 378 and app.get("dock_panel").get_global_rect().end.y <= 832, "portrait transport card is inset from every screen edge")
 	check(app.get("speed_control").get_child(0) == app.get("speed_unit_layout") and app.get("speed_unit_layout").get_child_count() == 2, "tempo display and slider form one control unit")

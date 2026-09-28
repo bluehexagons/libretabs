@@ -33,6 +33,9 @@ melody to enter. No swing or human timing is added.
 | brahms_lullaby | Complete vocal melody in C, preserving pickup, rests and dotted rhythm; piano introduction omitted | 3/4 · 84 |
 | minuet_in_g | Both 16-bar sections, without repeats or ornaments, down one octave | 3/4 · 100 |
 | piano_study | Original eight-bar two-hand C-major exercise with a quarter-note melody and alternating low half notes on separate treble and bass MIDI parts | 4/4 · 88 |
+| row_your_boat | Common eight-bar teaching round in C, played twice; rhythm simplified to quarters and halves | 4/4 · 96 |
+| jingle_bells | Familiar refrain twice in C, with an authored closing cadence and simplified quarter/half-note rhythm | 4/4 · 116 |
+| greensleeves | Seventeen-bar opening melody study in A minor, including a padded pickup; ornaments and repeats omitted | 3/4 · 90 |
 
 ## Score references checked 2026-09-11
 
@@ -74,3 +77,19 @@ These checks and automated rhythmic assertions do not replace musician review.
 Contributors should identify source work and authored arrangement separately;
 see [CONTRIBUTING.md](../../CONTRIBUTING.md). Do not replace these generated files
 with downloaded MIDI without a file-level license and attribution review.
+
+## Added repertoire references checked 2026-09-28
+
+- *Row, Row, Row Your Boat* is a traditional round; the [Library of Congress
+  traditional-music card](https://www.loc.gov/item/afc9999005.14125/) records
+  the work. The common classroom melody was written into this project's score
+  recipe, with a simplified rhythm and an original practice bass.
+- James Lord Pierpont's *Jingle Bells* was published as *The One Horse Open
+  Sleigh* in 1857; see the [Library of Congress chronology](https://www.loc.gov/collections/american-sheet-music-1820-to-1860/articles-and-essays/greatest-hits-1820-60-variety-music-cavalcade/1850-to-1860/).
+  The recipe is a simplified refrain, not the complete historical score.
+- *Greensleeves* is a traditional sixteenth-century melody; the [Library of
+  Congress historical note](https://www.loc.gov/static/events/concerts-from-the-library-of-congress/documents/programs/2324-Jordi-Savall-Hesperion-Apr2-program.pdf)
+  describes its early history. The [Mutopia listing](https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=109)
+  identifies a public-domain edition used only for reference. This project
+  writes its own simplified single-line melody and bass rather than copying
+  that edition's arrangement.

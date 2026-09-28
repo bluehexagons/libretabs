@@ -86,8 +86,17 @@ var play_control_key: String = ""
 var part_picker: OptionButton
 var demo_picker: OptionButton
 var library_song_buttons: Dictionary = {}
-var starter_song_grid: GridContainer
 var more_song_grid: GridContainer
+var catalog_filter_grid: GridContainer
+var catalog_search: LineEdit
+var catalog_filter_toggle: Button
+var catalog_filter_panel: VBoxContainer
+var catalog_level: OptionButton
+var catalog_duration: OptionButton
+var catalog_tempo: OptionButton
+var catalog_instrument: OptionButton
+var catalog_sort: OptionButton
+var catalog_count: Label
 var active_demo: int = -1
 var pending_demo: int = -1
 var active_library: int = -1
@@ -236,21 +245,23 @@ var instrument_slider: HSlider
 var click_slider: HSlider
 var fixtures: Array[String] = ["first_melody", "changing_tempo", "format0", "held_notes", "dense_chord"]
 const BUILT_IN_LIBRARY: Array[Dictionary] = [
-	{"file": "ode_to_joy", "title_key": "LIBRARY_ODE_TO_JOY"},
-	{"file": "fur_elise", "title_key": "LIBRARY_FUR_ELISE"},
-	{"file": "spring", "title_key": "LIBRARY_SPRING"},
-	{"file": "canon_in_d", "title_key": "LIBRARY_CANON_IN_D"},
-	{"file": "twinkle", "title_key": "LIBRARY_TWINKLE"},
-	{"file": "the_entertainer", "title_key": "LIBRARY_THE_ENTERTAINER"},
-	{"file": "mary_had_a_little_lamb", "title_key": "LIBRARY_MARY_HAD_A_LITTLE_LAMB"},
-	{"file": "frere_jacques", "title_key": "LIBRARY_FRERE_JACQUES"},
-	{"file": "auld_lang_syne", "title_key": "LIBRARY_AULD_LANG_SYNE"},
-	{"file": "yankee_doodle", "title_key": "LIBRARY_YANKEE_DOODLE"},
-	{"file": "brahms_lullaby", "title_key": "LIBRARY_BRAHMS_LULLABY"},
-	{"file": "minuet_in_g", "title_key": "LIBRARY_MINUET_IN_G"},
-	{"file": "piano_study", "title_key": "LIBRARY_PIANO_STUDY"},
+	{"file": "ode_to_joy", "title_key": "LIBRARY_ODE_TO_JOY", "level": 1, "seconds": 38, "bpm": 100, "views": ["guitar", "piano"]},
+	{"file": "fur_elise", "title_key": "LIBRARY_FUR_ELISE", "level": 2, "seconds": 21, "bpm": 72, "views": ["guitar", "piano"]},
+	{"file": "spring", "title_key": "LIBRARY_SPRING", "level": 1, "seconds": 34, "bpm": 100, "views": ["guitar", "piano"]},
+	{"file": "canon_in_d", "title_key": "LIBRARY_CANON_IN_D", "level": 1, "seconds": 48, "bpm": 80, "views": ["guitar", "piano"]},
+	{"file": "twinkle", "title_key": "LIBRARY_TWINKLE", "level": 0, "seconds": 29, "bpm": 100, "views": ["guitar", "piano"]},
+	{"file": "the_entertainer", "title_key": "LIBRARY_THE_ENTERTAINER", "level": 2, "seconds": 26, "bpm": 80, "views": ["guitar", "piano"]},
+	{"file": "mary_had_a_little_lamb", "title_key": "LIBRARY_MARY_HAD_A_LITTLE_LAMB", "level": 0, "seconds": 38, "bpm": 100, "views": ["guitar", "piano"]},
+	{"file": "frere_jacques", "title_key": "LIBRARY_FRERE_JACQUES", "level": 0, "seconds": 38, "bpm": 100, "views": ["guitar", "piano"]},
+	{"file": "auld_lang_syne", "title_key": "LIBRARY_AULD_LANG_SYNE", "level": 1, "seconds": 46, "bpm": 88, "views": ["guitar", "piano"]},
+	{"file": "yankee_doodle", "title_key": "LIBRARY_YANKEE_DOODLE", "level": 2, "seconds": 38, "bpm": 100, "views": ["guitar", "piano"]},
+	{"file": "brahms_lullaby", "title_key": "LIBRARY_BRAHMS_LULLABY", "level": 1, "seconds": 36, "bpm": 84, "views": ["guitar", "piano"]},
+	{"file": "minuet_in_g", "title_key": "LIBRARY_MINUET_IN_G", "level": 2, "seconds": 58, "bpm": 100, "views": ["guitar", "piano"]},
+	{"file": "row_your_boat", "title_key": "LIBRARY_ROW_YOUR_BOAT", "level": 0, "seconds": 40, "bpm": 96, "views": ["guitar", "piano"]},
+	{"file": "jingle_bells", "title_key": "LIBRARY_JINGLE_BELLS", "level": 1, "seconds": 33, "bpm": 116, "views": ["guitar", "piano"]},
+	{"file": "greensleeves", "title_key": "LIBRARY_GREENSLEEVES", "level": 2, "seconds": 34, "bpm": 90, "views": ["guitar", "piano"]},
+	{"file": "piano_study", "title_key": "LIBRARY_PIANO_STUDY", "level": 1, "seconds": 22, "bpm": 88, "views": ["piano"]},
 ]
-const STARTER_SONGS: Array[int] = [4, 6]
 const PRACTICE_PRESETS: Array[Dictionary] = [
 	{"id": "guitar", "key": "PRESET_GUITAR", "rows": [{"type": "staff", "height": 144}, {"type": "tab", "height": 176}], "style": 0},
 	{"id": "piano", "key": "PRESET_PIANO", "rows": [{"type": "treble", "height": 176}, {"type": "bass", "height": 176}], "style": 0},
@@ -659,10 +670,74 @@ func add_song_button(grid: GridContainer, index: int) -> void:
 	var key: String = str(BUILT_IN_LIBRARY[index].title_key)
 	var item: Button = button(key, func() -> void: load_library_item(index))
 	item.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	item.custom_minimum_size.y = 72
+	item.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	item.custom_minimum_size.y = 88
 	item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	grid.add_child(item)
 	library_song_buttons[index] = item
+	update_song_button(index)
+
+func catalog_choice(parent: VBoxContainer, title_key: String, keys: Array[String]) -> OptionButton:
+	parent.add_child(label(title_key, 18))
+	var choice: OptionButton = OptionButton.new()
+	choice.fit_to_longest_item = false
+	choice.custom_minimum_size.y = 56
+	for key: String in keys: choice.add_item(tr(key))
+	choice.item_selected.connect(func(_index: int) -> void: refresh_song_catalog())
+	parent.add_child(choice)
+	return choice
+
+func catalog_indices() -> Array[int]:
+	var result: Array[int] = []
+	var query: String = catalog_search.text.strip_edges().to_lower()
+	for index: int in range(BUILT_IN_LIBRARY.size()):
+		var entry: Dictionary = BUILT_IN_LIBRARY[index]
+		var searchable: String = tr(str(entry.title_key)).to_lower() + " " + str(entry.file).replace("_", " ")
+		if not query.is_empty() and not searchable.contains(query): continue
+		if catalog_level.selected > 0 and int(entry.level) != catalog_level.selected - 1: continue
+		var seconds: int = int(entry.seconds)
+		if catalog_duration.selected == 1 and seconds >= 30: continue
+		if catalog_duration.selected == 2 and (seconds < 30 or seconds >= 45): continue
+		if catalog_duration.selected == 3 and seconds < 45: continue
+		var bpm: int = int(entry.bpm)
+		if catalog_tempo.selected == 1 and bpm >= 90: continue
+		if catalog_tempo.selected == 2 and (bpm < 90 or bpm > 105): continue
+		if catalog_tempo.selected == 3 and bpm <= 105: continue
+		if catalog_instrument.selected == 1 and not entry.views.has("guitar"): continue
+		if catalog_instrument.selected == 2 and not entry.views.has("piano"): continue
+		result.append(index)
+	result.sort_custom(func(a: int, b: int) -> bool:
+		var first: Dictionary = BUILT_IN_LIBRARY[a]
+		var second: Dictionary = BUILT_IN_LIBRARY[b]
+		var field: String = ["level", "title", "seconds", "bpm"][catalog_sort.selected]
+		var left: Variant = tr(str(first.title_key)).to_lower() if field == "title" else first[field]
+		var right: Variant = tr(str(second.title_key)).to_lower() if field == "title" else second[field]
+		if left == right: return tr(str(first.title_key)).nocasecmp_to(tr(str(second.title_key))) < 0
+		return left < right)
+	return result
+
+func refresh_song_catalog() -> void:
+	if more_song_grid == null: return
+	for child: Node in more_song_grid.get_children():
+		more_song_grid.remove_child(child)
+		child.queue_free()
+	library_song_buttons.clear()
+	var indices: Array[int] = catalog_indices()
+	for index: int in indices: add_song_button(more_song_grid, index)
+	catalog_count.text = tr("SONG_CATALOG_COUNT") % [indices.size(), BUILT_IN_LIBRARY.size()]
+	if indices.is_empty(): catalog_count.text = tr("SONG_CATALOG_EMPTY")
+	catalog_count.show()
+
+func update_song_button(index: int) -> void:
+	if not library_song_buttons.has(index): return
+	var item: Button = library_song_buttons[index]
+	var entry: Dictionary = BUILT_IN_LIBRARY[index]
+	var level_key: String = ["SONG_LEVEL_FIRST", "SONG_LEVEL_GROWING", "SONG_LEVEL_CHALLENGE"][int(entry.level)]
+	var view_key: String = "SONG_VIEW_BOTH" if entry.views.size() > 1 else "SONG_VIEW_PIANO"
+	var title_text: String = tr(str(entry.title_key))
+	var heading: String = tr("SONG_CURRENT_ITEM") % title_text if index == active_library else title_text
+	item.text = tr("SONG_CATALOG_CARD") % [heading, tr(level_key), int(entry.seconds) / 60, int(entry.seconds) % 60, int(entry.bpm), tr(view_key)]
+	item.tooltip_text = tr("SONG_CATALOG_CARD_HELP") % [title_text, tr(level_key), int(entry.bpm), tr(view_key)]
 
 func build_color_legend(parent: Control) -> void:
 	color_legend = HFlowContainer.new()
@@ -1209,15 +1284,52 @@ func build_drawers() -> void:
 	library_title.max_lines_visible = 2
 	library_title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	library.add_child(library_title)
-	library.add_child(label("SONG_STARTERS", 18))
-	starter_song_grid = build_song_grid(library)
-	for index: int in STARTER_SONGS: add_song_button(starter_song_grid, index)
 	library.add_child(button("OPEN", open_midi))
-	library.add_child(label("SONG_FILE_BRIEF", 16))
-	library.add_child(label("SONG_MORE", 18))
+	library.add_child(label("SONG_CATALOG_SEARCH", 18))
+	catalog_search = LineEdit.new()
+	catalog_search.placeholder_text = tr("SONG_CATALOG_SEARCH_PLACEHOLDER")
+	catalog_search.tooltip_text = tr("SONG_CATALOG_SEARCH_HELP")
+	catalog_search.custom_minimum_size.y = 56
+	catalog_search.text_changed.connect(func(_value: String) -> void: refresh_song_catalog())
+	library.add_child(catalog_search)
+	catalog_filter_toggle = button("SONG_FILTERS_SHOW", func() -> void:
+		catalog_filter_panel.visible = not catalog_filter_panel.visible
+		catalog_filter_toggle.text = tr("SONG_FILTERS_HIDE" if catalog_filter_panel.visible else "SONG_FILTERS_SHOW"))
+	library.add_child(catalog_filter_toggle)
+	catalog_filter_panel = VBoxContainer.new()
+	catalog_filter_panel.add_theme_constant_override("separation", 10)
+	library.add_child(catalog_filter_panel)
+	catalog_filter_panel.hide()
+	catalog_filter_panel.add_child(label("SONG_CATALOG_INTRO", 18))
+	catalog_filter_grid = GridContainer.new()
+	catalog_filter_grid.columns = 2
+	catalog_filter_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	catalog_filter_panel.add_child(catalog_filter_grid)
+	var filters: Array[Array] = [
+		["SONG_CATALOG_LEVEL", ["SONG_FILTER_ALL", "SONG_LEVEL_FIRST", "SONG_LEVEL_GROWING", "SONG_LEVEL_CHALLENGE"]],
+		["SONG_CATALOG_DURATION", ["SONG_FILTER_ALL", "SONG_DURATION_SHORT", "SONG_DURATION_MEDIUM", "SONG_DURATION_LONG"]],
+		["SONG_CATALOG_TEMPO", ["SONG_FILTER_ALL", "SONG_TEMPO_SLOW", "SONG_TEMPO_MIDDLE", "SONG_TEMPO_FAST"]],
+		["SONG_CATALOG_INSTRUMENT", ["SONG_FILTER_ALL", "SONG_VIEW_GUITAR", "SONG_VIEW_PIANO"]],
+	]
+	var filter_choices: Array[OptionButton] = []
+	for spec: Array in filters:
+		var group: VBoxContainer = VBoxContainer.new()
+		group.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		catalog_filter_grid.add_child(group)
+		var keys: Array[String] = []
+		for key: String in spec[1]: keys.append(key)
+		filter_choices.append(catalog_choice(group, str(spec[0]), keys))
+	catalog_level = filter_choices[0]
+	catalog_duration = filter_choices[1]
+	catalog_tempo = filter_choices[2]
+	catalog_instrument = filter_choices[3]
+	catalog_sort = catalog_choice(catalog_filter_panel, "SONG_CATALOG_SORT", ["SONG_SORT_LEVEL", "SONG_SORT_TITLE", "SONG_SORT_DURATION", "SONG_SORT_BPM"])
+	catalog_filter_panel.add_child(label("SONG_LEVEL_HELP", 16))
+	catalog_count = label("SONG_CATALOG_COUNT", 18)
+	library.add_child(catalog_count)
 	more_song_grid = build_song_grid(library)
-	for index: int in range(BUILT_IN_LIBRARY.size()):
-		if index not in STARTER_SONGS: add_song_button(more_song_grid, index)
+	refresh_song_catalog()
+	library.add_child(label("SONG_FILE_BRIEF", 16))
 	library.add_child(label("SONG_FILE_HELP", 18))
 	library.add_child(label("DEMOS", 18))
 	demo_picker = OptionButton.new()
@@ -2314,7 +2426,7 @@ func responsive() -> void:
 	drawer.position = Vector2(0 if handedness == "left" else maxf(0, size.x - 560), 0)
 	drawer.size = Vector2(minf(size.x, 560), size.y)
 	var song_columns: int = 2 if size.x >= 600 and theme.default_font_size < 30 else 1
-	starter_song_grid.columns = song_columns
+	if catalog_filter_grid != null: catalog_filter_grid.columns = song_columns
 	more_song_grid.columns = song_columns
 	if welcome_step_pair != null: welcome_step_pair.vertical = song_columns == 1
 	if layout_preset_grid != null: layout_preset_grid.columns = song_columns
@@ -2604,11 +2716,7 @@ func update_song_picker() -> void:
 	else:
 		demo_picker.select(-1)
 		demo_picker.text = tr("CHOOSE_EXERCISE")
-	for index: int in library_song_buttons:
-		var item: Button = library_song_buttons[index]
-		var title_text: String = tr(str(BUILT_IN_LIBRARY[index].title_key))
-		item.text = tr("SONG_CURRENT_ITEM") % title_text if index == active_library else title_text
-		item.tooltip_text = title_text
+	for index: int in library_song_buttons: update_song_button(index)
 
 func _file_picked(name_value: String, bytes: PackedByteArray, error: String) -> void:
 	if not error.is_empty():
