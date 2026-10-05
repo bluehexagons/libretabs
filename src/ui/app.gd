@@ -275,6 +275,12 @@ const BUILT_IN_LIBRARY: Array[Dictionary] = [
 	{"file": "silent_night", "title_key": "LIBRARY_SILENT_NIGHT", "level": 1, "seconds": 60, "bpm": 72, "views": ["guitar", "piano"]},
 	{"file": "camptown_races", "title_key": "LIBRARY_CAMPTOWN_RACES", "level": 1, "seconds": 40, "bpm": 96, "views": ["guitar", "piano"]},
 	{"file": "au_clair_de_la_lune", "title_key": "LIBRARY_AU_CLAIR_DE_LA_LUNE", "level": 0, "seconds": 44, "bpm": 88, "views": ["guitar", "piano"]},
+	{"file": "hot_cross_buns", "title_key": "LIBRARY_HOT_CROSS_BUNS", "level": 0, "seconds": 36, "bpm": 80, "views": ["guitar", "piano"]},
+	{"file": "simple_gifts", "title_key": "LIBRARY_SIMPLE_GIFTS", "level": 1, "seconds": 46, "bpm": 88, "views": ["guitar", "piano"]},
+	{"file": "sakura_sakura", "title_key": "LIBRARY_SAKURA_SAKURA", "level": 1, "seconds": 42, "bpm": 80, "views": ["guitar", "piano"]},
+	{"file": "pop_goes_the_weasel", "title_key": "LIBRARY_POP_GOES_THE_WEASEL", "level": 1, "seconds": 32, "bpm": 90, "views": ["guitar", "piano"]},
+	{"file": "home_on_the_range", "title_key": "LIBRARY_HOME_ON_THE_RANGE", "level": 1, "seconds": 71, "bpm": 84, "views": ["guitar", "piano"]},
+	{"file": "oh_susanna", "title_key": "LIBRARY_OH_SUSANNA", "level": 1, "seconds": 41, "bpm": 100, "views": ["guitar", "piano"]},
 	{"file": "piano_study", "title_key": "LIBRARY_PIANO_STUDY", "level": 1, "seconds": 22, "bpm": 88, "views": ["piano"]},
 ]
 const PRACTICE_PRESETS: Array[Dictionary] = [

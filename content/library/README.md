@@ -44,6 +44,12 @@ melody to enter. No swing or human timing is added.
 | silent_night | Twenty-four-bar familiar melody in C; six eighth notes per measure, dotted rhythm and a tied closing note | 6/8 · 72 |
 | camptown_races | Sixteen-bar melody and refrain in C, played twice; even eighths and simplified phrase endings, without lyrics | 2/4 · 96 |
 | au_clair_de_la_lune | Complete sixteen-bar classroom melody in C, with the contrasting middle phrase and returning opening | 4/4 · 88 |
+| hot_cross_buns | Four-bar, three-note classroom melody in C, played three times; eighth-note middle phrase retained | 4/4 · 80 |
+| simple_gifts | Seventeen-bar Shaker melody study in C, with an eighth-note pickup padded to a full opening measure; two eight-bar sections without repeats | 4/4 · 88 |
+| sakura_sakura | Fourteen-bar melody from the 1894 source, transposed down a perfect fourth; original fixed E/B practice bass, without the historical piano accompaniment or expressive markings | 4/4 · 80 |
+| pop_goes_the_weasel | Eight-bar familiar nursery-song melody in C, played twice; six eighth notes per measure, including the high-note surprise and rests | 6/8 · 90 |
+| home_on_the_range | Thirty-three-bar verse and chorus in C, with padded pickup, dotted rhythm and tied phrase endings | 3/4 · 84 |
+| oh_susanna | Seventeen-bar instrumental melody study in C, including verse, refrain and padded pickup; dotted rhythms retained, without lyrics | 4/4 · 100 |
 
 ## Score references checked 2026-09-11
 
@@ -124,3 +130,22 @@ listed in the table above; musician review remains open.
 | silent_night | Franz Xaver Gruber, *Stille Nacht* (1818); [Silent Night Association history](https://www.stillenacht.at/en/history-of-the-song) | Historical authorship/date reference; familiar melody in C at 6/8, with original practice bass. No historical manuscript, vocal arrangement or modern edition is used. |
 | camptown_races | Stephen Collins Foster, *Gwine to Run All Night, or, De Camptown Races*, F. D. Benteen / W. T. Mayo (1850), first edition; [Library of Congress 2011564470](https://www.loc.gov/item/2011564470/) | Single-line instrumental teaching version in C, played twice with even eighths. No historical lyrics, choral refrain arrangement, piano accompaniment or score images are used. |
 | au_clair_de_la_lune | French traditional melody, documented in Édouard-Léon Scott de Martinville's 9 April 1860 phonautogram; [Library of Congress recording-history essay](https://blogs.loc.gov/now-see-hear/2021/08/from-the-recording-registry-phonautograms-c-1853-61/) | Historical melody identity only; common sixteen-bar classroom form in C. No recording, restoration audio, Debussy work or modern arrangement is used. |
+
+## Further repertoire references checked 2026-10-05
+
+This batch follows the same licensing and authorship boundaries as the eight
+additions above: the underlying historical melodies are public domain; this
+project's teaching realizations and original practice basses are CC0-1.0.
+Reference material keeps its own rights. Only the readable note recipes and
+generated MIDI files are bundled; no lyrics, downloaded scores, source code,
+MIDI, audio or modern accompaniment files are included. Historical versions
+and classroom variants can differ, and musician review remains open.
+
+| Added file | Historical work / exact reference | Reference use and adaptation |
+| --- | --- | --- |
+| hot_cross_buns | English traditional nursery song; Walter Crane, *The Baby's Bouquet* (1878), [Gutenberg edition 25432](https://www.gutenberg.org/cache/epub/25432/pg25432-images.html); Margaret Jenks, [2014 CMP teaching plan](https://wmeamusic.org/files/2016/03/CMPtp2014_GenMus_HotCrossBuns-Jenks.pdf) | Crane identifies a historical variant; the teaching plan confirms the common three-note, four-bar classroom form used here. That form is played three times. Neither the illustrated variant, teaching text nor an accompaniment is reproduced. |
+| simple_gifts | Joseph Brackett, nineteenth-century Shaker dance song; [Library of Congress song history](https://www.loc.gov/collections/songs-of-america/articles-and-essays/articles-about-songs/boatmens-dance-simple-gifts/); Roger Lee Hall's [historical manuscript and pickup discussion](https://www.americanmusicpreservation.com/JosephBrackettSimpleGifts.htm); [single-line ABC reference posted 2009-02-01](https://mudcat.org/thread.cfm?threadid=21813) | Original Shaker melody form, with two eighth-note pickup notes, both sections once and a full closing bar. The ABC checks pitches/rhythms only; no source code or chord treatment is copied. No Copland, Carter (*Lord of the Dance*) or Hall arrangement is used. |
+| sakura_sakura | Japanese melody in Rudolf Dittrich, *Nippon Gakufu*, Breitkopf & Härtel (1894), pp. 4–5; Tom Potter's [2006 melody-only transcription](https://www.daisyfield.com/music/jpm/pdf/NGS04-Sakura-Koto.pdf), explicitly donated to the public domain; [source history](https://www.daisyfield.com/music/htm/japan/Sakura.htm) | Single-line melody and durations checked against this edition, down five semitones. Historical piano accompaniment, text and expressive markings are omitted. A new fixed E/B bass alternates root/fifth rather than imposing a major-key progression. PDF/XML reference files remain outside the repository. |
+| pop_goes_the_weasel | English traditional dance and nursery song; Jas. W. Porter (1853), [Library of Congress 2023806623](https://www.loc.gov/item/2023806623/); [Library of Congress edition history](https://blogs.loc.gov/music/2016/07/sheet-music-spotlight-pop-goes-the-weasel/) | Historical identity reference; familiar eight-bar classroom variant in C, twice, rather than the complete dance or piano variations. The high A and surrounding rests are retained. No historical or modern keyboard accompaniment is used. |
+| home_on_the_range | Daniel E. Kelley / Brewster M. Higley, nineteenth-century song; John A. Lomax, *Cowboy Songs and Other Frontier Ballads* (1910); [Library of Congress history](https://www.loc.gov/collections/songs-of-america/articles-and-essays/articles-about-songs/home-on-the-range/); [Frank Nordberg single-line ABC reference](https://abcnotation.com/tunePage?a=trillian.mit.edu%2F~jc%2Fmusic%2Fabc%2Fmirror%2FLesterBailey%2Fmelnets_big_abc_file%2F05678) | Familiar verse/chorus melody, transposed from G to C, with pickup padding and a complete closing bar. ABC is reference-only for melodic form; its source, lyrics and chord annotations are not bundled. No Guion or other later arrangement is used. |
+| oh_susanna | Stephen Foster, *Susanna*, W. C. Peters & Company (1848); [University of Pittsburgh historical edition record](https://americanmusic.library.pitt.edu/content/oh-susanna) | Historical composition identity; common single-line verse and refrain in C with dotted rhythm and a padded pickup. No piano accompaniment, modern variation, recording or historical minstrel lyrics are included. |

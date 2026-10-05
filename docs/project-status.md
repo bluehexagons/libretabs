@@ -16,7 +16,7 @@ light/dark/midnight appearance, printing, Theater and capture layouts. Songs
 offers filters and short previews. Optional microphone listening, a tuner, MIDI
 input and an on-screen piano provide local live-playing feedback; microphone
 pitch estimates are limited to one note at a time. The default library contains
-23 public-domain teaching arrangements and an original two-hand piano study. The
+29 public-domain teaching arrangements and an original two-hand piano study. The
 six-lesson course and musical/platform acceptance gates remain incomplete.
 
 Godot is retained by [owner decision 0005](decisions/0005-godot-and-appearance.md).

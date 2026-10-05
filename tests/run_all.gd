@@ -146,7 +146,7 @@ func _initialize() -> void:
 		var library_projection: TabProjection = TabProjection.new()
 		library_projection.build(library_import.document, 0)
 		check(library_projection.placed == library_projection.eligible, "%s stays within the default guitar range" % name)
-	check(library_count == 24, "every bundled library song receives import and guitar-placement checks")
+	check(library_count == 30, "every bundled library song receives import and guitar-placement checks")
 	var duet: SongDocument = parse(library_file("ode_to_joy")).document
 	var duet_transport: PracticeTransport = PracticeTransport.new()
 	for muted_part: int in [0, 1]:

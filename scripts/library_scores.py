@@ -182,6 +182,53 @@ clair = ('C4 C4 C4 D4 | E4:8 D4:8 | C4 E4 D4 D4 | C4:16')
 add('au_clair_de_la_lune', 'Au Clair de la Lune - melody', 'French traditional',
     f'{clair} | {clair} | D4 D4 D4 D4 | A3:8 A3:8 | D4 C4 B3 A3 | G3:16 | {clair}', tempo=88)
 
+hot_cross = ('E4 D4 C4:8 | E4 D4 C4:8 | '
+             'C4:2 C4:2 C4:2 C4:2 D4:2 D4:2 D4:2 D4:2 | E4 D4 C4:8')
+add('hot_cross_buns', 'Hot Cross Buns - three times', 'English traditional',
+    f'{hot_cross} | {hot_cross} | {hot_cross}', tempo=80)
+
+add('simple_gifts', 'Simple Gifts - Shaker melody study', 'Joseph Brackett',
+    'R:12 G3:2 G3:2 | C4 C4:2 D4:2 E4:2 C4:2 E4:2 F4:2 | '
+    'G4 G4:2 G4:2 E4 D4:2 C4:2 | D4 D4 D4 D4 | D4:2 E4:2 D4:2 B3:2 G3 G3 | '
+    'C4:2 B3:2 C4:2 D4:2 E4 D4:2 D4:2 | E4 F4 G4:6 G4:2 | '
+    'D4 D4:2 E4:2 D4 C4:2 C4:2 | D4 C4:2 B3:2 D4:8 | '
+    'G4:8 E4:6 D4:2 | E4:2 F4:2 E4:2 D4:2 C4:6 D4:2 | '
+    'E4 E4:2 F4:2 G4 E4 | D4 D4:2 E4:2 D4:6 G3:2 | '
+    'C4:8 C4:6 D4:2 | E4 E4:2 F4:2 G4 G4:2 G4:2 | '
+    'D4 D4 E4 E4:2 D4:2 | C4 C4 C4:8', tempo=88)
+
+# Single-line 1894 Sakura melody, transposed down a perfect fourth.
+# The fixed E/B practice bass avoids imposing a major-key chord progression.
+add('sakura_sakura', 'Sakura Sakura - melody study', 'Japanese traditional',
+    'A4 A4 B4:8 | A4 A4 B4:8 | A4 B4 C5 B4 | A4 B4:2 A4:2 F4:8 | '
+    'E4 C4 E4 F4 | E4 E4:2 C4:2 B3:8 | '
+    'A4 B4 C5 B4 | A4 B4:2 A4:2 F4:8 | E4 C4 E4 F4 | E4 E4:2 C4:2 B3:8 | '
+    'A4 A4 B4:8 | A4 A4 B4:8 | D4 E4 F4:8 | B4:2 A4:2 F4 E4:8', tempo=80)
+
+weasel = ('C4:4 C4:2 D4:4 D4:2 | E4:2 G4:2 E4:2 C4:6 | '
+          'C4:4 C4:2 D4:4 D4:2 | E4:6 C4:2 R:4 | '
+          'C4:4 C4:2 D4:4 D4:2 | E4:2 G4:2 E4:2 C4:6 | '
+          'A4:2 R:4 D4:4 F4:2 | E4:6 C4:2 R:4')
+add('pop_goes_the_weasel', 'Pop Goes the Weasel - twice', 'English traditional',
+    f'{weasel} | {weasel}', (6, 8), 90)
+
+add('home_on_the_range', 'Home on the Range - verse and chorus', 'Daniel E. Kelley',
+    'R:8 G3 | G3 C4 D4 | E4:8 C4:2 B3:2 | A3 F4 F4 | F4:8 E4:2 F4:2 | '
+    'G4:6 C4:2 C4 | C4 B3 C4 | D4:12 | ~:4 R:4 G3:2 G3:2 | '
+    'G3 C4 D4 | E4:8 C4:2 B3:2 | A3 F4 F4 | F4:8 F4:2 F4:2 | '
+    'E4:6 D4:2 C4 | B3 C4 D4 | C4:12 | ~:4 R:8 | '
+    'G4:12 | F4 E4:6 D4:2 | E4:12 | ~:4 R:4 G3:2 G3:2 | '
+    'C4:6 C4:2 C4 | C4 B3 C4 | D4:12 | ~:4 R:4 G3:2 G3:2 | '
+    'G3 C4 D4 | E4:8 C4:2 B3:2 | A3 F4 F4 | F4:8 F4:2 F4:2 | '
+    'E4:6 D4:2 C4 | B3 C4 D4 | C4:12 | ~:4 R:8', (3, 4), 84)
+
+susanna_open = ('E4 G4 G4:6 A4:2 | G4 E4 C4:6 D4:2')
+add('oh_susanna', 'Oh! Susanna - melody study', 'Stephen Foster',
+    f'R:12 C4:2 D4:2 | {susanna_open} | E4 E4 D4 C4 | D4:12 C4:2 D4:2 | '
+    f'{susanna_open} | E4 E4 D4 D4 | C4:12 R:4 | '
+    'F4:8 F4:8 | A4 C5:8 A4 | G4 G4 E4 C4 | D4:12 C4:2 D4:2 | '
+    f'{susanna_open} | E4 E4 D4 D4 | C4:12 R:4', tempo=100)
+
 # Original, deliberately simple practice basses. These are editorial additions,
 # not transcriptions of the composers' accompaniment. Each root lasts one bar;
 # the MIDI recipe plays it, then its fifth, as two separate low notes.
@@ -211,6 +258,13 @@ BASS_ROOTS = {
                      41, 41, 48, 48, 43, 43, 48, 48, 48, 43, 48, 48],
     'camptown_races': [48, 48, 43, 43, 48, 48, 43, 48, 48, 48, 41, 48, 48, 48, 43, 48] * 2,
     'au_clair_de_la_lune': [48, 48, 43, 48, 48, 48, 43, 48, 50, 50, 43, 43, 48, 48, 43, 48],
+    'hot_cross_buns': [48, 48, 43, 48] * 3,
+    'simple_gifts': [43, 48, 48, 43, 43, 48, 48, 43, 43, 48, 48, 48, 43, 48, 48, 43, 48],
+    'sakura_sakura': [40] * 14,
+    'pop_goes_the_weasel': [48, 48, 43, 48, 48, 48, 41, 48] * 2,
+    'home_on_the_range': [43, 48, 48, 41, 41, 48, 48, 43, 43, 48, 48, 41, 41, 48, 43, 48, 48,
+                          48, 43, 48, 48, 48, 48, 43, 43, 48, 48, 41, 41, 48, 43, 48, 48],
+    'oh_susanna': [48, 48, 48, 48, 43, 48, 48, 43, 48, 41, 41, 48, 43, 48, 48, 43, 48],
 }
 for key, song in SONGS.items():
     roots = BASS_ROOTS[key]

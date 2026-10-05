@@ -12,7 +12,7 @@ from generate_fixtures import authored_melody
 
 class LibraryScores(unittest.TestCase):
     def test_all_phrases_and_artifacts(self):
-        self.assertEqual(len(SONGS), 23)
+        self.assertEqual(len(SONGS), 29)
         for key, song in SONGS.items():
             with self.subTest(song=key):
                 pitches, durations = zip(*song['notes'])
@@ -59,6 +59,30 @@ class LibraryScores(unittest.TestCase):
         self.assertEqual(SONGS['silent_night']['meter'], (6, 8))
         self.assertEqual(SONGS['camptown_races']['meter'], (2, 4))
         self.assertEqual(SONGS['silent_night']['notes'][-2:], [(60, 2400), (None, 480)])
+
+    def test_second_batch_preserves_distinctive_melody_features(self):
+        hot_cross = SONGS['hot_cross_buns']['notes']
+        self.assertEqual({pitch for pitch, _ in hot_cross}, {60, 62, 64})
+        self.assertEqual(len(hot_cross), 51)
+        self.assertEqual(hot_cross[:17], hot_cross[17:34])
+        self.assertEqual(hot_cross[:17], hot_cross[34:])
+        self.assertEqual(SONGS['simple_gifts']['notes'][:3],
+                         [(None, 1440), (55, 240), (55, 240)])
+        self.assertEqual(notes(SONGS['simple_gifts']['bars'].split('|')[3], (4, 4)),
+                         [(62, 480)] * 4)
+        sakura = SONGS['sakura_sakura']
+        self.assertEqual(sakura['notes'][:3], [(69, 480), (69, 480), (71, 960)])
+        self.assertEqual({pitch % 12 for pitch, _ in sakura['notes']}, {0, 2, 4, 5, 9, 11})
+        self.assertEqual(sakura['bass_roots'], [40] * 14)
+        self.assertEqual(SONGS['pop_goes_the_weasel']['meter'], (6, 8))
+        self.assertEqual(notes(SONGS['pop_goes_the_weasel']['bars'].split('|')[6], (6, 8)),
+                         [(69, 240), (None, 480), (62, 480), (65, 240)])
+        home = SONGS['home_on_the_range']
+        self.assertEqual(home['meter'], (3, 4))
+        self.assertEqual(len(home['bars'].split('|')), 33)
+        self.assertEqual(home['notes'][-2:], [(60, 1920), (None, 960)])
+        self.assertEqual(SONGS['oh_susanna']['notes'][:3],
+                         [(None, 1440), (60, 240), (62, 240)])
 
     def test_bad_bars_and_ties_are_rejected(self):
         for bars in ['C4 C4 C4', '~:16', 'R:8 ~:8']:

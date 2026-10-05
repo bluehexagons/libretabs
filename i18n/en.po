@@ -109,6 +109,24 @@ msgstr "Camptown Races · twice · Stephen Foster"
 msgid "LIBRARY_AU_CLAIR_DE_LA_LUNE"
 msgstr "Au Clair de la Lune · French traditional"
 
+msgid "LIBRARY_HOT_CROSS_BUNS"
+msgstr "Hot Cross Buns · three times · English traditional"
+
+msgid "LIBRARY_SIMPLE_GIFTS"
+msgstr "Simple Gifts · Shaker melody study · Joseph Brackett"
+
+msgid "LIBRARY_SAKURA_SAKURA"
+msgstr "Sakura Sakura · melody study · Japanese traditional"
+
+msgid "LIBRARY_POP_GOES_THE_WEASEL"
+msgstr "Pop Goes the Weasel · twice · English traditional"
+
+msgid "LIBRARY_HOME_ON_THE_RANGE"
+msgstr "Home on the Range · verse and chorus · Daniel E. Kelley"
+
+msgid "LIBRARY_OH_SUSANNA"
+msgstr "Oh! Susanna · melody study · Stephen Foster"
+
 msgid "SONG_CATALOG_INTRO"
 msgstr "Browse built-in songs by name, suggested practice level, playing time, starting speed, or instrument."
 

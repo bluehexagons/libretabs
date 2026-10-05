@@ -99,3 +99,17 @@ Those sources are reference-only: no third-party MIDI, recording, engraving,
 lyrics or modern arrangement asset is bundled or relicensed. CC0-1.0 applies to
 the project's authored MIDI realization and practice bass; underlying
 public-domain compositions are identified separately.
+
+## Further melody references (2026-10-05)
+
+Six further teaching realizations live in `scripts/library_scores.py` and
+`content/library/{hot_cross_buns,simple_gifts,sakura_sakura,pop_goes_the_weasel,home_on_the_range,oh_susanna}.mid`.
+Their historical sources, specific reference editions and adaptations are
+recorded in [the library provenance](../content/library/README.md#further-repertoire-references-checked-2026-10-05).
+Tom Potter's 2006 Sakura transcription explicitly dedicates that transcription
+to the public domain; it is used to check the melody, without copying the piano
+arrangement. Other modern pages and ABC transcriptions are reference-only and
+retain their own rights. No reference file, source code, scan, illustration,
+lyrics or recording is redistributed. The project's generated realizations
+and original basses are CC0-1.0; historical compositions are identified
+separately.

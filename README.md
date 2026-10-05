@@ -43,11 +43,12 @@ offline files and cross-origin isolation. The guide and release pages are the
 public entry points; the managed preview used during development is not a public
 launch URL.
 
-The Songs drawer includes 23 project-authored MIDI teaching arrangements of
+The Songs drawer includes 29 project-authored MIDI teaching arrangements of
 public-domain works and traditional melodies, plus an original two-hand piano
 study. Try Amazing Grace, Silent Night, Aura Lee or London Bridge for another
-familiar melody. Start with Twinkle, Twinkle Little Star or Mary Had a Little
-Lamb, then explore the longer themes when you feel ready. It also includes technical examples and
+familiar melody. Start with Hot Cross Buns, Twinkle, Twinkle Little Star or Mary
+Had a Little Lamb, then try Simple Gifts or Sakura Sakura when you feel ready.
+It also includes technical examples and
 opens local Standard MIDI File format 0 or 1 files. Imported files are read on
 the device and are not uploaded or saved by the prototype.
 
