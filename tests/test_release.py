@@ -191,11 +191,21 @@ class ReleaseTests(unittest.TestCase):
         self.assertIn('window.location.reload();', shell)
         self.assertIn('progressive_web_app/ensure_cross_origin_isolation_headers=true', presets)
 
+    def test_release_input_is_data_before_version_validation(self):
+        workflow = (ROOT / '.github/workflows/release.yml').read_text()
+        self.assertIn('REQUESTED_VERSION: ${{ inputs.version }}', workflow)
+        self.assertIn('RELEASE_REPOSITORY: ${{ github.repository }}', workflow)
+        self.assertIn('validate_release_request.py "$REQUESTED_VERSION"', workflow)
+        for line in workflow.splitlines():
+            if 'run:' in line:
+                self.assertNotIn('${{ inputs.', line)
+                self.assertNotIn('${{ github.repository }}', line)
+
     def test_package_only_release_cannot_deploy_an_unpublished_pages_link(self):
         workflow = (ROOT / '.github/workflows/release.yml').read_text()
         self.assertIn('if: inputs.deploy_pages && inputs.publish_release', workflow)
         self.assertIn('uses: ./.github/workflows/pages.yml', workflow)
-        self.assertIn('--repository "${{ github.repository }}"', workflow)
+        self.assertIn('--repository "$RELEASE_REPOSITORY"', workflow)
         package, publish = workflow.split('  publish:', 1)
         self.assertIn('contents: read', package)
         self.assertIn('contents: write', publish)

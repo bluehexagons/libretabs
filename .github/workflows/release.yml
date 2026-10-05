@@ -41,7 +41,9 @@ jobs:
         name: Select version and release notes
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 scripts/validate_release_request.py "${{ inputs.version }}" --repository "${{ github.repository }}" --notes-output "$RUNNER_TEMP/release-notes.md" --github-output "$GITHUB_OUTPUT"
+          REQUESTED_VERSION: ${{ inputs.version }}
+          RELEASE_REPOSITORY: ${{ github.repository }}
+        run: python3 scripts/validate_release_request.py "$REQUESTED_VERSION" --repository "$RELEASE_REPOSITORY" --notes-output "$RUNNER_TEMP/release-notes.md" --github-output "$GITHUB_OUTPUT"
   package:
     needs: prepare
     runs-on: ubuntu-24.04
@@ -58,7 +60,8 @@ jobs:
       - name: Resolve release notes
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 scripts/validate_release_request.py "$RELEASE_VERSION" --repository "${{ github.repository }}" --notes-output "$RUNNER_TEMP/release-notes.md"
+          RELEASE_REPOSITORY: ${{ github.repository }}
+        run: python3 scripts/validate_release_request.py "$RELEASE_VERSION" --repository "$RELEASE_REPOSITORY" --notes-output "$RUNNER_TEMP/release-notes.md"
       - name: Install locked engine and release templates
         run: python3 scripts/install_toolchain.py --directory "$RUNNER_TEMP/godot" --templates
       - name: Verify release source
@@ -97,7 +100,8 @@ jobs:
       - name: Resolve release notes
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 scripts/validate_release_request.py "$RELEASE_VERSION" --repository "${{ github.repository }}" --notes-output "$RUNNER_TEMP/release-notes.md"
+          RELEASE_REPOSITORY: ${{ github.repository }}
+        run: python3 scripts/validate_release_request.py "$RELEASE_VERSION" --repository "$RELEASE_REPOSITORY" --notes-output "$RUNNER_TEMP/release-notes.md"
       - name: Publish GitHub prerelease
         env:
           GH_TOKEN: ${{ github.token }}
