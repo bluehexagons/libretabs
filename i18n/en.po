@@ -85,6 +85,30 @@ msgstr "Jingle Bells · simplified refrain · James Lord Pierpont"
 msgid "LIBRARY_GREENSLEEVES"
 msgstr "Greensleeves · melody study · traditional"
 
+msgid "LIBRARY_AMAZING_GRACE"
+msgstr "Amazing Grace · New Britain melody · traditional"
+
+msgid "LIBRARY_LONDON_BRIDGE"
+msgstr "London Bridge · twice · English traditional"
+
+msgid "LIBRARY_OLD_MACDONALD"
+msgstr "Old MacDonald Had a Farm · melody study · traditional"
+
+msgid "LIBRARY_WHEN_THE_SAINTS"
+msgstr "When the Saints Go Marching In · melody study · traditional"
+
+msgid "LIBRARY_AURA_LEE"
+msgstr "Aura Lee · George R. Poulton"
+
+msgid "LIBRARY_SILENT_NIGHT"
+msgstr "Silent Night · Franz Xaver Gruber"
+
+msgid "LIBRARY_CAMPTOWN_RACES"
+msgstr "Camptown Races · twice · Stephen Foster"
+
+msgid "LIBRARY_AU_CLAIR_DE_LA_LUNE"
+msgstr "Au Clair de la Lune · French traditional"
+
 msgid "SONG_CATALOG_INTRO"
 msgstr "Browse built-in songs by name, suggested practice level, playing time, starting speed, or instrument."
 

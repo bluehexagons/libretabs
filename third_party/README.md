@@ -87,3 +87,15 @@ in [the library provenance](../content/library/README.md#score-references-checke
 No third-party MIDI, score graphics, LilyPond source, accompaniment or editorial
 ornaments are bundled. Source editions keep their own license; CC0 applies only
 to the project's authored music data and arrangement treatment.
+
+## Added melody references (2026-10-05)
+
+Eight further public-domain tunes use project-authored note recipes and practice
+basses at `scripts/library_scores.py` and `content/library/*.mid`. Historical
+source titles, dates, publishers/collections, exact reference links and the
+used melody scope are listed in
+[the library record](../content/library/README.md#added-repertoire-references-checked-2026-10-05).
+Those sources are reference-only: no third-party MIDI, recording, engraving,
+lyrics or modern arrangement asset is bundled or relicensed. CC0-1.0 applies to
+the project's authored MIDI realization and practice bass; underlying
+public-domain compositions are identified separately.

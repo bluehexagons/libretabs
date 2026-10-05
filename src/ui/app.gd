@@ -267,6 +267,14 @@ const BUILT_IN_LIBRARY: Array[Dictionary] = [
 	{"file": "row_your_boat", "title_key": "LIBRARY_ROW_YOUR_BOAT", "level": 0, "seconds": 40, "bpm": 96, "views": ["guitar", "piano"]},
 	{"file": "jingle_bells", "title_key": "LIBRARY_JINGLE_BELLS", "level": 1, "seconds": 33, "bpm": 116, "views": ["guitar", "piano"]},
 	{"file": "greensleeves", "title_key": "LIBRARY_GREENSLEEVES", "level": 2, "seconds": 34, "bpm": 90, "views": ["guitar", "piano"]},
+	{"file": "amazing_grace", "title_key": "LIBRARY_AMAZING_GRACE", "level": 1, "seconds": 38, "bpm": 80, "views": ["guitar", "piano"]},
+	{"file": "london_bridge", "title_key": "LIBRARY_LONDON_BRIDGE", "level": 0, "seconds": 24, "bpm": 80, "views": ["guitar", "piano"]},
+	{"file": "old_macdonald", "title_key": "LIBRARY_OLD_MACDONALD", "level": 0, "seconds": 30, "bpm": 96, "views": ["guitar", "piano"]},
+	{"file": "when_the_saints", "title_key": "LIBRARY_WHEN_THE_SAINTS", "level": 0, "seconds": 38, "bpm": 100, "views": ["guitar", "piano"]},
+	{"file": "aura_lee", "title_key": "LIBRARY_AURA_LEE", "level": 1, "seconds": 44, "bpm": 88, "views": ["guitar", "piano"]},
+	{"file": "silent_night", "title_key": "LIBRARY_SILENT_NIGHT", "level": 1, "seconds": 60, "bpm": 72, "views": ["guitar", "piano"]},
+	{"file": "camptown_races", "title_key": "LIBRARY_CAMPTOWN_RACES", "level": 1, "seconds": 40, "bpm": 96, "views": ["guitar", "piano"]},
+	{"file": "au_clair_de_la_lune", "title_key": "LIBRARY_AU_CLAIR_DE_LA_LUNE", "level": 0, "seconds": 44, "bpm": 88, "views": ["guitar", "piano"]},
 	{"file": "piano_study", "title_key": "LIBRARY_PIANO_STUDY", "level": 1, "seconds": 22, "bpm": 88, "views": ["piano"]},
 ]
 const PRACTICE_PRESETS: Array[Dictionary] = [

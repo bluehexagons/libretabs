@@ -12,7 +12,7 @@ from generate_fixtures import authored_melody
 
 class LibraryScores(unittest.TestCase):
     def test_all_phrases_and_artifacts(self):
-        self.assertEqual(len(SONGS), 15)
+        self.assertEqual(len(SONGS), 23)
         for key, song in SONGS.items():
             with self.subTest(song=key):
                 pitches, durations = zip(*song['notes'])
@@ -39,6 +39,26 @@ class LibraryScores(unittest.TestCase):
         self.assertEqual(SONGS['row_your_boat']['notes'][:4], [(60, 480), (60, 480), (60, 480), (62, 480)])
         self.assertEqual(SONGS['jingle_bells']['notes'][:3], [(64, 480), (64, 480), (64, 960)])
         self.assertEqual(SONGS['greensleeves']['meter'], (3, 4))
+
+    def test_added_melodies_keep_their_openings_and_meter(self):
+        openings = {
+            'amazing_grace': [(None, 960), (55, 480), (60, 720), (64, 240)],
+            'london_bridge': [(67, 240), (69, 240), (67, 240), (65, 240)],
+            'old_macdonald': [(60, 480), (60, 480), (60, 480), (55, 480)],
+            'when_the_saints': [(None, 480), (60, 480), (64, 480), (65, 480)],
+            'aura_lee': [(55, 480), (60, 480), (59, 480), (60, 480)],
+            'silent_night': [(67, 720), (69, 240), (67, 480), (64, 1440)],
+            'camptown_races': [(67, 240), (67, 240), (64, 240), (67, 240)],
+            'au_clair_de_la_lune': [(60, 480), (60, 480), (60, 480), (62, 480)],
+        }
+        for key, expected in openings.items():
+            with self.subTest(song=key):
+                self.assertEqual(SONGS[key]['notes'][:4], expected)
+        self.assertEqual(SONGS['amazing_grace']['meter'], (3, 4))
+        self.assertEqual(SONGS['london_bridge']['meter'], (2, 4))
+        self.assertEqual(SONGS['silent_night']['meter'], (6, 8))
+        self.assertEqual(SONGS['camptown_races']['meter'], (2, 4))
+        self.assertEqual(SONGS['silent_night']['notes'][-2:], [(60, 2400), (None, 480)])
 
     def test_bad_bars_and_ties_are_rejected(self):
         for bars in ['C4 C4 C4', '~:16', 'R:8 ~:8']:

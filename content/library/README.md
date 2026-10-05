@@ -36,6 +36,14 @@ melody to enter. No swing or human timing is added.
 | row_your_boat | Common eight-bar teaching round in C, played twice; rhythm simplified to quarters and halves | 4/4 · 96 |
 | jingle_bells | Familiar refrain twice in C, with an authored closing cadence and simplified quarter/half-note rhythm | 4/4 · 116 |
 | greensleeves | Seventeen-bar opening melody study in A minor, including a padded pickup; ornaments and repeats omitted | 3/4 · 90 |
+| amazing_grace | Seventeen-bar New Britain melody in C, with a padded pickup, dotted-quarter/eighth pairs and tied phrase endings | 3/4 · 80 |
+| london_bridge | Eight-bar familiar melody in C, played twice; opening dotted-eighth/sixteenth pair simplified to even eighths | 2/4 · 80 |
+| old_macdonald | Twelve-bar classroom melody in C, including the repeated animal-call phrase; one verse, without lyrics | 4/4 · 96 |
+| when_the_saints | Sixteen-bar straight-time melody study in C, with padded pickups and held notes; no jazz improvisation | 4/4 · 100 |
+| aura_lee | Sixteen-bar verse and refrain in C, with quarter/half-note rhythm and short phrase-ending rests | 4/4 · 88 |
+| silent_night | Twenty-four-bar familiar melody in C; six eighth notes per measure, dotted rhythm and a tied closing note | 6/8 · 72 |
+| camptown_races | Sixteen-bar melody and refrain in C, played twice; even eighths and simplified phrase endings, without lyrics | 2/4 · 96 |
+| au_clair_de_la_lune | Complete sixteen-bar classroom melody in C, with the contrasting middle phrase and returning opening | 4/4 · 88 |
 
 ## Score references checked 2026-09-11
 
@@ -93,3 +101,26 @@ with downloaded MIDI without a file-level license and attribution review.
   identifies a public-domain edition used only for reference. This project
   writes its own simplified single-line melody and bass rather than copying
   that edition's arrangement.
+
+## Added repertoire references checked 2026-10-05
+
+These eight MIDI realizations were written for LibreTabs from familiar
+public-domain melodies. Only project-authored note/duration recipes and the
+original practice bass are bundled, dedicated under CC0-1.0. Historical tunes
+retain their public-domain status; that dedication does not claim authorship of
+the underlying compositions. No referenced engraving, lyrics, MIDI, recording,
+modern harmonization or arrangement file is redistributed. The references below
+identify the historical work, rather than certify this teaching version as an
+exact transcription. Traditional variants and editorial simplifications are
+listed in the table above; musician review remains open.
+
+| Added file | Historical work / dated reference | Reference use and adaptation |
+| --- | --- | --- |
+| amazing_grace | Traditional *New Britain*, paired with *Amazing Grace* in William Walker's *Southern Harmony* (1835); [Library of Congress timeline](https://www.loc.gov/collections/amazing-grace/articles-and-essays/timeline/) | Historical melody identity; common single-line C-major version, preserving dotted rhythm and a padded pickup. No historical or modern choral harmonization is used. |
+| london_bridge | English traditional singing game; William Wells Newell, *Games and Songs of American Children* (1883), no. 150, [Gutenberg edition 45762](https://www.gutenberg.org/cache/epub/45762/pg45762-images.html) | Historical singing-game reference only. Common classroom tune in C, played twice with even opening eighths; no book illustrations or arrangement are used. |
+| old_macdonald | Traditional farm-song family, including *Ohio* in F. T. Nettleingham's *Tommy's Tunes* (1917), Erskine Macdonald; [Sibley Music Library copy, explicitly public domain](https://urresearch.rochester.edu/institutionalPublicationPublicView.action?institutionalItemId=19340) | Historical variant reference only. Familiar classroom form in C, including repeated animal-call notes; no text, scan or accompaniment is used. |
+| when_the_saints | Traditional spiritual, documented in a November 1923 Paramount Jubilee Singers recording as *When All the Saints Go Marching In*; [Library of Congress historical essay](https://www.loc.gov/static/programs/national-recording-preservation-board/documents/When-the-Saint-Go-Marching-In_Riccardi.pdf) | Common melody only, in straight 4/4. No recording, Armstrong/Russell jazz arrangement, solo or modern harmonization is used. |
+| aura_lee | George R. Poulton, *Aura Lea*, John Church Jr. (1861); [Morgan Library probable first-edition record](https://www.themorgan.org/music-manuscripts-and-printed-music/222259), also [Levy collection 024.002](https://levysheetmusic.mse.jhu.edu/collection/024/002) | Historical composition identity; single-line melody in C. No later *Love Me Tender* lyrics, arrangement or recording is used. |
+| silent_night | Franz Xaver Gruber, *Stille Nacht* (1818); [Silent Night Association history](https://www.stillenacht.at/en/history-of-the-song) | Historical authorship/date reference; familiar melody in C at 6/8, with original practice bass. No historical manuscript, vocal arrangement or modern edition is used. |
+| camptown_races | Stephen Collins Foster, *Gwine to Run All Night, or, De Camptown Races*, F. D. Benteen / W. T. Mayo (1850), first edition; [Library of Congress 2011564470](https://www.loc.gov/item/2011564470/) | Single-line instrumental teaching version in C, played twice with even eighths. No historical lyrics, choral refrain arrangement, piano accompaniment or score images are used. |
+| au_clair_de_la_lune | French traditional melody, documented in Édouard-Léon Scott de Martinville's 9 April 1860 phonautogram; [Library of Congress recording-history essay](https://blogs.loc.gov/now-see-hear/2021/08/from-the-recording-registry-phonautograms-c-1853-61/) | Historical melody identity only; common sixteen-bar classroom form in C. No recording, restoration audio, Debussy work or modern arrangement is used. |

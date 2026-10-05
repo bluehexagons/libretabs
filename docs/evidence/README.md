@@ -10,6 +10,8 @@ history and identify the newer record or current handoff.
 
 Latest maintenance review: [2026-10-05](maintenance-2026-10-05.md).
 
+Expanded library verification: [eight added tunes, 2026-10-05](added-repertoire-2026-10-05.md).
+
 Musical review: [arrangement techniques](arrangement-techniques-review.md).
 
 Instructional copy and navigation: [beginner guidance review](user-guidance.md).

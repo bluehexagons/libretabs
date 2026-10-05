@@ -22,12 +22,16 @@ func run() -> void:
 	for _frame: int in range(30): await process_frame
 	check(app.get("song") != null, "initial sample is ready")
 	var song_buttons: Dictionary = app.get("library_song_buttons")
-	check(song_buttons.size() == 16 and app.get("more_song_grid").get_child_count() == 16, "every built-in song has a browsable catalog choice")
+	check(song_buttons.size() == 24 and app.get("more_song_grid").get_child_count() == 24, "every built-in song has a browsable catalog choice")
 	check(app.get("library_song_titles")[0].text.contains(TranslationServer.translate("SONG_CURRENT_ITEM") % TranslationServer.translate("LIBRARY_ODE_TO_JOY")), "the active song has a text marker")
-	check(app.call("catalog_indices").size() == 16, "unfiltered catalog includes all songs")
+	check(app.call("catalog_indices").size() == 24, "unfiltered catalog includes all songs")
 	check(not app.get("catalog_filter_panel").visible and app.get("catalog_filter_toggle").is_visible_in_tree() == false, "filters start folded until Songs opens")
 	app.get("catalog_search").text = "Greensleeves"
 	check(app.call("catalog_indices") == [14], "title search finds a new traditional song")
+	for title: String in ["Amazing Grace", "London Bridge", "Old MacDonald", "When the Saints", "Aura Lee", "Silent Night", "Camptown Races", "Au Clair"]:
+		app.get("catalog_search").text = title
+		var matches: Array = app.call("catalog_indices")
+		check(matches.size() == 1 and matches[0] >= 15 and matches[0] <= 22, "%s is searchable in the expanded catalog" % title)
 	app.get("catalog_search").text = "Fur Elise"
 	check(app.call("catalog_indices") == [1], "search also accepts unaccented song names")
 	app.get("catalog_search").text = ""
@@ -41,7 +45,7 @@ func run() -> void:
 	check(app.call("catalog_indices") == [13], "fast starting-BPM filter finds the new refrain")
 	app.get("catalog_tempo").select(0)
 	app.get("catalog_instrument").select(1)
-	check(not app.call("catalog_indices").has(15), "guitar filter excludes the two-hand piano-only study")
+	check(not app.call("catalog_indices").has(23), "guitar filter excludes the two-hand piano-only study")
 	app.get("catalog_instrument").select(0)
 	app.get("catalog_sort").select(2)
 	check(app.call("catalog_indices")[0] == 1, "duration sort puts the shortest song first")
@@ -87,7 +91,7 @@ func run() -> void:
 	check(not app.get("catalog_filter_panel").visible, "filters can be folded after sorting")
 	check(song_buttons[4].is_visible_in_tree() and app.get("more_song_grid").columns == 2, "wide catalog exposes beginner melodies directly")
 	var preview_buttons: Dictionary = app.get("library_preview_buttons")
-	check(preview_buttons.size() == 16 and preview_buttons[4].text == TranslationServer.translate("SONG_PREVIEW"), "every song offers a labeled listen action")
+	check(preview_buttons.size() == 24 and preview_buttons[4].text == TranslationServer.translate("SONG_PREVIEW"), "every song offers a labeled listen action")
 	var pending_import: MidiImport = MidiImport.new(FileAccess.get_file_as_bytes("res://content/library/twinkle.mid"))
 	app.set("importer", pending_import)
 	preview_buttons[4].pressed.emit()
@@ -155,7 +159,7 @@ func run() -> void:
 	for note: Dictionary in piano_song.notes:
 		if int(note.pitch) < 60: low_notes += 1
 		else: high_notes += 1
-	check(app.get("active_library") == 15 and low_notes >= 16 and high_notes >= 32 and piano_song.parts.size() == 2 and piano_song.staff_pair() == [0, 1], "original two-hand example loads separate source-linked treble and bass parts")
+	check(app.get("active_library") == 23 and low_notes >= 16 and high_notes >= 32 and piano_song.parts.size() == 2 and piano_song.staff_pair() == [0, 1], "original two-hand example loads separate source-linked treble and bass parts")
 	check(app.get("score").tiles[0].canvases.size() == 2 and app.get("cue").text.contains("Sounding notes"), "piano practice shows both staffs and pitch cues instead of guitar frets")
 	check(app.get("score").tiles[0].canvases[0].part == 0 and app.get("score").tiles[0].canvases[1].part == 1, "grand staff shows both source parts at their shared transport tick")
 	app.set("source_tick", 480.0)

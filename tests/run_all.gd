@@ -128,7 +128,13 @@ func _initialize() -> void:
 	var song: SongDocument = imported.document
 	check(song.parts.size() == 2 and song.notes.size() == 19, "two pitched parts, nineteen notes")
 	check(song.measures.size() == 4, "four measures")
-	for name: String in ["ode_to_joy", "fur_elise", "spring", "canon_in_d", "twinkle", "the_entertainer", "mary_had_a_little_lamb", "frere_jacques", "auld_lang_syne", "yankee_doodle", "brahms_lullaby", "minuet_in_g"]:
+	var library_files: PackedStringArray = DirAccess.get_files_at("res://content/library")
+	library_files.sort()
+	var library_count: int = 0
+	for filename: String in library_files:
+		if not filename.ends_with(".mid"): continue
+		library_count += 1
+		var name: String = filename.trim_suffix(".mid")
 		var library_import: MidiImport = parse(library_file(name))
 		check(library_import.error.is_empty(), "%s default library MIDI imports" % name)
 		var library_song: SongDocument = library_import.document
@@ -140,6 +146,7 @@ func _initialize() -> void:
 		var library_projection: TabProjection = TabProjection.new()
 		library_projection.build(library_import.document, 0)
 		check(library_projection.placed == library_projection.eligible, "%s stays within the default guitar range" % name)
+	check(library_count == 24, "every bundled library song receives import and guitar-placement checks")
 	var duet: SongDocument = parse(library_file("ode_to_joy")).document
 	var duet_transport: PracticeTransport = PracticeTransport.new()
 	for muted_part: int in [0, 1]:

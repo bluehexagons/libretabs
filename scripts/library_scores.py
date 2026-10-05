@@ -132,6 +132,56 @@ greensleeves = ('R:8 A4 | C5 D5 E5 | F5:8 E5 | D5 B4 G4 | A4:8 R:4 | '
 add('greensleeves', 'Greensleeves - melody study', 'Traditional', greensleeves,
     (3, 4), 90)
 
+# Familiar single-line teaching versions; historical melody references and
+# deliberate simplifications are recorded in content/library/README.md.
+amazing = ('R:8 G3 | C4:6 E4:2 C4 | E4:8 D4 | C4:8 A3 | G3:8 G3 | '
+           'C4:6 E4:2 C4 | E4:8 D4 | G4:12 | ~:8 E4:2 G4:2 | '
+           'G4:6 E4:2 C4 | E4:8 D4 | C4:8 A3 | G3:8 G3 | '
+           'C4:6 E4:2 C4 | E4:8 D4 | C4:12 | ~:8 R:4')
+add('amazing_grace', 'Amazing Grace - New Britain melody', 'Traditional',
+    amazing, (3, 4), 80)
+
+london = ('G4:2 A4:2 G4:2 F4:2 | E4:2 F4:2 G4:4 | D4:2 E4:2 F4:4 | E4:2 F4:2 G4:4 | '
+          'G4:2 A4:2 G4:2 F4:2 | E4:2 F4:2 G4:4 | D4:4 G4:4 | E4:2 C4:6')
+add('london_bridge', 'London Bridge - twice', 'English traditional',
+    f'{london} | {london}', (2, 4), 80)
+
+add('old_macdonald', 'Old MacDonald Had a Farm - melody study', 'Traditional',
+    'C4 C4 C4 G3 | A3 A3 G3:8 | E4 E4 D4 D4 | C4:12 R:4 | '
+    'G3:2 G3:2 C4 C4 C4 | G3:2 G3:2 C4 C4 C4 | '
+    'C4:2 C4:2 C4 C4:2 C4:2 C4 | C4:2 C4:2 C4:2 C4:2 C4:8 | '
+    'C4 C4 C4 G3 | A3 A3 G3:8 | E4 E4 D4 D4 | C4:12 R:4', tempo=96)
+
+add('when_the_saints', 'When the Saints Go Marching In - melody study', 'Traditional',
+    'R:4 C4 E4 F4 | G4:16 | R:4 C4 E4 F4 | G4:16 | '
+    'R:4 C4 E4 F4 | G4:8 E4:8 | C4:8 E4:8 | D4:12 R:4 | '
+    'R:8 E4 D4 | C4:8 C4:8 | E4:8 G4 G4 | F4:16 | '
+    'R:4 E4 F4 G4 | E4:8 C4:8 | D4:8 C4:8 | C4:12 R:4', tempo=100)
+
+aura = ('G3 C4 B3 C4 | D4 A3 D4:8 | C4 B3 A3 B3 | C4:12 R:4')
+add('aura_lee', 'Aura Lee - verse and refrain', 'George R. Poulton',
+    f'{aura} | {aura} | E4 E4 E4:8 | E4 F4 G4:8 | G4 F4 E4 F4 | G4:12 R:4 | {aura}',
+    tempo=88)
+
+add('silent_night', 'Silent Night - melody', 'Franz Xaver Gruber',
+    'G4:6 A4:2 G4:4 | E4:12 | G4:6 A4:2 G4:4 | E4:12 | '
+    'D5:8 D5:4 | B4:12 | C5:8 C5:4 | G4:12 | '
+    'A4:8 A4:4 | C5:6 B4:2 A4:4 | G4:6 A4:2 G4:4 | E4:12 | '
+    'A4:8 A4:4 | C5:6 B4:2 A4:4 | G4:6 A4:2 G4:4 | E4:12 | '
+    'D5:8 D5:4 | F5:6 D5:2 B4:4 | C5:12 | E5:12 | '
+    'C5:4 G4:4 E4:4 | G4:6 F4:2 D4:4 | C4:12 | ~:8 R:4', (6, 8), 72)
+
+camptown = ('G4:2 G4:2 E4:2 G4:2 | A4:2 G4:2 E4:4 | E4:2 D4:6 | E4:2 D4:6 | '
+            'G4:2 G4:2 E4:2 G4:2 | A4:2 G4:2 E4:4 | D4:2 D4:2 E4:2 D4:2 | C4:6 R:2 | '
+            'C4:2 C4:2 E4:2 G4:2 | C5:8 | A4:2 A4:2 C5:2 A4:2 | G4:8 | '
+            'G4:2 G4:2 E4:2 G4:2 | A4:2 G4:2 E4:4 | D4:2 D4:2 E4:2 D4:2 | C4:6 R:2')
+add('camptown_races', 'Camptown Races - melody study, twice', 'Stephen Foster',
+    f'{camptown} | {camptown}', (2, 4), 96)
+
+clair = ('C4 C4 C4 D4 | E4:8 D4:8 | C4 E4 D4 D4 | C4:16')
+add('au_clair_de_la_lune', 'Au Clair de la Lune - melody', 'French traditional',
+    f'{clair} | {clair} | D4 D4 D4 D4 | A3:8 A3:8 | D4 C4 B3 A3 | G3:16 | {clair}', tempo=88)
+
 # Original, deliberately simple practice basses. These are editorial additions,
 # not transcriptions of the composers' accompaniment. Each root lasts one bar;
 # the MIDI recipe plays it, then its fifth, as two separate low notes.
@@ -152,6 +202,15 @@ BASS_ROOTS = {
     'row_your_boat': [48, 48, 41, 48, 48, 48, 43, 48] * 2,
     'jingle_bells': [48, 48, 48, 48, 41, 48, 43, 43, 48, 48, 48, 48, 41, 48, 43, 48],
     'greensleeves': [45, 45, 43, 45, 45, 45, 43, 45, 45, 43, 45, 45, 48, 43, 45, 45, 45],
+    'amazing_grace': [48, 48, 48, 45, 43, 48, 48, 43, 43, 48, 48, 45, 43, 48, 43, 48, 48],
+    'london_bridge': [48, 48, 43, 48, 48, 48, 43, 48] * 2,
+    'old_macdonald': [48, 41, 43, 48, 48, 48, 48, 43, 48, 41, 43, 48],
+    'when_the_saints': [48, 48, 48, 48, 48, 48, 48, 43, 43, 48, 48, 41, 41, 48, 43, 48],
+    'aura_lee': [48, 50, 43, 48, 48, 50, 43, 48, 48, 41, 48, 43, 48, 50, 43, 48],
+    'silent_night': [48, 48, 48, 48, 43, 43, 48, 48, 41, 41, 48, 48,
+                     41, 41, 48, 48, 43, 43, 48, 48, 48, 43, 48, 48],
+    'camptown_races': [48, 48, 43, 43, 48, 48, 43, 48, 48, 48, 41, 48, 48, 48, 43, 48] * 2,
+    'au_clair_de_la_lune': [48, 48, 43, 48, 48, 48, 43, 48, 50, 50, 43, 43, 48, 48, 43, 48],
 }
 for key, song in SONGS.items():
     roots = BASS_ROOTS[key]
