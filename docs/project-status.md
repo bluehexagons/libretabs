@@ -2,7 +2,7 @@
 
 To use the current player, start with the [user guide](user-guide.md).
 
-Snapshot date: 2026-09-08. Current phase: evaluating public **prototype releases**.
+Snapshot date: 2026-10-05. Current phase: evaluating public **prototype releases**.
 
 The [evidence records](evidence/README.md) are dated snapshots. This handoff is
 the current summary; older measurements remain useful for their stated scope.
@@ -12,7 +12,10 @@ the current summary; older measurements remain useful for their stated scope.
 LibreTabs has a runnable Godot practice player: local MIDI import, project-authored
 examples, synchronized staff/tab, generated audio, count-in, tempo, seeking,
 loops, saved preferences, keyboard reference notes, responsive control placement,
-light/dark appearance, printing and capture layouts. The default library contains
+light/dark/midnight appearance, printing, Theater and capture layouts. Songs
+offers filters and short previews. Optional microphone listening, a tuner, MIDI
+input and an on-screen piano provide local live-playing feedback; microphone
+pitch estimates are limited to one note at a time. The default library contains
 12 project-authored excerpts, including familiar traditional melodies. The
 six-lesson course and musical/platform acceptance gates remain incomplete.
 
@@ -32,10 +35,11 @@ is available on the managed network. It is not a public launch URL.
   Pages. Desktop packages use official release templates, not the editor.
   Checksums, notices, and curated or generated release notes accompany releases.
 - The latest public evaluation prerelease,
-  [`0.0.1-prototype.4`](https://github.com/bluehexagons/libretabs/releases/tag/v0.0.1-prototype.4),
-  was built and published by that workflow. Its web, Windows, Linux, manifest,
-  and checksum assets are public, and the Pages guide now identifies and links to
-  that same version.
+  [`0.0.1-prototype.11`](https://github.com/bluehexagons/libretabs/releases/tag/v0.0.1-prototype.11),
+  was published on 2026-09-28 by that workflow. Its web, Windows, Linux, manifest,
+  and checksum assets are public. The Pages guide links to versioned downloads
+  when deployed with a release version; a standalone source deployment can show
+  “current source build” instead.
 - The repository is public. The [instructional/download site](https://bluehexagons.github.io/libretabs/)
   now links to live threaded and compatibility players on Pages. Public Chromium
   confirmed both builds render; the threaded build remains isolated on an offline
@@ -75,6 +79,9 @@ present placement coverage as the M3 compatibility-corpus result.
 The repository is bluehexagons/libretabs; its local checkout is named litetabs.
 Software is Apache-2.0, original documentation/music/fixtures are CC0-1.0, and
 third-party notices remain separate. Name confirmation and support ownership
-need owner attention before the first feedback release. Native packages
+need owner attention before public alpha. Native packages
 are unsigned; signing is future release work. Broader contributor recruitment
 also needs a contribution-conduct policy and repository-protection review.
+
+The [October maintenance review](evidence/maintenance-2026-10-05.md) records
+release-input and file-picker fixes, dependency checks and verification coverage.
