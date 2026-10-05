@@ -25,7 +25,7 @@ def run(args, failure=False):
     elif result.returncode or re.search(r'(SCRIPT ERROR:|^ERROR:|^WARNING:|Unicode parsing error|FAIL:)',result.stdout,re.M):
         raise SystemExit('Verification failed: '+str(args))
 run(['python3', '-m', 'unittest', 'discover', '-s', 'tests', '-p', 'test_*.py'])
-run(['node','--test','tests/service_worker.test.mjs','tests/playing_bridge.test.mjs'])
+run(['node','--test','tests/service_worker.test.mjs','tests/playing_bridge.test.mjs','tests/host_bridge.test.mjs'])
 run([engine,'--headless','--path','.','--import'])
 run([engine,'--headless','--path','.','--editor','--quit-after','60'])
 run([engine,'--headless','--path','.','--script','res://tests/run_all.gd'])

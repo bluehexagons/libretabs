@@ -30,22 +30,30 @@
     pick(callback, limit) {
       const ticket = ++generation;
       if (chooser) chooser.remove();
-      chooser = document.createElement('input');
-      chooser.type = 'file'; chooser.accept = '.mid,.midi'; chooser.hidden = true;
-      document.body.append(chooser);
-      chooser.addEventListener('cancel', () => {
-        if (ticket === generation) callback('', null, 'CANCELLED');
-      }, {once: true});
-      chooser.addEventListener('change', async () => {
-        const file = chooser.files[0];
-        if (!file) return;
-        if (file.size > limit) { callback('', null, 'ERR_SIZE'); return; }
+      const input = document.createElement('input');
+      chooser = input;
+      input.type = 'file'; input.accept = '.mid,.midi'; input.hidden = true;
+      document.body.append(input);
+      let settled = false;
+      const finish = (name, bytes, error) => {
+        if (ticket !== generation || settled) return;
+        settled = true;
+        input.remove();
+        if (chooser === input) chooser = null;
+        callback(name, bytes, error);
+      };
+      input.addEventListener('cancel', () => finish('', null, 'CANCELLED'), {once: true});
+      input.addEventListener('change', async () => {
+        if (ticket !== generation || settled) return;
+        const file = input.files[0];
+        if (!file) { finish('', null, 'CANCELLED'); return; }
+        if (file.size > limit) { finish('', null, 'ERR_SIZE'); return; }
         try {
           const bytes = await file.arrayBuffer();
-          if (ticket === generation) callback(file.name, bytes, '');
-        } catch (_) { if (ticket === generation) callback('', null, 'ERR_READ'); }
+          finish(file.name, bytes, '');
+        } catch (_) { finish('', null, 'ERR_READ'); }
       }, {once: true});
-      chooser.click();
+      input.click();
     },
     onHidden(callback) {
       document.addEventListener('visibilitychange', () => { if (document.hidden) callback(); });
