@@ -2,28 +2,35 @@
 
 These are project-authored teaching arrangements of public-domain compositions,
 with music data dedicated under CC0-1.0. They contain no downloaded MIDI,
-recordings, or score graphics. The melody and a simple original practice bass
-occupy separate MIDI parts and can be muted independently. Bass lines are new
-editorial additions, not transcriptions of a composer's accompaniment. These
+recordings, or score graphics. The melody and a simple practice bass occupy separate MIDI parts and can be
+muted independently. Except for the identified Canon ground bass, bass lines
+are new editorial additions, not transcriptions of a composer's accompaniment. These
 remain selected themes and teaching excerpts, not complete arrangements of
 larger instrumental works.
 
 The readable recipe is [library_scores.py](../../scripts/library_scores.py).
-Every bar is checked against its meter before MIDI generation. Durations use
+Every bar is checked against its meter before MIDI generation. An explicit
+`transpose` value lowers the complete Canon, Greensleeves, Silent Night and
+Minuet melodies by one octave for guitar practice, preserving all intervals and
+rhythms. Durations use
 sixteenth-note units; rests are explicit and ties extend the original attack.
 Pickups (notes before the first full measure) begin after padding rests in the
 first MIDI measure so the following downbeat aligns correctly. Tempos are chosen
 for practice, not claims about an authoritative performance. Ornamentation and
-original historical accompaniment are omitted. The practice bass plays a low
+historical accompaniment other than the Canon ground bass are omitted. The practice bass plays a low
 root followed by its fifth in each bar; the first bass note waits for a pickup
-melody to enter. No swing or human timing is added.
+melody to enter. Canon in D instead follows the traditional eight-note ground
+bass over two bars, with an authored tonic/fifth cadence in each final study
+bar. Bass notes release 30 MIDI ticks before the next attack. The original
+piano study releases its quarter/half notes 60 ticks early. These articulation
+gaps are deliberate; no swing or human timing is added.
 
 | File | Scope and rhythm review | Meter / quarter-note BPM |
 | --- | --- | --- |
 | ode_to_joy | Complete 16-bar familiar theme in C, including contrasting phrase and dotted cadences | 4/4 · 100 |
 | fur_elise | Opening theme twice, with pickup, sixteenths, rests and held A endings | 3/8 · 72 |
 | spring | Longer opening theme in E; eighths, sixteenths and dotted notes restored; final E half-note is an authored practice cadence | 4/4 · 100 |
-| canon_in_d | First violin's opening four bars and three bars of the eighth-note variation, with an authored whole-note D cadence; study played twice | 4/4 · 80 |
+| canon_in_d | First violin's opening four bars and three bars of the eighth-note variation, down one octave over the quarter-note ground bass; authored whole-note D cadence; study played twice | 4/4 · 80 |
 | twinkle | Complete 12-bar melody, including the contrasting middle and returning opening | 4/4 · 100 |
 | the_entertainer | First 16-bar strain with pickup; syncopations tied across beats/bars; melody extracted from chords; final pickup replaced by rest | 2/4 · 80 |
 | mary_had_a_little_lamb | Complete eight bars twice, with full-length closing note | 4/4 · 100 |
@@ -35,13 +42,13 @@ melody to enter. No swing or human timing is added.
 | piano_study | Original eight-bar two-hand C-major exercise with a quarter-note melody and alternating low half notes on separate treble and bass MIDI parts | 4/4 · 88 |
 | row_your_boat | Common eight-bar teaching round in C, played twice; rhythm simplified to quarters and halves | 4/4 · 96 |
 | jingle_bells | Familiar refrain twice in C, with an authored closing cadence and simplified quarter/half-note rhythm | 4/4 · 116 |
-| greensleeves | Seventeen-bar opening melody study in A minor, including a padded pickup; ornaments and repeats omitted | 3/4 · 90 |
+| greensleeves | Both sixteen-bar melody sections in A minor plus a padded pickup, down one octave; dotted-quarter/eighth pairs and chromatic notes retained; accompaniment replaced | 3/4 · 90 |
 | amazing_grace | Seventeen-bar New Britain melody in C, with a padded pickup, dotted-quarter/eighth pairs and tied phrase endings | 3/4 · 80 |
 | london_bridge | Eight-bar familiar melody in C, played twice; opening dotted-eighth/sixteenth pair simplified to even eighths | 2/4 · 80 |
 | old_macdonald | Twelve-bar classroom melody in C, including the repeated animal-call phrase; one verse, without lyrics | 4/4 · 96 |
 | when_the_saints | Sixteen-bar straight-time melody study in C, with padded pickups and held notes; no jazz improvisation | 4/4 · 100 |
-| aura_lee | Sixteen-bar verse and refrain in C, with quarter/half-note rhythm and short phrase-ending rests | 4/4 · 88 |
-| silent_night | Twenty-four-bar familiar melody in C; six eighth notes per measure, dotted rhythm and a tied closing note | 6/8 · 72 |
+| aura_lee | Sixteen-bar verse and refrain in C; historical 2/4 note values doubled into 4/4 teaching bars, with dotted refrain rhythm; closing notes shortened for phrase-ending rests; grace note omitted | 4/4 · 88 |
+| silent_night | Twenty-four-bar familiar melody in C, down one octave for guitar; six eighth notes per measure, dotted rhythm and a tied closing note | 6/8 · 72 |
 | camptown_races | Sixteen-bar melody and refrain in C, played twice; even eighths and simplified phrase endings, without lyrics | 2/4 · 96 |
 | au_clair_de_la_lune | Complete sixteen-bar classroom melody in C, with the contrasting middle phrase and returning opening | 4/4 · 88 |
 | hot_cross_buns | Four-bar, three-note classroom melody in C, played three times; eighth-note middle phrase retained | 4/4 · 80 |
@@ -149,3 +156,51 @@ and classroom variants can differ, and musician review remains open.
 | pop_goes_the_weasel | English traditional dance and nursery song; Jas. W. Porter (1853), [Library of Congress 2023806623](https://www.loc.gov/item/2023806623/); [Library of Congress edition history](https://blogs.loc.gov/music/2016/07/sheet-music-spotlight-pop-goes-the-weasel/) | Historical identity reference; familiar eight-bar classroom variant in C, twice, rather than the complete dance or piano variations. The high A and surrounding rests are retained. No historical or modern keyboard accompaniment is used. |
 | home_on_the_range | Daniel E. Kelley / Brewster M. Higley, nineteenth-century song; John A. Lomax, *Cowboy Songs and Other Frontier Ballads* (1910); [Library of Congress history](https://www.loc.gov/collections/songs-of-america/articles-and-essays/articles-about-songs/home-on-the-range/); [Frank Nordberg single-line ABC reference](https://abcnotation.com/tunePage?a=trillian.mit.edu%2F~jc%2Fmusic%2Fabc%2Fmirror%2FLesterBailey%2Fmelnets_big_abc_file%2F05678) | Familiar verse/chorus melody, transposed from G to C, with pickup padding and a complete closing bar. ABC is reference-only for melodic form; its source, lyrics and chord annotations are not bundled. No Guion or other later arrangement is used. |
 | oh_susanna | Stephen Foster, *Susanna*, W. C. Peters & Company (1848); [University of Pittsburgh historical edition record](https://americanmusic.library.pitt.edu/content/oh-susanna) | Historical composition identity; common single-line verse and refrain in C with dotted rhythm and a padded pickup. No piano accompaniment, modern variation, recording or historical minstrel lyrics are included. |
+
+## Whole-library review 2026-10-05
+
+All 30 library files were checked for recipe/bar consistency, MIDI import
+warnings, paired positive note intervals, independent melody/bass parts,
+guitar range, staff display range and catalog metadata. Existing documented simplifications and
+transpositions remain deliberate teaching choices, rather than claims of exact
+historical performance. See [the review evidence](../../docs/evidence/song-review-2026-10-05.md)
+for the per-song findings and verification limits.
+
+Corrections from score comparison:
+
+- **Greensleeves:** the previous 17-bar recipe changed melody notes, compressed
+  the opening rhythm and omitted the refrain. The replacement includes the
+  quarter-note pickup and both 16-bar sections, checked against Aaron
+  Fontaine's Public Domain melody in
+  [Mutopia-2013/03/23-109](https://www.mutopiaproject.org/ftp/Traditional/Greensleaves/Greensleaves.ly).
+  Only melody pitches and durations were consulted. No LilyPond code,
+  engraved score, MIDI or source accompaniment is bundled. Practice tempo is
+  90 quarter-note BPM; the catalog duration is now 66 seconds. The complete
+  melody is lowered one octave from the reference for the guitar teaching
+  realization, avoiding high-register MIDI-number display fallbacks.
+- **Aura Lee:** the previous refrain incorrectly ascended through F/G and
+  repeated verse material. The corrected vocal melody was checked against
+  Poulton's *Aura Lea*, John Church Jr., 1861, plate 231-4, pages 3–4,
+  [Levy 024.002](https://levysheetmusic.mse.jhu.edu/collection/024/002).
+  Melody is transposed from G to C; eighth/sixteenth values become
+  quarter/eighth values in the existing 4/4 teaching meter. The small grace
+  note before “in” is omitted; its principal melody note is retained. No
+  historical lyrics, piano introduction, accompaniment or choral parts are used.
+- **Canon in D:** the old bass changed its root only once per bar, stretching
+  the harmonic cycle over eight bars beneath a melody whose cycle lasts two.
+  The replacement uses the public-domain ground pitches D–A–B–F♯–G–D–G–A
+  as quarter notes; final study cadences remain authored additions. The complete
+  first-violin melody is lowered one octave for guitar practice and to fit the
+  prototype staff display. The
+  [mfiles score reference](https://www.mfiles.co.uk/scores/pachelbel-canon-in-d.htm)
+  remains reference-only and retains its modern publisher's rights.
+
+MIDI time-signature metadata now specifies 36 MIDI clocks per metronome click
+for 3/8 and 6/8 (one dotted quarter), rather than 24. Quarter-note tempo,
+melody timing and the application's shared transport are unchanged by this
+metadata correction. Research downloads remained outside the repository.
+
+Silent Night's complete melody is also lowered one octave from its readable
+source bars: the full-library display-range check found its high F exceeded
+the default guitar staff range. This preserves the melodic intervals and 6/8
+rhythm while giving every note a staff symbol alongside its tab placement.

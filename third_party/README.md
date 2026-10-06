@@ -113,3 +113,17 @@ retain their own rights. No reference file, source code, scan, illustration,
 lyrics or recording is redistributed. The project's generated realizations
 and original basses are CC0-1.0; historical compositions are identified
 separately.
+
+## Whole-library corrections (2026-10-05)
+
+Reference versions and used melody scope for Greensleeves (Fontaine,
+Mutopia-2013/03/23-109, Public Domain), Aura Lea (Poulton, Church 1861,
+Levy 024.002, plate 231-4, pp. 3–4, public-domain composition) and Canon in D
+(Pachelbel's public-domain ground bass, modern mfiles score reference only)
+are recorded in [the whole-library review](../content/library/README.md#whole-library-review-2026-10-05).
+Used paths are `scripts/library_scores.py` and the corresponding
+`content/library/{greensleeves,aura_lee,canon_in_d}.mid`. The project authors
+only the MIDI realization and practice arrangement; third-party source code,
+lyrics, scans, performances, ornamentation and accompaniment are not bundled
+or dedicated under the project license. Silent Night's uniform octave lowering
+uses its previously recorded melody reference. No new dependency is introduced.

@@ -85,3 +85,8 @@ also needs a contribution-conduct policy and repository-protection review.
 
 The [October maintenance review](evidence/maintenance-2026-10-05.md) records
 release-input and file-picker fixes, dependency checks and verification coverage.
+
+The [whole-library song review](evidence/song-review-2026-10-05.md) records
+Greensleeves/Aura Lee melody corrections, Canon bass timing, explicit octave
+lowering for staff readability and checks across all 30 catalog songs. These
+remain teaching realizations awaiting musician acceptance.

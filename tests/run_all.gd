@@ -139,14 +139,35 @@ func _initialize() -> void:
 		check(library_import.error.is_empty(), "%s default library MIDI imports" % name)
 		var library_song: SongDocument = library_import.document
 		check(library_song.parts.size() == 2 and library_song.staff_pair() == [0, 1] and library_song.notes.size() >= 8, "%s has distinct higher melody and lower bass parts" % name)
+		check(library_song.diagnostics.is_empty(), "%s imports without musical-data warnings" % name)
+		var valid_intervals: bool = true
+		var staff_fits: bool = true
+		var part_ends: Dictionary = {}
 		var low_notes: int = 0
 		for note: Dictionary in library_song.notes:
+			var part: int = int(note.part)
+			if part == 0:
+				var staff_y: float = ScoreLayout.staff_y(int(note.pitch))
+				staff_fits = staff_fits and staff_y >= 12 and staff_y <= 172
+			valid_intervals = valid_intervals and int(note.end) > int(note.start) and int(note.end) <= library_song.end_tick
+			valid_intervals = valid_intervals and int(note.start) >= int(part_ends.get(part, 0)) and note.source_event_ids.size() == 2
+			part_ends[part] = int(note.end)
 			if int(note.part) == 1 and int(note.pitch) < 60: low_notes += 1
+		check(staff_fits, "%s melody fits the default guitar staff without pitch-marker fallback" % name)
+		check(valid_intervals, "%s has positive, paired, nonoverlapping note intervals within the song" % name)
 		check(low_notes >= library_song.measures.size(), "%s provides bass notes throughout the practice excerpt" % name)
 		var library_projection: TabProjection = TabProjection.new()
 		library_projection.build(library_import.document, 0)
 		check(library_projection.placed == library_projection.eligible, "%s stays within the default guitar range" % name)
 	check(library_count == 30, "every bundled library song receives import and guitar-placement checks")
+	var canon: SongDocument = parse(library_file("canon_in_d")).document
+	var ground_pitches: Array[int] = [50, 45, 47, 42, 43, 50, 43, 45]
+	var ground_index: int = 0
+	for note: Dictionary in canon.notes:
+		if int(note.part) != 1 or int(note.start) >= 3840: continue
+		check(int(note.pitch) == ground_pitches[ground_index] and int(note.start) == ground_index * 480 and int(note.end) == ground_index * 480 + 450, "Canon ground bass follows each opening quarter-note harmony")
+		ground_index += 1
+	check(ground_index == 8, "Canon ground bass completes its cycle in two bars")
 	var duet: SongDocument = parse(library_file("ode_to_joy")).document
 	var duet_transport: PracticeTransport = PracticeTransport.new()
 	for muted_part: int in [0, 1]:

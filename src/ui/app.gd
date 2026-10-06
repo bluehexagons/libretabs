@@ -266,7 +266,7 @@ const BUILT_IN_LIBRARY: Array[Dictionary] = [
 	{"file": "minuet_in_g", "title_key": "LIBRARY_MINUET_IN_G", "level": 2, "seconds": 58, "bpm": 100, "views": ["guitar", "piano"]},
 	{"file": "row_your_boat", "title_key": "LIBRARY_ROW_YOUR_BOAT", "level": 0, "seconds": 40, "bpm": 96, "views": ["guitar", "piano"]},
 	{"file": "jingle_bells", "title_key": "LIBRARY_JINGLE_BELLS", "level": 1, "seconds": 33, "bpm": 116, "views": ["guitar", "piano"]},
-	{"file": "greensleeves", "title_key": "LIBRARY_GREENSLEEVES", "level": 2, "seconds": 34, "bpm": 90, "views": ["guitar", "piano"]},
+	{"file": "greensleeves", "title_key": "LIBRARY_GREENSLEEVES", "level": 2, "seconds": 66, "bpm": 90, "views": ["guitar", "piano"]},
 	{"file": "amazing_grace", "title_key": "LIBRARY_AMAZING_GRACE", "level": 1, "seconds": 38, "bpm": 80, "views": ["guitar", "piano"]},
 	{"file": "london_bridge", "title_key": "LIBRARY_LONDON_BRIDGE", "level": 0, "seconds": 24, "bpm": 80, "views": ["guitar", "piano"]},
 	{"file": "old_macdonald", "title_key": "LIBRARY_OLD_MACDONALD", "level": 0, "seconds": 30, "bpm": 96, "views": ["guitar", "piano"]},

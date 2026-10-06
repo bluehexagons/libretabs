@@ -34,10 +34,14 @@ def midi(tracks, fmt=1):
 def authored_melody(title, composer, pitches, durations, bass_roots, tempo=100, time_numerator=4, time_denominator=4):
     if len(pitches) != len(durations):
         raise ValueError(f'{title}: pitch and duration counts differ')
+    if any(duration <= 0 for duration in durations):
+        raise ValueError(f'{title}: note/rest durations must be positive')
     microseconds = round(60_000_000 / tempo)
+    # Compound meters group three eighths into each metronome click.
+    clocks_per_click = 36 if time_denominator == 8 and time_numerator % 3 == 0 else 24
     conductor = [
         (0, b'\xff\x51\x03' + microseconds.to_bytes(3, 'big')),
-        (0, b'\xff\x58\x04' + bytes([time_numerator, {2: 1, 4: 2, 8: 3}[time_denominator], 0x18, 0x08])),
+        (0, b'\xff\x58\x04' + bytes([time_numerator, {2: 1, 4: 2, 8: 3}[time_denominator], clocks_per_click, 0x08])),
         (0, meta(0x03, title)),
         (0, meta(0x01, composer)),
     ]
@@ -61,15 +65,29 @@ def authored_melody(title, composer, pitches, durations, bass_roots, tempo=100, 
         raise ValueError(f'{title}: melody has no notes')
     bass_events = [(0, meta(0x03, 'Bass'))]
     for bar, root in enumerate(bass_roots):
-        if not 36 <= root <= 55 or root + 7 >= 60:
-            raise ValueError(f'{title}: bass root is outside the intended low range')
         bar_start = bar * bar_ticks
-        if first_onset >= bar_start + bar_ticks:
-            continue
-        start = max(bar_start, first_onset)
-        second = bar_start + ((time_numerator + 1) // 2) * beat_ticks
-        spans = [(start, second, root), (second, bar_start + bar_ticks, root + 7)] if start < second else [(start, bar_start + bar_ticks, root)]
+        if isinstance(root, tuple):
+            if not root or bar_ticks % len(root):
+                raise ValueError(f'{title}: bass pattern must divide the bar evenly')
+            step = bar_ticks // len(root)
+            spans = [(bar_start + i * step, bar_start + (i + 1) * step, pitch)
+                     for i, pitch in enumerate(root)]
+        else:
+            if not 36 <= root <= 52:
+                raise ValueError(f'{title}: bass root is outside the intended low range')
+            if first_onset >= bar_start + bar_ticks:
+                continue
+            start = max(bar_start, first_onset)
+            second = bar_start + ((time_numerator + 1) // 2) * beat_ticks
+            spans = ([(start, second, root), (second, bar_start + bar_ticks, root + 7)]
+                     if start < second else [(start, bar_start + bar_ticks, root)])
+        if any(not 36 <= pitch < 60 for _, _, pitch in spans):
+            raise ValueError(f'{title}: bass pitch is outside the intended low range')
+        spans = [(max(tick, first_onset), finish, pitch) for tick, finish, pitch in spans
+                 if finish > first_onset]
         for tick, finish, pitch in spans:
+            if finish - tick <= 30:
+                raise ValueError(f'{title}: bass note is too short for release gap')
             bass_events.extend([(tick, bytes([0x91, pitch, 70])),
                                 (finish - 30, bytes([0x81, pitch, 0]))])
     return midi([track(conductor, cursor), track(melody_events, cursor), track(bass_events, cursor)])

@@ -14,6 +14,8 @@ Expanded library verification: [eight added tunes, 2026-10-05](added-repertoire-
 
 Further library verification: [six more tunes, 2026-10-05](further-repertoire-2026-10-05.md).
 
+Whole-library song review: [all 30 songs, 2026-10-05](song-review-2026-10-05.md).
+
 Musical review: [arrangement techniques](arrangement-techniques-review.md).
 
 Instructional copy and navigation: [beginner guidance review](user-guidance.md).

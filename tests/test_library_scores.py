@@ -16,6 +16,9 @@ class LibraryScores(unittest.TestCase):
         for key, song in SONGS.items():
             with self.subTest(song=key):
                 pitches, durations = zip(*song['notes'])
+                expected = [(pitch + song['transpose'] if pitch is not None else None, duration)
+                            for pitch, duration in notes(song['bars'], song['meter'])]
+                self.assertEqual(song['notes'], expected)
                 self.assertGreaterEqual(len(song['bars'].split('|')), 12)
                 self.assertTrue(all(40 <= p <= 84 for p in pitches if p is not None))
                 self.assertEqual(sum(durations) % (1920 * song['meter'][0] // song['meter'][1]), 0)
@@ -23,10 +26,11 @@ class LibraryScores(unittest.TestCase):
                     authored_melody(song['title'], song['composer'], pitches, durations,
                         song['bass_roots'], song['tempo'], *song['meter']))
                 self.assertEqual(len(song['bass_roots']), len(song['bars'].split('|')))
-                self.assertTrue(all(36 <= root <= 52 for root in song['bass_roots']))
+                self.assertTrue(all(36 <= pitch < 60 for root in song['bass_roots']
+                                    for pitch in (root if isinstance(root, tuple) else (root, root + 7))))
 
     def test_distinctive_rhythms(self):
-        self.assertEqual(SONGS['canon_in_d']['notes'][:4], [(78, 480), (76, 480), (74, 480), (73, 480)])
+        self.assertEqual(SONGS['canon_in_d']['notes'][:4], [(66, 480), (64, 480), (62, 480), (61, 480)])
         self.assertEqual(SONGS['fur_elise']['meter'], (3, 8))
         self.assertEqual(SONGS['fur_elise']['notes'][:4], [(None, 480), (76, 120), (75, 120), (76, 120)])
         self.assertEqual(SONGS['the_entertainer']['meter'], (2, 4))
@@ -40,6 +44,29 @@ class LibraryScores(unittest.TestCase):
         self.assertEqual(SONGS['jingle_bells']['notes'][:3], [(64, 480), (64, 480), (64, 960)])
         self.assertEqual(SONGS['greensleeves']['meter'], (3, 4))
 
+    def test_reviewed_complete_phrases(self):
+        # Mutopia 2013/03/23-109, melody only: pickup and both 16-bar sections.
+        green = SONGS['greensleeves']
+        self.assertEqual(len(green['bars'].split('|')), 33)
+        self.assertEqual(green['notes'][:6],
+                         [(None, 960), (57, 480), (60, 960), (62, 480), (64, 720), (65, 240)])
+        self.assertEqual(notes(green['bars'].split('|')[14], (3, 4)),
+                         [(68, 720), (66, 240), (68, 480)])
+        self.assertEqual(notes(green['bars'].split('|')[17], (3, 4)), [(79, 1440)])
+        self.assertEqual(green['notes'][-2:], [(57, 1440), (57, 1440)])
+        self.assertEqual(green['transpose'], -12)
+        # Poulton 1861 vocal refrain, rhythm doubled into teaching 4/4 bars.
+        aura_bars = SONGS['aura_lee']['bars'].split('|')
+        self.assertEqual(notes(aura_bars[9], (4, 4)), [(64, 480), (64, 480), (64, 960)])
+        self.assertEqual(notes(aura_bars[10], (4, 4)),
+                         [(64, 720), (62, 240), (60, 480), (62, 480)])
+        self.assertEqual(notes(aura_bars[14], (4, 4)),
+                         [(62, 240), (60, 720), (64, 720), (62, 240)])
+        ground = SONGS['canon_in_d']['bass_roots']
+        self.assertEqual(ground[:2], [(50, 45, 47, 42), (43, 50, 43, 45)])
+        self.assertEqual(ground[7], 50)  # authored tonic cadence
+        self.assertEqual(ground[:8], ground[8:])
+
     def test_added_melodies_keep_their_openings_and_meter(self):
         openings = {
             'amazing_grace': [(None, 960), (55, 480), (60, 720), (64, 240)],
@@ -47,7 +74,7 @@ class LibraryScores(unittest.TestCase):
             'old_macdonald': [(60, 480), (60, 480), (60, 480), (55, 480)],
             'when_the_saints': [(None, 480), (60, 480), (64, 480), (65, 480)],
             'aura_lee': [(55, 480), (60, 480), (59, 480), (60, 480)],
-            'silent_night': [(67, 720), (69, 240), (67, 480), (64, 1440)],
+            'silent_night': [(55, 720), (57, 240), (55, 480), (52, 1440)],
             'camptown_races': [(67, 240), (67, 240), (64, 240), (67, 240)],
             'au_clair_de_la_lune': [(60, 480), (60, 480), (60, 480), (62, 480)],
         }
@@ -58,7 +85,7 @@ class LibraryScores(unittest.TestCase):
         self.assertEqual(SONGS['london_bridge']['meter'], (2, 4))
         self.assertEqual(SONGS['silent_night']['meter'], (6, 8))
         self.assertEqual(SONGS['camptown_races']['meter'], (2, 4))
-        self.assertEqual(SONGS['silent_night']['notes'][-2:], [(60, 2400), (None, 480)])
+        self.assertEqual(SONGS['silent_night']['notes'][-2:], [(48, 2400), (None, 480)])
 
     def test_second_batch_preserves_distinctive_melody_features(self):
         hot_cross = SONGS['hot_cross_buns']['notes']
@@ -84,8 +111,16 @@ class LibraryScores(unittest.TestCase):
         self.assertEqual(SONGS['oh_susanna']['notes'][:3],
                          [(None, 1440), (60, 240), (62, 240)])
 
+    def test_compound_meter_midi_click_metadata(self):
+        for key, numerator in [('fur_elise', 3), ('silent_night', 6), ('pop_goes_the_weasel', 6)]:
+            with self.subTest(song=key):
+                data = (ROOT / 'content/library' / f'{key}.mid').read_bytes()
+                self.assertIn(bytes([0xff, 0x58, 4, numerator, 3, 36, 8]), data)
+                self.assertNotIn(bytes([0xff, 0x58, 4, numerator, 3, 24, 8]), data)
+
     def test_bad_bars_and_ties_are_rejected(self):
-        for bars in ['C4 C4 C4', '~:16', 'R:8 ~:8']:
+        for bars in ['C4 C4 C4', '~:16', 'R:8 ~:8', 'C4:0 C4:16',
+                     'C4:-4 C4:20', 'H4:16', 'C9:16']:
             with self.assertRaises(ValueError):
                 notes(bars, (4, 4))
 
