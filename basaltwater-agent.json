@@ -1,0 +1,141 @@
+{
+  "version": 1,
+  "required_tools": [
+    "git",
+    "godot",
+    "python3",
+    "node"
+  ],
+  "recipes": {
+    "verify": {
+      "description": "Pinned-engine LibreTabs baseline: Python, JS, Godot core/UI tests and whitespace",
+      "argv": [
+        "python3",
+        "scripts/verify.py"
+      ],
+      "requires": [
+        "git",
+        "godot",
+        "python3",
+        "node"
+      ]
+    },
+    "pitch": {
+      "description": "Focused single-note microphone and tuner fixtures; run Godot import first",
+      "argv": [
+        "godot",
+        "--headless",
+        "--path",
+        ".",
+        "--script",
+        "res://tests/pitch_detection.gd"
+      ],
+      "requires": [
+        "godot"
+      ]
+    },
+    "layout": {
+      "description": "Responsive and stable-score geometry regressions; run Godot import first",
+      "argv": [
+        "godot",
+        "--headless",
+        "--path",
+        ".",
+        "--script",
+        "res://tests/layout_ui.gd"
+      ],
+      "requires": [
+        "godot"
+      ]
+    },
+    "import": {
+      "description": "Import project resources with the installed pinned engine",
+      "argv": [
+        "godot",
+        "--headless",
+        "--path",
+        ".",
+        "--import"
+      ],
+      "requires": [
+        "godot"
+      ]
+    },
+    "export_web": {
+      "description": "Local Web export after verify/import and prepare_export_directory; does not publish",
+      "argv": [
+        "godot",
+        "--headless",
+        "--path",
+        ".",
+        "--export-release",
+        "Web",
+        "exports/web/index.html"
+      ],
+      "requires": [
+        "godot"
+      ]
+    },
+    "managed_development": {
+      "description": "Check the managed Godot toolchain and export templates",
+      "argv": [
+        "basaltw",
+        "agent",
+        "doctor",
+        "--capability",
+        "development",
+        "--json"
+      ],
+      "requires": [
+        "basaltw"
+      ]
+    },
+    "managed_browser": {
+      "description": "Check managed VM-local browser readiness before browser actions",
+      "argv": [
+        "basaltw",
+        "agent",
+        "doctor",
+        "--capability",
+        "browser",
+        "--json"
+      ],
+      "requires": [
+        "basaltw"
+      ]
+    },
+    "preview_health": {
+      "description": "Check the existing private LibreTabs HTTPS evaluation preview",
+      "argv": [
+        "basaltwater-web",
+        "doctor",
+        "libretabs-prototype"
+      ],
+      "requires": [
+        "basaltwater-web"
+      ]
+    },
+    "prepare_export_directory": {
+      "description": "Create the ignored local Web export directory before export_web",
+      "argv": [
+        "python3",
+        "-c",
+        "from pathlib import Path; Path('exports/web').mkdir(parents=True, exist_ok=True)"
+      ],
+      "requires": [
+        "python3"
+      ]
+    }
+  },
+  "artifact_directories": [
+    "exports",
+    "build",
+    "dist"
+  ],
+  "deployments": {
+    "main": {
+      "environment": "private-evaluation",
+      "provider": "basaltwater-web"
+    }
+  }
+}

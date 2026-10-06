@@ -1,6 +1,34 @@
-# Agentic development on the infra-tools VM
+# Agentic development on the Basaltwater VM
 
 This workflow is designed for AI coding agents working with a human product owner. Agents accelerate bounded implementation and verification; they do not replace product decisions, musical review, beginner testing, or license judgment.
+
+## Managed capability discovery
+
+Run `basaltw agent manifest --json` from this checkout. The committed
+[`basaltwater-agent.json`](../basaltwater-agent.json) declares the existing
+validation/import/export recipes, ignored artifact directories and the private
+evaluation role of `main`. It is discovery metadata: commands are displayed,
+not executed, and it creates no CI job, deployment or schedule. The preview URL
+comes from `basaltwater-web url libretabs-prototype`, not a machine address in
+Git. No public release destination is implied by this mapping.
+
+Use `basaltw agent doctor --capability development --json` to check installed
+tools and templates. The project's verifier independently checks the exact
+engine version in `release/toolchain.json`; a healthy host or an automatic Godot
+update does not supersede that pin. Resource import precedes focused GDScript
+recipes. Run `prepare_export_directory` (or `mkdir -p exports/web`) before the local
+export recipe; Godot does not create a missing destination directory. Managed
+publication stages its own output separately. Distribution builds still use the
+release scripts and their payload/license validation.
+
+Use `basaltw agent doctor --capability host --json` and
+`basaltw agent maintenance status --json` before long runs. A maintenance hold
+is useful only when a job needs to cross the restart window; it is shared by
+other tasks. Do not create holds routinely or release somebody else's hold.
+
+The [2026-10-05 capability audit and Basaltwater feedback](evidence/basaltwater-development.md)
+records measured readiness, useful workflows, device limitations and suggested
+upstream improvements. Recheck the live VM before relying on historical evidence.
 
 ## Operating model
 
@@ -59,8 +87,8 @@ git -C /home/agent/repos/litetabs rev-parse HEAD
 Create a managed workspace for a bounded task:
 
 ```bash
-infra-tools agent workspace create /home/agent/repos/litetabs midi-running-status --base main --json
-infra-tools agent workspace list /home/agent/repos/litetabs --json
+basaltw agent workspace create /home/agent/repos/litetabs midi-running-status --base main --json
+basaltw agent workspace list /home/agent/repos/litetabs --json
 ```
 
 Give the agent the returned absolute worktree path, issue contract, required documents, allowed scope, and base commit. Use a different short task name for every concurrent task. Do not create ad hoc sibling clones.
@@ -68,7 +96,7 @@ Give the agent the returned absolute worktree path, issue contract, required doc
 Before handoff:
 
 ```bash
-infra-tools agent workspace status /absolute/managed/worktree --json
+basaltw agent workspace status /absolute/managed/worktree --json
 git -C /absolute/managed/worktree diff --check
 ```
 
@@ -77,9 +105,9 @@ The handoff reports changed files, design decisions, commands/results, known gap
 After integration, inspect and preview managed cleanup:
 
 ```bash
-infra-tools agent workspace status /absolute/managed/worktree --json
-infra-tools agent workspace remove /absolute/managed/worktree --dry-run --json
-infra-tools agent workspace remove /absolute/managed/worktree --json
+basaltw agent workspace status /absolute/managed/worktree --json
+basaltw agent workspace remove /absolute/managed/worktree --dry-run --json
+basaltw agent workspace remove /absolute/managed/worktree --json
 ```
 
 The managed removal intentionally refuses dirty, unmerged, non-agent, or out-of-root targets. Resolve those states explicitly; never force-delete worktree data to make cleanup pass.
@@ -146,16 +174,16 @@ Algorithm changes should report fixture counts and property iterations. Timing c
 The September 2026 planning inventory reported desktop and web templates; recheck rather than assuming that historical result still applies. Before publishing a web-facing slice:
 
 ```bash
-infra-tools agent doctor --capability development --json
+basaltw agent doctor --capability development --json
 python3 scripts/verify.py
-infra-web publish godot --json
+basaltwater-web publish godot --json
 ```
 
 Use the `game` value returned by publication:
 
 ```bash
-infra-web url GAME
-infra-web doctor GAME
+basaltwater-web url GAME
+basaltwater-web doctor GAME
 ```
 
 The returned HTTPS URL is authoritative. Do not start a public plain-HTTP server, edit Nginx/UFW, invent a local public URL, or bypass certificate checks. The evaluation `Web` preset is threaded following the measured mitigation in [decision 0002](decisions/0002-m0-evaluation-build.md). It remains static; the deployment must supply compatible cross-origin-isolation headers. The non-threaded comparison preset remains available.
