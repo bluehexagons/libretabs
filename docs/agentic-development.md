@@ -30,6 +30,14 @@ The [2026-10-05 capability audit and Basaltwater feedback](evidence/basaltwater-
 records measured readiness, useful workflows, device limitations and suggested
 upstream improvements. Recheck the live VM before relying on historical evidence.
 
+The [music development workflow](music-development.md) prepares deterministic
+CC0 microphone WAV replay, exact project-pin diagnostics and isolated MuseScore
+comparisons. After rerunning upgraded Basaltwater setup with
+`--musescore --audio-tools --av-tools`, use the optional `music_ready` and
+`score_review` recipes. Fixture generation/replay works now without new host
+packages and is part of the baseline. These are development tools, with no new
+runtime dependency or bundled editor assets.
+
 ## Operating model
 
 Use one coordinating/integration task and independent worktrees for changes that can truly proceed in parallel. Never have multiple editing agents share the primary checkout. Freeze the smallest needed contract before splitting work and integrate a working vertical slice frequently.

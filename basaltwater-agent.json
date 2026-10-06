@@ -7,6 +7,31 @@
     "node"
   ],
   "recipes": {
+    "project_ready": {
+      "description": "Read-only exact Godot pin/template check and optional music-tool inventory",
+      "argv": ["python3", "scripts/development_ready.py", "--json"],
+      "requires": ["python3", "godot"]
+    },
+    "music_ready": {
+      "description": "After upgraded setup: require MuseScore, SoX, audio/MIDI clients and FFmpeg",
+      "argv": ["python3", "scripts/development_ready.py", "--require-music-tools", "--json"],
+      "requires": ["python3", "godot", "musescore", "sox", "soxi", "arecord", "aplay", "amidi", "aconnect", "pactl", "ffmpeg", "ffprobe"]
+    },
+    "audio_fixtures": {
+      "description": "Generate six deterministic CC0 WAV microphone scenarios in ignored build/audio-fixtures",
+      "argv": ["python3", "scripts/generate_audio_fixtures.py"],
+      "requires": ["python3"]
+    },
+    "microphone_replay": {
+      "description": "Replay generated WAV samples through PitchListener with injected time; run audio_fixtures/import first",
+      "argv": ["godot", "--headless", "--path", ".", "--script", "res://tests/microphone_fixtures.gd"],
+      "requires": ["godot"]
+    },
+    "score_review": {
+      "description": "After MuseScore setup: inspect a CC0 first-melody MIDI task copy as a review PDF",
+      "argv": ["python3", "scripts/review_score.py"],
+      "requires": ["python3", "musescore"]
+    },
     "verify": {
       "description": "Pinned-engine LibreTabs baseline: Python, JS, Godot core/UI tests and whitespace",
       "argv": [
