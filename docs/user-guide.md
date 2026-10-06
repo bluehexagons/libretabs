@@ -319,28 +319,41 @@ in its own tab may allow permissions that the embedding site does not grant.
 1. Open **Tuner & listening** from the main Menu, or use the header Tuner button
    on wider screens. This pauses playback. Press **Start microphone /
    tuner**, grant permission, and choose the input and instrument. Selecting a
-   different device stops capture; press Start again. Use headphones, or silence
-   speaker playback, so detection hears your instrument rather than the app.
+   different device stops capture; press Start again. Choose **Acoustic piano** for
+   a traditional piano, or **Electronic piano (speaker to microphone)** for a clean
+   electronic piano heard through its speaker. A direct MIDI connection uses MIDI
+   input instead. Choose **Mute practice audio** to silence app notes and clicks
+   while the score keeps moving; this preserves your saved volume settings. The
+   same mute switch appears beside the practice controls when capture is active.
 2. Play one clear, steady note. The tuner shows a note, its frequency in Hz, and
    its distance from the target in **cents** (100 cents is one semitone). Negative
    means low/flat; positive means high/sharp. An uncertain signal clears the needle.
-3. Choose automatic nearest-note tuning, a guitar string, or **Hold the current
-   note as target**. A4 defaults to 440 Hz and can be changed to match a physical
+3. Choose automatic nearest-note tuning, an open string for the selected instrument,
+   **Choose a note**, or **Hold the current note as target**. Voice and piano have
+   automatic/custom targets; guitar, four-string bass, violin and high-G ukulele
+   also offer their standard open strings. A custom target combines a note name
+   with its octave number (C4 is middle C). A4 defaults to 440 Hz and can be changed to match a physical
    tuner. The app measures pitch; it does not turn tuning pegs or automatically
    correct an instrument's tuning.
 4. **Run input setup again** measures three seconds of background noise, then
    asks for three separate steady notes with silence between them. Rerun it after
-   moving rooms or changing instruments. Sensitivity can accept softer notes at
-   the cost of more background sound. Setup never changes the tuning reference.
+   moving rooms or changing instruments. Higher sensitivity accepts softer notes; after setup it never lowers the
+   threshold beneath the measured room-noise floor. Setup never changes the tuning reference.
 5. Enable **Use microphone for practice feedback**, close the menu, and press Play.
    Playback continues. Only the selected practice part is compared. Chords and
    overlapping source notes show a single-note limitation instead of a result.
+6. Switch **Tuner on** off to temporarily pause tuning and microphone feedback;
+   switch it on to acquire a fresh note without repeating permission/setup. This
+   switch is also next to the practice controls while capture is active. Pausing
+   keeps the microphone connection open; **Stop microphone** releases it.
 
 Listening is designed for one note at a time. Dampen ringing guitar strings and
 avoid piano sustain during these exercises. Even when a song expects one note,
 other audible sounds can confuse the detector; it cannot reliably recognize and
 reject every chord. Clean electric guitar through an interface is a useful setup.
-Initial evaluation ranges are approximately A1–C7 for piano and D2–F6 for guitars.
+Evaluation ranges are A1–C7 for both pianos, D2–F6 for guitars, A1–F6 for
+voice, A0–F5 for bass, F#3–C7 for violin and F#3–F6 for ukulele. These are
+detector limits, not claims about a singer’s range.
 Distortion, effects, very low piano notes and real-device accuracy remain testing
 boundaries. These range profiles do not change imported pitches or tuning.
 

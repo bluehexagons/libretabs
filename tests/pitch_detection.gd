@@ -31,6 +31,32 @@ func run() -> void:
 			var cents: float = 1200 * log(maxf(0.01, float(result.hz)) / hz) / log(2)
 			check(result.valid and absf(cents) < 5, "tone %.2f at %d Hz: error %.2f cents" % [hz, rate, cents])
 			check(detector.samples.size() == PitchDetector.WINDOW, "capture history remains bounded")
+	# Soft speaker-like harmonic signals must keep the same pitch/interpolation.
+	for amplitude: float in [0.01, 0.001, 0.0001]:
+		for hz_soft: float in [55.0, 440.0, 1046.5, 2093.0]:
+			var soft: PitchDetector = PitchDetector.new()
+			soft.gate = 0.00001
+			var fixture: PackedFloat32Array = tone(hz_soft, 48000, true)
+			for index: int in range(fixture.size()): fixture[index] *= amplitude
+			feed(soft, fixture, 48000)
+			var estimate: Dictionary = soft.estimate()
+			check(estimate.valid and absf(1200 * log(maxf(0.01, estimate.hz) / hz_soft) / log(2)) < 5, "soft harmonic pitch remains accurate at scale %.5f and %.1f Hz" % [amplitude, hz_soft])
+			check(estimate.rms < amplitude and estimate.peak < amplitude, "normalization does not falsify the input meter")
+	var bass: PitchDetector = PitchDetector.new()
+	bass.minimum_hz = 27.5
+	for bass_hz: float in [27.5, 41.2034, 55.0, 73.4162, 97.9989]:
+		feed(bass, tone(bass_hz, 48000, true), 48000)
+		var start_bass: int = Time.get_ticks_usec()
+		var estimate: Dictionary = bass.estimate()
+		maximum_ms = maxf(maximum_ms, (Time.get_ticks_usec() - start_bass) / 1000.0)
+		check(estimate.valid and absf(1200 * log(maxf(0.01, estimate.hz) / bass_hz) / log(2)) < 5, "bass fundamental %.2f is not mistaken for a harmonic" % bass_hz)
+	var dc: PitchDetector = PitchDetector.new()
+	dc.gate = 0.00001
+	var constant: PackedFloat32Array = PackedFloat32Array()
+	constant.resize(8000)
+	constant.fill(0.02)
+	feed(dc, constant, 48000)
+	check(not dc.estimate().valid, "DC offset is not a soft note")
 	var quiet: PitchDetector = PitchDetector.new()
 	var silence: PackedFloat32Array = PackedFloat32Array()
 	silence.resize(8000)
@@ -94,6 +120,50 @@ func run() -> void:
 	check(listener.reference == 440, "noise setup never changes tuning reference")
 	listener.set_profile(1)
 	check(listener.setup_state == "INPUT_SETUP_IDLE" and listener.detector.samples.is_empty(), "instrument change invalidates setup and pitch history")
+	listener.set_sensitivity(100)
+	check(listener.effective_gate() <= 0.0001, "maximum sensitivity accepts substantially softer uncalibrated notes")
+	listener.noise_gate = 0.003
+	check(listener.effective_gate() >= 0.003, "maximum sensitivity respects the measured room floor")
+	listener.set_profile(PitchListener.Profile.ELECTRONIC_PIANO)
+	var soft_signal: PackedFloat32Array = tone(440, 48000, true)
+	for index: int in range(soft_signal.size()): soft_signal[index] *= 0.001
+	clock += 5000
+	for index: int in range(0, soft_signal.size(), 1024):
+		listener.accept_samples(soft_signal.slice(index, mini(soft_signal.size(), index + 1024)), 48000, 0, clock)
+		clock += 21
+		listener.analyze_at(clock)
+	check(listener.latest.valid and absf(listener.latest.pitch - 69) < 0.03, "electronic piano accepts a soft harmonic speaker-like signal")
+	listener.noise_gate = 0.001
+	for index: int in range(0, soft_signal.size(), 1024):
+		listener.accept_samples(soft_signal.slice(index, mini(soft_signal.size(), index + 1024)), 48000, 0, clock)
+		clock += 21
+		listener.analyze_at(clock)
+	check(not listener.latest.valid, "a periodic sound below calibrated noise is rejected even at maximum sensitivity")
+	listener.set_profile(PitchListener.Profile.ACOUSTIC_PIANO)
+	check(listener.detector.difference_threshold == 0.15 and listener.gate > 0.001, "acoustic piano uses its own periodicity and starting level gates")
+	var acoustic: PackedFloat32Array = tone(440, 48000, true)
+	for index: int in range(acoustic.size()): acoustic[index] *= 0.001 * exp(-2.0 * index / 48000.0)
+	for index: int in range(0, acoustic.size(), 1024):
+		listener.accept_samples(acoustic.slice(index, mini(acoustic.size(), index + 1024)), 48000, 0, clock)
+		clock += 21
+		listener.analyze_at(clock)
+	check(listener.latest.valid and absf(listener.latest.pitch - 69) < 0.03, "acoustic piano follows a soft decaying harmonic note")
+	listener.set_paused(true)
+	listener.accept_samples(signal_samples.slice(0, 1024), 48000, 0, clock + 100)
+	listener.analyze_at(clock + 100)
+	check(listener.detector.samples.is_empty() and not listener.latest.get("fresh", false), "paused tuner drops capture and cannot produce notes or audio commands")
+	listener.set_paused(false)
+	listener.accept_samples(signal_samples.slice(0, 1024), 48000, 0, clock + 200)
+	listener.analyze_at(clock + 200)
+	check(not listener.latest.valid, "resumed tuner must acquire a fresh pitch window")
+	listener.set_profile(PitchListener.Profile.BASS)
+	check(listener.open_strings() == [28, 33, 38, 43] and listener.detector.minimum_hz == 27.5, "bass targets include low E in the detection range")
+	listener.set_profile(PitchListener.Profile.VIOLIN)
+	check(listener.open_strings() == [55, 62, 69, 76], "violin open strings are G3 D4 A4 E5")
+	listener.set_profile(PitchListener.Profile.UKULELE)
+	check(listener.open_strings() == [67, 60, 64, 69], "ukulele targets retain reentrant high-G string order")
+	listener.set_profile(PitchListener.Profile.VOICE)
+	check(listener.open_strings().is_empty(), "voice does not inherit guitar-string targets")
 	listener.capture.enabled = true
 	listener.capture.status = "INPUT_MIC_NO_SIGNAL"
 	listener.capture.rate = 48000

@@ -24,6 +24,13 @@ var last_result: Dictionary = {}
 var suspended: bool = false
 var command_status: Label
 signal commands_requested
+signal quick_controls_changed
+signal playback_mute_changed(muted: bool)
+var tuner_check: CheckButton
+var playback_mute: CheckButton
+var custom_target: HBoxContainer
+var target_note: OptionButton
+var target_octave: SpinBox
 
 func _ready() -> void:
 	add_theme_constant_override("separation", 8)
@@ -31,6 +38,7 @@ func _ready() -> void:
 	listener = PitchListener.new()
 	add_child(listener)
 	listener.capture.changed.connect(update_microphone)
+	listener.capture.changed.connect(func() -> void: quick_controls_changed.emit())
 	listener.observation.connect(show_observation)
 	listener.setup_changed.connect(update_setup)
 	caption("INPUT_MIC_HELP")
@@ -39,6 +47,7 @@ func _ready() -> void:
 	action(actions, "INPUT_MIC_START", func() -> void:
 		stop_playback.emit()
 		suspended = false
+		tuner_check.button_pressed = true
 		listener.invalidate_setup()
 		timing_check.button_pressed = false
 		listener.capture.start())
@@ -55,8 +64,9 @@ func _ready() -> void:
 		listener.invalidate_setup()
 		timing_check.button_pressed = false)
 	mic_picker.set_item_metadata(0, "")
-	choice("INPUT_MIC_INSTRUMENT", ["INPUT_MIC_PIANO", "INPUT_MIC_ACOUSTIC", "INPUT_MIC_ELECTRIC"], func(index: int) -> void:
+	choice("INPUT_MIC_INSTRUMENT", PitchListener.PROFILE_KEYS, func(index: int) -> void:
 		listener.set_profile(index)
+		refresh_targets()
 		timing_check.button_pressed = false)
 	caption("INPUT_MIC_RANGE")
 	mic_level_text = caption("INPUT_LEVEL_QUIET")
@@ -70,20 +80,43 @@ func _ready() -> void:
 	tuning.set_meta("base_font_size", 26)
 	gauge = TunerGauge.new()
 	add_child(gauge)
-	target_picker = choice("INPUT_TUNER_TARGET", ["INPUT_TUNER_AUTO"], func(index: int) -> void:
-		target = int(target_picker.get_item_metadata(index)))
-	target_picker.set_item_metadata(0, -1)
-	var open_strings: Array[int] = [40, 45, 50, 55, 59, 64]
-	for index: int in range(open_strings.size()):
-		target_picker.add_item(tr("INPUT_TUNER_STRING") % [6 - index, LivePlaying.note_name(open_strings[index])])
-		target_picker.set_item_metadata(index + 1, open_strings[index])
+	tuner_check = toggle("INPUT_TUNER_ENABLED", true, func(enabled: bool) -> void:
+		listener.set_paused(not enabled)
+		quick_controls_changed.emit())
+	playback_mute = toggle("INPUT_PLAYBACK_MUTE", false, func(muted: bool) -> void:
+		playback_mute_changed.emit(muted)
+		quick_controls_changed.emit())
+	caption("INPUT_PLAYBACK_MUTE_HELP")
+	target_picker = choice("INPUT_TUNER_TARGET", [], func(index: int) -> void:
+		target = int(target_picker.get_item_metadata(index))
+		custom_target.visible = target == -2
+		if target == -2: update_custom_target())
+	custom_target = HBoxContainer.new()
+	add_child(custom_target)
+	target_note = OptionButton.new()
+	target_note.tooltip_text = tr("INPUT_TARGET_NOTE")
+	target_note.custom_minimum_size.y = 48
+	for name_text: String in ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]: target_note.add_item(tr("INPUT_TARGET_CLASS") % name_text)
+	target_note.item_selected.connect(func(_index: int) -> void: update_custom_target())
+	custom_target.add_child(target_note)
+	target_octave = SpinBox.new()
+	target_octave.min_value = 0
+	target_octave.max_value = 7
+	target_octave.value = 4
+	target_octave.tooltip_text = tr("INPUT_TARGET_OCTAVE")
+	target_octave.custom_minimum_size.y = 48
+	target_octave.value_changed.connect(func(_value: float) -> void: update_custom_target())
+	custom_target.add_child(target_octave)
+	caption("INPUT_TARGET_HELP")
+	refresh_targets()
 	action(self, "INPUT_TUNER_LOCK", func() -> void:
 		if not bool(last_result.get("valid", false)): return
+		refresh_targets()
 		target = roundi(last_result.pitch)
-		if target_picker.item_count > 7: target_picker.remove_item(7)
 		target_picker.add_item(tr("INPUT_TUNER_LOCKED") % LivePlaying.note_name(target))
-		target_picker.set_item_metadata(7, target)
-		target_picker.select(7))
+		var index: int = target_picker.item_count - 1
+		target_picker.set_item_metadata(index, target)
+		target_picker.select(index))
 	mic_reference = number("INPUT_REFERENCE", 400, 480, 440)
 	mic_reference.step = 0.1
 	mic_reference.value_changed.connect(func(value: float) -> void:
@@ -93,6 +126,7 @@ func _ready() -> void:
 	action(self, "INPUT_SETUP_RUN", func() -> void:
 		stop_playback.emit()
 		timing_check.button_pressed = false
+		tuner_check.button_pressed = true
 		listener.calibrate())
 	action(self, "INPUT_SETUP_CANCEL", func() -> void: listener.invalidate_setup())
 	setup_label = caption("INPUT_SETUP_IDLE")
@@ -103,7 +137,7 @@ func _ready() -> void:
 	sensitivity.value = 50
 	sensitivity.custom_minimum_size.y = 44
 	sensitivity.tooltip_text = tr("INPUT_SENSITIVITY_HELP")
-	sensitivity.value_changed.connect(func(value: float) -> void: listener.sensitivity = pow(2, (50 - value) / 20.0))
+	sensitivity.value_changed.connect(func(value: float) -> void: listener.set_sensitivity(value))
 	add_child(sensitivity)
 	listen_check = toggle("INPUT_LISTEN", false, func(_enabled: bool) -> void:
 		if live != null: live.release("microphone:0")
@@ -116,9 +150,27 @@ func _ready() -> void:
 	caption("INPUT_MIC_PRIVACY")
 	# Keep the actual tuner and listening switch visible before advanced setup.
 	var insertion: int = mic_status.get_index() + 1
-	for control: Control in [mic_level_text, mic_level, tuning, gauge, listen_check]:
+	for control: Control in [tuner_check, playback_mute, mic_level_text, mic_level, tuning, gauge, listen_check]:
 		move_child(control, insertion)
 		insertion += 1
+
+func refresh_targets() -> void:
+	if target_picker == null: return
+	target = -1
+	target_picker.clear()
+	target_picker.add_item(tr("INPUT_TUNER_AUTO"))
+	target_picker.set_item_metadata(0, -1)
+	var strings: Array[int] = listener.open_strings()
+	for index: int in range(strings.size()):
+		target_picker.add_item(tr("INPUT_TUNER_STRING") % [strings.size() - index, LivePlaying.note_name(strings[index])])
+		target_picker.set_item_metadata(index + 1, strings[index])
+	target_picker.add_item(tr("INPUT_TARGET_CUSTOM"))
+	target_picker.set_item_metadata(target_picker.item_count - 1, -2)
+	target_picker.select(0)
+	custom_target.hide()
+
+func update_custom_target() -> void:
+	target = (int(target_octave.value) + 1) * 12 + target_note.selected
 
 func update_microphone() -> void:
 	if mic_status == null: return
@@ -144,13 +196,13 @@ func show_observation(result: Dictionary) -> void:
 	if not is_instance_valid(gauge): return
 	last_result = result.duplicate()
 	mic_level.value = minf(100, sqrt(float(result.get("rms", 0))) * 200)
-	mic_level_text.text = tr("INPUT_LEVEL_CLIP" if float(result.get("peak", 0)) >= 0.98 else ("INPUT_LEVEL_OK" if float(result.get("rms", 0)) >= listener.gate * listener.sensitivity else "INPUT_LEVEL_QUIET"))
+	mic_level_text.text = tr("INPUT_LEVEL_CLIP" if float(result.get("peak", 0)) >= 0.98 else ("INPUT_LEVEL_OK" if float(result.get("rms", 0)) >= listener.effective_gate() else "INPUT_LEVEL_QUIET"))
 	gauge.active = bool(result.get("valid", false))
 	if gauge.active:
 		var expected_pitch: int = roundi(result.pitch) if target < 0 else target
 		gauge.cents = (float(result.pitch) - expected_pitch) * 100
 		tuning.text = tr("INPUT_TUNER_VALUE") % [LivePlaying.note_name(expected_pitch), float(result.hz), gauge.cents]
-	else: tuning.text = tr("INPUT_TUNER_WAIT")
+	else: tuning.text = tr("INPUT_TUNER_PAUSED" if listener.paused else "INPUT_TUNER_WAIT")
 	gauge.queue_redraw()
 	if not is_instance_valid(live): return
 	var permitted: bool = listen_check != null and listen_check.button_pressed and not suspended and (not allow_notes.is_valid() or allow_notes.call())

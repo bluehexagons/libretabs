@@ -11,6 +11,7 @@ var samples: PackedFloat32Array = PackedFloat32Array()
 var minimum_hz: float = 55.0
 var maximum_hz: float = 2100.0
 var gate: float = 0.003
+var difference_threshold: float = 0.12
 var phase: float = 0
 var total: float = 0
 var count: int = 0
@@ -64,6 +65,19 @@ func push(block: PackedFloat32Array, rate: float) -> bool:
 func estimate() -> Dictionary:
 	var result: Dictionary = {"valid": false, "hz": 0.0, "confidence": 0.0, "rms": rms, "peak": peak}
 	if samples.size() < WINDOW or rms < gate or peak >= 0.98: return result
+	# Center and normalize only the analysis window. Raw RMS/clipping remain honest.
+	# Otherwise fixed floating-point guards impair interpolation on soft notes.
+	var centered: PackedFloat64Array = PackedFloat64Array()
+	var mean: float = 0
+	for sample: float in samples: mean += sample
+	mean /= WINDOW
+	var energy: float = 0
+	for sample: float in samples:
+		centered.append(sample - mean)
+		energy += (sample - mean) * (sample - mean)
+	if energy <= 0 or sqrt(energy / WINDOW) < gate * 0.25: return result
+	var scale: float = sqrt(WINDOW / energy)
+	for index: int in range(WINDOW): centered[index] *= scale
 	var last: int = mini(HALF - 1, ceili(RATE / maxf(27.5, minimum_hz)) + 1)
 	var first: int = maxi(2, floori(RATE / minf(2100, maximum_hz)))
 	var normalized: PackedFloat64Array = PackedFloat64Array()
@@ -74,11 +88,11 @@ func estimate() -> Dictionary:
 	for lag: int in range(1, last + 1):
 		var difference: float = 0
 		for index: int in range(HALF):
-			var delta: float = samples[index] - samples[index + lag]
+			var delta: float = centered[index] - centered[index + lag]
 			difference += delta * delta
 		running += difference
 		normalized[lag] = difference * lag / running if running > 0.000000001 else 1.0
-		if lag > 2 and normalized[lag - 1] < 0.12 and normalized[lag] > normalized[lag - 1]:
+		if lag > 2 and normalized[lag - 1] < difference_threshold and normalized[lag] > normalized[lag - 1]:
 			candidate = lag - 1
 			break
 	if candidate < first: return result
@@ -97,7 +111,7 @@ func estimate() -> Dictionary:
 		for lag: int in range(center - 1, center + 2):
 			var difference: float = 0
 			for index: int in range(HALF):
-				var delta: float = samples[index] - samples[index + lag]
+				var delta: float = centered[index] - centered[index + lag]
 				difference += delta * delta
 			differences.append(difference)
 		var curve: float = differences[0] - 2 * differences[1] + differences[2]

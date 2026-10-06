@@ -1769,7 +1769,7 @@ msgid "CARD_TUNER"
 msgstr "Tuner & listening · one note at a time"
 
 msgid "INPUT_MIC_HELP"
-msgstr "Use a microphone for piano or acoustic guitar, or an audio interface for electric guitar. Play one note at a time and damp other ringing notes. Use headphones or turn off speaker playback so the app does not hear itself."
+msgstr "Use a microphone or audio interface. Sing or play one clear note at a time and damp other ringing notes. Mute practice audio or use headphones so the app does not hear its own speaker."
 
 msgid "INPUT_MIC_START"
 msgstr "Start microphone / tuner"
@@ -1820,7 +1820,7 @@ msgid "INPUT_MIC_INSTRUMENT"
 msgstr "Instrument setup"
 
 msgid "INPUT_MIC_PIANO"
-msgstr "Piano · electronic or acoustic"
+msgstr "Acoustic piano"
 
 msgid "INPUT_MIC_ACOUSTIC"
 msgstr "Acoustic guitar"
@@ -1829,7 +1829,7 @@ msgid "INPUT_MIC_ELECTRIC"
 msgstr "Electric guitar · clean tone"
 
 msgid "INPUT_MIC_RANGE"
-msgstr "Evaluation range: piano A1–C7; guitars D2–F6. Very low piano notes, distortion, effects and overlapping sounds may not give a reliable estimate. These choices never change the song’s pitches."
+msgstr "Listen to one clear note at a time. Piano: A1–C7; guitar: D2–F6; voice: A1–F6; bass: A0–F5; violin: F#3–C7; ukulele: F#3–F6. Distortion, effects and overlapping sounds may confuse the tuner. Instrument choices never change song pitches."
 
 msgid "INPUT_LEVEL_QUIET"
 msgstr "Input level: quiet — play a clear note"
@@ -1907,7 +1907,7 @@ msgid "INPUT_SENSITIVITY"
 msgstr "Listening sensitivity"
 
 msgid "INPUT_SENSITIVITY_HELP"
-msgstr "Higher sensitivity accepts softer notes but may also hear more background sound."
+msgstr "Higher sensitivity accepts softer notes. Run room setup to keep the threshold above background noise. Electronic piano is for a clean speaker heard through a microphone; use MIDI input for a direct MIDI connection."
 
 msgid "INPUT_LISTEN"
 msgstr "Use microphone for practice feedback"
@@ -1998,3 +1998,45 @@ msgstr "%s twice — Slower"
 
 msgid "AUDIO_COMMANDS_SHORT_FASTER"
 msgstr "%s twice — Faster"
+
+msgid "INPUT_MIC_DIGITAL_PIANO"
+msgstr "Electronic piano (speaker to microphone)"
+
+msgid "INPUT_MIC_VOICE"
+msgstr "Voice"
+
+msgid "INPUT_MIC_BASS"
+msgstr "Bass guitar"
+
+msgid "INPUT_MIC_VIOLIN"
+msgstr "Violin"
+
+msgid "INPUT_MIC_UKULELE"
+msgstr "Ukulele (high G)"
+
+msgid "INPUT_TUNER_ENABLED"
+msgstr "Tuner on"
+
+msgid "INPUT_PLAYBACK_MUTE"
+msgstr "Mute practice audio"
+
+msgid "INPUT_PLAYBACK_MUTE_HELP"
+msgstr "Mute all app notes and clicks while the score keeps moving. Use this when your microphone hears the phone speaker. Your volume settings stay saved."
+
+msgid "INPUT_TARGET_CUSTOM"
+msgstr "Choose a note"
+
+msgid "INPUT_TARGET_NOTE"
+msgstr "Note name"
+
+msgid "INPUT_TARGET_OCTAVE"
+msgstr "Octave number"
+
+msgid "INPUT_TARGET_HELP"
+msgstr "Choose a note name and octave for a fixed tuning target. An octave is a group of twelve notes; C4 is middle C. Targets outside the selected instrument’s listening range cannot be measured."
+
+msgid "INPUT_TARGET_CLASS"
+msgstr "%s"
+
+msgid "INPUT_TUNER_PAUSED"
+msgstr "Tuner paused — switch Tuner on to listen again"

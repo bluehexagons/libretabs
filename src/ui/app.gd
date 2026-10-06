@@ -191,6 +191,8 @@ var picker_source: OptionButton
 var picker_close: Button
 var menu_button: Button
 var tuner_button: Button
+var quick_tuner: CheckButton
+var quick_mute: CheckButton
 var menu_scroll: ScrollContainer
 var page_label: Label
 var page_navigation: HBoxContainer
@@ -918,8 +920,20 @@ func build_ui() -> void:
 	status = label("START_HINT", 18)
 	add_child(status)
 	status.hide()
-	var details: HFlowContainer = flow(panel)
-	cue = label("CUE_READY", 24)
+	var details: VBoxContainer = VBoxContainer.new()
+	panel.add_child(details)
+	cue = StableMessageLabel.new()
+	cue.text = tr("CUE_READY")
+	cue.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	cue.add_theme_font_size_override("font_size", 24)
+	cue.set_meta("base_font_size", 24)
+	cue.examples = func() -> Array[String]:
+		var widest: String = ""
+		var font: Font = cue.get_theme_font("font")
+		for pitch: int in range(128):
+			var name_text: String = LivePlaying.note_name(pitch)
+			if font.get_string_size(name_text).x > font.get_string_size(widest).x: widest = name_text
+		return [tr("CUE_READY"), tr("CUE_REST"), tr("CUE_PICK_OMITTED"), tr("CUE_UNPLACED"), tr("CUE_NOTE") % [6, 22], tr("CUE_MANY_PITCHES") % 128, tr("CUE_PITCHES") % ", ".join([widest, widest, widest])]
 	# Share the compact cue row with the arrangement disclosure.
 	details.add_child(cue)
 	notice_button = button("ARRANGEMENT_SHORT", func() -> void: toggle_drawer("DETAILS"))
@@ -1093,6 +1107,8 @@ func build_ui() -> void:
 	stop_button.custom_minimum_size.x = 56
 	transport_row.add_child(stop_button)
 	quick_row = flow(dock)
+	quick_row.add_child(quick_tuner)
+	quick_row.add_child(quick_mute)
 	quick_row.alignment = FlowContainer.ALIGNMENT_CENTER
 	quick_row.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	speed_control = PanelContainer.new()
@@ -1608,6 +1624,16 @@ func build_drawers() -> void:
 	listening.show_keyboard.connect(func() -> void: input_show.button_pressed = true)
 	listening.stop_playback.connect(pause)
 	tuner_section.add_child(listening)
+	quick_tuner = check("INPUT_TUNER_ENABLED", true)
+	quick_mute = check("INPUT_PLAYBACK_MUTE", false)
+	quick_tuner.toggled.connect(func(enabled: bool) -> void: listening.tuner_check.button_pressed = enabled)
+	quick_mute.toggled.connect(func(muted_audio: bool) -> void: listening.playback_mute.button_pressed = muted_audio)
+	listening.playback_mute_changed.connect(func(muted_audio: bool) -> void:
+		# Player gain silences queued audio and effect tails without moving time.
+		audio.volume_linear = 0.0 if muted_audio else 1.0
+		preview_audio.volume_linear = audio.volume_linear)
+	listening.quick_controls_changed.connect(update_quick_listening)
+	update_quick_listening()
 	listening.commands_requested.connect(func() -> void: toggle_drawer("AUDIO_COMMANDS"))
 	var command_section: VBoxContainer = section("AUDIO_COMMANDS")
 	audio_commands = AudioCommandControls.new()
@@ -2588,6 +2614,12 @@ func set_child_order(parent: Node, ordered: Array) -> void:
 		var child: Node = ordered[index]
 		if child != null and child.get_parent() == parent: parent.move_child(child, index)
 
+func update_quick_listening() -> void:
+	quick_tuner.set_pressed_no_signal(listening.tuner_check.button_pressed)
+	quick_mute.set_pressed_no_signal(listening.playback_mute.button_pressed)
+	quick_tuner.visible = listening.listener.capture.enabled
+	quick_mute.visible = listening.listener.capture.enabled or listening.playback_mute.button_pressed
+
 func update_main_scroll() -> void:
 	if score_frame == null or score == null: return
 	if fitting_layout: return
@@ -2605,13 +2637,13 @@ func update_main_scroll() -> void:
 	reading_tools.visible = not landscape and (tv_active or not compact)
 	for picker: OptionButton in quick_music_layout: picker.visible = size.x >= (600 if picker == quick_music_layout[0] else (1700 if theater_context.visible else 1200)) and theme.default_font_size < 30
 	update_page_controls()
-	score_frame.fit_height(96)
+	# Measure the surrounding controls without exposing a temporary tiny score.
 	await wait_for_layout_stability()
 	if tv_active:
 		fit_theater_margins()
 		await wait_for_layout_stability()
 	for extra: Control in [cue.get_parent(), reading_tools, song_title, seek_navigation]:
-		if content_margin.get_combined_minimum_size().y <= content_height_budget() + 1: break
+		if content_margin.get_combined_minimum_size().y - score_frame.get_combined_minimum_size().y + 96 <= content_height_budget() + 1: break
 		if not extra.visible: continue
 		extra.hide()
 		if extra == cue.get_parent(): fit_hide_cue = true
@@ -2619,7 +2651,7 @@ func update_main_scroll() -> void:
 		await wait_for_layout_stability()
 	var other_height: float = content_margin.get_combined_minimum_size().y - score_frame.get_combined_minimum_size().y
 	var music_space: float = content_height_budget() - other_height
-	score_frame.fit_height(maxf(200, music_space) if live.visible else music_space)
+	score_frame.fit_height(maxf(100, music_space) if live.visible else music_space)
 	# Optional input controls can scroll on short or enlarged layouts while the
 	# transport stays reachable. Preserve the ordinary score-only fit policy.
 	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO if live.visible else ScrollContainer.SCROLL_MODE_DISABLED
@@ -3016,7 +3048,7 @@ func update_arrangement() -> void:
 	for diagnostic: String in song.diagnostics: warning.text += "\n" + tr(diagnostic)
 
 func audio_commands_available() -> bool:
-	return listening != null and listening.listener.capture.enabled and listening.listener.capture.status == "INPUT_MIC_READY" and not listening.suspended and listening.listener.setup_state not in ["INPUT_SETUP_QUIET", "INPUT_SETUP_NOTES"] and song != null and importer == null and not capture_active and (not menu_overlay.visible or opened_drawer in ["TUNER", "AUDIO_COMMANDS"]) and (picker_overlay == null or not picker_overlay.visible)
+	return listening != null and listening.listener.capture.enabled and listening.listener.capture.status == "INPUT_MIC_READY" and not listening.suspended and not listening.listener.paused and listening.listener.setup_state not in ["INPUT_SETUP_QUIET", "INPUT_SETUP_NOTES"] and song != null and importer == null and not capture_active and (not menu_overlay.visible or opened_drawer in ["TUNER", "AUDIO_COMMANDS"]) and (picker_overlay == null or not picker_overlay.visible)
 
 func run_audio_command(command: String) -> void:
 	if audio_commands == null or not audio_commands.enabled or not audio_commands_available() or command not in AudioCommands.CHOICES.values(): return
@@ -3335,7 +3367,7 @@ func report_state() -> void:
 	if song == null: return
 	if host.trace_enabled():
 		var evidence: Dictionary = audio.metrics()
-		evidence.merge({"tv_active": tv_active, "tv_tucked": tv_tucked, "tv_zoom": tv_zoom, "status_visible": status_toast.visible, "tv_systems": score_frame.visible_systems(), "page_slide_count": score_frame.follow_slide_count, "page_slide_offset": score_frame.follow_offset, "music_lines": score_frame.music_lines, "note_spacing": score_frame.note_spacing, "staff_height": score_frame.staff_height, "score_height": score.drawing_height(), "fitted_rows": score.fitted_rows, "fullscreen": host.is_fullscreen(), "follow_pages": score.follow_pages, "upcoming_tick": score.upcoming_tick, "count_beat": int(count_badge.text) if count_badge.visible else 0, "capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "shape_cues": shape_cues, "font_style": font_style, "control_position": control_position, "handedness": handedness, "controls_on_side": controls_on_side, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "input_visible": live.visible, "piano_held": live.piano.pointers.size(), "input_result": {"kind": live.latest.get("kind", ""), "timing": live.latest.get("timing", "")}, "midi_status": playing_devices.midi.status, "microphone_status": listening.listener.capture.status, "pitch_analysis_ms": listening.listener.max_analysis_ms, "microphone_dropped": listening.listener.capture.dropped, "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "background_style": background_style, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "notation_rows": notation_rows, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "arrangement_style": projection.style, "placed": projection.placed, "eligible": projection.eligible, "omitted": projection.omitted.size(), "mute_marks": projection.mute_marks, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
+		evidence.merge({"tv_active": tv_active, "tv_tucked": tv_tucked, "tv_zoom": tv_zoom, "status_visible": status_toast.visible, "tv_systems": score_frame.visible_systems(), "page_slide_count": score_frame.follow_slide_count, "page_slide_offset": score_frame.follow_offset, "music_lines": score_frame.music_lines, "note_spacing": score_frame.note_spacing, "staff_height": score_frame.staff_height, "score_height": score.drawing_height(), "fitted_rows": score.fitted_rows, "fullscreen": host.is_fullscreen(), "follow_pages": score.follow_pages, "upcoming_tick": score.upcoming_tick, "count_beat": int(count_badge.text) if count_badge.visible else 0, "capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "shape_cues": shape_cues, "font_style": font_style, "control_position": control_position, "handedness": handedness, "controls_on_side": controls_on_side, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "input_visible": live.visible, "piano_held": live.piano.pointers.size(), "input_result": {"kind": live.latest.get("kind", ""), "timing": live.latest.get("timing", "")}, "midi_status": playing_devices.midi.status, "microphone_status": listening.listener.capture.status, "tuner_enabled": not listening.listener.paused, "playback_muted": listening.playback_mute.button_pressed, "pitch_analysis_ms": listening.listener.max_analysis_ms, "microphone_dropped": listening.listener.capture.dropped, "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "background_style": background_style, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "notation_rows": notation_rows, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "arrangement_style": projection.style, "placed": projection.placed, "eligible": projection.eligible, "omitted": projection.omitted.size(), "mute_marks": projection.mute_marks, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
 		host.report(evidence)
 	offline.text = tr("OFFLINE_READY") if host.offline_ready() else tr("OFFLINE_PENDING")
 	if host.offline_ready() and not host.trace_enabled(): idle_timer.stop()

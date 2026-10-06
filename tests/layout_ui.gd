@@ -131,6 +131,30 @@ func run() -> void:
 	notices.close_requested.emit()
 	await settle(2)
 	check(not is_instance_valid(notices), "closing notices releases the dialog")
+	app.set("control_position", "bottom")
+	app.call("apply_preset", "piano")
+	for viewport: Vector2i in [Vector2i(360, 900), Vector2i(1280, 800)]:
+		root.size = viewport
+		app.call("apply_scale", 1.0)
+		app.call("responsive")
+		await settle_layout(app, score)
+		var stable_height: float = app.get("score_frame").size.y
+		for prompt: String in [app.tr("CUE_PITCHES") % "C#4, D#4, F#4", app.tr("CUE_REST"), app.tr("CUE_PITCHES") % "A4"]:
+			app.get("cue").text = prompt
+			for _frame: int in range(12):
+				await process_frame
+				check(absf(app.get("score_frame").size.y - stable_height) < 1, "playing note/rest labels keep score height every frame at %s" % viewport)
+	app.call("apply_preset", "piano_keys")
+	root.size = Vector2i(360, 900)
+	app.call("responsive")
+	await settle_layout(app, score)
+	var live_height: float = app.get("score_frame").size.y
+	var live_controls: LivePlaying = app.get("live")
+	for result: Dictionary in [{"kind": "uncertain"}, {"kind": "match", "expected": 61, "played": 61.0, "cents": -33.0, "timing": "early"}, {"kind": "wrong", "expected": 61, "played": 109.0, "cents": 0.0, "timing": "late"}]:
+		live_controls.message.text = live_controls.describe(result)
+		for _frame: int in range(12):
+			await process_frame
+			check(absf(app.get("score_frame").size.y - live_height) < 1, "changing pitch/timing feedback reserves stable score room")
 	app.queue_free()
 	await process_frame
 	print("Layout UI: %d checks, %d failures" % [checks, failures])

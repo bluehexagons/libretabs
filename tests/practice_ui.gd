@@ -1243,6 +1243,39 @@ func run() -> void:
 	toast.reduced_motion = true
 	toast.expire()
 	check(not toast.visible, "reduced motion dismisses status without animation")
+	var listening: ListeningControls = app.get("listening")
+	var practice_audio: PracticeAudio = app.get("audio")
+	var saved_level: float = practice_audio.instrument_level
+	var saved_click: float = practice_audio.metronome_level
+	var rendered_before: int = practice_audio.transport.rendered_frames
+	listening.playback_mute.button_pressed = true
+	check(practice_audio.volume_linear == 0 and app.get("preview_audio").volume_linear == 0, "tuner mute silences playback, click, live notes and effect tails")
+	check(practice_audio.instrument_level == saved_level and practice_audio.metronome_level == saved_click and practice_audio.transport.rendered_frames == rendered_before, "tuner mute preserves volumes and transport")
+	check(app.get("quick_mute").visible and app.get("quick_mute").button_pressed, "muted playback always has a visible restore switch")
+	app.get("quick_mute").button_pressed = false
+	check(not listening.playback_mute.button_pressed and practice_audio.volume_linear == 1, "practice switch restores sound and synchronizes tuner controls")
+	listening.listener.capture.enabled = true
+	listening.listener.capture.changed.emit()
+	check(app.get("quick_tuner").visible, "active microphone exposes tuner switch during practice")
+	app.get("quick_tuner").button_pressed = false
+	check(listening.listener.paused and not listening.tuner_check.button_pressed, "practice switch pauses tuner without reopening setup")
+	listening.tuner_check.button_pressed = true
+	check(not listening.listener.paused and app.get("quick_tuner").button_pressed, "tuner resumes from either synchronized switch")
+	listening.listener.capture.stop()
+	for profile: int in [PitchListener.Profile.BASS, PitchListener.Profile.VIOLIN, PitchListener.Profile.UKULELE, PitchListener.Profile.VOICE]:
+		listening.listener.set_profile(profile)
+		listening.refresh_targets()
+		check(listening.target_picker.item_count == listening.listener.open_strings().size() + 2 and listening.target == -1, "instrument targets reset without stale guitar strings")
+	listening.target_picker.select(listening.target_picker.item_count - 1)
+	listening.target_picker.item_selected.emit(listening.target_picker.item_count - 1)
+	listening.target_note.select(9)
+	listening.target_octave.value = 3
+	listening.update_custom_target()
+	check(listening.target == 57 and listening.custom_target.visible, "custom vocal target stores semantic A3")
+	listening.last_result = {"valid": true, "pitch": 69.0}
+	for child: Node in listening.get_children():
+		if child is Button and child.text == app.tr("INPUT_TUNER_LOCK"): child.pressed.emit()
+	check(listening.target == 69 and listening.target_picker.selected == listening.target_picker.item_count - 1, "lock target works without a guitar-specific menu index")
 	app.queue_free()
 	await process_frame
 	root.size = Vector2i(480, 320)

@@ -55,7 +55,14 @@ func _ready() -> void:
 	settings.custom_minimum_size = Vector2(44, 44)
 	settings.pressed.connect(func() -> void: settings_requested.emit())
 	actions.add_child(settings)
-	message = Label.new()
+	message = StableMessageLabel.new()
+	message.examples = func() -> Array[String]:
+		var values: Array[String] = [tr("INPUT_IDLE"), tr("INPUT_RESULT_POLYPHONIC"), tr("INPUT_RESULT_UNCERTAIN"), tr("INPUT_RESULT_REST")]
+		for kind: String in ["match", "octave", "wrong"]:
+			for cents: float in [-99.0, 99.0]:
+				for timing: String in ["unknown", "early", "late", "on_time"]:
+					values.append(describe({"kind": kind, "expected": 61, "played": 109.0, "cents": cents, "timing": timing}))
+		return values
 	message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	message.add_theme_font_size_override("font_size", 16)
 	message.set_meta("base_font_size", 16)

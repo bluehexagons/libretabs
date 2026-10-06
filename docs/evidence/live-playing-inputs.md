@@ -104,3 +104,48 @@ Chromium, Firefox and actual Safari, standalone and embedded permissions, offlin
 reload, foreground/background recovery, and the single-thread compatibility build.
 Hardware comparison, physical audible timing and non-Chromium browser/device
 claims remain open; synthetic fixtures cannot close those gates.
+
+## Soft piano input, tuning presets and stable practice layout (2026-10-05)
+
+The owner reported an electronic piano through its speakers into a microphone,
+and score resizing in regular practice. The narrow-layout reproduction alternated
+wrapped note prompts and rests: the old fit exposed a 96-pixel score before
+restoring 278 pixels. Fit now measures surrounding controls without shrinking the
+score; translated prompt/feedback variants reserve measured font/wrap height.
+Regression checks inspect every intervening frame, not only the settled result.
+
+Pitch analysis centers and normalizes the bounded window after checking raw input
+level/clipping. This removes amplitude-dependent interpolation guards; it does
+not change the raw meter. Electronic piano maximum sensitivity has a nominal RMS
+gate of 0.00003125 (previous maximum: about 0.00053), before the independently
+calibrated room-noise floor. Synthetic harmonic signals at multiple low levels,
+DC/noise/clipping rejection, bass fundamentals and pause/resume are covered.
+Real piano/speaker/microphone acceptance remains open.
+
+Standard open-string targets were checked against manufacturer references:
+[Fender bass tuning](https://www.fender.com/articles/setup/how-to-tune-your-bass),
+[Yamaha violin guidance](https://hub.yamaha.com/strings/s-how-to/eight-great-tips-for-learning-violin/),
+and [Kala ukulele tuning](https://kalabrand.com/pages/ukulele-tuning).
+The high-G ukulele retains physical string order rather than sorted pitch order.
+Voice uses automatic/custom targets without assigning a singer category.
+No third-party code, audio or fixtures were downloaded into the project.
+
+The tuner pause and mute controls have integration tests for fresh reacquisition,
+synchronized switches, target selection, output gain and preserved transport/mixer
+settings. Muting the player silences already queued output, click and effect tails.
+The microphone is never routed into the app’s audio output.
+
+Validation: `python3 scripts/verify.py` passed the pinned-engine baseline, including
+all existing practice, layout, theater and page-follow suites. Final focused
+pitch tests passed 102 checks (maximum analysis about 14.5 ms, including bass);
+final layout tests passed 612 checks, including changing pitch/timing feedback.
+Managed HTTPS export, gateway doctor, isolation/MIME and all nine offline asset
+hashes passed. VM-local Chromium rendered 390×844 and 1280×800 layouts, selected
+an electronic piano/custom note and bass string targets, toggled tuner and mute,
+and restored sound from the practice switch. Eight one-second playback samples
+kept the phone score at 192 pixels while the source tick advanced with mute on.
+Two initial cold-start underruns were reported without further increases; this
+is not a physical audio timing pass. A network-disabled reload initialized the
+latest export with its complete offline cache. Browser console had engine startup
+logs only. T3 preview status/open explicitly reported no automation host, so these
+checks used healthy managed VM-local Playwright.

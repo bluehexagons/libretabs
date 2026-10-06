@@ -62,3 +62,19 @@ Use typed GDScript and platform adapters. No new dependency, GDExtension, networ
 service or SoundFont is introduced. Processing/memory limits and missing platform
 evidence must be reported. Synthetic pitch tests establish algorithm behavior;
 they cannot certify real instruments or microphone/tuner hardware.
+
+## Owner-requested tuning refinements (2026-10-05)
+
+Split acoustic/electronic piano microphone profiles and improve soft-note analysis.
+Add voice, four-string bass, violin and high-G ukulele range/target presets, plus
+semantic chromatic note/octave target selection. These are session-only tuner
+choices; they do not transform songs or add instrument-specific lessons/tabs.
+Acoustic piano tolerates slightly less periodic strings; electronic piano uses a
+lower starting level gate and the stricter confidence gate. Both still require
+stable single-note evidence. Calibrated room noise bounds sensitivity.
+
+Provide synchronized tuner pause and practice-audio mute switches in the tuner
+and practice controls. Pause clears input history while keeping capture open;
+Stop releases capture. Mute applies player output gain to notes, clicks and tails
+while preserving the existing timeline and saved mixer preferences. No automatic
+echo cancellation or speaker/instrument separation is claimed.
