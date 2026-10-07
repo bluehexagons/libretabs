@@ -535,6 +535,9 @@ msgstr "Licenses & notices"
 msgid "CARD_ABOUT"
 msgstr "About LibreTabs"
 
+msgid "ABOUT"
+msgstr "About LibreTabs"
+
 msgid "ABOUT_VERSION"
 msgstr "Version: %s"
 

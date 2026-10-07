@@ -20,6 +20,8 @@ it does not close the M0/MVP musical, learner or physical-platform gates.
   stamping helper as distribution packaging. This preserves working files and
   excludes uncommitted or private files. About shows the running version, and
   the guide explains where to find it for feedback.
+  The final browser check also found the About heading's missing translation;
+  its menu and drawer now use “About LibreTabs” rather than the internal key.
 - The public guide still described all sounding notes as outlined, and its
   silent-player troubleshooting omitted the new mute switch. Both explanations
   now match the player; feedback instructions point to About's version.
