@@ -1834,6 +1834,21 @@ msgstr "Listen to one clear note at a time. Piano: A1–C7; guitar: D2–F6; voi
 msgid "INPUT_LEVEL_QUIET"
 msgstr "Input level: quiet — play a clear note"
 
+msgid "INPUT_LEVEL_UNAVAILABLE"
+msgstr "Input level: no audio measurement yet"
+
+msgid "INPUT_LEVEL_PAUSED"
+msgstr "Input level: tuner paused"
+
+msgid "INPUT_LEVEL_CALIBRATING"
+msgstr "Input level: measuring background noise"
+
+msgid "INPUT_TUNER_START"
+msgstr "Choose Start microphone to tune a note."
+
+msgid "INPUT_TUNER_NO_AUDIO"
+msgstr "Waiting for microphone audio. Check the microphone status above."
+
 msgid "INPUT_LEVEL_OK"
 msgstr "Input level: sound detected"
 

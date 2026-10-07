@@ -4,13 +4,17 @@ extends RefCounted
 
 const MAX_PAGES: int = 24
 const WIDTH: int = 1000
+const STAFF_INSET: int = 40
+
+static func row_height(notation: String) -> float:
+	return ScoreLayout.row_height(notation) + (0 if notation == "tab" else STAFF_INSET)
 
 # Fixed paper geometry, independent of viewport, text scale, theme and playback.
 static func plan(song: SongDocument, part: int, notation: String, paper: String, first: int, last: int) -> Dictionary:
 	if notation not in ["both", "tab", "staff"] or paper not in ["A4", "Letter"] or first < 0 or last >= song.measures.size() or first > last:
 		return {"error": "PRINT_RANGE_ERROR"}
 	var height: int = 1250 if paper == "A4" else 1150
-	var rows_per_page: int = floori(height / ScoreLayout.row_height(notation))
+	var rows_per_page: int = floori(height / row_height(notation))
 	var rows: Array = []
 	var row: Array[int] = []
 	for index: int in range(first, last + 1):

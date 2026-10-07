@@ -2937,8 +2937,7 @@ func finish_import() -> void:
 		set_status("ERR_EMPTY")
 		return
 	audio.stop_practice()
-	print_html = ""
-	print_save.disabled = true
+	invalidate_print()
 	song = result
 	title = import_name
 	song_title.text = title
@@ -2987,8 +2986,6 @@ func part_display_name(index: int) -> String:
 func select_part(index: int) -> void:
 	if song == null or index < 0 or index >= song.parts.size() or bool(song.parts[index].percussion): return
 	pause()
-	print_html = ""
-	print_save.disabled = true
 	part = index
 	mute_check.set_pressed_no_signal(muted.has(part))
 	mute_check.text = tr("MUTE_FOCUSED_PART") % [part_display_name(part), part + 1]
@@ -3017,13 +3014,14 @@ func set_part_enabled(index: int, enabled: bool) -> void:
 func set_arrangement_style(_index: int) -> void:
 	if song == null: return
 	pause()
-	print_html = ""
-	print_save.disabled = true
 	update_arrangement()
 	sync_preset_marker()
 	update_position()
 
 func update_arrangement() -> void:
+	# Presets and part/style changes rebuild the shared projection. A pending
+	# render must not combine pages from different versions of that projection.
+	invalidate_print()
 	live.configure(song, part)
 	var style: String = [TabProjection.BASIC, TabProjection.PICK, TabProjection.FINGER][arrangement_picker.selected]
 	projection.build(song, part, style)
@@ -3545,6 +3543,7 @@ func apply_motion() -> void:
 	responsive()
 
 func set_shape_cues(enabled: bool) -> void:
+	if enabled != shape_cues: invalidate_print()
 	shape_cues = enabled
 	if shape_cue_check != null: shape_cue_check.set_pressed_no_signal(enabled)
 	if score_frame != null: score_frame.set_shape_cues(enabled)

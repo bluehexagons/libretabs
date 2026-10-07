@@ -1244,6 +1244,7 @@ func run() -> void:
 	toast.expire()
 	check(not toast.visible, "reduced motion dismisses status without animation")
 	var listening: ListeningControls = app.get("listening")
+	check(listening.tuning.text == app.tr("INPUT_TUNER_START") and listening.mic_level_text.text == app.tr("INPUT_LEVEL_UNAVAILABLE") and listening.lock_target.disabled, "inactive microphone offers Start instead of asking for louder notes")
 	var practice_audio: PracticeAudio = app.get("audio")
 	var saved_level: float = practice_audio.instrument_level
 	var saved_click: float = practice_audio.metronome_level
@@ -1255,13 +1256,33 @@ func run() -> void:
 	app.get("quick_mute").button_pressed = false
 	check(not listening.playback_mute.button_pressed and practice_audio.volume_linear == 1, "practice switch restores sound and synchronizes tuner controls")
 	listening.listener.capture.enabled = true
+	listening.listener.capture.status = "INPUT_MIC_CONNECTING"
 	listening.listener.capture.changed.emit()
 	check(app.get("quick_tuner").visible, "active microphone exposes tuner switch during practice")
+	check(listening.tuning.text == app.tr("INPUT_TUNER_NO_AUDIO") and listening.mic_level.value == 0, "permission/connection wait does not masquerade as quiet audio")
+	listening.listener.capture.status = "INPUT_MIC_READY"
+	listening.listener.capture.changed.emit()
+	check(listening.mic_level_text.text == app.tr("INPUT_LEVEL_UNAVAILABLE"), "ready capture still needs fresh frames for a level reading")
+	listening.listener.setup_state = "INPUT_SETUP_QUIET"
+	listening.update_setup()
+	check(listening.tuning.text == app.tr("INPUT_SETUP_QUIET") and listening.mic_level_text.text == app.tr("INPUT_LEVEL_CALIBRATING"), "background calibration asks for silence instead of a played note")
+	listening.listener.setup_state = "INPUT_SETUP_IDLE"
+	listening.show_observation({"valid": false, "fresh": true, "rms": 0.0, "peak": 0.0})
+	check(listening.mic_level_text.text == app.tr("INPUT_LEVEL_QUIET") and listening.tuning.text == app.tr("INPUT_TUNER_WAIT"), "measured silence offers a clear-note hint")
+	listening.show_observation({"valid": true, "fresh": true, "rms": 0.02, "peak": 0.1, "pitch": 69.0, "hz": 440.0})
+	check(listening.gauge.active and not listening.lock_target.disabled and listening.mic_level_text.text == app.tr("INPUT_LEVEL_OK"), "fresh stable note enables tuning and target lock")
 	app.get("quick_tuner").button_pressed = false
 	check(listening.listener.paused and not listening.tuner_check.button_pressed, "practice switch pauses tuner without reopening setup")
+	check(not listening.gauge.active and listening.lock_target.disabled and listening.mic_level.value == 0 and listening.mic_level_text.text == app.tr("INPUT_LEVEL_PAUSED"), "pausing clears the measured note and stale level")
 	listening.tuner_check.button_pressed = true
 	check(not listening.listener.paused and app.get("quick_tuner").button_pressed, "tuner resumes from either synchronized switch")
+	check(listening.mic_level_text.text == app.tr("INPUT_LEVEL_UNAVAILABLE"), "resuming waits for new audio instead of reusing a stale note")
+	listening.show_observation({"valid": true, "fresh": true, "rms": 0.02, "peak": 0.1, "pitch": 69.0, "hz": 440.0})
+	listening.listener.capture.status = "INPUT_MIC_NO_SIGNAL"
+	listening.listener.capture.changed.emit()
+	check(not listening.gauge.active and listening.lock_target.disabled and listening.tuning.text == app.tr("INPUT_TUNER_NO_AUDIO"), "capture interruption clears the note before another observation arrives")
 	listening.listener.capture.stop()
+	check(listening.tuning.text == app.tr("INPUT_TUNER_START") and listening.mic_level.value == 0 and listening.lock_target.disabled, "stopping returns to an actionable inactive state")
 	for profile: int in [PitchListener.Profile.BASS, PitchListener.Profile.VIOLIN, PitchListener.Profile.UKULELE, PitchListener.Profile.VOICE]:
 		listening.listener.set_profile(profile)
 		listening.refresh_targets()
@@ -1272,10 +1293,30 @@ func run() -> void:
 	listening.target_octave.value = 3
 	listening.update_custom_target()
 	check(listening.target == 57 and listening.custom_target.visible, "custom vocal target stores semantic A3")
-	listening.last_result = {"valid": true, "pitch": 69.0}
-	for child: Node in listening.get_children():
-		if child is Button and child.text == app.tr("INPUT_TUNER_LOCK"): child.pressed.emit()
+	listening.listener.capture.enabled = true
+	listening.listener.capture.status = "INPUT_MIC_READY"
+	listening.show_observation({"valid": true, "fresh": true, "rms": 0.02, "peak": 0.1, "pitch": 69.0, "hz": 440.0})
+	listening.lock_target.pressed.emit()
 	check(listening.target == 69 and listening.target_picker.selected == listening.target_picker.item_count - 1, "lock target works without a guitar-specific menu index")
+	listening.listener.capture.stop()
+	# Exercise invalidation while a print renderer is pending, without requiring
+	# a GPU frame in the headless suite. Native render completion is audited separately.
+	var print_changes: Array[Callable] = [
+		func() -> void: app.call("select_part", (int(app.get("part")) + 1) % app.get("song").parts.size()),
+		func() -> void: app.call("set_arrangement_style", 0),
+		func() -> void: app.call("apply_preset", "guitar"),
+		func() -> void: app.call("set_shape_cues", not app.get("shape_cues")),
+	]
+	for change: Callable in print_changes:
+		var pending_print: PrintRenderer = PrintRenderer.new()
+		app.add_child(pending_print)
+		app.set("printer", pending_print)
+		app.set("print_html", "previous pages")
+		app.get("print_save").disabled = false
+		change.call()
+		check(pending_print.cancelled and app.get("print_html").is_empty() and app.get("print_save").disabled, "changing print source cancels pending pages and disables outdated export")
+		app.set("printer", null)
+		pending_print.queue_free()
 	app.queue_free()
 	await process_frame
 	root.size = Vector2i(480, 320)

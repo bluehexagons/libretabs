@@ -20,6 +20,7 @@ var split_staff: bool = false
 var compact_staff: bool = false
 var tab_y_offset: float = 0
 var show_measure_title: bool = true
+var music_y_offset: float = 0
 var draw_count: int = 0
 
 func _draw() -> void:
@@ -76,6 +77,10 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 		text_at(origin + Vector2(8, 22), title, 16)
 	elif compact_staff:
 		text_at(origin + Vector2(8, 22), tr("MINI_BASS_LABEL" if clef == "bass" else "MINI_TREBLE_LABEL"), 15, muted)
+	# Printed systems reserve space between the heading and high ledger notes.
+	origin.y += music_y_offset
+	top += music_y_offset
+	tab_top += music_y_offset
 	if has_staff:
 		for line: int in range(5):
 			draw_line(Vector2(left, top + line * ScoreLayout.STAFF_SPACE), Vector2(right, top + line * ScoreLayout.STAFF_SPACE), ink.lerp(get_theme_color("paper", "LibreTabs"), 0.30), 1.0, true)
@@ -95,12 +100,7 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 	var span: float = width if continuous else width - 92
 	var visible_count: int = 0
 	var beamed: Dictionary = {}
-	var short_counts: Dictionary = {}
-	for candidate: Dictionary in song.notes:
-		if int(candidate.part) == part and candidate.start >= start and candidate.start < finish and candidate.end - candidate.start <= song.division / 2.0:
-			if split_staff and not staff_accepts_pitch(int(candidate.pitch)): continue
-			var group: int = floori(float(candidate.start) / song.division) * 2 + (1 if ScoreLayout.staff_y(int(candidate.pitch), clef) <= ScoreLayout.STAFF_TOP + 2 * ScoreLayout.STAFF_SPACE else 0)
-			short_counts[group] = int(short_counts.get(group, 0)) + 1
+	var beam_groups: Dictionary = ScoreLayout.beam_groups(song, part, index, clef, split_staff) if has_staff else {}
 	for note: Dictionary in song.notes:
 		if int(note.part) != part or float(note.end) <= start or float(note.start) >= finish or note.end <= note.start:
 			continue
@@ -110,8 +110,6 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 			text_at(origin + Vector2(12, size.y - 8), tr("DENSE_DISPLAY"), 12, accent)
 			break
 		var raw: float = maxf(start, float(note.start))
-		var grid: float = song.division / 4.0
-		var display: float = clampf(round(raw / grid) * grid, start, finish - grid)
 		var x: float = origin.x + ScoreLayout.note_x(song, note, index, width, continuous)
 		var pitch: int = int(note.pitch)
 		var y: float = origin.y + ScoreLayout.staff_y(pitch, clef)
@@ -137,13 +135,17 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 				if duration < song.division * 4:
 					draw_line(Vector2(stem.x, y), stem, color, 1.5, true)
 				if duration <= song.division / 2.0:
-					var beat: int = floori(display / song.division) * 2 + (1 if down else 0)
-					if beamed.has(beat):
-						var previous: Vector2 = beamed[beat]
-						draw_line(previous, stem, color, 3, true)
-					elif int(short_counts.get(beat, 0)) < 2:
+					var group: Dictionary = beam_groups.get(note.id, {})
+					if group.is_empty():
 						glyph(stem, (0xe242 if duration <= song.division / 4.0 else 0xe240) + (1 if down else 0), 41, color)
-					beamed[beat] = stem
+					else:
+						var key: int = int(group.group)
+						if beamed.has(key):
+							var previous: Vector2 = beamed[key]
+							for beam_index: int in range(int(group.beams)):
+								var offset: Vector2 = Vector2(0, beam_index * (-7 if down else 7))
+								draw_line(previous + offset, stem + offset, color, 3, true)
+						beamed[key] = stem
 				if is_equal_approx(duration / song.division, 1.5) or is_equal_approx(duration / song.division, 3.0):
 					draw_circle(Vector2(x + 13, y - 2), 1.8, color)
 				if float(note.end) > finish or float(note.start) < start:

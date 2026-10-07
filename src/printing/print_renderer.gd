@@ -45,7 +45,8 @@ func render(song: SongDocument, projection: TabProjection, part: int, plan: Dict
 				tile.index = row[column]
 				tile.continuous = false
 				tile.notation = plan.notation
-				tile.size = Vector2(float(PrintLayout.WIDTH) / row.size(), ScoreLayout.row_height(plan.notation))
+				tile.music_y_offset = 0 if plan.notation == "tab" else PrintLayout.STAFF_INSET
+				tile.size = Vector2(float(PrintLayout.WIDTH) / row.size(), PrintLayout.row_height(plan.notation))
 				tile.position = Vector2(column * tile.size.x, row_index * tile.size.y)
 				page.add_child(tile)
 		viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
@@ -60,4 +61,6 @@ func render(song: SongDocument, projection: TabProjection, part: int, plan: Dict
 		progress.emit(page_index + 1, plan.pages.size())
 		await get_tree().process_frame
 	viewport.queue_free()
-	return [] if cancelled else images
+	# Preserve Array[String] across the awaited return, including cancellation.
+	if cancelled: images.clear()
+	return images

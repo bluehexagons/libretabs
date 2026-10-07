@@ -124,7 +124,9 @@ func run() -> void:
 	audio.transport.repeat = false
 	var listening: ListeningControls = app.get("listening")
 	check(not listening.listener.capture.enabled and not listening.listen_check.button_pressed, "tuner opening never requests microphone or enables listening")
-	listening.show_observation({"valid": true, "hz": 442.0, "pitch": PitchDetector.midi_pitch(442), "rms": 0.1, "peak": 0.2})
+	listening.listener.capture.enabled = true
+	listening.listener.capture.status = "INPUT_MIC_READY"
+	listening.show_observation({"valid": true, "fresh": true, "hz": 442.0, "pitch": PitchDetector.midi_pitch(442), "rms": 0.1, "peak": 0.2})
 	check(listening.gauge.active and listening.gauge.cents > 7, "tuner shows independent frequency and detuning")
 	listening.show_observation({"valid": false})
 	check(not listening.gauge.active, "uncertain capture clears the tuner needle")

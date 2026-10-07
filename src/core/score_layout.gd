@@ -74,6 +74,55 @@ static func placement_color_token(projection: TabProjection, note: Dictionary) -
 	if fret <= 3: return "note_first"
 	return "note_move"
 
+# Conservative one-beat runs in the existing sixteenth-grid projection. Mixed
+# values, chords and overlaps keep their individual flags; never beam a rest.
+static func beam_groups(document: SongDocument, part: int, index: int, clef: String, split_staff: bool = false) -> Dictionary:
+	var bar: Dictionary = document.measures[index]
+	var grid: float = document.division / 4.0
+	var candidates: Array[Dictionary] = []
+	var onsets: Dictionary = {}
+	var carried_until: float = float(bar.start)
+	for note: Dictionary in document.notes:
+		if int(note.part) != part or note.start >= bar.end or note.end <= note.start: continue
+		if split_staff and ((clef == "treble" and int(note.pitch) < 60) or (clef == "bass" and int(note.pitch) >= 60)): continue
+		if note.start < bar.start:
+			carried_until = maxf(carried_until, float(note.end))
+			continue
+		candidates.append(note)
+		var display: int = roundi(float(note.start) / grid)
+		onsets[display] = int(onsets.get(display, 0)) + 1
+	candidates.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a.start < b.start)
+	var runs: Array[Array] = []
+	var run: Array[String] = []
+	var previous_end: int = -1
+	var previous_token: Vector3i = Vector3i(-1, -1, -1)
+	var occupied_until: float = carried_until
+	var beam_counts: Dictionary = {}
+	for note: Dictionary in candidates:
+		var display: int = roundi(float(note.start) / grid)
+		var end: int = roundi(minf(float(note.end), float(bar.end)) / grid)
+		var cells: int = end - display
+		var y: float = staff_y(int(note.pitch), clef)
+		var duration: float = minf(float(note.end), float(bar.end)) - float(note.start)
+		var beams: int = 2 if duration <= grid else 1
+		var token: Vector3i = Vector3i(floori((display * grid - float(bar.start)) / document.division), 1 if y <= STAFF_TOP + 2 * STAFF_SPACE else 0, beams)
+		var eligible: bool = cells in [1, 2] and duration <= document.division / 2.0 and onsets[display] == 1 and note.start >= occupied_until and y >= 12 and y <= 172
+		if not eligible or display != previous_end or token != previous_token:
+			if run.size() >= 2: runs.append(run)
+			run = []
+		if eligible:
+			run.append(str(note.id))
+			beam_counts[str(note.id)] = beams
+		previous_end = end
+		previous_token = token
+		occupied_until = maxf(occupied_until, float(note.end))
+	if run.size() >= 2: runs.append(run)
+	var groups: Dictionary = {}
+	for group_index: int in range(runs.size()):
+		var beams: int = int(beam_counts[runs[group_index][0]])
+		for id: String in runs[group_index]: groups[id] = {"group": group_index, "count": runs[group_index].size(), "beams": beams}
+	return groups
+
 # Produce a conservative, sixteenth-grid rest projection from source occupancy.
 # This is a visual aid only; it never alters source timing or the playback path.
 static func rest_segments(notes: Array, part: int, start: float, finish: float, division: int) -> Array[Dictionary]:

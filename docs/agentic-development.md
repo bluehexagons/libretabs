@@ -176,6 +176,22 @@ Documentation-only changes use `git diff --check` and link/consistency review. T
 
 Do not hide engine warnings to obtain a green result. Treat new parser errors, orphan nodes/resources, leaked objects, and type warnings as failures unless a documented upstream issue makes that impossible.
 
+For print changes, also run the optional native draw audit in a managed desktop:
+
+```bash
+basaltw desktop status
+# Start the desktop if needed for this deliberate native application check:
+basaltw desktop start
+basaltw desktop exec -- godot --path . --log-file build/print-audit.log --script res://tests/print_render.gd
+```
+
+The launcher returns before Godot finishes. Inspect its launch status and the
+log's `Native print` result, then review the PNGs and HTML under ignored
+`build/print-audit/`. The audit exercises cancellation during an actual draw,
+subsequent preparation, A4/Letter pagination and all three notation choices.
+Headless checks cannot cover `RenderingServer.frame_post_draw`. See the
+[player audit](evidence/player-audit.md) for findings and coverage limits.
+
 Algorithm changes should report fixture counts and property iterations. Timing changes should report sample rate, stream mode, buffer size/queued latency, duration, platform, browser/build, max/p95 audible-position error, fixed output latency, underruns, control-response latency, and stuck-voice result. Record how audible position was observed; scheduler trace agreement alone cannot certify it. Performance comparisons use the same fixture and build type.
 
 ## Web export and shared preview

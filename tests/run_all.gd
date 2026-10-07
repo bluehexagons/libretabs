@@ -47,7 +47,7 @@ func _initialize() -> void:
 			check(plan.error == "" and not plan.pages.is_empty(), "print plan supports each paper and notation")
 			var indices: Array = []
 			for page: Array in plan.pages:
-				check(page.size() * ScoreLayout.row_height(notation) <= plan.height, "print systems fit inside the page")
+				check(page.size() * PrintLayout.row_height(notation) <= plan.height, "print systems including heading clearance fit inside the page")
 				for row: Array in page: indices.append_array(row)
 			check(indices == range(print_song.measures.size()), "print range includes every measure once in order")
 	check(PrintLayout.plan(print_song, 0, "both", "A4", 2, 1).error == "PRINT_RANGE_ERROR", "backward print range refused")
@@ -116,6 +116,46 @@ func _initialize() -> void:
 	check(ScoreLayout.staff_y(64) == 62.5 and ScoreLayout.tab_y(1) == 176 and ScoreLayout.tab_y(6) == 281, "shared staff and tab centers")
 	check(ScoreLayout.staff_y(52) == ScoreLayout.STAFF_BOTTOM and ScoreLayout.staff_y(65) == ScoreLayout.STAFF_TOP, "staff pitches land on the bottom E and top F lines")
 	check(ScoreLayout.staff_y(64) - ScoreLayout.staff_y(65) == ScoreLayout.STAFF_SPACE / 2, "adjacent diatonic pitches are separated by half a staff space")
+	var beam_song: SongDocument = SongDocument.new()
+	beam_song.division = 480
+	beam_song.measures = [{"start": 720, "end": 1440}]
+	beam_song.notes = [
+		{"id": "a", "part": 0, "pitch": 64, "start": 720, "end": 840},
+		{"id": "b", "part": 0, "pitch": 64, "start": 840, "end": 960},
+		{"id": "c", "part": 0, "pitch": 64, "start": 960, "end": 1080},
+		{"id": "d", "part": 0, "pitch": 64, "start": 1080, "end": 1200},
+		{"id": "e", "part": 0, "pitch": 64, "start": 1200, "end": 1320},
+		{"id": "f", "part": 0, "pitch": 64, "start": 1320, "end": 1440},
+	]
+	var original_beam_notes: Array = beam_song.notes.duplicate(true)
+	var groups: Dictionary = ScoreLayout.beam_groups(beam_song, 0, 0, "staff")
+	check(beam_song.notes == original_beam_notes, "beam projection preserves original note intervals")
+	check(groups.a.count == 4 and groups.a.beams == 2 and groups.a.group == groups.d.group and groups.e.group != groups.d.group, "sixteenths use two beams and beats begin at the measure, including odd 3/8 bars")
+	beam_song.notes.append({"id": "held", "part": 0, "pitch": 60, "start": 0, "end": 1300})
+	check(ScoreLayout.beam_groups(beam_song, 0, 0, "staff").is_empty(), "a note held from the preceding bar prevents a false monophonic beam")
+	beam_song.notes.pop_back()
+	beam_song.notes[1].start = 960
+	beam_song.notes[1].end = 1080
+	beam_song.notes.resize(2)
+	check(ScoreLayout.beam_groups(beam_song, 0, 0, "staff").is_empty(), "a sixteenth rest prevents a beam between separate attacks")
+	beam_song.notes.assign(original_beam_notes.slice(0, 2).duplicate(true))
+	beam_song.notes[0].end = 900
+	check(ScoreLayout.beam_groups(beam_song, 0, 0, "staff").is_empty(), "overlapping notes keep individual flags")
+	beam_song.notes.assign(original_beam_notes.slice(0, 2).duplicate(true))
+	beam_song.notes[1].start = 720
+	check(ScoreLayout.beam_groups(beam_song, 0, 0, "staff").is_empty(), "chord attacks are not connected as a melodic beam")
+	beam_song.notes = [
+		{"id": "a", "part": 0, "pitch": 64, "start": 720, "end": 960},
+		{"id": "b", "part": 0, "pitch": 64, "start": 960, "end": 1200},
+	]
+	groups = ScoreLayout.beam_groups(beam_song, 0, 0, "staff")
+	check(groups.a.beams == 1 and groups.a.count == 2, "eighth notes use one beam")
+	beam_song.notes[0].end = 900
+	beam_song.notes[1].end = 1140
+	check(ScoreLayout.beam_groups(beam_song, 0, 0, "staff").size() == 2, "short articulation releases that fill the display grid preserve a beam")
+	beam_song.notes[0].end = 840
+	beam_song.notes[1].start = 840
+	check(ScoreLayout.beam_groups(beam_song, 0, 0, "staff").is_empty(), "mixed note values retain separate flags rather than an incorrect beam count")
 	var rest_segments: Array[Dictionary] = ScoreLayout.rest_segments([{"part": 0, "start": 0, "end": 480}, {"part": 0, "start": 1440, "end": 1920}], 0, 0, 1920, 480)
 	check(rest_segments.size() == 1 and rest_segments[0].name == "half" and rest_segments[0].glyph == 0xe4e4, "empty two-beat gaps use a half-rest glyph")
 	var whole_rest: Array[Dictionary] = ScoreLayout.rest_segments([], 0, 0, 1440, 480)
