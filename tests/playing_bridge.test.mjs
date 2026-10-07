@@ -48,6 +48,36 @@ test('device changes update the list and invalidate queued note state',async()=>
   const report=JSON.parse(api.midiStatus());assert.ok(report.revision>revision);assert.equal(report.devices.length,0);
   assert.deepEqual(JSON.parse(api.midiPull()),[]);
 });
+test('only selectable MIDI ports receive handlers; reconnect respects the device cap',async()=>{
+  const ports=Array.from({length:34},(_,i)=>({id:String(i),state:'connected',close:async()=>{}}));
+  const access={inputs:new Map(ports.map(p=>[p.id,p]))};
+  const api=host({requestMIDIAccess:async()=>access});await api.midiStart();
+  assert.equal(JSON.parse(api.midiStatus()).devices.length,32);
+  assert.equal(ports.filter(p=>typeof p.onmidimessage==='function').length,32);
+  assert.equal(ports[32].onmidimessage,null);assert.equal(ports[33].onmidimessage,null);
+  ports[0].state='disconnected';access.onstatechange();
+  assert.equal(ports[0].onmidimessage,null);assert.equal(typeof ports[32].onmidimessage,'function');
+  const hiddenCallback=ports[32].onmidimessage;
+  ports[32].onmidimessage({data:[0x90,60,100],timeStamp:80});
+  assert.equal(JSON.parse(api.midiPull())[0].device,'32');
+  ports[0].state='connected';access.onstatechange();
+  assert.equal(typeof ports[0].onmidimessage,'function');assert.equal(ports[32].onmidimessage,null);
+  hiddenCallback({data:[0x90,64,100],timeStamp:80});assert.deepEqual(JSON.parse(api.midiPull()),[]);
+  api.midiStop();assert.ok(ports.every(p=>p.onmidimessage===null));
+});
+test('saved MIDI callbacks cannot enqueue notes after disconnection or a new session',async()=>{
+  const port={id:'one',state:'connected',close:async()=>{}};
+  const access={inputs:new Map([['one',port]])};
+  const api=host({requestMIDIAccess:async()=>access});await api.midiStart();
+  const callback=port.onmidimessage;
+  port.state='disconnected';access.onstatechange();
+  callback({data:[0x90,60,100],timeStamp:80});assert.deepEqual(JSON.parse(api.midiPull()),[]);
+  port.state='connected';access.onstatechange();
+  api.midiStop();await api.midiStart();
+  callback({data:[0x90,60,100],timeStamp:80});assert.deepEqual(JSON.parse(api.midiPull()),[]);
+  port.onmidimessage({data:[0x90,64,100],timeStamp:80});
+  assert.equal(JSON.parse(api.midiPull())[0].a,64);
+});
 function microphoneHost(getUserMedia, sampleRate=48000) {
   let node, stopped=0, closed=0;
   const track={stop(){stopped++;}};

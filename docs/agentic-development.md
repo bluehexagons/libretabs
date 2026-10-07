@@ -166,7 +166,16 @@ The local and CI baseline is:
 python3 scripts/verify.py
 ```
 
-It requires the pinned Godot 4.7.2 engine and includes import, editor, algorithm tests, a deliberate assertion failure, runtime boot, and whitespace checks. For a focused algorithm run after import:
+It requires the pinned Godot 4.7.2 engine and includes import, editor, algorithm tests, a deliberate assertion failure, runtime boot, and whitespace checks.
+
+After editing `src/platform/bridge.js` or `src/platform/playing_bridge.js`, run
+`python3 scripts/prepare_export.py` before verification. Both Web presets embed
+these sources in their HTML head; the verifier rejects stale embedded copies.
+
+The [input lifecycle audit](evidence/input-lifecycle-audit.md) records device
+handler regression coverage and the corresponding browser smoke checks.
+
+For a focused algorithm run after import:
 
 ```bash
 godot --headless --path . --script res://tests/run_all.gd

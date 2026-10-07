@@ -102,7 +102,6 @@ func _input(event: InputEvent) -> void:
 	# testing so menus, popups and clipped scroll areas can intercept them.
 	if not pointers.has(id): return
 	var local: Vector2 = get_global_transform_with_canvas().affine_inverse() * point
-	if not pointers.has(id) and (not down or pitch_at(local) < 0): return
 	if down:
 		grab_focus()
 		selected = pitch_at(local)

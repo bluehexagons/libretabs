@@ -302,7 +302,7 @@ func _ready() -> void:
 	host.picked.connect(_file_picked)
 	host.hidden.connect(_suspended)
 	host.focus_lost.connect(func() -> void:
-		release_keyboard()
+		release_playing_inputs()
 		# A permission prompt may temporarily take focus while connecting. Every
 		# established capture, including one with no signal, must stop on blur.
 		if listening != null and listening.listener.capture.enabled and listening.listener.capture.status != "INPUT_MIC_CONNECTING": listening.suspend_capture())
@@ -1607,7 +1607,7 @@ func build_drawers() -> void:
 		live.feedback_enabled = enabled
 		live.clear())
 	inputs.add_child(feedback_check)
-	inputs.add_child(button("INPUT_PANIC", release_keyboard))
+	inputs.add_child(button("INPUT_PANIC", release_playing_inputs))
 	inputs.add_child(button("INPUT_RETURN", func() -> void:
 		input_show.button_pressed = true
 		close_menu()))
@@ -1657,7 +1657,7 @@ func build_drawers() -> void:
 	keyboard_picker.fit_to_longest_item = false
 	for key: String in ["KEYBOARD_LOWER", "KEYBOARD_HOME"]: keyboard_picker.add_item(tr(key))
 	keyboard_picker.item_selected.connect(func(index: int) -> void:
-		release_keyboard()
+		release_playing_inputs()
 		keyboard.layout = ["lower", "home"][index]
 		update_keyboard_help()
 		save_preferences())
@@ -1669,7 +1669,7 @@ func build_drawers() -> void:
 	octave_picker.step = 1
 	octave_picker.custom_minimum_size.y = 56
 	octave_picker.value_changed.connect(func(value: float) -> void:
-		release_keyboard()
+		release_playing_inputs()
 		keyboard.octave = int(value)
 		save_preferences())
 	number_field(keys, octave_picker, "KEYBOARD_OCTAVE")
@@ -1899,7 +1899,7 @@ func enter_capture() -> void:
 	if song == null or importer != null: return
 	leave_capture()
 	close_menu()
-	release_keyboard()
+	release_playing_inputs()
 	var focus: Control = get_viewport().gui_get_focus_owner()
 	if focus != null: focus.release_focus()
 	capture_view.symbols = capture_choice("capture_notation")
@@ -1959,7 +1959,7 @@ func toggle_drawer(key: String, remember: bool = true) -> void:
 	score_frame.cancel_pointers()
 	main_speed.cancel_pointer()
 	if key in ["WELCOME", "TUNER"]: pause()
-	release_keyboard()
+	release_playing_inputs()
 	if not menu_overlay.visible: previous_focus = get_viewport().gui_get_focus_owner()
 	menu_back.visible = key != "MENU"
 	if printer != null and key != "PRINT": printer.cancelled = true
@@ -3074,7 +3074,7 @@ func start(count_in: bool) -> void:
 	if speed <= 0:
 		set_status("SPEED_ZERO")
 		return
-	release_keyboard()
+	release_playing_inputs()
 	if song == null:
 		return
 	score.resume_follow()
@@ -3095,7 +3095,7 @@ func start(count_in: bool) -> void:
 
 func pause() -> void:
 	if audio_commands != null: audio_commands.cancel()
-	release_keyboard()
+	release_playing_inputs()
 	if audio != null and audio.playing_practice:
 		paused_in_count = audio.audible_frame() < audio.transport.count_frames
 		source_tick = song.tick_at(audio.transport.seconds_at_frame(audio.audible_frame()))
@@ -3439,13 +3439,7 @@ func input_context(delay_ms: float = 0) -> Dictionary:
 		audible_cycle = 1 + (frame - audio.transport.count_frames - audio.transport.initial_frames) / audio.transport.cycle_frames
 	return {"playing": audio.playing_practice and cycle == audible_cycle and observation >= audio.transport.count_frames and not audio.transport.complete(observation), "seconds": audio.transport.seconds_at_frame(observation), "speed": speed, "epoch": "%d:%d" % [input_epoch, cycle]}
 
-func update_live_visual() -> void:
-	var notes: Array[Dictionary] = []
-	for note: Dictionary in keyboard.held.values(): notes.append(note)
-	score.set_live(notes)
-	if capture_active: capture_view.score.set_live(notes)
-
-func release_keyboard() -> void:
+func release_playing_inputs() -> void:
 	input_epoch += 1
 	keyboard.held.clear()
 	if live != null: live.clear()
@@ -3504,7 +3498,7 @@ func save_preferences() -> void:
 	if not saved: set_status("SETTINGS_RECOVERY")
 
 func reset_preferences() -> void:
-	release_keyboard()
+	release_playing_inputs()
 	if persist_preferences and not host.reset_practice_settings():
 		settings_notice.text = tr("SETTINGS_RECOVERY")
 		return

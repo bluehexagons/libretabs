@@ -3,17 +3,22 @@
 (() => {
   let midi, midiGeneration = 0, midiRevision = 0, midiQueue = [], overflow = false;
   let midiState = 'INPUT_MIDI_OFF';
-  const midiPorts = () => midi ? [...midi.inputs.values()].filter(p => p.state === 'connected').slice(0, 32) : [];
+  const MAX_MIDI_PORTS = 32;
+  const midiPorts = () => midi ? [...midi.inputs.values()].filter(p => p.state === 'connected').slice(0, MAX_MIDI_PORTS) : [];
   function attachMidi() {
+    const ports = midiPorts();
+    const generation = midiGeneration;
+    const revision = midiRevision + 1;
     for (const port of midi.inputs.values()) {
-      port.onmidimessage = port.state !== 'connected' ? null : event => {
+      port.onmidimessage = !ports.includes(port) ? null : event => {
+        if (generation !== midiGeneration || revision !== midiRevision || port.state !== 'connected') return;
         const d = event.data;
         if (!d || d.length !== 3 || ![8, 9, 11].includes(d[0] >> 4) || d[1] > 127 || d[2] > 127) return;
         if (midiQueue.length >= 256) { midiQueue = []; overflow = true; return; }
         if (!overflow) midiQueue.push({device:port.id, channel:d[0] & 15, message:d[0] >> 4, a:d[1], b:d[2], at: event.timeStamp});
       };
     }
-    midiState = midiPorts().length ? 'INPUT_MIDI_READY' : 'INPUT_MIDI_EMPTY';
+    midiState = ports.length ? 'INPUT_MIDI_READY' : 'INPUT_MIDI_EMPTY';
     midiRevision++;
   }
   let micGeneration = 0, micRevision = 0, micState = 'INPUT_MIC_OFF', micDevices = [];

@@ -14,6 +14,7 @@ func _initialize() -> void:
 	call_deferred("run")
 
 func run() -> void:
+	await midi_status_transitions()
 	var live: LiveNotes = LiveNotes.new()
 	check(not live.press("keys:a", 60).is_empty() and not live.press("midi:0:60", 60).is_empty(), "same pitch has independent source identities")
 	check(live.press("keys:a", 60).is_empty() and live.press("bad", 128).is_empty(), "duplicates and invalid pitches rejected")
@@ -138,3 +139,45 @@ func run() -> void:
 	await process_frame
 	print("Live input: %d checks, %d failures" % [checks, failures])
 	quit(1 if failures else 0)
+
+func midi_status_transitions() -> void:
+	var controls: PlayingDevices = PlayingDevices.new()
+	root.add_child(controls)
+	var adapter: MidiInput = controls.midi
+	var notifications: Array[String] = []
+	var released: Array[String] = []
+	adapter.changed.connect(func() -> void: notifications.append(adapter.status))
+	adapter.note_released.connect(func(id: String) -> void: released.append(id))
+	adapter.enabled = true
+	adapter.receive_web_status({"revision": 1, "status": "INPUT_MIDI_CONNECTING", "devices": []})
+	check(controls.midi_status.text == TranslationServer.translate("INPUT_MIDI_CONNECTING") and adapter.enabled, "connecting status reaches MIDI controls")
+	adapter.receive_web_status({"revision": 2, "status": "INPUT_MIDI_READY", "devices": [{"id": "one", "name": "Keyboard\u0001"}]})
+	check(controls.midi_status.text == TranslationServer.translate("INPUT_MIDI_READY") and controls.midi_picker.item_count == 2, "successful browser MIDI connection updates status and device choices")
+	check(controls.midi_picker.get_item_text(1) == "Keyboard" and controls.midi_picker.get_item_metadata(1) == "one", "MIDI names are sanitized while semantic device IDs are retained")
+	adapter.receive("one", 0, 9, 60, 100, 0)
+	adapter.receive_web_status({"revision": 2, "status": "INPUT_MIDI_READY", "devices": [{"id": "one", "name": "Keyboard"}]})
+	check(notifications.size() == 2 and released.is_empty() and adapter.state.held.size() == 1, "unchanged browser status cannot interrupt a held note or repeat notifications")
+	adapter.select_device("one")
+	adapter.receive("one", 0, 9, 60, 100, 0)
+	released.clear()
+	adapter.receive_web_status({"revision": 3, "status": "INPUT_MIDI_EMPTY", "devices": []})
+	check(controls.midi_status.text == TranslationServer.translate("INPUT_MIDI_EMPTY") and adapter.enabled, "unplugging the last browser input updates UI while retaining connection monitoring")
+	check(released == ["midi:one:0:60"] and adapter.state.held.is_empty(), "device revision releases held notes before presenting new choices")
+	check(controls.midi_picker.item_count == 2 and controls.midi_picker.get_item_metadata(controls.midi_picker.selected) == "one" and controls.midi_picker.get_item_text(1) == TranslationServer.translate("INPUT_MIDI_MISSING"), "missing selected input stays selected instead of silently switching devices")
+	adapter.receive_web_status({"revision": 4, "status": "INPUT_MIDI_READY", "devices": [{"id": "one", "name": "Keyboard"}, {"id": "two", "name": "Second"}]})
+	check(controls.midi_picker.item_count == 3 and controls.midi_picker.get_item_metadata(controls.midi_picker.selected) == "one", "reconnecting restores the selected browser device and refreshed list")
+	var devices: Array[Dictionary] = []
+	for index: int in range(40): devices.append({"id": str(index), "name": "Long name".repeat(30)})
+	adapter.receive_web_status({"revision": 5, "status": "INPUT_MIDI_READY", "devices": devices})
+	check(adapter.devices.size() == 32 and adapter.devices[0].name.length() == 80, "browser device reports retain bounded count and sanitized display text")
+	for terminal: String in ["INPUT_MIDI_DENIED", "INPUT_MIDI_UNSUPPORTED", "INPUT_MIDI_ERROR", "INPUT_MIDI_OFF"]:
+		adapter.enabled = true
+		adapter.set_process(true)
+		adapter.receive_web_status({"revision": adapter.last_web_revision + 1, "status": terminal, "devices": []})
+		check(not adapter.enabled and not adapter.is_processing() and controls.midi_status.text == TranslationServer.translate(terminal), "terminal browser status disables polling and reaches controls: " + terminal)
+	adapter.enabled = true
+	adapter.receive_web_status({"revision": 10, "status": "INPUT_MIDI_READY", "devices": []})
+	check(adapter.enabled and controls.midi_status.text == TranslationServer.translate("INPUT_MIDI_READY"), "a subsequent explicit connection can recover after terminal status")
+	check(notifications.size() == 10, "each revised browser status emits exactly one change notification")
+	controls.queue_free()
+	await process_frame

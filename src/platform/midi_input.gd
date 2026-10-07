@@ -78,20 +78,7 @@ func _process(delta: float) -> void:
 			refresh_native()
 		return
 	var report: Variant = JSON.parse_string(str(web.midiStatus()))
-	if report is Dictionary:
-		var revision: int = int(report.get("revision", 0))
-		if revision != last_web_revision:
-			for event: Dictionary in state.clear(): note_released.emit(str(event.id))
-			last_web_revision = revision
-			devices.clear()
-			for device: Dictionary in report.get("devices", []):
-				if devices.size() >= 32: break
-				devices.append({"id": str(device.id), "name": MidiImport.clean_text(str(device.name)).left(120)})
-			status = str(report.get("status", "INPUT_MIDI_ERROR"))
-			if status in ["INPUT_MIDI_ERROR", "INPUT_MIDI_DENIED", "INPUT_MIDI_UNSUPPORTED"]:
-				enabled = false
-				set_process(false)
-			changed.emit()
+	if report is Dictionary: receive_web_status(report)
 	var batch: Variant = JSON.parse_string(str(web.midiPull()))
 	if not batch is Array: return
 	for event: Dictionary in batch:
@@ -99,6 +86,23 @@ func _process(delta: float) -> void:
 			panic()
 			continue
 		receive(str(event.device), int(event.channel), int(event.message), int(event.a), int(event.b), float(event.age))
+
+# Keep bridge polling separate from status transitions so UI notifications and
+# disconnect recovery can be exercised without requesting a physical device.
+func receive_web_status(report: Dictionary) -> void:
+	var revision: int = int(report.get("revision", 0))
+	if revision == last_web_revision: return
+	for event: Dictionary in state.clear(): note_released.emit(str(event.id))
+	last_web_revision = revision
+	devices.clear()
+	for device: Dictionary in report.get("devices", []):
+		if devices.size() >= 32: break
+		devices.append({"id": str(device.id), "name": MidiImport.clean_text(str(device.name)).left(120)})
+	status = str(report.get("status", "INPUT_MIDI_ERROR"))
+	if status not in ["INPUT_MIDI_CONNECTING", "INPUT_MIDI_READY", "INPUT_MIDI_EMPTY"]:
+		enabled = false
+		set_process(false)
+	changed.emit()
 
 func _input(event: InputEvent) -> void:
 	if enabled and web == null and event is InputEventMIDI:
