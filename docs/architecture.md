@@ -470,7 +470,10 @@ capacity and device latency. Audible position subtracts the actual queued frames
 motion/font choices and a bounded print pipeline. PrintLayout computes paper
 systems independently of the viewport; PrintRenderer reuses MeasureCanvas in a
 one-shot offscreen viewport. HostAdapter saves/downloads escaped, self-contained
-HTML. The pipeline pauses practice and does not change source data or the shared
+HTML with a bounded, sanitized song-title basename. Measures are joined into
+justified systems; beat/onset density determines width, and meter changes start
+a new system. Clefs and string labels appear once per system. The pipeline
+pauses practice and does not change source data or the shared
 transport. Font and icon provenance are recorded in third_party/README.md.
 
 ### Capture presentation adapter

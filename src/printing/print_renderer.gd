@@ -36,6 +36,8 @@ func render(song: SongDocument, projection: TabProjection, part: int, plan: Dict
 		var rows: Array = plan.pages[page_index]
 		for row_index: int in range(rows.size()):
 			var row: Array = rows[row_index]
+			var widths: Array[float] = PrintLayout.system_widths(song, part, row)
+			var x: float = 0
 			for column: int in range(row.size()):
 				var tile: MeasureCanvas = MeasureCanvas.new()
 				tile.song = song
@@ -43,12 +45,18 @@ func render(song: SongDocument, projection: TabProjection, part: int, plan: Dict
 				tile.projection = projection
 				tile.shape_cues = shape_cues
 				tile.index = row[column]
-				tile.continuous = false
+				tile.continuous = column > 0
+				tile.joined_print = true
+				tile.show_measure_title = column == 0
+				tile.measure_number_only = true
 				tile.notation = plan.notation
 				tile.music_y_offset = 0 if plan.notation == "tab" else PrintLayout.STAFF_INSET
-				tile.size = Vector2(float(PrintLayout.WIDTH) / row.size(), PrintLayout.row_height(plan.notation))
-				tile.position = Vector2(column * tile.size.x, row_index * tile.size.y)
+				tile.size = Vector2(widths[column], PrintLayout.row_height(plan.notation))
+				tile.position = Vector2(x, row_index * tile.size.y)
 				page.add_child(tile)
+				x += tile.size.x
+		# Let new controls enter the tree before requesting the one-shot draw.
+		await get_tree().process_frame
 		viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
 		await RenderingServer.frame_post_draw
 		if cancelled: break

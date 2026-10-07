@@ -24,6 +24,12 @@ reading guide as scrolling, with a partial preview of the next page. Whole
 measures are grouped by available width; long bars fit within the viewport.
 Resizing retains the manually selected passage within the resulting page.
 
+Following owner feedback on 2026-10-07, the Music lines dropdown also offers
+smooth scrolling and following pages with one to six lines. After manual browsing,
+the visible Play/Pause action becomes Back to current note: it resumes following
+without changing playback state. Space and external transport commands retain
+their play/pause meaning. The view signals this state; it adds no transport clock.
+
 This owner-requested reading-flow refinement supersedes the original two/three-row
 screen pages. Printable A4/Letter layout remains separate under decision 0008.
 Reduced motion disables decorative transitions and note-start ripples, while

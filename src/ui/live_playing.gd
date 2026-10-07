@@ -31,8 +31,8 @@ func _ready() -> void:
 	range_picker.fit_to_longest_item = false
 	range_picker.clip_text = true
 	range_picker.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	range_picker.add_item(tr("INPUT_TREBLE"))
-	range_picker.add_item(tr("INPUT_BASS"))
+	range_picker.add_icon_item(UIIcons.get_icon("INPUT_RANGE"), tr("INPUT_TREBLE"))
+	range_picker.add_icon_item(UIIcons.get_icon("INPUT_RANGE"), tr("INPUT_BASS"))
 	range_picker.tooltip_text = tr("INPUT_RANGE_HELP")
 	range_picker.item_selected.connect(func(index: int) -> void:
 		octave = 4 if index == 0 else 2
@@ -49,7 +49,7 @@ func _ready() -> void:
 			piano.set_range((octave + 1) * 12))
 		actions.add_child(control)
 	var settings: Button = Button.new()
-	settings.text = "…"
+	settings.icon = UIIcons.get_icon("INPUTS")
 	settings.tooltip_text = tr("INPUTS")
 	settings.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	settings.custom_minimum_size = Vector2(44, 44)

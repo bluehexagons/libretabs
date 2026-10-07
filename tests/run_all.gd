@@ -50,6 +50,18 @@ func _initialize() -> void:
 				check(page.size() * PrintLayout.row_height(notation) <= plan.height, "print systems including heading clearance fit inside the page")
 				for row: Array in page: indices.append_array(row)
 			check(indices == range(print_song.measures.size()), "print range includes every measure once in order")
+	var joined_plan: Dictionary = PrintLayout.plan(print_song, 0, "both", "A4", 0, 3)
+	check(joined_plan.pages[0][0].size() == 4, "simple printed bars share a continuous four-measure system")
+	var joined_widths: Array[float] = PrintLayout.system_widths(print_song, 0, joined_plan.pages[0][0])
+	var joined_total: float = 0
+	for width: float in joined_widths:
+		check(width > 0, "printed measure width stays positive")
+		joined_total += width
+	check(is_equal_approx(joined_total, PrintLayout.WIDTH), "joined print measures exactly fill their system")
+	check(PrintLayout.filename("Auld Lang Syne").contains("Auld Lang Syne"), "print filename identifies the song")
+	var hostile_filename: String = PrintLayout.filename("../C:\\bad/<score>\n")
+	check(not hostile_filename.contains("/") and not hostile_filename.contains("\\") and not hostile_filename.contains(":") and not hostile_filename.contains("\n"), "print title cannot construct a path or unsafe basename")
+	check(PrintLayout.filename("") == "libretabs-score.html", "empty title uses a safe print filename")
 	check(PrintLayout.plan(print_song, 0, "both", "A4", 2, 1).error == "PRINT_RANGE_ERROR", "backward print range refused")
 	check(PrintLayout.plan(print_song, 0, "both", "A4", -1, 1).error == "PRINT_RANGE_ERROR", "negative print range refused")
 	var print_html: String = PrintLayout.document(["AAAA"], "<script>alert('x')</script>", "&part", "<img src=x onerror=alert(1)>", "A4")

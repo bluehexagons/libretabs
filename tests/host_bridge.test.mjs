@@ -23,7 +23,7 @@ function host() {
     }
   };
   const sandbox = {window: {addEventListener() {}}, document, navigator: {}, URLSearchParams,
-    location: {search: ''}};
+    location: {search: ''}, Blob, URL: {createObjectURL: () => 'blob:print', revokeObjectURL() {}}, setTimeout() {}};
   vm.runInNewContext(code, sandbox);
   return {api: sandbox.window.libretabsHost, inputs};
 }
@@ -92,5 +92,19 @@ test('superseded asynchronous reads cannot complete or remove a newer picker', a
     assert.equal(results.length, 1);
     assert.equal(results[0][0], 'new.mid');
     assert.equal(inputs[1].removed, true);
+  }
+});
+
+
+test('print download keeps a bounded song basename and rejects paths', () => {
+  for (const [name, expected] of [
+    ['libretabs-Auld Lang Syne.html', 'libretabs-Auld Lang Syne.html'],
+    ['../../private.html', 'libretabs-score.html'],
+    ['libretabs-x\\bad.html', 'libretabs-score.html'],
+    ['libretabs-' + 'x'.repeat(200) + '.html', 'libretabs-score.html']
+  ]) {
+    const {api, inputs} = host();
+    assert.equal(api.downloadPrint('<html></html>', name), true);
+    assert.equal(inputs.at(-1).download, expected);
   }
 });

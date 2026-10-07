@@ -46,7 +46,9 @@ at a time, with cancellation between pages. Printing pauses practice. The export
 contains the same derived frets and approximation/unplaced markers, not played
 keyboard notes or the cursor. It includes arrangement diagnostics/reading notes
 on a separate information page. Imported titles and diagnostics are escaped as
-text; export filenames are fixed. Limit to 24 music pages and 24 MB HTML; oversized
+text. Following owner feedback on 2026-10-07, export filenames include a bounded,
+sanitized song title; measures share justified systems with a clef/meter prefix
+once per system, rather than isolated measure cards. Limit to 24 music pages and 24 MB HTML; oversized
 ranges fail with guidance to choose fewer measures.
 
 ## Consequences and alternatives

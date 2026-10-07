@@ -20,6 +20,8 @@ var split_staff: bool = false
 var compact_staff: bool = false
 var tab_y_offset: float = 0
 var show_measure_title: bool = true
+var measure_number_only: bool = false
+var joined_print: bool = false
 var music_y_offset: float = 0
 var draw_count: int = 0
 var fret_tile: StyleBoxFlat
@@ -66,13 +68,13 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 	var clef: String = notation if notation in ["treble", "bass"] else "staff"
 	var bar: Dictionary = song.measures[index]
 	var left: float = origin.x if continuous else origin.x + 44
-	var right: float = origin.x + width if continuous else origin.x + width - 12
+	var right: float = origin.x + width if continuous or joined_print else origin.x + width - 12
 	var top: float = origin.y + ScoreLayout.STAFF_TOP
 	var tab_top: float = origin.y + (176 if notation == "both" else 80) + tab_y_offset
 	var start: float = float(bar.start)
 	var finish: float = float(bar.end)
 	if show_measure_title:
-		var title: String = tr("MEASURE_TITLE") % [index + 1, song.measures.size()]
+		var title: String = tr("MEASURE_NUMBER_ONLY") % (index + 1) if measure_number_only else tr("MEASURE_TITLE") % [index + 1, song.measures.size()]
 		if ui_font.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, 16).x > width - 16: title = tr("MEASURE_SHORT") % (index + 1)
 		if ui_font.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, 16).x > width - 16: title = tr("MEASURE_NUMBER_ONLY") % (index + 1)
 		text_at(origin + Vector2(8, 22), title, 16)

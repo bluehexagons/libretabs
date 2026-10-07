@@ -17,20 +17,55 @@ static func plan(song: SongDocument, part: int, notation: String, paper: String,
 	var rows_per_page: int = floori(height / row_height(notation))
 	var rows: Array = []
 	var row: Array[int] = []
+	var used: float = 64
 	for index: int in range(first, last + 1):
-		var bar: Dictionary = song.measures[index]
-		var notes: int = 0
-		for note: Dictionary in song.notes:
-			if int(note.part) == part and note.start < bar.end and note.end > bar.start: notes += 1
-		var wide: bool = notes > 12 or bar.end - bar.start > song.division * 6
-		if wide and not row.is_empty(): rows.append(row); row = []
+		var width: float = measure_width(song, part, index)
+		var meter_change: bool = index > first and (bar_meter(song, index) != bar_meter(song, index - 1))
+		if not row.is_empty() and (used + width > WIDTH or meter_change):
+			rows.append(row)
+			row = []
+			used = 64
 		row.append(index)
-		if wide or row.size() == 2: rows.append(row); row = []
+		used += width
 	if not row.is_empty(): rows.append(row)
 	var pages: Array = []
 	for offset: int in range(0, rows.size(), rows_per_page): pages.append(rows.slice(offset, offset + rows_per_page))
 	if pages.size() > MAX_PAGES: return {"error": "PRINT_LIMIT"}
 	return {"error": "", "pages": pages, "height": height, "notation": notation, "paper": paper}
+
+static func bar_meter(song: SongDocument, index: int) -> Vector2i:
+	return Vector2i(song.measures[index].numerator, song.measures[index].denominator)
+
+# Reserve horizontal space for beats and crowded onsets, then join measures
+# into systems. Only the first measure reserves a clef/string-number prefix.
+static func measure_width(song: SongDocument, part: int, index: int) -> float:
+	var bar: Dictionary = song.measures[index]
+	var onsets: Dictionary = {}
+	for note: Dictionary in song.notes:
+		if int(note.part) == part and note.start < bar.end and note.end > bar.start:
+			onsets[maxi(int(bar.start), int(note.start))] = true
+	return minf(WIDTH - 64, maxf(180, maxf(float(bar.end - bar.start) / song.division * 58, onsets.size() * 30)))
+
+static func system_widths(song: SongDocument, part: int, row: Array) -> Array[float]:
+	var widths: Array[float] = []
+	var total: float = 0
+	for index: int in row:
+		var width: float = measure_width(song, part, index) + (64 if widths.is_empty() else 0)
+		widths.append(width)
+		total += width
+	for index: int in range(widths.size()): widths[index] *= WIDTH / total
+	return widths
+
+# Imported titles suggest a basename only, never a directory or executable.
+static func filename(title: String) -> String:
+	var name: String = ""
+	for character: String in title.left(100):
+		var code: int = character.unicode_at(0)
+		if code < 32 or code == 127 or character in ["/", "\\", ":", "*", "?", "\"", "<", ">", "|"]:
+			name += "-"
+		else: name += character
+	name = name.strip_edges().trim_prefix(".").trim_suffix(".")
+	return "libretabs-%s.html" % ("score" if name.is_empty() else name)
 
 static func document(images: Array[String], title: String, subtitle: String, warnings: String, paper: String) -> String:
 	if paper not in ["A4", "Letter"] or images.is_empty() or images.size() > MAX_PAGES: return ""

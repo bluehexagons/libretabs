@@ -11,7 +11,6 @@ var mic_status: Label
 var mic_picker: OptionButton
 var mic_level: ProgressBar
 var mic_level_text: Label
-var tuning: Label
 var setup_label: Label
 var gauge: TunerGauge
 var target: int = -1
@@ -76,9 +75,6 @@ func _ready() -> void:
 	mic_level.custom_minimum_size.y = 16
 	mic_level.tooltip_text = tr("INPUT_LEVEL_HELP")
 	add_child(mic_level)
-	tuning = caption("INPUT_TUNER_START")
-	tuning.add_theme_font_size_override("font_size", 26)
-	tuning.set_meta("base_font_size", 26)
 	gauge = TunerGauge.new()
 	add_child(gauge)
 	tuner_check = toggle("INPUT_TUNER_ENABLED", true, func(enabled: bool) -> void:
@@ -91,7 +87,8 @@ func _ready() -> void:
 	target_picker = choice("INPUT_TUNER_TARGET", [], func(index: int) -> void:
 		target = int(target_picker.get_item_metadata(index))
 		custom_target.visible = target == -2
-		if target == -2: update_custom_target())
+		if target == -2: update_custom_target()
+		update_reading())
 	custom_target = HBoxContainer.new()
 	add_child(custom_target)
 	target_note = OptionButton.new()
@@ -151,7 +148,7 @@ func _ready() -> void:
 	caption("INPUT_MIC_PRIVACY")
 	# Keep the actual tuner and listening switch visible before advanced setup.
 	var insertion: int = mic_status.get_index() + 1
-	for control: Control in [tuner_check, playback_mute, mic_level_text, mic_level, tuning, gauge, listen_check]:
+	for control: Control in [tuner_check, playback_mute, mic_level_text, mic_level, gauge, listen_check]:
 		move_child(control, insertion)
 		insertion += 1
 	update_reading()
@@ -173,6 +170,7 @@ func refresh_targets() -> void:
 
 func update_custom_target() -> void:
 	target = (int(target_octave.value) + 1) * 12 + target_note.selected
+	update_reading()
 
 func update_microphone() -> void:
 	if mic_status == null: return
@@ -218,17 +216,14 @@ func update_reading() -> void:
 	elif measured:
 		level_key = "INPUT_LEVEL_CLIP" if float(last_result.get("peak", 0)) >= 0.98 else ("INPUT_LEVEL_OK" if float(last_result.get("rms", 0)) >= listener.effective_gate() else "INPUT_LEVEL_QUIET")
 	mic_level_text.text = tr(level_key)
-	gauge.active = measured and bool(last_result.get("valid", false))
-	if gauge.active:
-		var expected_pitch: int = roundi(last_result.pitch) if target < 0 else target
-		gauge.cents = (float(last_result.pitch) - expected_pitch) * 100
-		tuning.text = tr("INPUT_TUNER_VALUE") % [LivePlaying.note_name(expected_pitch), float(last_result.hz), gauge.cents]
-	else:
-		var tuner_key: String = "INPUT_TUNER_WAIT" if measured else "INPUT_TUNER_NO_AUDIO"
-		if not listener.capture.enabled: tuner_key = "INPUT_TUNER_START"
-		elif listener.paused: tuner_key = "INPUT_TUNER_PAUSED"
-		elif receiving and listener.setup_state == "INPUT_SETUP_QUIET": tuner_key = "INPUT_SETUP_QUIET"
-		tuning.text = tr(tuner_key)
+	var valid: bool = measured and bool(last_result.get("valid", false))
+	var expected_pitch: int = roundi(last_result.pitch) if valid and target < 0 else target
+	var deviation: float = (float(last_result.pitch) - expected_pitch) * 100 if valid else 0
+	var tuner_key: String = "INPUT_TUNER_WAIT" if measured else "INPUT_TUNER_NO_AUDIO"
+	if not listener.capture.enabled: tuner_key = "INPUT_TUNER_START"
+	elif listener.paused: tuner_key = "INPUT_TUNER_PAUSED"
+	elif receiving and listener.setup_state == "INPUT_SETUP_QUIET": tuner_key = "INPUT_SETUP_QUIET"
+	gauge.observe(valid, expected_pitch, deviation, tuner_key)
 	if lock_target != null: lock_target.disabled = not gauge.active
 	gauge.queue_redraw()
 

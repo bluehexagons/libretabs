@@ -443,7 +443,7 @@ msgid "CUE_READY"
 msgstr "Your next note"
 
 msgid "CUE_REST"
-msgstr "Listen · your part rests here"
+msgstr "No notes in this part here"
 
 msgid "CUE_NOTE"
 msgstr "String %d · fret %d"
@@ -1655,7 +1655,7 @@ msgid "INPUT_NOTE_NAME"
 msgstr "%s%d"
 
 msgid "INPUT_IDLE"
-msgstr "Play a note. Outlined keys are yours; circles show the song’s notes."
+msgstr "Tap a key to hear it. Outlined keys show your input; circles show notes in the song."
 
 msgid "INPUT_PIANO_HELP"
 msgstr "Tap or hold piano keys; several fingers can play together. Focus the piano and use Left/Right to choose a key, then hold Space or Enter to play. Octave controls move the visible range by twelve notes."
@@ -2061,3 +2061,228 @@ msgstr "%s"
 
 msgid "INPUT_TUNER_PAUSED"
 msgstr "Tuner paused — switch Tuner on to listen again"
+
+msgid "RECENTER"
+msgstr "Back to current note"
+
+msgid "TIP_RECENTER"
+msgstr "Return to the current position without starting or pausing playback. Space still plays or pauses."
+
+msgid "MUSIC_PAGE_LINES"
+msgstr "Pages: up to %d lines"
+
+msgid "INPUT_GAUGE_OFF"
+msgstr "Microphone off"
+
+msgid "INPUT_GAUGE_PAUSED"
+msgstr "Tuner paused"
+
+msgid "INPUT_GAUGE_NO_AUDIO"
+msgstr "No input"
+
+msgid "INPUT_GAUGE_WAIT"
+msgstr "Waiting for a note"
+
+msgid "INPUT_GAUGE_QUIET"
+msgstr "Measuring room noise"
+
+msgid "INPUT_GAUGE_CENTER"
+msgstr "Centered"
+
+msgid "INPUT_GAUGE_LOW"
+msgstr "Below target"
+
+msgid "INPUT_GAUGE_HIGH"
+msgstr "Above target"
+
+msgid "LIBRARY_ODE_TO_JOY_NAME"
+msgstr "Ode to Joy"
+
+msgid "LIBRARY_ODE_TO_JOY_CREDIT"
+msgstr "Beethoven"
+
+msgid "LIBRARY_FUR_ELISE_NAME"
+msgstr "Für Elise · opening theme"
+
+msgid "LIBRARY_FUR_ELISE_CREDIT"
+msgstr "Beethoven"
+
+msgid "LIBRARY_SPRING_NAME"
+msgstr "Spring · opening theme"
+
+msgid "LIBRARY_SPRING_CREDIT"
+msgstr "Vivaldi"
+
+msgid "LIBRARY_CANON_IN_D_NAME"
+msgstr "Canon in D · opening, twice"
+
+msgid "LIBRARY_CANON_IN_D_CREDIT"
+msgstr "Pachelbel"
+
+msgid "LIBRARY_TWINKLE_NAME"
+msgstr "Twinkle, Twinkle Little Star"
+
+msgid "LIBRARY_TWINKLE_CREDIT"
+msgstr "traditional"
+
+msgid "LIBRARY_THE_ENTERTAINER_NAME"
+msgstr "The Entertainer · first strain"
+
+msgid "LIBRARY_THE_ENTERTAINER_CREDIT"
+msgstr "Scott Joplin"
+
+msgid "LIBRARY_MARY_HAD_A_LITTLE_LAMB_NAME"
+msgstr "Mary Had a Little Lamb · twice"
+
+msgid "LIBRARY_MARY_HAD_A_LITTLE_LAMB_CREDIT"
+msgstr "American traditional"
+
+msgid "LIBRARY_FRERE_JACQUES_NAME"
+msgstr "Frère Jacques · twice"
+
+msgid "LIBRARY_FRERE_JACQUES_CREDIT"
+msgstr "French traditional"
+
+msgid "LIBRARY_AULD_LANG_SYNE_NAME"
+msgstr "Auld Lang Syne"
+
+msgid "LIBRARY_AULD_LANG_SYNE_CREDIT"
+msgstr "Scottish traditional"
+
+msgid "LIBRARY_YANKEE_DOODLE_NAME"
+msgstr "Yankee Doodle · twice"
+
+msgid "LIBRARY_YANKEE_DOODLE_CREDIT"
+msgstr "American traditional"
+
+msgid "LIBRARY_BRAHMS_LULLABY_NAME"
+msgstr "Lullaby"
+
+msgid "LIBRARY_BRAHMS_LULLABY_CREDIT"
+msgstr "Johannes Brahms"
+
+msgid "LIBRARY_MINUET_IN_G_NAME"
+msgstr "Minuet in G"
+
+msgid "LIBRARY_MINUET_IN_G_CREDIT"
+msgstr "Christian Petzold"
+
+msgid "LIBRARY_ROW_YOUR_BOAT_NAME"
+msgstr "Row, Row, Row Your Boat · twice"
+
+msgid "LIBRARY_ROW_YOUR_BOAT_CREDIT"
+msgstr "traditional"
+
+msgid "LIBRARY_JINGLE_BELLS_NAME"
+msgstr "Jingle Bells · simplified refrain"
+
+msgid "LIBRARY_JINGLE_BELLS_CREDIT"
+msgstr "James Lord Pierpont"
+
+msgid "LIBRARY_GREENSLEEVES_NAME"
+msgstr "Greensleeves · melody study"
+
+msgid "LIBRARY_GREENSLEEVES_CREDIT"
+msgstr "traditional"
+
+msgid "LIBRARY_AMAZING_GRACE_NAME"
+msgstr "Amazing Grace · New Britain melody"
+
+msgid "LIBRARY_AMAZING_GRACE_CREDIT"
+msgstr "traditional"
+
+msgid "LIBRARY_LONDON_BRIDGE_NAME"
+msgstr "London Bridge · twice"
+
+msgid "LIBRARY_LONDON_BRIDGE_CREDIT"
+msgstr "English traditional"
+
+msgid "LIBRARY_OLD_MACDONALD_NAME"
+msgstr "Old MacDonald Had a Farm · melody study"
+
+msgid "LIBRARY_OLD_MACDONALD_CREDIT"
+msgstr "traditional"
+
+msgid "LIBRARY_WHEN_THE_SAINTS_NAME"
+msgstr "When the Saints Go Marching In · melody study"
+
+msgid "LIBRARY_WHEN_THE_SAINTS_CREDIT"
+msgstr "traditional"
+
+msgid "LIBRARY_AURA_LEE_NAME"
+msgstr "Aura Lee"
+
+msgid "LIBRARY_AURA_LEE_CREDIT"
+msgstr "George R. Poulton"
+
+msgid "LIBRARY_SILENT_NIGHT_NAME"
+msgstr "Silent Night"
+
+msgid "LIBRARY_SILENT_NIGHT_CREDIT"
+msgstr "Franz Xaver Gruber"
+
+msgid "LIBRARY_CAMPTOWN_RACES_NAME"
+msgstr "Camptown Races · twice"
+
+msgid "LIBRARY_CAMPTOWN_RACES_CREDIT"
+msgstr "Stephen Foster"
+
+msgid "LIBRARY_AU_CLAIR_DE_LA_LUNE_NAME"
+msgstr "Au Clair de la Lune"
+
+msgid "LIBRARY_AU_CLAIR_DE_LA_LUNE_CREDIT"
+msgstr "French traditional"
+
+msgid "LIBRARY_HOT_CROSS_BUNS_NAME"
+msgstr "Hot Cross Buns · three times"
+
+msgid "LIBRARY_HOT_CROSS_BUNS_CREDIT"
+msgstr "English traditional"
+
+msgid "LIBRARY_SIMPLE_GIFTS_NAME"
+msgstr "Simple Gifts · Shaker melody study"
+
+msgid "LIBRARY_SIMPLE_GIFTS_CREDIT"
+msgstr "Joseph Brackett"
+
+msgid "LIBRARY_SAKURA_SAKURA_NAME"
+msgstr "Sakura Sakura · melody study"
+
+msgid "LIBRARY_SAKURA_SAKURA_CREDIT"
+msgstr "Japanese traditional"
+
+msgid "LIBRARY_POP_GOES_THE_WEASEL_NAME"
+msgstr "Pop Goes the Weasel · twice"
+
+msgid "LIBRARY_POP_GOES_THE_WEASEL_CREDIT"
+msgstr "English traditional"
+
+msgid "LIBRARY_HOME_ON_THE_RANGE_NAME"
+msgstr "Home on the Range · verse and chorus"
+
+msgid "LIBRARY_HOME_ON_THE_RANGE_CREDIT"
+msgstr "Daniel E. Kelley"
+
+msgid "LIBRARY_OH_SUSANNA_NAME"
+msgstr "Oh! Susanna · melody study"
+
+msgid "LIBRARY_OH_SUSANNA_CREDIT"
+msgstr "Stephen Foster"
+
+msgid "LIBRARY_PIANO_STUDY_NAME"
+msgstr "Two-hand piano study"
+
+msgid "LIBRARY_PIANO_STUDY_CREDIT"
+msgstr "original exercise"
+
+msgid "SONG_CURRENT_BADGE"
+msgstr "Current song"
+
+msgid "MUSIC_PAGE_LINE"
+msgstr "Pages: 1 line"
+
+msgid "INPUT_GAUGE_LOW_SHORT"
+msgstr "Low"
+
+msgid "INPUT_GAUGE_HIGH_SHORT"
+msgstr "High"

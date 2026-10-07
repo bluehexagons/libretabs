@@ -4,6 +4,7 @@ extends Control
 
 signal seek_requested(tick: float)
 signal page_turn_requested(direction: int)
+signal follow_changed
 
 const PIANO_FIRST_PITCH: int = 21
 const PIANO_LAST_PITCH: int = 108
@@ -54,7 +55,11 @@ var pointer_position: Vector2
 var pointer_moved: bool = false
 var pointer_anchor_offset: float = 0.0
 var pointer_started_on_timeline: bool = false
-var manual_pan: bool = false
+var manual_pan: bool = false:
+	set(value):
+		if manual_pan == value: return
+		manual_pan = value
+		follow_changed.emit()
 var pan_offset: float = 0.0
 var touch_origins: Dictionary = {}
 var touch_positions: Dictionary = {}
@@ -179,7 +184,9 @@ func page_for_measure(index: int) -> int:
 func turn_page(direction: int) -> void:
 	follow_pages = false
 	last_follow_page = -1
-	page_index = clampi(page_index + direction, 0, pages() - 1)
+	var destination: int = clampi(page_index + direction, 0, pages() - 1)
+	if destination != page_index: manual_pan = true
+	page_index = destination
 	refresh()
 
 func set_follow_line_count(count: int) -> void:
@@ -315,6 +322,9 @@ func max_pan_offset() -> float:
 func resume_follow() -> void:
 	if not manual_pan: return
 	manual_pan = false
+	if mode == "pages":
+		follow_pages = true
+		page_to_playback()
 	refresh()
 
 func tick_at_timeline_position(timeline_position: float) -> float:

@@ -43,7 +43,7 @@ func run() -> void:
 	image_pattern.compile("data:image/png;base64,([A-Za-z0-9+/=]+)")
 	var receipt: Array[Dictionary] = []
 	# Ordinary melody, accidentals, 6/8, a long tie and the two-part piano study.
-	for choice: Vector2i in [Vector2i(0, 0), Vector2i(1, 0), Vector2i(14, 0), Vector2i(20, 0), Vector2i(29, 0), Vector2i(1, 2), Vector2i(1, 1)]:
+	for choice: Vector2i in [Vector2i(0, 0), Vector2i(8, 0), Vector2i(1, 0), Vector2i(14, 0), Vector2i(20, 0), Vector2i(29, 0), Vector2i(1, 2), Vector2i(1, 1)]:
 		var index: int = choice.x
 		var notation: String = ["both", "tab", "staff"][choice.y]
 		app.call("load_library_item", index)

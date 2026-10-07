@@ -88,6 +88,7 @@ var demo_picker: OptionButton
 var library_song_buttons: Dictionary = {}
 var library_preview_buttons: Dictionary = {}
 var library_song_titles: Dictionary = {}
+var library_current_marks: Dictionary = {}
 var preview_audio: PracticeAudio
 var preview_importer: MidiImport
 var preview_index: int = -1
@@ -416,6 +417,7 @@ func open_choice_picker(picker: OptionButton) -> void:
 		var choice: Button = button("PICKER_CHOICE", func() -> void: choose_picker_item(item_index))
 		choice.text = tr("PICKER_CURRENT") % picker.get_item_text(index) if picker.selected == index else picker.get_item_text(index)
 		choice.tooltip_text = picker.get_item_text(index)
+		choice.icon = picker.get_item_icon(index)
 		choice.disabled = picker.is_item_disabled(index)
 		choice.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		choice.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -494,7 +496,7 @@ func build_tv_edge() -> void:
 	tv_edge_row = BoxContainer.new()
 	tv_edge_row.add_theme_constant_override("separation", 4)
 	tv_edge.add_child(tv_edge_row)
-	tv_edge_pause = button("PAUSE", toggle_play)
+	tv_edge_pause = button("PAUSE", activate_play_control)
 	tv_edge_pause.text = ""
 	tv_edge_pause.custom_minimum_size = Vector2(72, 72)
 	tv_edge_pause.add_theme_font_size_override("font_size", 28)
@@ -703,10 +705,20 @@ func add_song_button(grid: GridContainer, index: int) -> void:
 	card.add_to_group("catalog_card")
 	grid.add_child(card)
 	var content: VBoxContainer = VBoxContainer.new()
-	content.add_theme_constant_override("separation", 5)
+	content.add_theme_constant_override("separation", 8)
 	card.add_child(content)
-	var title_label: Label = label(key, 20)
+	var marker: Label = label("SONG_CURRENT_BADGE", 14)
+	marker.text = " "
+	content.add_child(marker)
+	library_current_marks[index] = marker
+	var title_label: Label = label(key + "_NAME", 23)
+	title_label.add_theme_font_override("font", UIAppearance.ui_font(font_style, true))
+	title_label.add_to_group("catalog_heading")
 	content.add_child(title_label)
+	var credit: Label = label(key + "_CREDIT", 15)
+	credit.add_to_group("catalog_credit")
+	credit.add_theme_color_override("font_color", UIAppearance.color("muted", dark_mode, appearance_mode == "midnight"))
+	content.add_child(credit)
 	library_song_titles[index] = title_label
 	var details: HFlowContainer = flow(content)
 	var entry: Dictionary = BUILT_IN_LIBRARY[index]
@@ -725,6 +737,8 @@ func add_song_button(grid: GridContainer, index: int) -> void:
 		chip.add_child(glyph)
 		var value: Label = Label.new()
 		value.text = str(spec[1])
+		value.add_theme_font_size_override("font_size", 15)
+		value.set_meta("base_font_size", 15)
 		value.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 		chip.add_child(value)
 		details.add_child(chip)
@@ -790,6 +804,7 @@ func refresh_song_catalog() -> void:
 	library_song_buttons.clear()
 	library_preview_buttons.clear()
 	library_song_titles.clear()
+	library_current_marks.clear()
 	var indices: Array[int] = catalog_indices()
 	for index: int in indices: add_song_button(more_song_grid, index)
 	catalog_count.text = tr("SONG_CATALOG_COUNT") % [indices.size(), BUILT_IN_LIBRARY.size()]
@@ -801,8 +816,9 @@ func update_song_button(index: int) -> void:
 	var item: Button = library_song_buttons[index]
 	var entry: Dictionary = BUILT_IN_LIBRARY[index]
 	var title_text: String = tr(str(entry.title_key))
-	var heading: String = tr("SONG_CURRENT_ITEM") % title_text if index == active_library else title_text
-	library_song_titles[index].text = heading
+	library_song_titles[index].text = tr(str(entry.title_key) + "_NAME")
+	library_song_titles[index].tooltip_text = title_text
+	library_current_marks[index].text = tr("SONG_CURRENT_BADGE") if index == active_library else " "
 	item.tooltip_text = tr("SONG_TRY_HELP") % title_text
 	var preview: Button = library_preview_buttons[index]
 	var playing: bool = index == preview_index and preview_audio != null and preview_audio.playing_practice
@@ -1004,6 +1020,7 @@ func build_ui() -> void:
 	score.set_notation_rows(notation_rows)
 	score.seek_requested.connect(seek_tick)
 	score.page_turn_requested.connect(turn_page)
+	score.follow_changed.connect(update_play_control)
 	score_frame.add_child(score)
 	score_frame.score = score
 	panel.move_child(details, panel.get_children().find(paper) + 1)
@@ -1089,7 +1106,7 @@ func build_ui() -> void:
 	transport_row.alignment = FlowContainer.ALIGNMENT_CENTER
 	transport_row.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	dock.add_child(transport_row)
-	play_button = button("PLAY", toggle_play)
+	play_button = button("PLAY", activate_play_control)
 	play_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	play_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	play_button.custom_minimum_size.y = 64
@@ -1332,9 +1349,9 @@ func build_drawers() -> void:
 	view_picker.tooltip_text = tr("VIEW_HELP")
 	view_picker.custom_minimum_size.y = 56
 	view_picker.fit_to_longest_item = false
-	view_picker.add_item(tr("VIEW_SCROLL"))
-	view_picker.add_item(tr("VIEW_PAGES"))
-	view_picker.add_item(tr("VIEW_FOLLOW_PAGES"))
+	view_picker.add_icon_item(UIIcons.get_icon("VIEW_SCROLL"), tr("VIEW_SCROLL"))
+	view_picker.add_icon_item(UIIcons.get_icon("VIEW_PAGES"), tr("VIEW_PAGES"))
+	view_picker.add_icon_item(UIIcons.get_icon("PAGE_FOLLOW"), tr("VIEW_FOLLOW_PAGES"))
 	view_picker.item_selected.connect(func(_index: int) -> void: change_view())
 	views.add_child(view_picker)
 	views.add_child(button("TV_VIEW", func() -> void: toggle_drawer("TV_VIEW")))
@@ -2136,6 +2153,7 @@ func change_view() -> void:
 	score_frame.update_overview()
 	update_page_controls()
 	scroll.scroll_vertical = 0
+	sync_music_layout_choices()
 
 func build_music_layout_controls(parent: Control, quick: bool) -> void:
 	for key: String in MUSIC_LAYOUT_VALUES:
@@ -2143,8 +2161,16 @@ func build_music_layout_controls(parent: Control, quick: bool) -> void:
 		picker.custom_minimum_size = Vector2(150, 56)
 		picker.fit_to_longest_item = false
 		picker.tooltip_text = tr("MUSIC_" + key.to_upper() + "_HELP")
-		for value: int in MUSIC_LAYOUT_VALUES[key]: picker.add_item(tr("MUSIC_" + key.to_upper()) % value)
-		picker.item_selected.connect(func(index: int) -> void: change_music_layout(key, int(MUSIC_LAYOUT_VALUES[key][index])))
+		if key == "lines": picker.add_icon_item(UIIcons.get_icon("VIEW_SCROLL"), tr("VIEW_SCROLL"))
+		for value: int in MUSIC_LAYOUT_VALUES[key]:
+			var caption: String = tr("MUSIC_PAGE_LINE") if key == "lines" and value == 1 else tr("MUSIC_PAGE_LINES" if key == "lines" else "MUSIC_" + key.to_upper()) % value
+			picker.add_icon_item(UIIcons.get_icon("MUSIC_" + key.to_upper()), caption)
+		picker.item_selected.connect(func(index: int) -> void:
+			if key == "lines" and index == 0:
+				view_picker.select(0)
+				change_view()
+				apply_music_layout()
+			else: change_music_layout(key, int(MUSIC_LAYOUT_VALUES[key][index - (1 if key == "lines" else 0)])))
 		parent.add_child(picker)
 		if not music_layout_controls.has(key): music_layout_controls[key] = []
 		music_layout_controls[key].append(picker)
@@ -2154,7 +2180,7 @@ func change_music_layout(key: String, value: int) -> void:
 	if not MUSIC_LAYOUT_VALUES.has(key) or value not in MUSIC_LAYOUT_VALUES[key]: return
 	var profile: Dictionary = tv_music_layout if tv_active else music_layout
 	profile[key] = value
-	if key == "lines" and value > 1:
+	if key == "lines":
 		score.set_view("pages", score.notation)
 		score.follow_pages = true
 		view_picker.select(2)
@@ -2172,9 +2198,16 @@ func apply_music_layout() -> void:
 			score.set_view("pages", score.notation)
 			score.follow_pages = true
 			view_picker.select(2)
-	for key: String in music_layout_controls:
-		for picker: OptionButton in music_layout_controls[key]: picker.select(MUSIC_LAYOUT_VALUES[key].find(profile[key]))
+	sync_music_layout_choices()
 	responsive()
+
+func sync_music_layout_choices() -> void:
+	var profile: Dictionary = tv_music_layout if tv_active else music_layout
+	for key: String in music_layout_controls:
+		for picker: OptionButton in music_layout_controls[key]:
+			var choice: int = MUSIC_LAYOUT_VALUES[key].find(profile[key])
+			if key == "lines": choice = 0 if score.mode == "scroll" else choice + 1
+			picker.select(choice)
 
 func rebuild_notation_rows_editor() -> void:
 	if notation_rows_box == null: return
@@ -2341,6 +2374,10 @@ func apply_appearance() -> void:
 	UIAppearance.apply_roles(self, dark_mode, midnight)
 	for glyph: Node in get_tree().get_nodes_in_group("catalog_meta_icon"):
 		if glyph is TextureRect: glyph.modulate = UIAppearance.color("ink", dark_mode, midnight)
+	for caption: Node in get_tree().get_nodes_in_group("catalog_credit"):
+		if caption is Label: caption.add_theme_color_override("font_color", UIAppearance.color("muted", dark_mode, midnight))
+	for heading: Node in get_tree().get_nodes_in_group("catalog_heading"):
+		if heading is Label: heading.add_theme_font_override("font", UIAppearance.ui_font(font_style, true))
 	for card: Node in get_tree().get_nodes_in_group("catalog_card"):
 		if card is PanelContainer: card.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 8, midnight))
 	if catalog_search != null:
@@ -3069,6 +3106,21 @@ func run_audio_command(command: String) -> void:
 		"faster": step_speed(1)
 	if speed > 0: set_status("AUDIO_COMMANDS_DONE_" + command.to_upper())
 
+# The visible action brings the current position back into view first.
+# Space and external transport commands retain their play/pause meaning.
+func activate_play_control() -> void:
+	if score.manual_pan:
+		if page_tween != null: page_tween.kill()
+		paper.modulate.a = 1.0
+		score.resume_follow()
+		view_picker.select(2 if score.mode == "pages" else 0)
+		score_frame.update_overview()
+		update_page_controls()
+		apply_music_layout()
+		update_play_control()
+		return
+	toggle_play()
+
 func toggle_play() -> void:
 	if song == null or importer != null:
 		return
@@ -3212,13 +3264,13 @@ func update_play_control(frame: int = -1) -> void:
 	if count_badge == null: return
 	update_tv_playback()
 	var beat: int = 0
-	if audio.playing_practice:
+	if audio.playing_practice and not score.manual_pan:
 		beat = audio.transport.count_beat_at(audio.audible_frame() if frame < 0 else frame)
-	var key: String = "COUNT" if beat > 0 else ("PAUSE" if audio.playing_practice else ("REPLAY" if state == "STATE_COMPLETE" else "PLAY"))
+	var key: String = "RECENTER" if score.manual_pan else ("COUNT" if beat > 0 else ("PAUSE" if audio.playing_practice else ("REPLAY" if state == "STATE_COMPLETE" else "PLAY")))
 	if tv_edge_pause != null:
 		tv_edge_pause.text = str(beat) if beat > 0 else ""
-		tv_edge_pause.icon = null if beat > 0 else UIIcons.get_icon("PAUSE")
-		tv_edge_pause.tooltip_text = tr("TIP_COUNT_BEAT") % beat if beat > 0 else tr("TIP_PAUSE")
+		tv_edge_pause.icon = null if beat > 0 else UIIcons.get_icon("RECENTER" if score.manual_pan else "PAUSE")
+		tv_edge_pause.tooltip_text = tr("TIP_COUNT_BEAT") % beat if beat > 0 else tr("TIP_RECENTER" if score.manual_pan else "TIP_PAUSE")
 	count_badge.visible = beat > 0
 	if beat > 0:
 		count_badge.text = str(beat)
@@ -3610,7 +3662,7 @@ func build_print_menu() -> void:
 		number_field(menu, item, "LOOP_FIRST" if item == print_first else "LOOP_LAST")
 	print_prepare = button("PRINT_PREPARE", prepare_print)
 	menu.add_child(print_prepare)
-	print_save = button("PRINT_SAVE", func() -> void: host.export_print(print_html))
+	print_save = button("PRINT_SAVE", func() -> void: host.export_print(print_html, title))
 	print_save.disabled = true
 	menu.add_child(print_save)
 	print_status = label("PRINT_LOCAL", 18)

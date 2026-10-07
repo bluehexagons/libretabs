@@ -13,6 +13,7 @@ func caption(key: String) -> Label:
 func action(parent: Node, key: String, callback: Callable) -> Button:
 	var item: Button = Button.new()
 	item.text = tr(key)
+	item.icon = UIIcons.get_icon(key)
 	item.tooltip_text = tr(key)
 	item.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	item.custom_minimum_size.y = 48

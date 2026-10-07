@@ -260,12 +260,12 @@ func save_notation_rows(rows: Array) -> bool:
 func system_reduced_motion() -> bool:
 	return web != null and bool(web.prefersReducedMotion())
 
-func export_print(html: String) -> void:
+func export_print(html: String, title: String = "") -> void:
 	if html.is_empty() or html.length() > 24000000:
 		exported.emit(false)
 		return
 	if web != null:
-		exported.emit(bool(web.downloadPrint(html)))
+		exported.emit(bool(web.downloadPrint(html, PrintLayout.filename(title))))
 		return
 	pending_export = html
 	if export_dialog == null:
@@ -287,5 +287,5 @@ func export_print(html: String) -> void:
 			pending_export = ""
 			export_cancelled.emit())
 		add_child(export_dialog)
-	export_dialog.current_file = "libretabs-score.html"
+	export_dialog.current_file = PrintLayout.filename(title)
 	export_dialog.popup_centered_ratio(0.8)

@@ -23,7 +23,7 @@ func run() -> void:
 	check(app.get("song") != null, "initial sample is ready")
 	var song_buttons: Dictionary = app.get("library_song_buttons")
 	check(song_buttons.size() == 30 and app.get("more_song_grid").get_child_count() == 30, "every built-in song has a browsable catalog choice")
-	check(app.get("library_song_titles")[0].text.contains(TranslationServer.translate("SONG_CURRENT_ITEM") % TranslationServer.translate("LIBRARY_ODE_TO_JOY")), "the active song has a text marker")
+	check(app.get("library_current_marks")[0].text == TranslationServer.translate("SONG_CURRENT_BADGE"), "the active song has a text marker")
 	check(app.call("catalog_indices").size() == 30, "unfiltered catalog includes all songs")
 	check(not app.get("catalog_filter_panel").visible and app.get("catalog_filter_toggle").is_visible_in_tree() == false, "filters start folded until Songs opens")
 	app.get("catalog_search").text = "Greensleeves"
@@ -131,7 +131,7 @@ func run() -> void:
 	app.call("toggle_drawer", "SONG_MENU")
 	song_buttons[0].pressed.emit()
 	for _frame: int in range(30): await process_frame
-	check(app.get("active_library") == 0 and app.get("library_song_titles")[0].text.contains(TranslationServer.translate("SONG_CURRENT_ITEM") % app.get("title")), "switching again updates the current song marker")
+	check(app.get("active_library") == 0 and app.get("library_current_marks")[0].text == TranslationServer.translate("SONG_CURRENT_BADGE"), "switching again updates the current song marker")
 	app.call("toggle_drawer", "DETAILS")
 	var arrangement_picker: OptionButton = app.get("arrangement_picker")
 	check(arrangement_picker.item_count == 3 and arrangement_picker.selected == 0, "arrangement details expose three modes with basic tab as the default")
@@ -559,6 +559,7 @@ func run() -> void:
 	check(app.get("source_tick") == before_score_drag and score.view_offset > before_score_offset, "horizontal score drag pans music without seeking the transport")
 	score.finish_pointer(score_seek_position + Vector2(-80, 2))
 	check(score.manual_pan and not player.playing_practice, "releasing a score drag leaves the scrolled passage in place")
+	check(app.get("play_control_key") == "RECENTER", "paused score browsing changes the visible action to recenter")
 	var after_score_drag: float = app.get("source_tick")
 	score.begin_pointer(score_seek_position)
 	score.move_pointer(score_seek_position + Vector2(2, 80))
@@ -577,8 +578,32 @@ func run() -> void:
 	pan_press.position = pan_drag.position
 	score.touch_input(pan_press)
 	check(app.get("source_tick") == after_score_drag and score.view_offset > before_score_offset + 80, "one-finger score drag pans without a release seek")
-	score.resume_follow()
-	check(not score.manual_pan and is_equal_approx(score.view_offset, before_score_offset), "explicitly resuming follow restores the transport view")
+	app.get("play_button").button_down.emit()
+	app.get("play_button").pressed.emit()
+	check(not score.manual_pan and not player.playing_practice and app.get("source_tick") == after_score_drag, "recenter restores the view without playing or seeking a paused song")
+	check(is_equal_approx(score.view_offset, before_score_offset), "explicitly resuming follow restores the transport view")
+	app.call("start", false)
+	score.begin_pointer(score_seek_position)
+	score.move_pointer(score_seek_position + Vector2(-90, 1))
+	score.finish_pointer(score_seek_position + Vector2(-90, 1))
+	var running_transport: PracticeTransport = player.transport
+	app.get("play_button").button_down.emit()
+	app.get("play_button").pressed.emit()
+	check(not score.manual_pan and player.playing_practice and player.transport == running_transport, "recenter during playback keeps the same running transport")
+	app.call("pause")
+	var line_choice: OptionButton = app.get("music_layout_controls")["lines"][0]
+	line_choice.select(1)
+	line_choice.item_selected.emit(1)
+	check(score.mode == "pages" and score.follow_pages, "one-line page mode is reachable from the line dropdown")
+	app.call("turn_page", 1)
+	check(app.get("play_control_key") == "RECENTER", "manual page turn offers return to current position")
+	app.get("play_button").button_down.emit()
+	app.get("play_button").pressed.emit()
+	check(score.follow_pages and not score.manual_pan and not player.playing_practice, "recenter pages restores following without starting playback")
+	line_choice.select(0)
+	line_choice.item_selected.emit(0)
+	check(score.mode == "scroll" and line_choice.selected == 0, "smooth scrolling is directly reachable from the same dropdown")
+	score.update_tick(0)
 	score.set_view("pages", "both")
 	app.call("turn_page", -1)
 	check(score.page_index == 0 and app.get("paper").modulate.a == 1.0, "page limit does not flash when the passage stays put")
@@ -1263,7 +1288,7 @@ func run() -> void:
 	toast.expire()
 	check(not toast.visible, "reduced motion dismisses status without animation")
 	var listening: ListeningControls = app.get("listening")
-	check(listening.tuning.text == app.tr("INPUT_TUNER_START") and listening.mic_level_text.text == app.tr("INPUT_LEVEL_UNAVAILABLE") and listening.lock_target.disabled, "inactive microphone offers Start instead of asking for louder notes")
+	check(listening.gauge.status_text() == app.tr("INPUT_TUNER_START") and listening.mic_level_text.text == app.tr("INPUT_LEVEL_UNAVAILABLE") and listening.lock_target.disabled, "inactive microphone offers Start instead of asking for louder notes")
 	var practice_audio: PracticeAudio = app.get("audio")
 	var saved_level: float = practice_audio.instrument_level
 	var saved_click: float = practice_audio.metronome_level
@@ -1278,16 +1303,16 @@ func run() -> void:
 	listening.listener.capture.status = "INPUT_MIC_CONNECTING"
 	listening.listener.capture.changed.emit()
 	check(app.get("quick_tuner").visible, "active microphone exposes tuner switch during practice")
-	check(listening.tuning.text == app.tr("INPUT_TUNER_NO_AUDIO") and listening.mic_level.value == 0, "permission/connection wait does not masquerade as quiet audio")
+	check(listening.gauge.status_text() == app.tr("INPUT_TUNER_NO_AUDIO") and listening.mic_level.value == 0, "permission/connection wait does not masquerade as quiet audio")
 	listening.listener.capture.status = "INPUT_MIC_READY"
 	listening.listener.capture.changed.emit()
 	check(listening.mic_level_text.text == app.tr("INPUT_LEVEL_UNAVAILABLE"), "ready capture still needs fresh frames for a level reading")
 	listening.listener.setup_state = "INPUT_SETUP_QUIET"
 	listening.update_setup()
-	check(listening.tuning.text == app.tr("INPUT_SETUP_QUIET") and listening.mic_level_text.text == app.tr("INPUT_LEVEL_CALIBRATING"), "background calibration asks for silence instead of a played note")
+	check(listening.gauge.status_text() == app.tr("INPUT_SETUP_QUIET") and listening.mic_level_text.text == app.tr("INPUT_LEVEL_CALIBRATING"), "background calibration asks for silence instead of a played note")
 	listening.listener.setup_state = "INPUT_SETUP_IDLE"
 	listening.show_observation({"valid": false, "fresh": true, "rms": 0.0, "peak": 0.0})
-	check(listening.mic_level_text.text == app.tr("INPUT_LEVEL_QUIET") and listening.tuning.text == app.tr("INPUT_TUNER_WAIT"), "measured silence offers a clear-note hint")
+	check(listening.mic_level_text.text == app.tr("INPUT_LEVEL_QUIET") and listening.gauge.status_text() == app.tr("INPUT_TUNER_WAIT"), "measured silence offers a clear-note hint")
 	listening.show_observation({"valid": true, "fresh": true, "rms": 0.02, "peak": 0.1, "pitch": 69.0, "hz": 440.0})
 	check(listening.gauge.active and not listening.lock_target.disabled and listening.mic_level_text.text == app.tr("INPUT_LEVEL_OK"), "fresh stable note enables tuning and target lock")
 	app.get("quick_tuner").button_pressed = false
@@ -1299,9 +1324,9 @@ func run() -> void:
 	listening.show_observation({"valid": true, "fresh": true, "rms": 0.02, "peak": 0.1, "pitch": 69.0, "hz": 440.0})
 	listening.listener.capture.status = "INPUT_MIC_NO_SIGNAL"
 	listening.listener.capture.changed.emit()
-	check(not listening.gauge.active and listening.lock_target.disabled and listening.tuning.text == app.tr("INPUT_TUNER_NO_AUDIO"), "capture interruption clears the note before another observation arrives")
+	check(not listening.gauge.active and listening.lock_target.disabled and listening.gauge.status_text() == app.tr("INPUT_TUNER_NO_AUDIO"), "capture interruption clears the note before another observation arrives")
 	listening.listener.capture.stop()
-	check(listening.tuning.text == app.tr("INPUT_TUNER_START") and listening.mic_level.value == 0 and listening.lock_target.disabled, "stopping returns to an actionable inactive state")
+	check(listening.gauge.status_text() == app.tr("INPUT_TUNER_START") and listening.mic_level.value == 0 and listening.lock_target.disabled, "stopping returns to an actionable inactive state")
 	for profile: int in [PitchListener.Profile.BASS, PitchListener.Profile.VIOLIN, PitchListener.Profile.UKULELE, PitchListener.Profile.VOICE]:
 		listening.listener.set_profile(profile)
 		listening.refresh_targets()

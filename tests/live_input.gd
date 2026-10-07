@@ -129,6 +129,11 @@ func run() -> void:
 	listening.listener.capture.status = "INPUT_MIC_READY"
 	listening.show_observation({"valid": true, "fresh": true, "hz": 442.0, "pitch": PitchDetector.midi_pitch(442), "rms": 0.1, "peak": 0.2})
 	check(listening.gauge.active and listening.gauge.cents > 7, "tuner shows independent frequency and detuning")
+	var gauge_height: float = listening.gauge.custom_minimum_size.y
+	var first_cents: float = listening.gauge.cents
+	listening.show_observation({"valid": true, "fresh": true, "hz": 445.0, "pitch": 69.20, "rms": 0.1, "peak": 0.2})
+	check(listening.gauge.pitch == 69 and listening.gauge.cents > first_cents and listening.gauge.cents < 20, "same-note tuner changes smooth the visual needle without a frequency sentence")
+	check(listening.gauge.custom_minimum_size.y == gauge_height, "tuner updates keep fixed geometry")
 	listening.show_observation({"valid": false})
 	check(not listening.gauge.active, "uncertain capture clears the tuner needle")
 	listening.listener.capture.enabled = true

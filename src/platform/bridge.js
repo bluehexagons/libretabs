@@ -95,12 +95,12 @@
     },
     prefersReducedMotion() { return matchMedia('(prefers-reduced-motion: reduce)').matches; },
     onMotion(callback) { matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', () => callback()); },
-    downloadPrint(html) {
+    downloadPrint(html, filename) {
       if (typeof html !== 'string' || html.length > 24000000) return false;
       try {
         const url = URL.createObjectURL(new Blob([html], {type: 'text/html;charset=utf-8'}));
         const link = document.createElement('a');
-        link.href = url; link.download = 'libretabs-score.html';
+        link.href = url; link.download = typeof filename === 'string' && /^libretabs-[^\x00-\x1f\x7f/\\:*?"<>|]{1,110}\.html$/.test(filename) ? filename : 'libretabs-score.html';
         document.body.append(link); link.click(); link.remove();
         setTimeout(() => URL.revokeObjectURL(url), 60000);
         return true;

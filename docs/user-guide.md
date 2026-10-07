@@ -218,9 +218,13 @@ Open **Menu → Score view** for reading and layout choices:
   manually turns off following without moving playback. Enable **Follow playback**
   to resume automatic turns. Tapping a position on the music does move playback.
 - In smooth scrolling, drag sideways on the music to browse without seeking.
-  Tap a note to play from it. Press Play to return to following playback.
-- **Music lines** controls how many consecutive lines fit on screen. Fewer lines
-  give each line more height. **Note spacing** changes the horizontal gaps;
+  Tap a note to play from it. After browsing or turning a page manually, the
+  Play/Pause button becomes **Back to current note**. It returns to the current
+  playback position without starting or pausing sound. Space still plays or pauses.
+- The **Music lines** dropdown beside the player also switches between
+  **Smooth scrolling** and pages with one to six lines. Choosing pages enables
+  following playback. Fewer lines give each line more height.
+  **Note spacing** changes the horizontal gaps;
   **Staff height** changes the height of the five-line sheet music reference.
 - Add, reorder or resize guitar, concert-pitch treble or bass, compact mini-staff, guitar-tab, and
   piano rows. The piano row
@@ -248,9 +252,12 @@ For a stationary reading view, choose Manual pages as well as reduced motion.
 
 **Menu → Print your music:** choose tabs, sheet music or both, a measure range,
 and A4 or US Letter. Select **Prepare pages**, then **Save printable file**.
-Open the saved `libretabs-score.html` in a browser and print or choose Save as PDF.
+The filename includes the song title, such as `libretabs-Ode to Joy · Beethoven.html`.
+Open the saved HTML in a browser and print or choose Save as PDF.
 Use the matching paper size and turn off browser headers and footers. The file
-works offline and retains the prototype's arrangement limitations.
+works offline. Measures share continuous rows with a clef and time signature at
+the start of each row; crowded measures receive more space. Printing retains
+the prototype's arrangement limitations.
 
 **Menu → Capture & overlay:** choose the music, background and placement, then
 **Enter capture view** for a score-only layout. Use separate recording or streaming
@@ -333,9 +340,10 @@ in its own tab may allow permissions that the embedding site does not grant.
    input instead. Choose **Mute practice audio** to silence app notes and clicks
    while the score keeps moving; this preserves your saved volume settings. The
    same mute switch appears beside the practice controls when capture is active.
-2. Play one clear, steady note. The tuner shows a note, its frequency in Hz, and
-   its distance from the target in **cents** (100 cents is one semitone). Negative
-   means low/flat; positive means high/sharp. An uncertain signal clears the needle.
+2. Play one clear, steady note. The tuner shows the target note above a needle.
+   Left means low/flat; right means high/sharp. Aim for the center diamond.
+   The needle moves smoothly; an uncertain signal clears it immediately.
+   Icons and short messages show when listening is off, paused or waiting.
 3. Choose automatic nearest-note tuning, an open string for the selected instrument,
    **Choose a note**, or **Hold the current note as target**. Voice and piano have
    automatic/custom targets; guitar, four-string bass, violin and high-G ukulele
