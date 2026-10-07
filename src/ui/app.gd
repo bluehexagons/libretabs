@@ -2141,11 +2141,12 @@ func menu_focusable(node: Node, controls: Array[Control]) -> void:
 	for child: Node in node.get_children(): menu_focusable(child, controls)
 
 func change_view() -> void:
+	var choice: int = view_picker.selected
 	if tv_active:
-		var choice: int = view_picker.selected
 		enter_tv()
-		view_picker.select(choice)
-	if view_picker.selected == 0 and int(music_layout.lines) > 1: change_music_layout("lines", 1)
+	if choice == 0 and int(music_layout.lines) > 1: change_music_layout("lines", 1)
+	# Updating the line profile also selects pages; preserve the requested view.
+	view_picker.select(choice)
 	OptionMenuFit.set_disabled(notation_picker, true)
 	score.follow_pages = view_picker.selected == 2
 	score.set_view("scroll" if view_picker.selected == 0 else "pages", ["both", "tab", "staff"][notation_picker.selected])

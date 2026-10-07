@@ -61,3 +61,10 @@ native navigation fixtures cover manual panning, and browser checks cover page
 turns. Physical phone dragging, piano/microphone tuning, printers, Firefox/Safari
 and Windows runtime still require manual testing. Network-disabled restart was
 not repeated. Prototype musical/engraving limitations remain.
+
+Final transition review found that resetting a multi-line profile also overwrote
+the requested smooth-scroll choice. The view change now preserves that choice.
+The expanded practice UI suite passed 828 checks, and a fresh managed browser
+export confirmed three-line pages return to Smooth scrolling with one line and
+zero voices. This follow-up leaves the original baseline counts above as the
+earlier snapshot; release CI verifies the final source again.
