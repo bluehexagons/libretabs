@@ -24,6 +24,28 @@ sys.modules['release'] = release
 release_request = module('validate_release_request')
 
 class ReleaseTests(unittest.TestCase):
+    def test_versioned_snapshot_uses_committed_files_and_preserves_working_project(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            project = root / 'project.godot'
+            original = '[application]\nconfig/version="0.0.1-m0"\n'
+            project.write_text(original)
+            subprocess.run(['git', 'init', '-q', root], check=True)
+            subprocess.run(['git', '-C', root, 'add', 'project.godot'], check=True)
+            subprocess.run(['git', '-C', root, '-c', 'user.name=Fixture',
+                            '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'Fixture'], check=True)
+            project.write_text(original + '# uncommitted\n')
+            (root / 'private.mid').write_bytes(b'not a release asset')
+            with release.source_snapshot('0.0.1-prototype.12', root) as stage:
+                self.assertEqual((stage / 'project.godot').read_text(),
+                                 '[application]\nconfig/version="0.0.1-prototype.12"\n')
+                self.assertFalse((stage / 'private.mid').exists())
+            self.assertFalse(stage.exists())
+            self.assertEqual(project.read_text(), original + '# uncommitted\n')
+            with self.assertRaises(ValueError):
+                with release.source_snapshot('../escape', root):
+                    self.fail('Invalid version was accepted')
+
     def test_export_presets_embed_the_source_bridge(self):
         source = '\n'.join((ROOT / 'src/platform' / name).read_text() for name in ('bridge.js', 'playing_bridge.js'))
         expected = '<script>\n' + source + '\n</script>'

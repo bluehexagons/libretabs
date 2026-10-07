@@ -144,6 +144,21 @@ func run() -> void:
 			for _frame: int in range(12):
 				await process_frame
 				check(absf(app.get("score_frame").size.y - stable_height) < 1, "playing note/rest labels keep score height every frame at %s" % viewport)
+	score.set_view("scroll", "both")
+	for factor: float in [1.0, 2.0]:
+		app.call("apply_scale", factor)
+		for width: int in [320, 390, 1280]:
+			root.size = Vector2i(width, 1000)
+			app.call("responsive")
+			await settle_layout(app, score)
+			var position: Label = app.get("seek_label")
+			check(position.is_visible_in_tree(), "position regression exercises visible scrolling controls")
+			var font: Font = position.get_theme_font("font")
+			var font_size: int = position.get_theme_font_size("font_size")
+			for word: String in position.text.split(" "):
+				check(font.get_string_size(word, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x <= position.size.x + 1, "position words fit without splitting at %dpx / %d%%" % [width, factor * 100])
+			check(app.get("root_box").size.x <= width + 1, "readable position does not widen the player")
+	app.call("apply_scale", 1.0)
 	app.call("apply_preset", "piano_keys")
 	root.size = Vector2i(360, 900)
 	app.call("responsive")

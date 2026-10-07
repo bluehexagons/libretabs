@@ -290,7 +290,7 @@ will not run the player. If the main web player cannot start, try the compatibil
 player linked from the [public guide](https://bluehexagons.github.io/libretabs/).
 
 For a problem you cannot resolve, [report it](https://github.com/bluehexagons/libretabs/issues)
-with the app version, device/browser, what you tried and what happened. Use a
+with the version shown in **Menu → About LibreTabs**, device/browser, what you tried and what happened. Use a
 built-in song or a redistributable example so someone else can reproduce it.
 
 ## Playing along with keys

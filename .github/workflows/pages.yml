@@ -44,9 +44,11 @@ jobs:
       - name: Install locked Godot and web templates
         run: python3 scripts/install_toolchain.py --directory "$RUNNER_TEMP/godot" --templates --targets web
       - name: Export threaded and compatibility players
+        env:
+          RELEASE_VERSION: ${{ inputs.release_version }}
         run: |
-          python3 scripts/export_web.py --preset Web --output "$RUNNER_TEMP/pages-threaded"
-          python3 scripts/export_web.py --preset 'Web single-thread comparison' --output "$RUNNER_TEMP/pages-compatible"
+          python3 scripts/export_web.py --preset Web --version "$RELEASE_VERSION" --output "$RUNNER_TEMP/pages-threaded"
+          python3 scripts/export_web.py --preset 'Web single-thread comparison' --version "$RELEASE_VERSION" --output "$RUNNER_TEMP/pages-compatible"
       - name: Build instructional site with players
         env:
           PLAYER_URL: ${{ vars.PLAYER_URL }}

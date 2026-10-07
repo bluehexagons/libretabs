@@ -10,6 +10,13 @@ var displayed: Array[String] = []
 var tooltips: Array[String] = []
 var touch_target: FriendlyButton
 
+# Disabling the parent alone leaves its input proxy focusable. Use this for
+# runtime state changes; _ready also mirrors choices disabled before setup.
+static func set_disabled(option: OptionButton, value: bool) -> void:
+	option.disabled = value
+	for child: Node in option.get_children():
+		if child is OptionMenuFit: child.refresh_target_help()
+
 func _ready() -> void:
 	picker = get_parent() as OptionButton
 	picker.get_popup().about_to_popup.connect(fit_items)
@@ -39,6 +46,9 @@ func _ready() -> void:
 
 func refresh_target_help() -> void:
 	if touch_target == null or picker == null: return
+	touch_target.disabled = picker.disabled
+	touch_target.focus_mode = Control.FOCUS_NONE if picker.disabled else Control.FOCUS_ALL
+	touch_target.mouse_default_cursor_shape = Control.CURSOR_ARROW if picker.disabled else Control.CURSOR_POINTING_HAND
 	touch_target.tooltip_text = picker.tooltip_text if not picker.tooltip_text.is_empty() else (picker.text if not picker.text.is_empty() else tr("PICKER_CHOICE"))
 
 func fit_items() -> void:

@@ -419,8 +419,9 @@ func run() -> void:
 	app.call("toggle_drawer", "ABOUT")
 	check(app.get("drawers")["ABOUT"].visible, "about section is available from the menu")
 	var about: VBoxContainer = app.get("drawers")["ABOUT"]
-	check("Apache License 2.0" in (about.get_child(0) as Label).text and "CC0 1.0" in (about.get_child(0) as Label).text, "about section explains the software and content licenses")
-	check(about.get_child_count() == 4 and (about.get_child(1) as Button).text == TranslationServer.translate("OPEN_SOURCE") and (about.get_child(2) as Button).text == TranslationServer.translate("REPORT_ISSUE") and (about.get_child(3) as Button).text == TranslationServer.translate("REPORT_SECURITY"), "about section offers source, problem-reporting and private-security links")
+	check("Apache License 2.0" in (about.get_child(1) as Label).text and "CC0 1.0" in (about.get_child(1) as Label).text, "about section explains the software and content licenses")
+	check((about.get_child(0) as Label).text == TranslationServer.translate("ABOUT_VERSION") % ProjectSettings.get_setting("application/config/version"), "About identifies the running build for feedback")
+	check(about.get_child_count() == 5 and (about.get_child(2) as Button).text == TranslationServer.translate("OPEN_SOURCE") and (about.get_child(3) as Button).text == TranslationServer.translate("REPORT_ISSUE") and (about.get_child(4) as Button).text == TranslationServer.translate("REPORT_SECURITY"), "about section offers source, problem-reporting and private-security links")
 	app.call("seek_measure", 2)
 	before = app.get("position_updates")
 	for _frame: int in range(10): await process_frame
@@ -890,8 +891,19 @@ func run() -> void:
 	check(app.get("appearance_mode") == "midnight" and app.get("dark_mode"), "midnight is a direct appearance choice")
 	check(app.get_theme_color("background", "LibreTabs") == Color.BLACK and score.get_theme_color("paper", "LibreTabs") == Color.BLACK, "midnight keeps the backdrop and engraving surface black")
 	check(app.get("background_picker").disabled and app.get("backdrop").midnight, "midnight suppresses decorative backgrounds")
+	var background_target: FriendlyButton
+	for child: Node in app.get("background_picker").get_children():
+		if child is OptionMenuFit: background_target = child.touch_target
+	check(background_target.disabled and background_target.focus_mode == Control.FOCUS_NONE and background_target.mouse_default_cursor_shape == Control.CURSOR_ARROW, "disabled background cannot take focus or suggest an action")
 	check(app.get("source_tick") == tick_before and not app.is_processing(), "midnight switch preserves transport and idle processing")
 	app.call("change_appearance", 2)
+	check(not background_target.disabled and background_target.focus_mode == Control.FOCUS_ALL, "leaving midnight restores keyboard and pointer choice access")
+	app.call("open_choice_picker", app.get("background_picker"))
+	var background_selection: int = app.get("background_picker").selected
+	OptionMenuFit.set_disabled(app.get("background_picker"), true)
+	app.call("choose_picker_item", (background_selection + 1) % ThemeBackdrop.STYLES.size())
+	check(app.get("background_picker").selected == background_selection and not app.get("picker_overlay").visible and not background_target.has_focus(), "a choice disabled while open cannot commit or regain focus")
+	OptionMenuFit.set_disabled(app.get("background_picker"), false)
 	app.call("change_background_style", 2)
 	check(app.get("background_style") == "solid" and app.get("backdrop").background_style == "solid", "solid background applies without rebuilding the score")
 	app.call("change_background_style", 1)

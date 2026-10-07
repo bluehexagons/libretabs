@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Build versioned prototype archives from a clean, tracked source snapshot."""
 import argparse
+from contextlib import contextmanager
 import hashlib
 import io
 import json
@@ -17,6 +18,24 @@ ROOT = Path(__file__).resolve().parents[1]
 TARGETS = json.loads((ROOT / 'release/targets.json').read_text())
 LOCK = json.loads((ROOT / 'release/toolchain.json').read_text())
 VERSION = re.compile(r'\d+\.\d+\.\d+-prototype\.\d+\Z')
+
+@contextmanager
+def source_snapshot(version, root=ROOT):
+    """Stamp a tracked HEAD snapshot without modifying the working project."""
+    if not VERSION.fullmatch(version):
+        raise ValueError('Use MAJOR.MINOR.PATCH-prototype.NUMBER')
+    with tempfile.TemporaryDirectory(prefix='libretabs-source-') as temporary:
+        stage = Path(temporary)
+        source = subprocess.check_output(['git', 'archive', '--format=zip', 'HEAD'], cwd=root)
+        with zipfile.ZipFile(io.BytesIO(source)) as archive:
+            archive.extractall(stage)
+        project = stage / 'project.godot'
+        stamped, count = re.subn(r'^config/version=.*$', 'config/version=' + json.dumps(version),
+                                project.read_text(), flags=re.M)
+        if count != 1:
+            raise ValueError('Project must contain exactly one config/version setting')
+        project.write_text(stamped)
+        yield stage
 
 def run(args, cwd=ROOT):
     result = subprocess.run([str(arg) for arg in args], cwd=cwd, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -72,14 +91,7 @@ def main():
     if output.exists():
         parser.error(f'Refusing to replace existing output: {output}')
     output.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix='libretabs-release-') as temporary:
-        stage = Path(temporary) / 'source'
-        stage.mkdir()
-        source = subprocess.check_output(['git', 'archive', '--format=zip', 'HEAD'], cwd=ROOT)
-        with zipfile.ZipFile(io.BytesIO(source)) as archive:
-            archive.extractall(stage)
-        project = stage / 'project.godot'
-        project.write_text(re.sub(r'^config/version=.*$', 'config/version=' + json.dumps(args.version), project.read_text(), flags=re.M))
+    with tempfile.TemporaryDirectory(prefix='libretabs-release-') as temporary, source_snapshot(args.version) as stage:
         run(['python3', 'scripts/prepare_export.py'], stage)
         run([engine, '--headless', '--path', stage, '--import'])
         bundles = Path(temporary) / 'bundles'

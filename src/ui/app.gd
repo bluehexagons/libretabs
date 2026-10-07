@@ -441,7 +441,7 @@ func place_choice_picker() -> void:
 func choose_picker_item(index: int) -> void:
 	var selected: OptionButton = picker_source
 	close_choice_picker()
-	if not is_instance_valid(selected) or index < 0 or index >= selected.item_count or selected.is_item_disabled(index): return
+	if not is_instance_valid(selected) or selected.disabled or index < 0 or index >= selected.item_count or selected.is_item_disabled(index): return
 	selected.select(index)
 	selected.item_selected.emit(index)
 
@@ -1042,6 +1042,7 @@ func build_ui() -> void:
 	seek.value_changed.connect(seek_tick)
 	navigation.add_child(seek)
 	seek_label = label("SEEK_POSITION", 16)
+	seek_label.autowrap_mode = TextServer.AUTOWRAP_WORD
 	seek_label.custom_minimum_size.x = 112
 	seek_label.size_flags_horizontal = Control.SIZE_SHRINK_END
 	seek_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
@@ -1343,7 +1344,7 @@ func build_drawers() -> void:
 	notation_picker.custom_minimum_size.y = 56
 	notation_picker.fit_to_longest_item = false
 	for key: String in ["NOTATION_BOTH", "NOTATION_TAB", "NOTATION_STAFF"]: notation_picker.add_item(tr(key))
-	notation_picker.disabled = true
+	OptionMenuFit.set_disabled(notation_picker, true)
 	notation_picker.hide()
 	notation_picker.item_selected.connect(func(_index: int) -> void: change_view())
 	views.add_child(notation_picker)
@@ -1688,6 +1689,9 @@ func build_drawers() -> void:
 	help.add_child(keyboard_help)
 	help.add_child(button("KEYBOARD", func() -> void: toggle_drawer("KEYBOARD")))
 	var about: VBoxContainer = section("ABOUT")
+	var version_label: Label = label("ABOUT_VERSION", 18)
+	version_label.text = tr("ABOUT_VERSION") % ProjectSettings.get_setting("application/config/version")
+	about.add_child(version_label)
 	about.add_child(label("ABOUT_TEXT", 18))
 	about.add_child(button("OPEN_SOURCE", func() -> void: host.open_url("https://github.com/bluehexagons/libretabs")))
 	about.add_child(button("REPORT_ISSUE", func() -> void: host.open_url("https://github.com/bluehexagons/libretabs/issues")))
@@ -2125,7 +2129,7 @@ func change_view() -> void:
 		enter_tv()
 		view_picker.select(choice)
 	if view_picker.selected == 0 and int(music_layout.lines) > 1: change_music_layout("lines", 1)
-	notation_picker.disabled = true
+	OptionMenuFit.set_disabled(notation_picker, true)
 	score.follow_pages = view_picker.selected == 2
 	score.set_view("scroll" if view_picker.selected == 0 else "pages", ["both", "tab", "staff"][notation_picker.selected])
 	if score.follow_pages: score.page_to_playback()
@@ -2353,7 +2357,7 @@ func apply_appearance() -> void:
 	update_color_legend()
 	appearance_picker.select(["system", "light", "dark", "midnight"].find(appearance_mode))
 	background_picker.select(ThemeBackdrop.STYLES.find(background_style))
-	background_picker.disabled = midnight
+	OptionMenuFit.set_disabled(background_picker, midnight)
 	drawer.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 16, midnight))
 	picker_panel.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 12, midnight))
 	paper.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 8, midnight))
@@ -2433,6 +2437,7 @@ func reveal_scale_choice() -> void:
 
 func responsive() -> void:
 	if tv_controls_tween != null: tv_controls_tween.kill()
+	fit_position_label()
 	header_margin.queue_redraw()
 	compact = size.y < 780 or (theme.default_font_size >= 30 and size.y < 1000)
 	var short_screen: bool = size.x > size.y and size.y < 500 and size.x >= 480
@@ -3375,6 +3380,16 @@ func report_state() -> void:
 	offline.text = tr("OFFLINE_READY") if host.offline_ready() else tr("OFFLINE_PENDING")
 	if host.offline_ready() and not host.trace_enabled(): idle_timer.stop()
 
+func fit_position_label() -> void:
+	# Word wrapping avoids misleading fragments, but Label does not reserve
+	# the longest word's width automatically. Measure it after font changes.
+	var font: Font = seek_label.get_theme_font("font")
+	var font_size: int = seek_label.get_theme_font_size("font_size")
+	var width: float = 112
+	for word: String in seek_label.text.split(" "):
+		width = maxf(width, font.get_string_size(word, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x)
+	seek_label.custom_minimum_size.x = width
+
 func update_position(animate_follow: bool = false) -> void:
 	position_updates += 1
 	if song == null:
@@ -3393,7 +3408,10 @@ func update_position(animate_follow: bool = false) -> void:
 	seek.value = source_tick
 	updating = false
 	var elapsed: int = floori(song.seconds_at(source_tick))
-	seek_label.text = tr("SEEK_POSITION") % [score.measure_index + 1, elapsed / 60, posmod(elapsed, 60)]
+	var position_text: String = tr("SEEK_POSITION") % [score.measure_index + 1, elapsed / 60, posmod(elapsed, 60)]
+	if seek_label.text != position_text:
+		seek_label.text = position_text
+		fit_position_label()
 	cue.text = tr("CUE_REST")
 	var shows_tab: bool = false
 	for row: Dictionary in notation_rows:

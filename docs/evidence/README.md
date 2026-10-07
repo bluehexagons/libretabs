@@ -10,6 +10,8 @@ history and identify the newer record or current handoff.
 
 Latest maintenance review: [2026-10-05](maintenance-2026-10-05.md).
 
+Release audit: [prototype.12, 2026-10-07](release-audit-2026-10-07.md).
+
 Expanded library verification: [eight added tunes, 2026-10-05](added-repertoire-2026-10-05.md).
 
 Further library verification: [six more tunes, 2026-10-05](further-repertoire-2026-10-05.md).

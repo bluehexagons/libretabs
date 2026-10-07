@@ -18,6 +18,9 @@ and updates the GitHub Pages guide and both browser players.
    complete prerelease to a draft and publishes it only after all assets upload.
    Its Pages job then exports the threaded and compatibility players and deploys
    the guide that names and links to that same version.
+   Both hosted players and downloadable packages show that version in
+   **Menu → About LibreTabs**. Versioned web exports use a temporary tracked
+   HEAD snapshot, leaving the working project's development version unchanged.
 5. Open the published release and the [guide](https://bluehexagons.github.io/libretabs/)
    in a fresh browser profile. Check `/play/`, `/play-compatible/`, audio, reload,
    and one downloaded desktop package before sharing the version.
