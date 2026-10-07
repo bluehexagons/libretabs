@@ -8,6 +8,7 @@ signal page_turn_requested(direction: int)
 const PIANO_FIRST_PITCH: int = 21
 const PIANO_LAST_PITCH: int = 108
 const ONSET_SECONDS: float = 0.26
+const SOUNDING_HEAD_SCALE: float = 1.14
 
 var reduced_motion: bool = false
 var presentation: bool = false
@@ -515,8 +516,7 @@ func draw_cursor(surface: Control) -> void:
 					if y >= top and y <= bottom:
 						if upcoming: draw_note_mark(surface, Vector2(x, y), maxf(10, mapped_row_distance(row_index, 8)), true, note, minf(9, mapped_row_distance(row_index, 9)))
 						elif sounding:
-							surface.draw_arc(Vector2(x, y), maxf(11, mapped_row_distance(row_index, 8)), 0, TAU, 20, get_theme_color("ink" if clef in ["treble", "bass"] else ScoreLayout.placement_color_token(projection, note), "LibreTabs"), 2, true)
-						if onset_here and onset_phase >= 0: draw_ripple(surface, Vector2(x, y), note, onset_phase, clef in ["treble", "bass"])
+							draw_staff_emphasis(surface, Vector2(x, y), note, row_index, index, clef)
 
 	draw_live(surface)
 	draw_piano_rows(surface)
@@ -684,7 +684,25 @@ func sounding_pitches(include_companion: bool) -> Array[int]:
 func pitch_name(pitch: int) -> String:
 	return ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"][posmod(pitch, 12)] + str(pitch / 12 - 1)
 
-# A curved underline means "next"; a closed rounded halo means "sounding".
+func draw_staff_emphasis(surface: Control, center: Vector2, note: Dictionary, row_index: int, measure_index: int, clef: String) -> void:
+	var measure: Dictionary = song.measures[measure_index]
+	var duration: float = minf(float(note.end), float(measure.end)) - maxf(float(note.start), float(measure.start))
+	var head: String = String.chr(ScoreLayout.notehead_code(duration, song.division))
+	var normal_size: int = maxi(1, roundi(mapped_row_distance(row_index, ScoreLayout.STAFF_FONT)))
+	var half: float = music_font.get_string_size(head, HORIZONTAL_ALIGNMENT_LEFT, -1, normal_size).x / 2
+	var paper: Color = get_theme_color("paper", "LibreTabs")
+	# Clear the original glyph before repainting: otherwise the old outline
+	# would show inside an enlarged hollow head. The score geometry stays fixed.
+	var origin: Vector2 = center - Vector2(half, 0)
+	surface.draw_string_outline(music_font, origin, head, HORIZONTAL_ALIGNMENT_LEFT, -1, normal_size, 1, paper)
+	surface.draw_string(music_font, origin, head, HORIZONTAL_ALIGNMENT_LEFT, -1, normal_size, paper)
+	var emphasized_size: int = maxi(normal_size + 1, roundi(normal_size * SOUNDING_HEAD_SCALE))
+	var emphasized_half: float = music_font.get_string_size(head, HORIZONTAL_ALIGNMENT_LEFT, -1, emphasized_size).x / 2
+	var color: Color = get_theme_color("ink" if clef in ["treble", "bass"] else ScoreLayout.placement_color_token(projection, note), "LibreTabs")
+	color = color.lerp(get_theme_color("ink", "LibreTabs"), 0.20)
+	surface.draw_string(music_font, center - Vector2(emphasized_half, 0), head, HORIZONTAL_ALIGNMENT_LEFT, -1, emphasized_size, color)
+
+# Tab numbers use a rounded halo; staff emphasis retains the actual notehead.
 func draw_note_mark(surface: Control, center: Vector2, half: float, upcoming: bool, note: Dictionary, half_height: float = 14) -> void:
 	var color: Color = get_theme_color("accent", "LibreTabs") if upcoming else get_theme_color(ScoreLayout.placement_color_token(projection, note), "LibreTabs")
 	if upcoming:
@@ -702,8 +720,8 @@ func draw_note_mark(surface: Control, center: Vector2, half: float, upcoming: bo
 		note_halo.border_color = color
 		surface.draw_style_box(note_halo, Rect2(center - Vector2(half + 2, half_height), Vector2((half + 2) * 2, half_height * 2)))
 
-func draw_ripple(surface: Control, center: Vector2, note: Dictionary, phase: float, concert_staff: bool = false) -> void:
-	var color: Color = get_theme_color("ink" if concert_staff else ScoreLayout.placement_color_token(projection, note), "LibreTabs")
+func draw_ripple(surface: Control, center: Vector2, note: Dictionary, phase: float) -> void:
+	var color: Color = get_theme_color(ScoreLayout.placement_color_token(projection, note), "LibreTabs")
 	color.a = (1 - phase) * (1 - phase) * 0.4
 	var eased: float = 1 - (1 - phase) * (1 - phase)
 	surface.draw_arc(center, 13 + eased * 8, 0, TAU, 32, color, 1.5, true)

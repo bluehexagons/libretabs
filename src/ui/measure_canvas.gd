@@ -126,7 +126,7 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 					if y <= above:
 						draw_line(Vector2(x - 15 * scale.y, above), Vector2(x + 15 * scale.y, above), color, 1)
 				var duration: float = minf(float(note.end), finish) - raw
-				var head: int = 0xe0a3 if duration >= song.division * 2 else 0xe0a4
+				var head: int = ScoreLayout.notehead_code(duration, song.division)
 				var half_head: float = music_font.get_string_size(String.chr(head), HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(ScoreLayout.STAFF_FONT * scale.y)).x / 2
 				glyph(Vector2(x - half_head, y), head, ScoreLayout.STAFF_FONT, color)
 				if pitch % 12 in [1, 3, 6, 8, 10]:

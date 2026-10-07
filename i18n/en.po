@@ -1430,7 +1430,7 @@ msgid "VIEW_FOLLOW_PAGES"
 msgstr "Pages · follow playback"
 
 msgid "HELP_HIGHLIGHTS"
-msgstr "A curved underline below a tab number or staff note means it is coming next, including notes played together. A closed halo marks notes sounding now. Gentle ripples mark note starts when reduced motion is off. These cues follow playback; they do not grade your playing."
+msgstr "A curved underline below a tab number or staff note means it is coming next, including notes played together. A rounded outline marks tab numbers sounding now; staff noteheads become slightly larger and bolder while keeping their shape. Gentle ripples mark tab note starts when reduced motion is off. These cues follow playback; they do not grade your playing."
 
 msgid "PAGE_FOLLOW"
 msgstr "Follow playback"

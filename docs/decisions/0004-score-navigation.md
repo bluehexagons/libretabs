@@ -32,13 +32,16 @@ stationary score. The earlier per-measure reduced-motion jumps were too disrupti
 
 The 2026-10-07 owner-requested visual refinement replaces open brackets with
 curved underlines for the next source-note onset (including simultaneous notes).
-Sounding notes use closed halos: rounded outlines on tabs and rings on staff
-notes. Quiet rounded fret tiles make these state cues distinct from ordinary
-numbers. These marks span rests and do not move source timing to quantized
-positions. Small, bounded note-start ripples use source-tempo time from the same
+Sounding tab numbers use rounded outlines. Following further owner feedback
+on the same date, sounding staff noteheads grow slightly and use a bolder
+color, retaining their existing filled or hollow glyph instead of a ring.
+Quiet rounded fret tiles make these state cues distinct from ordinary numbers. These marks span rests and do not move source timing to quantized
+positions. Small, bounded tab note-start ripples use source-tempo time from the same
 transport; they disappear while paused, during count-in, or when reduced motion
 is enabled. See the [visual refinement](../evidence/play-area-visual-refinement.md)
 for appearance findings and further design candidates.
+Staff note-start rings are also removed so playback decoration cannot resemble
+another rhythm value. See the [notehead refinement](../evidence/notehead-emphasis.md).
 No idle animation loop or scoring/assessment is introduced.
 
 The owner's request authorizes tab-only or staff-only manual reading as a bounded

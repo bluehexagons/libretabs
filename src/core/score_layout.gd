@@ -37,6 +37,9 @@ func timeline_x(tick: float) -> float:
 	var bar: Dictionary = song.measures[index]
 	return offsets[index] + 16 + (tick - float(bar.start)) / float(bar.end - bar.start) * widths[index]
 
+static func notehead_code(duration: float, division: int) -> int:
+	return 0xe0a3 if duration >= division * 2 else 0xe0a4
+
 static func note_x(document: SongDocument, note: Dictionary, index: int, width: float, continuous: bool) -> float:
 	var bar: Dictionary = document.measures[index]
 	var grid: float = document.division / 4.0
