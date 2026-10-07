@@ -88,3 +88,40 @@ replay and practice/layout tests. After the final development-tool changes,
 all 47 Python tests passed; 19 cover music-tool readiness, signals, conversion,
 source preservation and notation comparison. Basaltwater's CLI-documentation
 and Markdown-link checks passed for its guide and skill-reference updates.
+
+## PDF tools qualification after the setup rerun — 2026-10-07
+
+The subsequent setup rerun installed Poppler 25.03.0 (`pdfinfo`, `pdftoppm`,
+`pdftotext`); Basaltwater's manifest discovered all three executables.
+LibreTabs' optional PDF readiness check passed alongside the exact engine/template
+and music-tool checks. Each of the 30 existing library PDFs parsed, yielded
+first-page text and rendered to a 1131×1600 PNG without changing PDF bytes.
+All 30 PDFs contained one page. Representative rendered piano-study, Minuet,
+Silent Night and Entertainer pages showed their staves, meters, notes and ties.
+MuseScore also chose changing clefs and interpreted MIDI text as score text;
+those external import choices are not LibreTabs rendering defects.
+
+The new `review_score.py --library --musicxml --inspect-pdf` workflow then
+converted and inspected all 30 songs again, retaining metadata, first-page text,
+PNG previews, tool versions, commands, logs and checksums. Exact source bytes
+and hashes remained unchanged. The melody comparator again matched all 29
+arrangements' pitches, onsets, initial meter and tempo, with the same four
+previously documented release differences. An intentionally malformed artifact
+starting with `%PDF-1.4` failed Poppler parsing and was rejected, demonstrating
+the stronger check beyond the existing PDF-header test.
+
+```bash
+python3 scripts/development_ready.py --require-music-tools --require-pdf-tools --json
+python3 scripts/review_score.py --library --musicxml --inspect-pdf
+python3 scripts/compare_library_review.py build/score-review/library-EXAMPLE
+```
+
+Inspection renders only page 1, bounded to 1600 pixels per dimension; reports
+say which page was rendered. Metadata/text/rasterization success qualifies
+these development utilities, not print-grade engraving or musician review.
+No host routing, desktop state, source music or runtime dependency changed.
+
+The full `scripts/verify.py` baseline passed after these changes, including
+54 Python tests (26 music-development tests), JavaScript tests, Godot resource
+import, core/input/audio/UI regressions, deliberate failure-exit verification
+and runtime boot. Basaltwater's documentation and local-link checks passed.

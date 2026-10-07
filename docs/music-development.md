@@ -10,8 +10,8 @@ are authored by this project and dedicated to CC0-1.0.
 ## After the owner reruns setup
 
 Update the Basaltwater source/launcher, retain the VM's existing setup options,
-and append `--musescore --audio-tools --av-tools`. Audacity is useful but optional
-(`--audacity`). The changes live in the Basaltwater checkout at
+and append `--musescore --audio-tools --pdf-tools --av-tools`. Audacity is useful
+but optional (`--audacity`). The changes live in the Basaltwater checkout at
 `../infra-tools`; its renamed project and directory need not match.
 Do not run setup merely for discovery. Save shared-desktop work before setup:
 the managed desktop setup can log out an existing session.
@@ -28,14 +28,18 @@ From LibreTabs, run:
 ```bash
 basaltw agent manifest --json
 python3 scripts/development_ready.py --require-music-tools --json
+python3 scripts/development_ready.py --require-pdf-tools --json
 ```
 
 The readiness command compares installed Godot to the exact
 `release/toolchain.json` pin and checks the relevant Web template files. It
 reports missing optional tools separately; without `--require-music-tools`,
-their absence does not block ordinary development. It never installs software,
-rewrites the lockfile or starts a desktop. Template presence is narrower than
-a successful export. Physical capture/playback and MIDI devices remain
+their absence does not block ordinary development.
+PDF utilities are checked separately; `--require-pdf-tools` requires `pdfinfo`,
+`pdftoppm` and `pdftotext`, supplied by Debian's optional `--pdf-tools` bundle.
+The command never installs software, rewrites the lockfile or starts a desktop.
+Template presence is narrower than a successful export.
+Physical capture/playback and MIDI devices remain
 unverified even when every command is available.
 
 If host maintenance updates Godot beyond the pin, install the project's isolated
@@ -44,8 +48,9 @@ checksum-locked toolchain with `scripts/install_toolchain.py` following
 that isolated toolchain for readiness and verification. Do not change the pin
 just to make a host check green.
 
-The development manifest includes `project_ready`, `music_ready`,
-`audio_fixtures`, `microphone_replay`, `score_review` and `library_review`. Its canonical
+The development manifest includes `project_ready`, `music_ready`, `pdf_ready`,
+`audio_fixtures`, `microphone_replay`, `score_review`, `library_review` and
+`library_pdf_review`. Its canonical
 `musescore` requirement resolves distro executable aliases after the Basaltwater
 update. It does not create a shell command; project scripts resolve the actual
 executable themselves. These recipes are displayed, never automatically run.
@@ -99,6 +104,8 @@ python3 scripts/review_score.py
 python3 scripts/review_score.py content/library/twinkle.mid
 # Retain PDF and structured notation for all bundled library songs:
 python3 scripts/review_score.py --library --musicxml
+# After PDF tools setup, also parse and rasterize each review PDF:
+python3 scripts/review_score.py --library --musicxml --inspect-pdf
 # Use the library-* directory printed by that command:
 python3 scripts/compare_library_review.py build/score-review/library-EXAMPLE
 ```
@@ -118,6 +125,19 @@ rejection. `--library` reviews at most 64 files sequentially in a fresh
 `library-*` directory, retains failures while continuing other songs, and exits
 nonzero if any conversion failed. Its `library.json` links each successful
 receipt; conversion success is distinct from musical correctness.
+
+`--inspect-pdf` checks tool availability before conversion, then uses Poppler
+to parse metadata, extract first-page text and render `page-1.png` at up to
+1600 pixels per dimension. It rejects PDFs larger than 32 MiB, invalid metadata,
+page counts outside 1–64, failed tools, missing/oversized outputs and invalid PNG
+geometry. Each operation has a 30-second timeout; version queries have ten.
+The receipt records the PDF/preview hashes, page count, geometry, tool versions
+and commands. `pdf-inspection.log`, `pdf-info.txt` and `page-1.txt` remain beside
+the preview, including after failures. Failed inspection prevents a successful
+review receipt and makes a library batch fail while other songs continue.
+View the image before judging layout; only page 1 is rendered, and successful
+text extraction does not certify musical correctness. The optional flag leaves
+ordinary MuseScore-only review available without Poppler.
 
 `compare_library_review.py` checks the 29 arranged melody recipes against their
 derived MusicXML using exact quarter-note fractions and rejoined ties. It
@@ -143,6 +163,7 @@ managed desktop skill. Save editable MSCZ and review exports separately.
 With the tested Debian MuseScore 3.2.3 package, omit `--no-synthesizer` from
 GUI launches: it crashed interactive startup although offscreen conversion
 worked. `--no-midi` alone opened the score. A title match may be the splash;
+use `--exclude-title Startup --stable-seconds 1` with the managed window wait,
 check launch status and the real document. GTK file dialogs exposed usable
 accessibility controls; Qt score controls needed screenshot-based inspection.
 [Debian's CLI reference](https://manpages.debian.org/trixie/musescore3/mscore3.1.en.html)
@@ -156,7 +177,8 @@ aliases and failures have mocked Basaltwater regression coverage. LibreTabs'
 Python tests verify signal structure/levels, deterministic generation, source
 preservation, bounded failures and pin mismatches; Godot replay tests exercise
 the real listener. After the owner's setup rerun, live PDF/MusicXML conversions,
-GUI save/reopen and SoX/ffprobe measurements passed; see the dated
+GUI save/reopen, Poppler PDF parsing/rendering and SoX/ffprobe measurements passed;
+see the dated
 [music-tool evidence](evidence/music-tools.md) for results and importer differences.
 Continue the physical piano/microphone and phone checks from the product's
 live-playing evidence plan after these repeatable gates pass.

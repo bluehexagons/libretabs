@@ -139,6 +139,23 @@ class DevelopmentReadiness(unittest.TestCase):
                           "/bin/" + name if name in ("musescore", "mscore3") else None):
             self.assertEqual(development_ready.find_musescore(), "/bin/mscore3")
 
+    def test_pdf_readiness_is_optional_and_independent_of_music_tools(self):
+        lock = json.loads((ROOT / "release/toolchain.json").read_text())
+        with tempfile.TemporaryDirectory() as root:
+            data = Path(root)
+            templates = data / "godot/export_templates" / lock["template_directory"]
+            templates.mkdir(parents=True)
+            for name in ("web_debug.zip", "web_release.zip", "web_nothreads_release.zip"):
+                (templates / name).touch()
+            with patch.object(development_ready.subprocess, "run", return_value=subprocess.CompletedProcess(
+                [], 0, lock["version"], "",
+            )), patch.object(development_ready.shutil, "which", side_effect=lambda name:
+                             None if name in development_ready.PDF_TOOLS else "/bin/" + name):
+                self.assertTrue(development_ready.inspect("godot", data, True)["ok"])
+                report = development_ready.inspect("godot", data, require_pdf_tools=True)
+                self.assertFalse(report["ok"])
+                self.assertEqual(report["missing_pdf_tools"], list(development_ready.PDF_TOOLS))
+
 
 class ScoreReview(unittest.TestCase):
     def setUp(self):
@@ -272,6 +289,106 @@ class ScoreReview(unittest.TestCase):
         execute.assert_not_called()
         with self.assertRaises(ValueError):
             review_score.review_library(Path(self.directory) / "absent", self.output)
+
+    def test_pdf_inspection_missing_tools_or_failure_blocks_success(self):
+        with patch.object(review_score.shutil, "which", return_value=None), patch.object(
+            review_score.subprocess, "run",
+        ) as execute, self.assertRaisesRegex(ValueError, "--pdf-tools"):
+            review_score.review(self.source, self.output, inspect_pdf_output=True)
+        execute.assert_not_called()
+        with patch.object(review_score, "find_pdf_tools", return_value={"pdfinfo": "/bin/pdfinfo"}), patch.object(
+            review_score.subprocess, "run", side_effect=self.fake_converter,
+        ), patch.object(review_score, "inspect_pdf", side_effect=ValueError("broken PDF")), self.assertRaisesRegex(
+            ValueError, "broken PDF",
+        ):
+            review_score.review(self.source, self.output, inspect_pdf_output=True)
+        self.assertFalse(any(self.output.rglob("review.json")))
+        self.assertEqual(self.source.read_bytes(), self.data)
+
+
+class PdfInspection(unittest.TestCase):
+    def setUp(self):
+        self.task = Path(self.enterContext(tempfile.TemporaryDirectory()))
+        self.pdf = self.task / "review.pdf"
+        self.data = b"%PDF-1.4\nmock PDF\n"
+        self.pdf.write_bytes(self.data)
+        self.tools = {name: "/bin/" + name for name in development_ready.PDF_TOOLS}
+        self.pages = "1"
+        self.dimensions = (1131, 1600)
+        self.failure = None
+
+    def process(self, argv, **kwargs):
+        if argv[-1] == "-v":
+            return subprocess.CompletedProcess(argv, 0, "", "Poppler test version")
+        self.assertNotIn("shell", kwargs)
+        self.assertEqual(kwargs["timeout"], 30)
+        self.assertEqual(kwargs["env"]["LC_ALL"], "C")
+        tool = Path(argv[0]).name
+        if tool == self.failure:
+            return subprocess.CompletedProcess(argv, 1)
+        if tool == "pdfinfo":
+            kwargs["stdout"].write(f"Pages: {self.pages}\n".encode())
+        elif tool == "pdftotext":
+            self.assertEqual(argv[1:6], ["-f", "1", "-l", "1", "-layout"])
+            Path(argv[-1]).write_text("First page\n")
+        elif tool == "pdftoppm":
+            self.assertEqual(argv[1:5], ["-f", "1", "-l", "1"])
+            self.assertIn("1600", argv)
+            Path(argv[-1] + ".png").write_bytes(b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR" +
+                b"".join(value.to_bytes(4, "big") for value in self.dimensions))
+        return subprocess.CompletedProcess(argv, 0)
+
+    def test_preview_receipt_geometry_version_and_immutable_pdf(self):
+        with patch.object(review_score.subprocess, "run", side_effect=self.process):
+            result = review_score.inspect_pdf(self.pdf, self.tools)
+        self.assertEqual(result["pages"], 1)
+        self.assertEqual(result["rendered_pages"], [1])
+        self.assertEqual(result["preview_dimensions"], [1131, 1600])
+        self.assertEqual(result["pdf_sha256"], hashlib.sha256(self.data).hexdigest())
+        self.assertEqual(set(result["versions"]), set(self.tools))
+        self.assertEqual(self.pdf.read_bytes(), self.data)
+
+    def test_invalid_page_counts_stop_before_text_or_rasterization(self):
+        for pages in ("0", "65", "unknown"):
+            self.pages = pages
+            with self.subTest(pages=pages), patch.object(
+                review_score.subprocess, "run", side_effect=self.process,
+            ) as execute, self.assertRaisesRegex(ValueError, "1–64"):
+                review_score.inspect_pdf(self.pdf, self.tools)
+            self.assertEqual(execute.call_count, 4)  # Versions and metadata only.
+
+    def test_tool_failures_and_timeout_retain_logs(self):
+        for tool in self.tools:
+            self.failure = tool
+            with self.subTest(tool=tool), patch.object(review_score.subprocess, "run", side_effect=self.process), self.assertRaisesRegex(
+                ValueError, "PDF inspection failed",
+            ):
+                review_score.inspect_pdf(self.pdf, self.tools)
+            self.assertIn(tool, (self.task / "pdf-inspection.log").read_text())
+        with patch.object(review_score.subprocess, "run", side_effect=subprocess.TimeoutExpired("pdfinfo", 10)), self.assertRaises(ValueError):
+            review_score.inspect_pdf(self.pdf, self.tools)
+
+    def test_invalid_geometry_and_changed_pdf_are_rejected(self):
+        for dimensions in ((0, 1600), (1601, 1600)):
+            self.dimensions = dimensions
+            with patch.object(review_score.subprocess, "run", side_effect=self.process), self.assertRaisesRegex(ValueError, "geometry"):
+                review_score.inspect_pdf(self.pdf, self.tools)
+        self.dimensions = (1131, 1600)
+        def changed(argv, **kwargs):
+            result = self.process(argv, **kwargs)
+            if Path(argv[0]).name == "pdftoppm" and argv[-1] != "-v":
+                self.pdf.write_bytes(b"user edit")
+            return result
+        with patch.object(review_score.subprocess, "run", side_effect=changed), self.assertRaisesRegex(ValueError, "changed"):
+            review_score.inspect_pdf(self.pdf, self.tools)
+        self.assertEqual(self.pdf.read_bytes(), b"user edit")
+
+    def test_size_limit_prevents_tool_launch(self):
+        with patch.object(review_score, "MAX_PDF_BYTES", 1), patch.object(
+            review_score.subprocess, "run",
+        ) as execute, self.assertRaisesRegex(ValueError, "32 MiB"):
+            review_score.inspect_pdf(self.pdf, self.tools)
+        execute.assert_not_called()
 
 
 class LibraryNotationComparison(unittest.TestCase):

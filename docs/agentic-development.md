@@ -33,8 +33,9 @@ upstream improvements. Recheck the live VM before relying on historical evidence
 The [music development workflow](music-development.md) prepares deterministic
 CC0 microphone WAV replay, exact project-pin diagnostics and isolated MuseScore
 comparisons. After rerunning upgraded Basaltwater setup with
-`--musescore --audio-tools --av-tools`, use the optional `music_ready` and
-`score_review` recipes. Fixture generation/replay works now without new host
+`--musescore --audio-tools --pdf-tools --av-tools`, use the optional `music_ready`,
+`pdf_ready`, `score_review` and `library_pdf_review` recipes.
+Fixture generation/replay works now without new host
 packages and is part of the baseline. These are development tools, with no new
 runtime dependency or bundled editor assets.
 

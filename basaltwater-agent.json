@@ -17,6 +17,11 @@
       "argv": ["python3", "scripts/development_ready.py", "--require-music-tools", "--json"],
       "requires": ["python3", "godot", "musescore", "sox", "soxi", "arecord", "aplay", "amidi", "aconnect", "pactl", "ffmpeg", "ffprobe"]
     },
+    "pdf_ready": {
+      "description": "Read-only exact Godot pin/template check and optional Poppler PDF tool inventory",
+      "argv": ["python3", "scripts/development_ready.py", "--require-pdf-tools", "--json"],
+      "requires": ["python3", "godot", "pdfinfo", "pdftoppm", "pdftotext"]
+    },
     "audio_fixtures": {
       "description": "Generate six deterministic CC0 WAV microphone scenarios in ignored build/audio-fixtures",
       "argv": ["python3", "scripts/generate_audio_fixtures.py"],
@@ -36,6 +41,11 @@
       "description": "Convert all bundled library MIDI task copies to PDF/MusicXML; retain per-song logs and receipts",
       "argv": ["python3", "scripts/review_score.py", "--library", "--musicxml"],
       "requires": ["python3", "musescore"]
+    },
+    "library_pdf_review": {
+      "description": "Convert all library MIDI task copies to PDF/MusicXML and inspect/render page 1 with Poppler",
+      "argv": ["python3", "scripts/review_score.py", "--library", "--musicxml", "--inspect-pdf"],
+      "requires": ["python3", "musescore", "pdfinfo", "pdftoppm", "pdftotext"]
     },
     "verify": {
       "description": "Pinned-engine LibreTabs baseline: Python, JS, Godot core/UI tests and whitespace",

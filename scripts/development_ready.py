@@ -13,13 +13,15 @@ import subprocess
 ROOT = Path(__file__).resolve().parents[1]
 MUSESCORE_NAMES = ("musescore4", "mscore4", "musescore3", "mscore3", "musescore", "mscore")
 MUSIC_TOOLS = ("sox", "soxi", "arecord", "aplay", "amidi", "aconnect", "pactl", "ffmpeg", "ffprobe")
+PDF_TOOLS = ("pdfinfo", "pdftoppm", "pdftotext")
 
 
 def find_musescore() -> str | None:
     return next((path for name in MUSESCORE_NAMES if (path := shutil.which(name))), None)
 
 
-def inspect(engine: str, data_home: Path, require_music_tools: bool = False) -> dict:
+def inspect(engine: str, data_home: Path, require_music_tools: bool = False, *,
+            require_pdf_tools: bool = False) -> dict:
     lock = json.loads((ROOT / "release/toolchain.json").read_text())
     observed = None
     error = None
@@ -36,18 +38,24 @@ def inspect(engine: str, data_home: Path, require_music_tools: bool = False) -> 
     tools = {name: shutil.which(name) for name in MUSIC_TOOLS}
     tools["musescore"] = find_musescore()
     missing_tools = [name for name, path in tools.items() if path is None]
+    pdf_tools = {name: shutil.which(name) for name in PDF_TOOLS}
+    missing_pdf_tools = [name for name, path in pdf_tools.items() if path is None]
     return {
         "ok": observed == lock["version"] and not missing_templates and
-              (not require_music_tools or not missing_tools),
+              (not require_music_tools or not missing_tools) and
+              (not require_pdf_tools or not missing_pdf_tools),
         "engine": {"expected": lock["version"], "observed": observed, "error": error},
         "templates": {"directory": str(template_dir), "missing": missing_templates,
                       "scope": "file presence; export validates contents"},
         "music_tools": tools, "missing_music_tools": missing_tools,
         "music_tools_required": require_music_tools,
+        "pdf_tools": pdf_tools, "missing_pdf_tools": missing_pdf_tools,
+        "pdf_tools_required": require_pdf_tools,
         "device_readiness": "unverified; tools do not establish microphone, MIDI or playback devices",
         "guidance": "Retain the project pin. Use scripts/install_toolchain.py for an isolated pinned toolchain "
                     "if host updates change Godot. Rerun upgraded Basaltwater setup with "
-                    "--musescore --audio-tools --av-tools for optional music utilities.",
+                    "--musescore --audio-tools --av-tools for optional music utilities; "
+                    "add --pdf-tools for score PDF inspection.",
     }
 
 
@@ -57,15 +65,18 @@ def main() -> int:
     parser.add_argument("--data-home", type=Path,
                         default=Path(os.environ.get("XDG_DATA_HOME", str(Path.home() / ".local/share"))))
     parser.add_argument("--require-music-tools", action="store_true")
+    parser.add_argument("--require-pdf-tools", action="store_true")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
-    report = inspect(args.engine, args.data_home, args.require_music_tools)
+    report = inspect(args.engine, args.data_home, args.require_music_tools,
+                     require_pdf_tools=args.require_pdf_tools)
     if args.json:
         print(json.dumps(report, indent=2))
     else:
         print(f"Godot: expected {report['engine']['expected']}; found {report['engine']['observed'] or 'unavailable'}")
         print("Missing templates: " + (", ".join(report["templates"]["missing"]) or "none"))
         print("Missing optional music tools: " + (", ".join(report["missing_music_tools"]) or "none"))
+        print("Missing optional PDF tools: " + (", ".join(report["missing_pdf_tools"]) or "none"))
         print(report["guidance"])
         print(report["device_readiness"])
     return 0 if report["ok"] else 1
