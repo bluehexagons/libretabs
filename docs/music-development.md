@@ -45,7 +45,7 @@ that isolated toolchain for readiness and verification. Do not change the pin
 just to make a host check green.
 
 The development manifest includes `project_ready`, `music_ready`,
-`audio_fixtures`, `microphone_replay` and `score_review`. Its canonical
+`audio_fixtures`, `microphone_replay`, `score_review` and `library_review`. Its canonical
 `musescore` requirement resolves distro executable aliases after the Basaltwater
 update. It does not create a shell command; project scripts resolve the actual
 executable themselves. These recipes are displayed, never automatically run.
@@ -97,6 +97,10 @@ hardware, recording profile, sensitivity, input device, volume and mute state.
 python3 scripts/review_score.py
 # Or select a known licensed song/fixture:
 python3 scripts/review_score.py content/library/twinkle.mid
+# Retain PDF and structured notation for all bundled library songs:
+python3 scripts/review_score.py --library --musicxml
+# Use the library-* directory printed by that command:
+python3 scripts/compare_library_review.py build/score-review/library-EXAMPLE
 ```
 
 The default input is the project-authored CC0 `first_melody.mid` fixture.
@@ -108,6 +112,24 @@ header and rechecks source bytes before writing a receipt with the input hash,
 tool version and command. Failure retains task files/logs for inspection and
 exits nonzero. It never overwrites an earlier task or original MIDI.
 
+`--musicxml` adds a separately logged, time-bounded conversion with a 16 MiB
+artifact limit, partwise-score validation and entity/unsupported-encoding
+rejection. `--library` reviews at most 64 files sequentially in a fresh
+`library-*` directory, retains failures while continuing other songs, and exits
+nonzero if any conversion failed. Its `library.json` links each successful
+receipt; conversion success is distinct from musical correctness.
+
+`compare_library_review.py` checks the 29 arranged melody recipes against their
+derived MusicXML using exact quarter-note fractions and rejoined ties. It
+requires current MIDI bytes to match both the authored recipe and the review
+hash, reports pitches/onsets, meter, tempo and individual interval differences,
+and rejects richer voices or transposing instruments rather than guessing.
+Its JSON goes to standard output; redirect it into the ignored batch directory
+if desired. Reported differences do not cause a nonzero exit: this is an
+inspection report, and deliberately different importer interpretations need
+review. Missing/stale/unsupported inputs fail. Bass articulation and the original
+piano study are outside this comparator's explicitly labeled scope.
+
 Inspect the resulting PDF with your available document tools and compare
 pitches, onsets, durations, tempo, meter, ties and rests with the canonical parsed
 events and LibreTabs' projection. MuseScore quantization/import is a derived
@@ -118,6 +140,11 @@ an export to hide a difference; fix or label the actual projection issue.
 For graphical inspection, use the executable and launch vector from
 `basaltw agent manifest --json` with the absolute task-copy path, following the
 managed desktop skill. Save editable MSCZ and review exports separately.
+With the tested Debian MuseScore 3.2.3 package, omit `--no-synthesizer` from
+GUI launches: it crashed interactive startup although offscreen conversion
+worked. `--no-midi` alone opened the score. A title match may be the splash;
+check launch status and the real document. GTK file dialogs exposed usable
+accessibility controls; Qt score controls needed screenshot-based inspection.
 [Debian's CLI reference](https://manpages.debian.org/trixie/musescore3/mscore3.1.en.html)
 documents MuseScore 3; check installed help before version-specific scripting.
 Offscreen PDF conversion does not qualify GUI editing or audio playback.
@@ -128,6 +155,8 @@ The tools were developed without installing new host packages. Setup selection,
 aliases and failures have mocked Basaltwater regression coverage. LibreTabs'
 Python tests verify signal structure/levels, deterministic generation, source
 preservation, bounded failures and pin mismatches; Godot replay tests exercise
-the real listener. A live MuseScore conversion remains to be run once setup
-installs it. Continue the physical piano/microphone and phone checks from the
-product's live-playing evidence plan after these repeatable gates pass.
+the real listener. After the owner's setup rerun, live PDF/MusicXML conversions,
+GUI save/reopen and SoX/ffprobe measurements passed; see the dated
+[music-tool evidence](evidence/music-tools.md) for results and importer differences.
+Continue the physical piano/microphone and phone checks from the product's
+live-playing evidence plan after these repeatable gates pass.

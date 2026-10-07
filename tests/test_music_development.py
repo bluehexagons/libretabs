@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from array import array
+from fractions import Fraction
 import hashlib
 import io
 import json
@@ -13,12 +14,14 @@ import tempfile
 import unittest
 from unittest.mock import patch
 import wave
+import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 import development_ready
 import generate_audio_fixtures as fixtures
 import review_score
+import compare_library_review
 
 
 def samples(data):
@@ -149,7 +152,9 @@ class ScoreReview(unittest.TestCase):
     def fake_converter(self, argv, **kwargs):
         if argv[-1] == "--version":
             return subprocess.CompletedProcess(argv, 0, "MuseScore 3 test version\n", "")
-        Path(argv[argv.index("-o") + 1]).write_bytes(b"%PDF-1.4\nmock inspection artifact\n")
+        destination = Path(argv[argv.index("-o") + 1])
+        destination.write_bytes(b'<score-partwise><part id="P1"><measure number="1"/></part></score-partwise>'
+                                if destination.suffix == ".musicxml" else b"%PDF-1.4\nmock inspection artifact\n")
         self.assertEqual(Path(argv[-1]).read_bytes(), self.data)
         self.assertEqual(kwargs["env"]["QT_QPA_PLATFORM"], "offscreen")
         self.assertNotIn("shell", kwargs)
@@ -222,6 +227,135 @@ class ScoreReview(unittest.TestCase):
             ValueError, "--musescore",
         ):
             review_score.review(self.source, self.output)
+
+    def test_musicxml_export_is_recorded_and_invalid_xml_blocks_success(self):
+        with patch.object(review_score.subprocess, "run", side_effect=self.fake_converter):
+            pdf = review_score.review(self.source, self.output, musicxml=True)
+        report = json.loads((pdf.parent / "review.json").read_text())
+        self.assertEqual(report["review_musicxml"], "review.musicxml")
+        self.assertEqual(len(report["commands"]), 2)
+        for invalid in (b"not XML", b"<score-partwise/>", b"<other/>",
+                        '<score-partwise/>'.encode('utf-16'),
+                        b'<!DOCTYPE score-partwise [<!ENTITY e "bad">]><score-partwise/>'):
+            def convert(argv, **kwargs):
+                result = self.fake_converter(argv, **kwargs)
+                if ".musicxml" in argv[-2]:
+                    Path(argv[-2]).write_bytes(invalid)
+                return result
+            with patch.object(review_score.subprocess, "run", side_effect=convert), self.assertRaises(ValueError):
+                review_score.review(self.source, self.output, musicxml=True)
+        self.assertEqual(len(list(self.output.rglob("review.json"))), 1)
+        self.assertEqual(self.source.read_bytes(), self.data)
+
+    def test_library_retains_failures_and_reviews_the_remaining_files(self):
+        library = Path(self.directory) / "library"
+        library.mkdir()
+        (library / "a.mid").write_bytes(b"invalid MIDI")
+        (library / "b.mid").write_bytes(self.data)
+        (library / "c.mid").write_bytes(self.data)
+        with patch.object(review_score.subprocess, "run", side_effect=self.fake_converter):
+            path = review_score.review_library(library, self.output, musicxml=True)
+        report = json.loads(path.read_text())
+        self.assertFalse(report["ok"])
+        self.assertEqual([score["ok"] for score in report["scores"]], [False, True, True])
+        self.assertIn("MIDI", report["scores"][0]["error"])
+        for score in report["scores"][1:]:
+            self.assertTrue((path.parent / score["receipt"]).is_file())
+        self.assertEqual((library / "a.mid").read_bytes(), b"invalid MIDI")
+        self.assertEqual((library / "b.mid").read_bytes(), self.data)
+
+    def test_empty_or_excessive_library_is_rejected_without_launch(self):
+        with patch.object(review_score, "MAX_LIBRARY_SCORES", 0), patch.object(
+            review_score.subprocess, "run",
+        ) as execute, self.assertRaises(ValueError):
+            review_score.review_library(Path(self.directory), self.output)
+        execute.assert_not_called()
+        with self.assertRaises(ValueError):
+            review_score.review_library(Path(self.directory) / "absent", self.output)
+
+
+class LibraryNotationComparison(unittest.TestCase):
+    def test_exact_intervals_rejoin_ties_keep_rests_and_read_accidentals(self):
+        part = ET.fromstring('''<part><measure><attributes><divisions>2</divisions></attributes>
+          <note><rest/><duration>1</duration></note>
+          <note><pitch><step>F</step><alter>1</alter><octave>4</octave></pitch>
+            <duration>3</duration><tie type="start"/></note></measure>
+          <measure><note><pitch><step>F</step><alter>1</alter><octave>4</octave></pitch>
+            <duration>2</duration><tie type="stop"/></note>
+          <note><pitch><step>F</step><alter>1</alter><octave>4</octave></pitch>
+            <duration>1</duration></note></measure></part>''')
+        self.assertEqual(compare_library_review.melody_intervals(part),
+                         [(66, Fraction(1, 2), Fraction(3)), (66, Fraction(3), Fraction(7, 2))])
+
+    def test_richer_notation_and_bad_ties_are_reported_instead_of_guessed(self):
+        for extra in ('<chord/>', '<grace/>', '<tie type="stop"/>', '<tie type="start"/>', '<tie type="other"/>'):
+            part = ET.fromstring(f'''<part><measure><attributes><divisions>1</divisions></attributes>
+              <note><pitch><step>C</step><octave>4</octave></pitch><duration>1</duration>
+              {extra}</note></measure></part>''')
+            with self.subTest(extra=extra), self.assertRaises(ValueError):
+                compare_library_review.melody_intervals(part)
+        for extra in ('<backup><duration>1</duration></backup>',
+                      '<attributes><transpose><chromatic>12</chromatic></transpose></attributes>'):
+            with self.assertRaises(ValueError):
+                compare_library_review.melody_intervals(ET.fromstring(f'<part><measure>{extra}</measure></part>'))
+        with self.assertRaisesRegex(ValueError, 'voices/staves'):
+            compare_library_review.melody_intervals(ET.fromstring('''<part><measure>
+              <attributes><divisions>1</divisions></attributes>
+              <note><rest/><duration>1</duration><voice>1</voice></note>
+              <note><rest/><duration>1</duration><voice>2</voice></note>
+              </measure></part>'''))
+
+    def test_complete_recipe_comparison_distinguishes_release_from_pitch_and_checks_hashes(self):
+        with tempfile.TemporaryDirectory() as root:
+            batch = Path(root)
+            for key, song in compare_library_review.SONGS.items():
+                task = batch / key / "score-test"
+                task.mkdir(parents=True)
+                source = ROOT / 'content/library' / f'{key}.mid'
+                (task / 'review.json').write_text(json.dumps({
+                    'source_sha256': hashlib.sha256(source.read_bytes()).hexdigest(),
+                }))
+                tree = ET.Element('score-partwise')
+                part = ET.SubElement(tree, 'part', id='P1')
+                measure = ET.SubElement(part, 'measure')
+                attributes = ET.SubElement(measure, 'attributes')
+                ET.SubElement(attributes, 'divisions').text = '480'
+                time = ET.SubElement(attributes, 'time')
+                ET.SubElement(time, 'beats').text = str(song['meter'][0])
+                ET.SubElement(time, 'beat-type').text = str(song['meter'][1])
+                ET.SubElement(measure, 'sound', tempo=str(song['tempo']))
+                # Project-authored synthetic music/XML data: CC0-1.0.
+                spellings = ('C', 'C', 'D', 'D', 'E', 'F', 'F', 'G', 'G', 'A', 'A', 'B')
+                for value, duration in song['notes']:
+                    note = ET.SubElement(measure, 'note')
+                    if value is None:
+                        ET.SubElement(note, 'rest')
+                    else:
+                        pitch = ET.SubElement(note, 'pitch')
+                        ET.SubElement(pitch, 'step').text = spellings[value % 12]
+                        ET.SubElement(pitch, 'alter').text = str(int(value % 12 in (1, 3, 6, 8, 10)))
+                        ET.SubElement(pitch, 'octave').text = str(value // 12 - 1)
+                    ET.SubElement(note, 'duration').text = str(duration)
+                ET.SubElement(tree, 'part', id='P2')
+                ET.ElementTree(tree).write(task / 'review.musicxml', encoding='utf-8')
+            report = compare_library_review.inspect(batch)
+            self.assertTrue(all(song['pitch_and_onset_match'] and song['meter_match'] and song['tempo_match']
+                                and not song['interval_differences'] for song in report['songs']))
+            path = batch / 'twinkle/score-test/review.musicxml'
+            tree = ET.parse(path)
+            final_duration = tree.findall('part/measure/note/duration')[-1]
+            final_duration.text = str(int(final_duration.text) + 120)
+            tree.write(path)
+            twinkle = next(song for song in compare_library_review.inspect(batch)['songs'] if song['song'] == 'twinkle')
+            self.assertTrue(twinkle['pitch_and_onset_match'])
+            self.assertEqual(len(twinkle['interval_differences']), 1)
+            tree.findall('part/measure/note/pitch/step')[-1].text = 'D'
+            tree.write(path)
+            twinkle = next(song for song in compare_library_review.inspect(batch)['songs'] if song['song'] == 'twinkle')
+            self.assertFalse(twinkle['pitch_and_onset_match'])
+            (batch / 'twinkle/score-test/review.json').write_text('{"source_sha256":"stale"}')
+            with self.assertRaisesRegex(ValueError, 'mismatch'):
+                compare_library_review.inspect(batch)
 
 
 if __name__ == "__main__":

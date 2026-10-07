@@ -32,6 +32,11 @@
       "argv": ["python3", "scripts/review_score.py"],
       "requires": ["python3", "musescore"]
     },
+    "library_review": {
+      "description": "Convert all bundled library MIDI task copies to PDF/MusicXML; retain per-song logs and receipts",
+      "argv": ["python3", "scripts/review_score.py", "--library", "--musicxml"],
+      "requires": ["python3", "musescore"]
+    },
     "verify": {
       "description": "Pinned-engine LibreTabs baseline: Python, JS, Godot core/UI tests and whitespace",
       "argv": [
