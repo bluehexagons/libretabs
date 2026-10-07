@@ -22,6 +22,7 @@ var tab_y_offset: float = 0
 var show_measure_title: bool = true
 var music_y_offset: float = 0
 var draw_count: int = 0
+var fret_tile: StyleBoxFlat
 
 func _draw() -> void:
 	draw_count += 1
@@ -161,8 +162,12 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 				var fret: String = str(placement.fret)
 				var half: float = ui_font.get_string_size(fret, HORIZONTAL_ALIGNMENT_LEFT, -1, text_size(26)).x / 2
 				var tab_box: Rect2 = Rect2(x - half - 4, tab_y - 13, half * 2 + 8, 26)
-				draw_rect(tab_box, get_theme_color("paper", "LibreTabs").lerp(color, 0.12))
-				draw_rect(tab_box, color, false, 1.5, true)
+				# Quiet rounded tiles leave the transport halo as the strongest cue.
+				if fret_tile == null:
+					fret_tile = UIAppearance.box(Color.TRANSPARENT, 0)
+					fret_tile.set_corner_radius_all(5)
+				fret_tile.bg_color = get_theme_color("paper", "LibreTabs").lerp(color, 0.02)
+				draw_style_box(fret_tile, tab_box)
 				text_at(Vector2(x - half, tab_y + (ui_font.get_ascent(text_size(26)) - ui_font.get_descent(text_size(26))) / (2 * scale.y)), fret, 26, color)
 				if shape_cues:
 					draw_shape_cue(Vector2(tab_box.end.x + 6, tab_box.position.y + 4), ScoreLayout.placement_color_token(projection, note), color, 4.0)

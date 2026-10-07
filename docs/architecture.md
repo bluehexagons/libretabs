@@ -496,8 +496,8 @@ Screen pages now group the same continuous measure geometry used in scrolling,
 with a preview of the next page. Page-follow state belongs to the view; manual
 turns suspend it without affecting the transport. Reduced motion suppresses
 nonessential effects without replacing functional scrolling with jumps. Upcoming
-onsets and finite note-start sparks are source-time projections in the cursor
-layer; paused/count-in/reduced-motion views have no particle animation. Print
+onsets and finite note-start ripples are source-time projections in the cursor
+layer; paused/count-in/reduced-motion views have no ripple animation. Print
 geometry, the canonical song, and persistence contracts are unchanged. See
 [decision 0004](decisions/0004-score-navigation.md) and [evidence](evidence/reading-flow.md).
 

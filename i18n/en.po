@@ -1430,7 +1430,7 @@ msgid "VIEW_FOLLOW_PAGES"
 msgstr "Pages · follow playback"
 
 msgid "HELP_HIGHLIGHTS"
-msgstr "Open brackets on tabs and staff notes show the next notes, including chords. Full outlines show sounding notes. Small sparks mark note starts when reduced motion is off; they do not grade your playing."
+msgstr "A curved underline below a tab number or staff note means it is coming next, including notes played together. A closed halo marks notes sounding now. Gentle ripples mark note starts when reduced motion is off. These cues follow playback; they do not grade your playing."
 
 msgid "PAGE_FOLLOW"
 msgstr "Follow playback"

@@ -7,7 +7,7 @@ signal page_turn_requested(direction: int)
 
 const PIANO_FIRST_PITCH: int = 21
 const PIANO_LAST_PITCH: int = 108
-const SPARK_SECONDS: float = 0.26
+const ONSET_SECONDS: float = 0.26
 
 var reduced_motion: bool = false
 var presentation: bool = false
@@ -59,6 +59,7 @@ var touch_origins: Dictionary = {}
 var touch_positions: Dictionary = {}
 var touch_released: Dictionary = {}
 var touch_cancelled: bool = false
+var note_halo: StyleBoxFlat
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(240, 320)
@@ -477,18 +478,18 @@ func draw_cursor(surface: Control) -> void:
 		var origin: Vector2 = tile.position + strip.position
 		var x: float = layout.timeline_x(current_tick) - view_offset
 		draw_timeline_indicator(surface, x, get_theme_color("accent", "LibreTabs"), 2, Color.TRANSPARENT, 0, origin.y)
-	var spark_start_tick: float = current_tick
+	var onset_start_tick: float = current_tick
 	if effects_playing and not reduced_motion and effects_speed > 0:
-		# Keep onset sparks for a fixed screen-time window at every playback speed.
-		spark_start_tick = song.tick_at(song.seconds_at(current_tick) - SPARK_SECONDS * effects_speed)
+		# Keep onset ripples for a fixed screen-time window at every playback speed.
+		onset_start_tick = song.tick_at(song.seconds_at(current_tick) - ONSET_SECONDS * effects_speed)
 	for note: Dictionary in song.notes:
 		if int(note.part) != part and not staff_pair.has(int(note.part)): continue
 		var upcoming: bool = int(note.part) == part and float(note.start) == upcoming_tick
 		var sounding: bool = current_tick >= float(note.start) and current_tick < float(note.end)
-		var spark_phase: float = -1.0
-		if float(note.start) >= spark_start_tick and float(note.start) <= current_tick:
-			spark_phase = particle_phase(note)
-		if not upcoming and not sounding and spark_phase < 0: continue
+		var onset_phase: float = -1.0
+		if float(note.start) >= onset_start_tick and float(note.start) <= current_tick:
+			onset_phase = ripple_phase(note)
+		if not upcoming and not sounding and onset_phase < 0: continue
 		for index: int in tiles.keys():
 			var measure: Dictionary = song.measures[index]
 			if note.end <= measure.start or note.start >= measure.end: continue
@@ -505,17 +506,17 @@ func draw_cursor(surface: Control) -> void:
 					var y: float = origin.y + mapped_row_y(row_index, ScoreLayout.tab_y(int(placement.string), drawing_notation()))
 					var half: float = ui_font.get_string_size(str(placement.fret), HORIZONTAL_ALIGNMENT_LEFT, -1, row_text_size(row_index, 26)).x / 2 + 4
 					if upcoming or sounding: draw_note_mark(surface, Vector2(x, y), half, upcoming, note, minf(14, mapped_row_distance(row_index, 14)))
-					if onset_here and spark_phase >= 0: draw_particles(surface, Vector2(x, y), note, spark_phase)
+					if onset_here and onset_phase >= 0: draw_ripple(surface, Vector2(x, y), note, onset_phase)
 				elif type in ["staff", "treble", "bass", "mini_treble", "mini_bass"]:
 					var clef: String = NotationRows.clef(type)
 					var y: float = origin.y + mapped_row_y(row_index, ScoreLayout.staff_y(int(note.pitch), clef))
 					var top: float = origin.y + mapped_row_y(row_index, 12)
 					var bottom: float = origin.y + mapped_row_y(row_index, 172)
 					if y >= top and y <= bottom:
-						if upcoming: draw_note_mark(surface, Vector2(x, y), maxf(10, mapped_row_distance(row_index, 8)), true, note)
+						if upcoming: draw_note_mark(surface, Vector2(x, y), maxf(10, mapped_row_distance(row_index, 8)), true, note, minf(9, mapped_row_distance(row_index, 9)))
 						elif sounding:
 							surface.draw_arc(Vector2(x, y), maxf(11, mapped_row_distance(row_index, 8)), 0, TAU, 20, get_theme_color("ink" if clef in ["treble", "bass"] else ScoreLayout.placement_color_token(projection, note), "LibreTabs"), 2, true)
-						if onset_here and spark_phase >= 0: draw_particles(surface, Vector2(x, y), note, spark_phase, clef in ["treble", "bass"])
+						if onset_here and onset_phase >= 0: draw_ripple(surface, Vector2(x, y), note, onset_phase, clef in ["treble", "bass"])
 
 	draw_live(surface)
 	draw_piano_rows(surface)
@@ -683,28 +684,32 @@ func sounding_pitches(include_companion: bool) -> Array[int]:
 func pitch_name(pitch: int) -> String:
 	return ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"][posmod(pitch, 12)] + str(pitch / 12 - 1)
 
-# Open corner brackets mean "next"; a complete box means "sounding".
+# A curved underline means "next"; a closed rounded halo means "sounding".
 func draw_note_mark(surface: Control, center: Vector2, half: float, upcoming: bool, note: Dictionary, half_height: float = 14) -> void:
 	var color: Color = get_theme_color("accent", "LibreTabs") if upcoming else get_theme_color(ScoreLayout.placement_color_token(projection, note), "LibreTabs")
 	if upcoming:
-		for side: float in [-1.0, 1.0]:
-			var x: float = center.x + side * (half + 2)
-			surface.draw_line(Vector2(x, center.y - half_height), Vector2(x, center.y + half_height), color, 2, true)
-			for y: float in [center.y - half_height, center.y + half_height]:
-				surface.draw_line(Vector2(x, y), Vector2(x - side * 5, y), color, 2, true)
+		var curve: PackedVector2Array = PackedVector2Array()
+		for step: int in range(17):
+			var u: float = step / 8.0 - 1.0
+			curve.append(center + Vector2(u * half, half_height + 2 + 3 * (1 - u * u)))
+		surface.draw_polyline(curve, color, 2, true)
+		for end: Vector2 in [curve[0], curve[-1]]: surface.draw_circle(end, 1, color, true, -1, true)
 	else:
-		surface.draw_rect(Rect2(center - Vector2(half, half_height), Vector2(half * 2, half_height * 2)), color, false, 2)
+		if note_halo == null:
+			note_halo = UIAppearance.box(Color.TRANSPARENT, 0)
+			note_halo.set_border_width_all(2)
+		note_halo.set_corner_radius_all(roundi(minf(8, half_height)))
+		note_halo.border_color = color
+		surface.draw_style_box(note_halo, Rect2(center - Vector2(half + 2, half_height), Vector2((half + 2) * 2, half_height * 2)))
 
-func draw_particles(surface: Control, center: Vector2, note: Dictionary, phase: float, concert_staff: bool = false) -> void:
+func draw_ripple(surface: Control, center: Vector2, note: Dictionary, phase: float, concert_staff: bool = false) -> void:
 	var color: Color = get_theme_color("ink" if concert_staff else ScoreLayout.placement_color_token(projection, note), "LibreTabs")
-	color.a = (1 - phase) * 0.85
-	for index: int in range(4):
-		var direction: Vector2 = Vector2.from_angle(-PI * (0.15 + index * 0.23))
-		var distance: float = 17 + phase * 17
-		surface.draw_line(center + direction * distance, center + direction * (distance + 5 * (1 - phase)), color, 2.5 * (1 - phase) + 0.5, true)
+	color.a = (1 - phase) * (1 - phase) * 0.4
+	var eased: float = 1 - (1 - phase) * (1 - phase)
+	surface.draw_arc(center, 13 + eased * 8, 0, TAU, 32, color, 1.5, true)
 
-func particle_phase(note: Dictionary) -> float:
+func ripple_phase(note: Dictionary) -> float:
 	if song == null or reduced_motion or not effects_playing or effects_speed <= 0: return -1
 	var age: float = song.seconds_at(current_tick) - song.seconds_at(float(note.start))
-	var duration: float = SPARK_SECONDS * effects_speed
+	var duration: float = ONSET_SECONDS * effects_speed
 	return age / duration if age >= 0 and age < duration else -1

@@ -694,22 +694,22 @@ func run() -> void:
 	check(highlights.upcoming_tick == -1, "last onset has no misleading future highlight")
 	highlights.effects_playing = true
 	highlights.update_tick(576)
-	check(absf(highlights.particle_phase(highlight_song.notes[0]) - 0.1 / ScoreView.SPARK_SECONDS) < 0.001, "sparks follow source onset time")
+	check(absf(highlights.ripple_phase(highlight_song.notes[0]) - 0.1 / ScoreView.ONSET_SECONDS) < 0.001, "ripples follow source onset time")
 	highlights.effects_speed = 2.0
 	highlights.update_tick(730)
-	check(highlights.current_tick > float(highlight_song.notes[1].end) and highlights.particle_phase(highlight_song.notes[1]) > 0 and highlights.particle_phase(highlight_song.notes[1]) < 1, "short notes keep a spark after release at faster playback")
+	check(highlights.current_tick > float(highlight_song.notes[1].end) and highlights.ripple_phase(highlight_song.notes[1]) > 0 and highlights.ripple_phase(highlight_song.notes[1]) < 1, "short notes keep a ripple after release at faster playback")
 	highlights.effects_speed = 0.5
-	check(highlights.particle_phase(highlight_song.notes[1]) == -1, "spark duration stays brief at slower playback")
+	check(highlights.ripple_phase(highlight_song.notes[1]) == -1, "ripple duration stays brief at slower playback")
 	highlights.effects_speed = 1.0
 	highlights.update_tick(576)
 	highlights.reduced_motion = true
-	check(highlights.particle_phase(highlight_song.notes[0]) == -1, "reduced motion suppresses particles")
+	check(highlights.ripple_phase(highlight_song.notes[0]) == -1, "reduced motion suppresses ripples")
 	highlights.reduced_motion = false
 	highlights.effects_playing = false
-	check(highlights.particle_phase(highlight_song.notes[0]) == -1, "paused notes do not leave frozen particles")
+	check(highlights.ripple_phase(highlight_song.notes[0]) == -1, "paused notes do not leave frozen ripples")
 	highlights.effects_playing = true
 	highlights.update_tick(800)
-	check(highlights.particle_phase(highlight_song.notes[0]) == -1 and not highlights.is_processing(), "particle burst expires without an idle process loop")
+	check(highlights.ripple_phase(highlight_song.notes[0]) == -1 and not highlights.is_processing(), "onset ripple expires without an idle process loop")
 	highlights.free()
 	app.call("set_speed", 1.0)
 	app.call("toggle_drawer", "TEMPO")
@@ -923,6 +923,9 @@ func run() -> void:
 			check(contrast(UIAppearance.color(token, dark), UIAppearance.color("paper", dark)) >= 4.5, "score text/highlight contrast in both palettes")
 		for token: String in ["note_open", "note_first", "note_move", "rest", "warning"]:
 			check(contrast(UIAppearance.color(token, dark), UIAppearance.color("paper", dark)) >= 4.5, "score cue contrast in both palettes: %s / %s" % [token, dark])
+		for token: String in ["note_open", "note_first", "note_move"]:
+			var note_color: Color = UIAppearance.color(token, dark)
+			check(contrast(note_color, UIAppearance.color("paper", dark).lerp(note_color, 0.02)) >= 4.5, "fret text retains contrast on its tinted tile: %s / %s" % [token, dark])
 		check(absf(luminance(UIAppearance.color("note_open", dark)) - luminance(UIAppearance.color("note_first", dark))) >= 0.04, "nearby note groups have luminance separation: open / first / %s" % dark)
 		check(absf(luminance(UIAppearance.color("note_first", dark)) - luminance(UIAppearance.color("note_move", dark))) >= 0.04, "nearby note groups have luminance separation: first / move / %s" % dark)
 		check(contrast(Color.WHITE, UIAppearance.color("primary", dark)) >= 4.5, "play button text contrast")

@@ -19,7 +19,7 @@ review; treat them as practice suggestions.
    shown, choose **Practice layouts** in Quick start or Menu.
 2. Press **Play** and listen once without playing your guitar. The clicks before
    the music are a **count-in**: time to get ready. The moving line follows the
-   music, and outlined numbers show the notes sounding now.
+   music, and numbers with a closed halo show the notes sounding now.
 3. Open **Menu → Playback** and choose a slower speed, such as **50%** under
    **Speed presets**. That means half the original speed, with the same pitches.
    Choose **Restart** beside Play to return to the beginning. If sound is
@@ -80,8 +80,9 @@ length; a tie joins notes of the same pitch into one held sound. Guitar treble
 notation is written an octave higher than it sounds: the same note name in the
 next higher register.
 
-Open brackets mark upcoming notes; complete outlines mark sounding notes. These
-are playback cues, not feedback about your playing. Fret numbers remain the
+A curved underline marks the next note; a closed halo marks a note sounding
+now. Gentle ripples mark note starts when reduced motion is off. These are
+playback cues, not feedback about your playing. Fret numbers remain the
 instruction even when colors or optional shapes are shown. **!** or **△** means
 there is an arrangement warning; open **Songs → About this arrangement**.
 

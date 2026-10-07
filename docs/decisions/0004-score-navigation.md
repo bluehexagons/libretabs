@@ -26,15 +26,19 @@ Resizing retains the manually selected passage within the resulting page.
 
 This owner-requested reading-flow refinement supersedes the original two/three-row
 screen pages. Printable A4/Letter layout remains separate under decision 0008.
-Reduced motion disables decorative transitions and note sparks, while the selected
-functional scrolling behavior stays continuous. Choose following pages for a
+Reduced motion disables decorative transitions and note-start ripples, while
+the selected functional scrolling behavior stays continuous. Choose following pages for a
 stationary score. The earlier per-measure reduced-motion jumps were too disruptive.
 
-Open brackets on tabs and staff distinguish the next source-note
-onset (including simultaneous notes) from complete outlines on sounding notes.
-These marks span rests and do not move the source timing to quantized positions.
-Small, bounded note-start sparks use source-tempo time from the same transport;
-they disappear while paused, during count-in, or when reduced motion is enabled.
+The 2026-10-07 owner-requested visual refinement replaces open brackets with
+curved underlines for the next source-note onset (including simultaneous notes).
+Sounding notes use closed halos: rounded outlines on tabs and rings on staff
+notes. Quiet rounded fret tiles make these state cues distinct from ordinary
+numbers. These marks span rests and do not move source timing to quantized
+positions. Small, bounded note-start ripples use source-tempo time from the same
+transport; they disappear while paused, during count-in, or when reduced motion
+is enabled. See the [visual refinement](../evidence/play-area-visual-refinement.md)
+for appearance findings and further design candidates.
 No idle animation loop or scoring/assessment is introduced.
 
 The owner's request authorizes tab-only or staff-only manual reading as a bounded
