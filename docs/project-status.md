@@ -2,7 +2,7 @@
 
 To use the current player, start with the [user guide](user-guide.md).
 
-Snapshot date: 2026-10-05. Current phase: evaluating public **prototype releases**.
+Snapshot date: 2026-10-07. Current phase: evaluating public **prototype releases**.
 
 The [evidence records](evidence/README.md) are dated snapshots. This handoff is
 the current summary; older measurements remain useful for their stated scope.
@@ -35,9 +35,12 @@ is available on the managed network. It is not a public launch URL.
   Pages. Desktop packages use official release templates, not the editor.
   Checksums, notices, and curated or generated release notes accompany releases.
 - The latest public evaluation prerelease,
-  [`0.0.1-prototype.11`](https://github.com/bluehexagons/libretabs/releases/tag/v0.0.1-prototype.11),
-  was published on 2026-09-28 by that workflow. Its web, Windows, Linux, manifest,
-  and checksum assets are public. The Pages guide links to versioned downloads
+  [`0.0.1-prototype.12`](https://github.com/bluehexagons/libretabs/releases/tag/v0.0.1-prototype.12),
+  was published on 2026-10-07 by that workflow. Its web, Windows, Linux, manifest,
+  and checksum assets are public. All downloaded package checksums, ZIP integrity,
+  build identities and notices passed review. The exact downloaded Linux package
+  ran without Godot on PATH; Windows runtime still needs a physical-device check.
+  The Pages guide links to versioned downloads
   when deployed with a release version; a standalone source deployment can show
   “current source build” instead.
 - The repository is public. The [instructional/download site](https://bluehexagons.github.io/libretabs/)
@@ -82,6 +85,12 @@ third-party notices remain separate. Name confirmation and support ownership
 need owner attention before public alpha. Native packages
 are unsigned; signing is future release work. Broader contributor recruitment
 also needs a contribution-conduct policy and repository-protection review.
+
+The [prototype.12 release audit](evidence/release-audit-2026-10-07.md) records
+disabled-control focus, large-text wrapping and release-version fixes, package
+and browser verification, and the remaining human checks. Follow the release's
+manual test checklist for piano/microphone sensitivity, tuner/mute controls,
+playback layout stability, note emphasis and song review.
 
 The [October maintenance review](evidence/maintenance-2026-10-05.md) records
 release-input and file-picker fixes, dependency checks and verification coverage.

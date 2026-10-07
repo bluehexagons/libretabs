@@ -54,6 +54,58 @@ import/editor/boot, deliberate failure-exit and whitespace checks.
 The snapshot regression confirms committed version stamping, exclusion of a
 private untracked MIDI, working-file preservation and temporary-directory cleanup.
 
+## Publication and package checks
+
+The [release workflow](https://github.com/bluehexagons/libretabs/actions/runs/37680040477)
+passed verification, packaging, publication and Pages deployment. The normal
+[source CI](https://github.com/bluehexagons/libretabs/actions/runs/37680039547)
+also passed. The published
+[`0.0.1-prototype.12`](https://github.com/bluehexagons/libretabs/releases/tag/v0.0.1-prototype.12)
+is a public evaluation prerelease at source commit
+`96149c5a64a072b11bc7acf77e5920e1b9a965bb`.
+
+All five assets were downloaded from that release. The manifest and SHA256SUMS
+matched all three ZIPs; ZIP integrity, exact version/source identity and bundled
+Godot notices passed. The downloaded Linux release executable opened through
+Basaltwater's shared desktop with `/usr/bin:/bin` as PATH (excluding the Godot
+editor). Quick start, count-in, synchronized playback and pause worked, and its
+window closed with exit code 0. An earlier locally packaged build also imported
+the CC0 first-melody fixture through the native chooser; rejecting a truncated
+replacement preserved that song. Windows runtime was not tested here.
+
+Both Pages players' nine offline assets matched their deployed manifests and
+JavaScript/WASM MIME types. The guide displayed `.12`, the correct download link
+and the visible mute-control label. These public destinations use worker-provided
+isolation, not server COOP/COEP headers; the managed gateway separately passed
+the strict header check.
+
+Public Chromium/T3 Code rendered the threaded player, displayed the translated
+About heading and exact release version, and completed a short play/pause sample
+at tick 4,556 with zero active voices after pause. One startup underrun was
+reported; this is not independent audible-timing evidence. The cache reported
+ready after an online reload, and `crossOriginIsolated` was true. Its worker
+release matched the deployed manifest. The managed build also exercised the
+30-song catalog, a song preview/load, phone/Theater layouts and playing with
+practice audio muted and the tuner temporarily disabled; that muted run advanced
+the timeline, paused with zero active voices and reported zero underruns.
+
+The compatibility player rendered and its cache reported ready, but the first
+wide-viewport playback attempt stalled around 2 FPS, reported 2,779 underruns
+and paused with the audio-start warning. This repeats the slow-browser limitation
+recorded in [live-playing input evidence](live-playing-inputs.md); it is not a
+fallback timing pass. T3 Code reported its preview hidden despite opening it,
+while document visibility was visible, so these results cannot establish normal
+foreground-browser performance or pinpoint the bottleneck. Reopening and reducing
+the viewport to 390 × 844 did not resolve the audio-start warning. The published
+notes disclose the failed check and recommend the main player or native package.
+
+No new application console errors or failed requests were observed. Two older
+Electron preload errors preceded application loading. Browser/device validation
+and profiling on a normally performing foreground browser remain necessary.
+Network-disabled restart was not re-tested: T3 Code exposes no network-offline
+emulation. Complete-cache status, asset hashes, online reload and automated
+worker tests do not replace that check.
+
 ## Remaining human work
 
 Real electronic piano/speaker/microphone sensitivity and tuning, physical MIDI
