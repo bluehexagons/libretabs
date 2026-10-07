@@ -34,7 +34,7 @@ const PATHS: Dictionary = {
 	"CLICK_OFF": "M8 3h8l4 17H4zM3 3l18 18",
 	"CLOSE": "M5 5l14 14M19 5 5 19", "MENU_BACK": "M14 4l-8 8 8 8",
 	"KEYBOARD": "M2 6h20v13H2zM6 6v7M10 6v7M14 6v7M18 6v7",
-	"PREVIOUS": "M16 4l-8 8 8 8", "NEXT": "M8 4l8 8-8 8"
+	"PREVIOUS": "M16 4l-8 8 8 8", "NEXT": "M8 4l8 8-8 8", "CHOICE_CHECK": "M5 12l4 4 10-10"
 }
 static var textures: Dictionary = {}
 
@@ -45,7 +45,5 @@ static func get_tinted_icon(key: String, tint: Color) -> Texture2D:
 	if not PATHS.has(key): return null
 	var cache_key: String = key + tint.to_html(false)
 	if not textures.has(cache_key):
-		var image: Image = Image.new()
-		image.load_svg_from_string('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="%s" fill="none" stroke="#%s" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' % [PATHS[key], tint.to_html(false)])
-		textures[cache_key] = ImageTexture.create_from_image(image)
+		textures[cache_key] = DPITexture.create_from_string('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="%s" fill="none" stroke="#%s" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' % [PATHS[key], tint.to_html(false)])
 	return textures[cache_key]

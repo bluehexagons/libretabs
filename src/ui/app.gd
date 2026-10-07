@@ -419,6 +419,10 @@ func open_choice_picker(picker: OptionButton) -> void:
 		choice.disabled = picker.is_item_disabled(index)
 		choice.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		choice.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		if picker.selected == index:
+			choice.icon = UIIcons.get_icon("CHOICE_CHECK")
+			choice.set_meta("color_role", "reading")
+			UIAppearance.apply_roles(choice, dark_mode, appearance_mode == "midnight")
 		picker_choices.add_child(choice)
 	picker_overlay.show()
 	place_choice_picker()

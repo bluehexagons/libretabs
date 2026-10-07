@@ -1,0 +1,6 @@
+<!-- SPDX-License-Identifier: CC0-1.0 -->
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <circle cx="16" cy="18" r="11" fill="#000000" fill-opacity="0.16"/>
+  <circle cx="16" cy="15" r="10" fill="#fffbf2" stroke="#7040a0" stroke-width="2"/>
+  <path d="M14 12v6m4-6v6" stroke="#30283e" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

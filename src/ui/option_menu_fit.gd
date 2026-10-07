@@ -19,6 +19,7 @@ func _ready() -> void:
 	# finger tries to drag its list, and can stop reopening on mobile Safari.
 	touch_target = FriendlyButton.new()
 	touch_target.flat = true
+	touch_target.theme_type_variation = "ChoiceTarget"
 	touch_target.focus_mode = Control.FOCUS_ALL
 	touch_target.mouse_filter = Control.MOUSE_FILTER_PASS
 	touch_target.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
