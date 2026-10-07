@@ -68,3 +68,31 @@ The expanded practice UI suite passed 828 checks, and a fresh managed browser
 export confirmed three-line pages return to Smooth scrolling with one line and
 zero voices. This follow-up leaves the original baseline counts above as the
 earlier snapshot; release CI verifies the final source again.
+
+## Published build
+
+The [prototype.13 release workflow](https://github.com/bluehexagons/libretabs/actions/runs/37687510418)
+and [source CI](https://github.com/bluehexagons/libretabs/actions/runs/37687483038)
+passed on final source `c23e0915aee4a38adeb7121e3e82f35d0f1f54c2`,
+including the full baseline with 828 practice UI checks.
+The [public prerelease](https://github.com/bluehexagons/libretabs/releases/tag/v0.0.1-prototype.13)
+contains web, Windows and Linux packages plus manifest/checksums. All five assets
+were downloaded; checksums, ZIP integrity, exact source/version identities and
+Godot notices passed.
+
+The exact downloaded Linux executable ran through Basaltwater with Godot absent
+from PATH and private test preferences. Count-in, playing and pause rendered
+correctly; its window closed with exit code 0. The existing llvmpipe V-Sync
+warning appeared, with no script errors. Ordinary desktop input worked.
+The Xorg CLI exposes hold-ms but rejects held input as native-only; clearer
+backend-specific help and leased drag input would help future Godot audits.
+No Basaltwater runtime change was needed for these checks.
+
+The public guide and preferred Pages player's About show prototype.13.
+Both Pages variants passed nine-asset SHA-256 and JavaScript/WASM MIME checks.
+The preferred player completed a short play/pause check at tick
+11828.7528344671, zero voices after pause and zero reported underruns.
+It reported complete cache readiness and cross-origin isolation. These checks
+do not establish physical-device timing or a network-disabled restart.
+No new application errors or failed requests were observed. Compatibility audio
+was not retested; the previously recorded limitation remains in the release notes.

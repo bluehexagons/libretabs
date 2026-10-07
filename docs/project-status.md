@@ -35,7 +35,7 @@ is available on the managed network. It is not a public launch URL.
   Pages. Desktop packages use official release templates, not the editor.
   Checksums, notices, and curated or generated release notes accompany releases.
 - The latest public evaluation prerelease,
-  [`0.0.1-prototype.12`](https://github.com/bluehexagons/libretabs/releases/tag/v0.0.1-prototype.12),
+  [`0.0.1-prototype.13`](https://github.com/bluehexagons/libretabs/releases/tag/v0.0.1-prototype.13),
   was published on 2026-10-07 by that workflow. Its web, Windows, Linux, manifest,
   and checksum assets are public. All downloaded package checksums, ZIP integrity,
   build identities and notices passed review. The exact downloaded Linux package
@@ -86,11 +86,13 @@ need owner attention before public alpha. Native packages
 are unsigned; signing is future release work. Broader contributor recruitment
 also needs a contribution-conduct policy and repository-protection review.
 
-The [prototype.12 release audit](evidence/release-audit-2026-10-07.md) records
-disabled-control focus, large-text wrapping and release-version fixes, package
-and browser verification, and the remaining human checks. Follow the release's
-manual test checklist for piano/microphone sensitivity, tuner/mute controls,
-playback layout stability, note emphasis and song review.
+The [prototype.13 feedback review](evidence/player-feedback-2026-10-07.md) records
+the combined scrolling/pages dropdown, playback-preserving re-centering,
+joined printable systems and song filenames, graphical tuner, SVG actions and
+song-card hierarchy. Its package and browser checks passed; follow the release's
+manual checklist for navigation, printing, piano/microphone tuning and phones.
+The [prototype.12 release audit](evidence/release-audit-2026-10-07.md) retains
+earlier focus, wrapping and release-version evidence.
 
 The [October maintenance review](evidence/maintenance-2026-10-05.md) records
 release-input and file-picker fixes, dependency checks and verification coverage.
