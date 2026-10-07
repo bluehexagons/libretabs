@@ -39,6 +39,20 @@ func set_instrument(value: String) -> void:
 	synth.set_instrument(value)
 	mutex.unlock()
 
+func set_part_enabled(part: int, enabled: bool) -> void:
+	mutex.lock()
+	var was_enabled: bool = not transport.mute_parts.has(part)
+	transport.set_part_enabled(part, enabled)
+	if was_enabled != enabled and playing_practice:
+		if enabled:
+			for note: Dictionary in transport.held_part_notes(part):
+				synth.note_on(note, float(note.restore_seconds), true)
+		else:
+			for id: String in synth.ids:
+				if not live_notes.has(id) and transport.note_parts.get(id, -1) == part:
+					synth.note_off(id)
+	mutex.unlock()
+
 func set_effects(room: bool, amount: int, chorus: bool) -> void:
 	mutex.lock()
 	effects.configure(room, amount, chorus)
@@ -286,6 +300,7 @@ func release_live() -> void:
 func metrics() -> Dictionary:
 	mutex.lock()
 	var snapshot: Dictionary = {"queued_ms": (capacity - playback.get_frames_available()) * 1000.0 / PracticeTransport.RATE if playback != null else 0.0, "live_notes": live_notes.size(), "instrument": synth.instrument, "reverb": effects.reverb_enabled, "reverb_amount": effects.reverb_amount, "chorus": effects.chorus_enabled, "effects_active": effects.active(), "effects_frames": effects.processed_frames, "tail_playing": playback != null and not playing_practice and live_notes.is_empty(), "out_of_range_notes": synth.out_of_range, "instrument_level": instrument_level, "metronome_level": metronome_level, "active_voices": active_snapshot, "voice_steals": steals_snapshot, "max_mix_ms": mix_snapshot / 1000.0, "underruns": skips_snapshot, "generated_frame": generated_snapshot, "rate": PracticeTransport.RATE, "worker": worker_enabled}
+	snapshot["count_frames"] = transport.count_frames
 	mutex.unlock()
 	snapshot.merge({"audible_frame": audible_frame(), "device_rate": AudioServer.get_mix_rate(), "output_latency": AudioServer.get_output_latency(), "capacity": capacity, "fps": Engine.get_frames_per_second()})
 	return snapshot

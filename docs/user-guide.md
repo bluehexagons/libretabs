@@ -149,6 +149,10 @@ or practice progress. See [privacy details](privacy.md).
   practice sounds do not reproduce the original MIDI instruments. Use
   **Mute focused part** to play that part yourself while hearing the other one.
   **Hear Melody/Treble/Bass** controls the other part in a built-in song.
+  The part switches appear first in this menu and keep playback and any count-in
+  moving. Unmuting a held note brings it back at its current position instead of
+  repeating its attack.
+  Already queued audio and the short room echo may take a moment to fade.
   Each mute choice is kept when you switch focus; muting changes sound, not the
   displayed notes.
 - **Sound effects:** open **Menu → Settings → Sound effects**, also reachable

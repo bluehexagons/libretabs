@@ -68,14 +68,18 @@ func note_off(id: String) -> void:
 	for voice: int in range(VOICES):
 		if ids[voice] == id: releases[voice] = 1
 
-func note_on(note: Dictionary, restore_seconds: float = 0.0) -> void:
+func note_on(note: Dictionary, restore_seconds: float = 0.0, reuse_existing: bool = false) -> void:
 	var frequency: float = 440.0 * pow(2.0, (float(note.pitch) - 69.0) / 12.0)
 	# The existing 22.05 kHz backend cannot represent pitches above Nyquist.
 	# Silence these rather than producing a false, folded-down pitch.
 	if frequency >= PracticeTransport.RATE * 0.5:
 		out_of_range += 1
 		return
-	var slot: int = ids.find("")
+	# A rapid mute/unmute may still have this note's release tail. Reuse that
+	# voice so toggling cannot stack duplicate notes or steal unrelated voices.
+	var slot: int = ids.find(str(note.id)) if reuse_existing else -1
+	var previous_gain: float = gains[slot] if slot >= 0 else 0.0
+	if slot < 0: slot = ids.find("")
 	if slot < 0:
 		slot = 0
 		for voice: int in range(1, VOICES):
@@ -88,14 +92,14 @@ func note_on(note: Dictionary, restore_seconds: float = 0.0) -> void:
 	# High piano/plucked notes decay faster, while velocity shapes both level and attack brightness.
 	var pitch_decay: float = clampf(pow(440.0 / frequency, 0.25), 0.55, 1.8) if preset in [0, 2] else 1.0
 	var decay: float = envelope.y * pitch_decay
-	ids[slot] = String(note.id)
+	ids[slot] = str(note.id)
 	increments[slot] = frequency / PracticeTransport.RATE * TABLE_SIZE
 	phases[slot] = fmod(frequency * age, 1.0) * TABLE_SIZE
 	attacks[slot] = 1.0 - exp(-1.0 / (envelope.x * PracticeTransport.RATE))
 	decays[slot] = exp(-1.0 / (decay * PracticeTransport.RATE)) if decay > 0 else 1.0
 	targets[slot] = LEVELS[preset] * pow(velocity, 1.4) * (exp(-age / decay) if decay > 0 else 1.0)
 	# Fade restored notes in, without replaying their bright onset.
-	gains[slot] = 0.0
+	gains[slot] = previous_gain
 	brightness[slot] = (0.25 + velocity * 0.75) * (exp(-age / envelope.z) if envelope.z > 0 else 1.0)
 	brightness_decays[slot] = exp(-1.0 / (envelope.z * PracticeTransport.RATE)) if envelope.z > 0 else 1.0
 	release_rates[slot] = exp(-1.0 / (envelope.w * PracticeTransport.RATE))

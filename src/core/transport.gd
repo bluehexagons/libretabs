@@ -21,12 +21,16 @@ var loop_start_seconds: float = 0.0
 var loop_schedule: Array[Dictionary] = []
 var cycle_offset: int = 0
 var mute_parts: Array[int] = []
+var note_parts: Dictionary = {}
+var part_notes: Dictionary = {}
 
 func configure(document: SongDocument, start_tick: float, end_tick: float, multiplier: float, looped: bool, count_in: bool, metronome: bool, muted: Array[int], loop_start_tick: float = -1.0, count_measures: int = 1) -> void:
 	song = document
 	speed = multiplier
 	repeat = looped
 	mute_parts = muted.duplicate()
+	note_parts.clear()
+	part_notes.clear()
 	start_seconds = song.seconds_at(start_tick)
 	end_seconds = song.seconds_at(end_tick)
 	cycle_frames = maxi(1, roundi((end_seconds - start_seconds) / speed * RATE))
@@ -53,8 +57,11 @@ func configure(document: SongDocument, start_tick: float, end_tick: float, multi
 			add_event(at - count_frames, "click", {"accent": pulse % pulses == 0})
 	add_event(0, "reset", {})
 	for note: Dictionary in song.notes:
-		if int(note.part) in mute_parts or int(note.channel) == 9 or note.end <= note.start:
+		if int(note.channel) == 9 or note.end <= note.start:
 			continue
+		note_parts[str(note.id)] = int(note.part)
+		if not part_notes.has(int(note.part)): part_notes[int(note.part)] = []
+		part_notes[int(note.part)].append(note)
 		var onset: float = song.seconds_at(note.start)
 		var release: float = song.seconds_at(note.end)
 		if release <= start_seconds or onset >= end_seconds:
@@ -96,6 +103,34 @@ func count_beat_at(frame: int) -> int:
 	if frame < 0 or frame >= count_frames or count_beats.is_empty(): return 0
 	return (count_beats.bsearch(frame, false) - 1) % count_meter + 1
 
+func set_part_enabled(part: int, enabled: bool) -> void:
+	if enabled: mute_parts.erase(part)
+	elif not mute_parts.has(part): mute_parts.append(part)
+
+# Restore at the next frame to be generated, using the same rounded, half-open
+# intervals as scheduling. An attack exactly there is still pending in take_events.
+func held_part_notes(part: int) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	if song == null or rendered_frames < count_frames or complete(rendered_frames): return result
+	var elapsed: int = rendered_frames - count_frames
+	var origin: float = start_seconds
+	var length: int = initial_frames
+	if repeat and elapsed >= initial_frames:
+		elapsed = (elapsed - initial_frames) % cycle_frames
+		origin = loop_start_seconds
+		length = cycle_frames
+	for note: Dictionary in part_notes.get(part, []):
+		var onset: float = song.seconds_at(note.start)
+		var release: float = song.seconds_at(note.end)
+		if release <= origin or onset >= end_seconds: continue
+		var on_frame: int = clampi(roundi((onset - origin) / speed * RATE), 0, length - 1)
+		var off_frame: int = clampi(roundi((release - origin) / speed * RATE), on_frame + 1, length)
+		if on_frame < elapsed and off_frame > elapsed:
+			var restored: Dictionary = note.duplicate()
+			restored["restore_seconds"] = maxf(0.0, (origin - onset) / speed + float(elapsed) / RATE)
+			result.append(restored)
+	return result
+
 func add_event(frame: int, kind: String, note: Dictionary) -> void:
 	var rank: int = {"reset": 0, "off": 1, "on": 2, "restore": 2, "click": 3}[kind]
 	schedule.append({"frame": frame, "kind": kind, "note": note, "order": rank})
@@ -118,7 +153,8 @@ func take_events(frames: int) -> Array[Dictionary]:
 		var at: int = cycle_offset + int(event.frame)
 		if at >= finish:
 			break
-		if at >= rendered_frames:
+		var muted_attack: bool = event.kind in ["on", "restore"] and int(event.note.part) in mute_parts
+		if at >= rendered_frames and not muted_attack:
 			result.append({"offset": at - rendered_frames, "kind": event.kind, "note": event.note, "frame": at})
 		next_index += 1
 	rendered_frames = finish

@@ -36,6 +36,7 @@ run([engine,'--headless','--path','.','--script','res://tests/pitch_detection.gd
 run([engine,'--headless','--path','.','--script','res://tests/microphone_fixtures.gd'])
 run([engine,'--headless','--path','.','--script','res://tests/audio_commands.gd'])
 run([engine,'--headless','--path','.','--script','res://tests/synth_audio.gd'])
+run([engine,'--headless','--path','.','--script','res://tests/part_audio.gd'])
 run([engine,'--headless','--path','.','--script','res://tests/audio_effects.gd'])
 run([engine,'--headless','--path','.','--script','res://tests/practice_ui.gd'])
 run([engine,'--headless','--path','.','--script','res://tests/layout_ui.gd'])

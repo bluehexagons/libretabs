@@ -130,7 +130,10 @@ Prioritize these existing MVP requirements next:
    location and bytes out of that store; source speed still needs an explicit
    per-import/default policy before persistence.
 2. **Quicker mute-my-part access (M4.2):** make listen-versus-play-along easy to
-   reach while preserving mixer precedence and the compact score layout.
+   reach while preserving mixer precedence and the compact score layout. The
+   prototype now places part switches first in Volume & parts and applies them
+   without restarting the timeline; direct player access remains open. See the
+   [part-switch audit](evidence/part-mute-audit.md).
 3. **Direct loop selection (M4.3):** choose first/last measures by touch or
    keyboard, clearly show the active range, and test seek/repeat boundaries.
 

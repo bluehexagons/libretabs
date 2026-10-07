@@ -302,6 +302,10 @@ func run() -> void:
 	check(app.get("count_badge").visible and app.get("count_badge").text == "1", "count-in appears inside the existing play target")
 	var stream_before: AudioStreamGeneratorPlayback = player.playback
 	var count_before: int = player.transport.count_frames
+	app.call("set_part_enabled", app.get("part"), false)
+	check(player.playback == stream_before and player.playing_practice and player.transport.count_frames == count_before, "focused part mute preserves the stream and count-in")
+	app.call("set_part_enabled", app.get("part"), true)
+	check(player.playback == stream_before and player.transport.mute_parts.is_empty(), "focused part unmute restores the mixer without restarting playback")
 	app.get("instrument_picker").select(2)
 	app.get("instrument_picker").item_selected.emit(2)
 	check(player.playback == stream_before and player.playing_practice and player.synth.instrument == "plucked_strings", "instrument selection keeps the active stream and transport")
