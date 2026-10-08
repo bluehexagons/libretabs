@@ -23,3 +23,5 @@ Whole-library song review: [all 30 songs, 2026-10-05](song-review-2026-10-05.md)
 Musical review: [arrangement techniques](arrangement-techniques-review.md).
 
 Instructional copy and navigation: [beginner guidance review](user-guidance.md).
+
+Landscape controls and tuner follow-up: [2026-10-07](controls-and-tuner-2026-10-07.md).

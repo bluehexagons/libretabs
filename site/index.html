@@ -1,69 +1,89 @@
 <!doctype html>
-<!-- Project-authored instructional content: CC0-1.0; site code: Apache-2.0. -->
+<!-- Project-authored text and icons: CC0-1.0; site code: Apache-2.0. -->
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="LibreTabs prototype downloads, guitar practice instructions, and feedback.">
+  <meta name="description" content="Open LibreTabs, download the prototype, or find help with practice and tuning.">
   <meta name="color-scheme" content="light dark">
-  <title>LibreTabs — practice guide and downloads</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2314634d'/%3E%3Cpath d='M10 7v18h14v-4H14V7z' fill='%23faf5e9'/%3E%3C/svg%3E">
+  <title>LibreTabs — player, downloads and help</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2312645f'/%3E%3Cpath d='M10 7v18h14v-4H14V7z' fill='%23fffbf2'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <svg class="symbols" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+    <symbol id="play" viewBox="0 0 24 24"><path d="m8 4 12 8-12 8Z"/></symbol>
+    <symbol id="download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></symbol>
+    <symbol id="score" viewBox="0 0 24 24"><path d="M3 4h7l2 2 2-2h7v16h-7l-2 2-2-2H3Zm9 2v16"/></symbol>
+    <symbol id="tuner" viewBox="0 0 24 24"><path d="M9 3v7a3 3 0 0 0 6 0V3m-3 10v8m-4 0h8"/></symbol>
+    <symbol id="settings" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16M8 3v6m8 0v6m-6 0v6"/></symbol>
+    <symbol id="file" viewBox="0 0 24 24"><path d="M14 3H5v18h14V8Zm0 0v5h5M8 12h8m-8 4h5"/></symbol>
+  </defs></svg>
   <a class="skip" href="#main">Skip to content</a>
-  <header><a class="brand" href="./">LibreTabs</a><nav aria-label="Main">{{PAGES_NAV}}<a href="#start">Get started</a><a href="#guide">Practice guide</a><a href="#feedback">Feedback</a></nav></header>
+  <header><a class="brand" href="./">LibreTabs</a><nav aria-label="Main">{{PAGES_NAV}}<a href="#guide">Practice</a><a href="#tuning">Tuner</a><a href="#help">Help</a></nav></header>
   <main id="main">
-    <section id="start">
-      <p class="eyebrow">Evaluation prototype {{RELEASE_VERSION}} · free and open source</p>
-      <h1>Guitar tabs and sheet music, together.</h1>
-      <p class="intro">Practice a built-in song or open a MIDI file (notes and timing) from your device. Hear the notes, slow down, and repeat a passage.</p>
+    <section id="start" class="start">
+      <h1>Player &amp; downloads</h1>
+      <p class="version">Evaluation prototype {{RELEASE_VERSION}}</p>
       <div class="actions">
         {{PAGES_PLAYER_LINK}}
-        <a class="button" href="{{RELEASE_DOWNLOAD_URL}}">Prototype downloads <span aria-hidden="true">↗</span></a>
+        <a class="button secondary" href="{{RELEASE_DOWNLOAD_URL}}"><svg class="icon" aria-hidden="true"><use href="#download"/></svg>Downloads</a>
         {{PLAYER_LINK}}
         {{ITCH_LINK}}
       </div>
-      <p>Windows and Linux x86_64 downloads run offline after extraction, without installing Godot. Packages appear on the releases page when published; check each release’s tested platforms and known issues.</p>
-      <p>{{HOSTING_NOTE}}</p>
-      {{COMPATIBILITY_NOTE}}
+      <p class="note">Windows and Linux x86_64: extract the ZIP, then open the app. Godot is not required.</p>
+      <details class="launch-notes"><summary>Browser startup &amp; offline use</summary><p>{{HOSTING_NOTE}} Let the first download finish before relying on offline use. Clearing site storage removes offline files and preferences.</p>{{COMPATIBILITY_NOTE}}</details>
     </section>
-    <section id="guide">
-      <h2>Your first practice session</h2>
-      <ol class="steps">
-        <li><h3>Start with the ready exercise</h3><p>Read <strong>Quick start</strong>, choose a guitar, piano or bass-staff practice layout, then choose <strong>Start practicing</strong> and press <strong>Play</strong> to listen once. No account or music file is needed. For another tune, choose <strong>Songs</strong> (or <strong>Menu → Songs</strong> in Theater). Use <strong>Listen</strong> to hear a short opening without replacing your current song, then <strong>Try</strong> to open it. <strong>Try a two-hand piano exercise</strong> loads an original example with both treble and bass notes.</p></li>
-        <li><h3>Read the guitar tabs</h3><p>Tablature, or tabs, uses six lines for the guitar strings. The top line is string 1, the thinnest string. A number tells you which fret to use, not which finger. Press just behind that metal fret and pluck the string; 0 means pluck without pressing. Read left to right. The tabs assume standard guitar tuning: E–A–D–G–B–E from thickest to thinnest. <strong>Menu → Help</strong> explains the sheet music and symbols.</p></li>
-        <li><h3>Listen, then play along</h3><p>Open <strong>Menu → Playback → Speed presets</strong> and try <strong>50%</strong>: half speed, with the same pitches. A metronome clicks with the beat; a count-in gives you clicks to get ready before the music. Choose <strong>Restart</strong> beside Play to hear the song again. Tap a note in the score to select it; drag the scrolling score to browse naturally. Rounded outlines mark sounding tab numbers; sounding sheet-music noteheads become slightly larger and bolder. Curved underlines show upcoming notes. With menus closed, <kbd>Space</kbd> plays or pauses.</p></li>
-        <li><h3>Repeat a small section</h3><p>A measure is a group of beats between vertical lines. Open <strong>Menu → Loop</strong>, set <strong>From 1</strong> and <strong>Through 2</strong>, and choose <strong>Turn loop on</strong>. Close the menu and press <strong>Play</strong> to repeat both measures. Choose <strong>Turn loop off</strong> to continue through the song.</p></li>
-      </ol>
-      <p><a href="https://github.com/bluehexagons/libretabs/blob/main/docs/user-guide.md">Read the full user guide</a> for tab and rhythm basics, every practice feature, keyboard shortcuts and troubleshooting.</p>
-    </section>
-    <section id="your-music">
-      <h2>Use your own music</h2>
-      <p>Choose <strong>Import MIDI</strong> in the regular header or in <strong>Songs</strong> (<strong>Menu → Songs</strong> in Theater), then choose a <code>.mid</code> or <code>.midi</code> file. MIDI contains notes and timing, not recorded sound: MP3s, PDFs and photos cannot be opened as songs. The prototype accepts Standard MIDI formats 0 and 1, up to 256 KiB, with further limits on song length and note count.</p>
-      <p>If the file has several parts, use <strong>Choose the part to practice</strong> to pick a melody or instrument. Built-in songs include a separate original practice bass. In <strong>Menu → Volume &amp; parts</strong>, mute the focused part when you want to play it yourself, and choose which other parts to hear. Each part keeps its mute choice when you change focus.</p>
-      <p>Under <strong>Songs → About this arrangement</strong>, choose Basic tab, Strum with a pick or Fingerpick. Read the warnings: the strumming and fingerpicking tabs may omit notes from crowded chords. The sheet music and sound still include those notes. These are generated suggestions, not reviewed guitar transcriptions.</p>
-    </section>
-    <section class="details" aria-label="Player options">
-      <article><h2>Make it comfortable</h2><p>The menu offers text size, light/dark appearance, reduced motion, control placement and handed layout. <strong>Practice layouts</strong> switches directly between guitar tabs, pick or fingerpicking suggestions, bass-staff reading, and piano treble-plus-bass staffs. Treble-focus and bass-focus layouts keep the other part on a smaller five-line guide. Bass-staff reading shows sounding pitches; the six-string guitar tabs are not bass-guitar fingering. In <strong>Score view</strong>, choose scrolling or pages. Turning a page by hand stops automatic page following without moving the sound; enable <strong>Follow playback</strong> to resume it. Fewer <strong>Music lines</strong> make each line taller; tighter <strong>Note spacing</strong> fits more notes across. Add or reorder tabs, sheet music and piano rows as needed.</p><p>Touch menus and dropdown lists scroll in step with your finger; tap a choice after scrolling to select it.</p><p><strong>Theater</strong> shows more music on desktops, tablets and larger screens. Use <strong>Show controls</strong> or <kbd>F10</kbd> if playback controls hide. Fullscreen is separate; Theater does not connect to a TV itself.</p><p>Play notes with the on-screen piano, or use <kbd>Z X C V B N M ,</kbd> as reference keys. A MIDI controller or optional one-note microphone listening can show pitch and timing feedback while practice continues. Microphone estimates can be confused by chords, sustain, or noise.</p></article>
-      <article><h2>Print or capture</h2><p><strong>Print your music</strong> prepares a self-contained printable HTML file with tabs, staff, or both. Open the saved file in a browser to print or save as PDF.</p><p><strong>Capture &amp; overlay</strong> provides a score-only view for streaming or instructional video. Choose <strong>Enter capture view</strong> after setting the background and music layout. Use separate software to record or stream it. <kbd>F8</kbd> toggles it; <kbd>Escape</kbd> or a tap returns to the player.</p></article>
-    </section>
-    <section id="troubleshooting">
-      <h2>If something gets in the way</h2>
-      <details><summary>I can’t hear the notes</summary><p>Click or tap Play to allow browser audio. If <strong>Mute practice audio</strong> is on, switch it off in practice or <strong>Tuner &amp; listening</strong>. Check the device and browser-tab volume, then <strong>Menu → Volume &amp; parts</strong>: raise Instrument volume and enable the part you want to hear. If playback is stuck at 0% speed, raise it and press Play. Try a built-in exercise to check whether the problem also happens without an imported song.</p></details>
-      <details><summary>My MIDI file does not sound or look like the original</summary><p>MIDI describes notes and timing, not a recording or a finished guitar score. Choose a pitched part; drum-only files cannot produce a guitar part. The prototype simplifies notation and proposes guitar placement. Check its warnings and try another part or a simpler file.</p></details>
-      <details><summary>How do I use a download offline?</summary><p>Extract the entire Windows or Linux ZIP before opening the application. No Godot installation is needed. The web ZIP is for hosting; opening its index.html file directly will not run the player. Browser offline use requires a completed first download and retained site storage.</p></details>
-      <details><summary>A new version isn’t appearing</summary><p>Finish your session before reloading: imported songs must be reopened afterward. Reconnect to the internet and reload the player. If it still shows an old version, report the URL and version. Clearing site data removes saved preferences and offline files, so avoid it as a first step.</p></details>
-      <details><summary>The player says my browser is missing a required feature</summary><p>Try the compatibility player linked near the top of this guide. It does not use browser threads and may work on devices where the main player cannot start, though audio response and performance can be less consistent.</p></details>
-    </section>
-    <section id="feedback">
-      <h2>What to expect—and what to report</h2>
-      <p>This is an early technical prototype. Guided lessons are incomplete. Guitar arrangements and simplified notation still need musical review. Optional microphone listening estimates one note at a time; it cannot assess chords reliably. Mobile and browser compatibility remain under evaluation.</p>
-      <p>Imported MIDI stays on your device and is session-only. Preferences are stored locally when storage is available. Offline browser use requires a completed first download; cleared browser storage requires reconnection. Native downloads are an alternative.</p>
-      <p><a href="https://github.com/bluehexagons/libretabs/issues">Report a bug or confusing interaction</a> with the version shown in <strong>Menu → About LibreTabs</strong>, device, browser and steps to reproduce it. Use original or redistributable music examples; don’t attach private or copyrighted songs.</p>
-      <p><a href="https://github.com/bluehexagons/libretabs/blob/main/docs/privacy.md">Privacy details</a> · <a href="https://github.com/bluehexagons/libretabs/security/policy">Report a security issue privately</a></p>
-    </section>
+    <div class="cards">
+      <section id="guide" class="card">
+        <h2><svg class="icon" aria-hidden="true"><use href="#play"/></svg>Start practicing</h2>
+        <ol>
+          <li>Choose a practice layout in <strong>Quick start</strong>, then <strong>Start practicing</strong>.</li>
+          <li>Press <strong>Play</strong> to hear the ready exercise. In <strong>Songs</strong>, <strong>Listen</strong> previews a tune and <strong>Try</strong> opens it.</li>
+          <li>Lower the speed to play along. <strong>50%</strong> is half speed with the same pitches.</li>
+        </ol>
+        <p><strong>Loop</strong> repeats a range of measures—groups of beats between vertical lines. Set <strong>From</strong> and <strong>Through</strong>, then turn the loop on.</p>
+      </section>
+      <section class="card">
+        <h2><svg class="icon" aria-hidden="true"><use href="#score"/></svg>Read the music</h2>
+        <p>Guitar tabs use six lines for the strings. The top line is the thinnest string. Numbers are frets, not fingers; <strong>0</strong> means an open string. Standard tuning is E–A–D–G–B–E, thickest to thinnest.</p>
+        <p>Read left to right. Sounding notes become bolder; curved underlines show the next notes. <strong>Menu → Help</strong> explains the rhythm and staff symbols.</p>
+        <p>After browsing away from playback, press <strong>Back to current note</strong> to return to the current position. This keeps playback playing or paused.</p>
+      </section>
+      <section id="tuning" class="card">
+        <h2><svg class="icon" aria-hidden="true"><use href="#tuner"/></svg>Tuner &amp; microphone</h2>
+        <ol>
+          <li>Open <strong>Tuner &amp; listening</strong> and choose your <strong>Instrument</strong>.</li>
+          <li>Press <strong>Start listening</strong> and allow microphone access.</li>
+          <li>Sound one clear note. Center the needle to match the nearest note or your selected <strong>Target note</strong>.</li>
+        </ol>
+        <p><strong>Use microphone in practice</strong> starts listening and enables pitch feedback. <strong>Mute song notes</strong> silences the app’s musical sound while keeping the metronome and count-in audible. Headphones help keep clicks out of the microphone.</p>
+        <p>Pause or resume listening from the player. Device, sensitivity, room setup and pitch reference are under <strong>Input settings</strong>. Setup is optional. Microphone listening detects one note at a time; chords and sustained notes can confuse it.</p>
+      </section>
+      <section class="card">
+        <h2><svg class="icon" aria-hidden="true"><use href="#settings"/></svg>Player controls</h2>
+        <p><strong>Music lines</strong> switches between smooth scrolling and pages. Fewer lines make each line taller. <strong>Note spacing</strong> controls how much music fits across.</p>
+        <p><strong>Menu → Display</strong> changes text size, appearance and control placement. On short landscape screens, swipe or scroll the controls column to reach every option.</p>
+        <p><strong>Practice layouts</strong> includes guitar tabs, piano staffs and bass-staff reading. Bass staffs show sounding pitches; the six-string tabs are guitar fingering.</p>
+        <p><kbd>Space</kbd> plays or pauses with menus closed. <kbd>F9</kbd> switches Theater view.</p>
+      </section>
+      <section id="files" class="card">
+        <h2><svg class="icon" aria-hidden="true"><use href="#file"/></svg>Import &amp; print</h2>
+        <p><strong>Songs → Import MIDI</strong> opens a <code>.mid</code> or <code>.midi</code> file from your device. MIDI describes notes and timing; recordings, PDFs and photos cannot be opened as songs. Formats 0 and 1 are supported, up to 256 KiB with further song limits.</p>
+        <p>Select the part to practice. In <strong>Volume &amp; parts</strong>, choose which parts to hear. Generated guitar placements can omit crowded chord tones; review <strong>About this arrangement</strong>.</p>
+        <p><strong>Print your music</strong> saves a song-named HTML file. Open it in a browser to print or save as PDF. <strong>Capture &amp; overlay</strong> provides a score view for separate recording software.</p>
+      </section>
+      <section id="help" class="card">
+        <h2><svg class="icon" aria-hidden="true"><use href="#score"/></svg>Help &amp; feedback</h2>
+        <details><summary>No sound</summary><p>Tap Play to allow browser audio. Turn off <strong>Mute song notes</strong>, check device volume, then check Instrument volume and enabled parts under <strong>Volume &amp; parts</strong>. Speed must be above 0%.</p></details>
+        <details><summary>Player will not start</summary><p>Try the compatibility player from Browser startup above. Its timing and audio response may be less consistent. Native downloads offer another option.</p></details>
+        <details><summary>An older version is still showing</summary><p>Finish your session, reconnect, then reload. Imported music must be reopened. Avoid clearing site data first: it removes saved preferences and offline files.</p></details>
+        <p><a href="https://github.com/bluehexagons/libretabs/blob/main/docs/user-guide.md">Full user guide</a> · <a href="https://github.com/bluehexagons/libretabs/issues">Report an issue</a></p>
+        <p class="note">Include the version from <strong>About LibreTabs</strong>, your device, browser and steps to reproduce. Use original or redistributable music examples.</p>
+      </section>
+    </div>
+    <p class="scope">Early evaluation build: guided lessons are incomplete, arrangements need musical review, and mobile compatibility remains under testing. Imported music stays on your device and lasts for the session.</p>
   </main>
-  <footer><span>LibreTabs · bluehexagons</span><a href="https://github.com/bluehexagons/libretabs">Source, licenses and build instructions</a></footer>
+  <footer><a href="https://github.com/bluehexagons/libretabs">Source &amp; licenses</a><a href="https://github.com/bluehexagons/libretabs/blob/main/docs/privacy.md">Privacy</a><a href="https://github.com/bluehexagons/libretabs/security/policy">Security reports</a></footer>
 </body>
 </html>

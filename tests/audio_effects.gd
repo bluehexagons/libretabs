@@ -102,6 +102,28 @@ func run() -> void:
 				if PracticeAudio.mix_levels(channel, 0, 0, 0) != 0: silent = false
 	print("32 voices + both effects: %.2f ms for 255 ms of audio (including assertions)" % ((Time.get_ticks_usec() - started) / 1000.0))
 	check(bounded and silent, "dense stereo effects plus click stay bounded; instrument mute includes wet sound")
+	# Compare actual rendered samples, including wet tails, to a click-only mixer.
+	# No host clock/device is involved and the shared transport must not move.
+	for wet: bool in [false, true]:
+		var music: PracticeAudio = PracticeAudio.new()
+		var click_only: PracticeAudio = PracticeAudio.new()
+		music.synth.note_on({"id":"held", "pitch":69, "velocity":100})
+		if wet: music.effects.configure(true, 32, true)
+		check(energy(music.render_block(1024)) > 0, "musical signal is audible before mute, wet=%s" % wet)
+		music.set_instrument_muted(true)
+		music.render_block(512) # Complete the 20 ms gain ramp.
+		var saved_volume: float = music.instrument_level
+		var frame_before_mute: int = music.transport.rendered_frames
+		for mixer: PracticeAudio in [music, click_only]:
+			mixer.apply_event({"kind":"click", "frame":0, "note":{"accent":true}})
+		var muted: PackedVector2Array = music.render_block(512)
+		var expected_click: PackedVector2Array = click_only.render_block(512)
+		check(muted == expected_click and energy(muted) > 0, "muted music/tails leave exact metronome samples, wet=%s" % wet)
+		check(music.synth.ids.has("held") and music.instrument_level == saved_volume and music.transport.rendered_frames == frame_before_mute, "muting retains held voices, saved volume and time")
+		music.set_instrument_muted(false)
+		check(energy(music.render_block(1024)) > 0 and music.instrument_current == saved_volume, "unmuting restores held music without replay")
+		music.free()
+		click_only.free()
 	# Exercise stream lifecycle and the actual event boundary, using the injected schedule.
 	var player: PracticeAudio = PracticeAudio.new()
 	root.add_child(player)

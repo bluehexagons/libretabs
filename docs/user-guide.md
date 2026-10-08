@@ -329,39 +329,40 @@ MIDI availability varies; an unsupported browser retains the other input modes.
 Denied access has a recovery message. For an embedded player, opening the player
 in its own tab may allow permissions that the embedding site does not grant.
 
+On short landscape screens, swipe or scroll the controls column to reach lower
+actions. Keyboard focus also scrolls controls into view.
+
 ## Tuner and single-note listening
 
-1. Open **Tuner & listening** from the main Menu, or use the header Tuner button
-   on wider screens. This pauses playback. Press **Start microphone /
-   tuner**, grant permission, and choose the input and instrument. Selecting a
-   different device stops capture; press Start again. Choose **Acoustic piano** for
-   a traditional piano, or **Electronic piano (speaker to microphone)** for a clean
-   electronic piano heard through its speaker. A direct MIDI connection uses MIDI
-   input instead. Choose **Mute practice audio** to silence app notes and clicks
-   while the score keeps moving; this preserves your saved volume settings. The
-   same mute switch appears beside the practice controls when capture is active.
-2. Play one clear, steady note. The tuner shows the target note above a needle.
-   Left means low/flat; right means high/sharp. Aim for the center diamond.
-   The needle moves smoothly; an uncertain signal clears it immediately.
-   Icons and short messages show when listening is off, paused or waiting.
-3. Choose automatic nearest-note tuning, an open string for the selected instrument,
-   **Choose a note**, or **Hold the current note as target**. Voice and piano have
-   automatic/custom targets; guitar, four-string bass, violin and high-G ukulele
-   also offer their standard open strings. A custom target combines a note name
-   with its octave number (C4 is middle C). A4 defaults to 440 Hz and can be changed to match a physical
-   tuner. The app measures pitch; it does not turn tuning pegs or automatically
-   correct an instrument's tuning.
-4. **Run input setup again** measures three seconds of background noise, then
-   asks for three separate steady notes with silence between them. Rerun it after
-   moving rooms or changing instruments. Higher sensitivity accepts softer notes; after setup it never lowers the
-   threshold beneath the measured room-noise floor. Setup never changes the tuning reference.
-5. Enable **Use microphone for practice feedback**, close the menu, and press Play.
-   Playback continues. Only the selected practice part is compared. Chords and
-   overlapping source notes show a single-note limitation instead of a result.
-6. Switch **Tuner on** off to temporarily pause tuning and microphone feedback;
-   switch it on to acquire a fresh note without repeating permission/setup. This
-   switch is also next to the practice controls while capture is active. Pausing
-   keeps the microphone connection open; **Stop microphone** releases it.
+1. Open **Tuner & listening** from Menu or the wide-screen header. Choose your
+   **Instrument** at the top, then press **Start listening** and allow microphone
+   access. Choose **Acoustic piano** for a traditional piano or **Electronic piano**
+   for an electronic piano heard through its speakers. A direct MIDI connection
+   uses MIDI input instead. Room setup is optional.
+2. Sound one clear, steady note. The tuner shows a target note and needle: left
+   means low/flat, right means high/sharp. Aim for the center diamond. Uncertain
+   input clears the needle. Choose automatic nearest-note tuning, a standard
+   open string, or **Choose a note** to select a note and octave (C4 is middle C).
+   The lock icon holds the current detected note as the target.
+3. **Mute song notes** silences app music, keyboard notes and their echoes while
+   keeping the metronome and count-in audible. Saved volumes and playback position
+   are preserved. The same switch is available beside the practice controls.
+   Use headphones if the microphone picks up the clicks.
+4. **Use microphone in practice** starts or resumes listening and enables pitch
+   feedback together, then returns to the score. Press Play to play along. Only
+   the selected part is compared; overlapping source notes show the single-note
+   limitation. You can turn feedback off in **Input settings** and keep tuning.
+5. **Pause listening** temporarily pauses analysis and feedback without repeating
+   permissions. **Resume listening** waits for a fresh note. The microphone icons
+   beside the player provide the same actions, with help on long press or hover.
+   **Stop microphone**, under Input settings, releases capture.
+6. Expand **Input settings** to change the device, sensitivity, pitch reference or
+   timing compensation. Changing devices stops capture; press Start again. A4
+   defaults to 440 Hz. **Check room noise** measures three quiet seconds followed
+   by three separate steady notes; use it when background sound causes detections.
+   Higher sensitivity accepts softer notes but never goes below a measured noise
+   floor. Setup does not change the tuning reference. **Tuner help** has the note
+   range, target and privacy details.
 
 Listening is designed for one note at a time. Dampen ringing guitar strings and
 avoid piano sustain during these exercises. Even when a song expects one note,
@@ -387,7 +388,7 @@ setup last for this session; audio is never saved or uploaded.
 ## Hands-free note commands
 
 Enable **Menu → Settings → Hands-free note commands** to control practice while
-your hands stay on an instrument. This is off by default. Start the microphone
+your hands stay on an instrument. This is off by default. Start listening
 separately in **Tuner & listening**; the setting never starts it for you. Use
 headphones or mute playback speakers to avoid commands triggered by the app's own
 sound. The switch is remembered on this device and can be turned off at any time.

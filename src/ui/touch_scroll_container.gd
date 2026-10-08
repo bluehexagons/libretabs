@@ -5,6 +5,7 @@ extends ScrollContainer
 # Keep a finger drag tied to the content by its actual distance. Godot's
 # kinetic touch scroll can travel several screenfuls after a short gesture,
 # making dense settings menus hard to control.
+var input_allowed: Callable
 var touch_index: int = -1
 var touch_origin_y: float = 0.0
 var touch_origin_scroll: int = 0
@@ -16,7 +17,10 @@ func _ready() -> void:
 	scroll_deadzone = 100000
 
 func _input(event: InputEvent) -> void:
-	if not is_visible_in_tree(): return
+	if not is_visible_in_tree() or (input_allowed.is_valid() and not input_allowed.call()):
+		touch_index = -1
+		touch_dragging = false
+		return
 	if event is InputEventScreenTouch:
 		if event.pressed and touch_index < 0 and get_global_rect().has_point(event.position):
 			touch_index = event.index

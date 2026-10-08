@@ -101,3 +101,9 @@ The [whole-library song review](evidence/song-review-2026-10-05.md) records
 Greensleeves/Aura Lee melody corrections, Canon bass timing, explicit octave
 lowering for staff readability and checks across all 30 catalog songs. These
 remain teaching realizations awaiting musician acceptance.
+
+The [controls and tuner follow-up](evidence/controls-and-tuner-2026-10-07.md)
+adds reachable landscape controls, one-action listening/practice entry, prominent
+instrument selection, optional input setup, musical mute with audible metronome,
+quieter backgrounds and a utility-focused Pages guide. The prototype.14 notes
+contain the next phone and instrument test checklist.

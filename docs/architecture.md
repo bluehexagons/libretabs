@@ -476,6 +476,11 @@ a new system. Clefs and string labels appear once per system. The pipeline
 pauses practice and does not change source data or the shared
 transport. Font and icon provenance are recorded in third_party/README.md.
 
+The instrument and metronome signals are mixed separately. The session-only tuner
+mute fades musical notes, keyboard previews and effect tails before the limiter;
+metronome/count-in pulses retain their schedule and gain. No output-player mute,
+transport restart or saved-volume mutation is used. See decision 0024.
+
 ### Capture presentation adapter
 
 Under [decision 0009](decisions/0009-capture-view.md), `CaptureView` is a second

@@ -26,6 +26,7 @@ var theater_keep_controls: bool = false
 var theater_keep_check: CheckButton
 var theater_toggle: Button
 var tv_button: Button
+var menu_fullscreen_button: Button
 var fullscreen_button: Button
 
 var backdrop: ThemeBackdrop
@@ -192,8 +193,8 @@ var picker_source: OptionButton
 var picker_close: Button
 var menu_button: Button
 var tuner_button: Button
-var quick_tuner: CheckButton
-var quick_mute: CheckButton
+var quick_tuner: Button
+var quick_mute: Button
 var menu_scroll: ScrollContainer
 var page_label: Label
 var page_navigation: HBoxContainer
@@ -236,6 +237,7 @@ var drawer_navigation: int = 0
 var menu_back: Button
 var previous_focus: Control
 var header: BoxContainer
+var header_scroll: TouchScrollContainer
 var header_margin: MarginContainer
 var header_actions: HFlowContainer
 var dock_panel: PanelContainer
@@ -905,7 +907,15 @@ func build_ui() -> void:
 		if tv_active: header_margin.draw_style_box(UIAppearance.panel_style(dark_mode, 8), Rect2(Vector2.ZERO, header_margin.size)))
 	root_box.add_child(header_margin)
 	root_box.move_child(header_margin, 0)
-	header_margin.add_child(header)
+	header_scroll = TouchScrollContainer.new()
+	header_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	header_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	header_scroll.follow_focus = true
+	header_scroll.input_allowed = func() -> bool: return not menu_overlay.visible and (picker_overlay == null or not picker_overlay.visible) and not capture_active and not tv_tucked
+	header_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header_margin.add_child(header_scroll)
+	header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header_scroll.add_child(header)
 	brand_label = label("BRAND", 24)
 	brand_label.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	brand_label.autowrap_mode = TextServer.AUTOWRAP_OFF
@@ -1138,6 +1148,7 @@ func build_ui() -> void:
 	speed_control.custom_minimum_size.y = 64
 	speed_control.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	quick_row.add_child(speed_control)
+	quick_row.move_child(speed_control, 0)
 	speed_unit_layout = BoxContainer.new()
 	speed_unit_layout.alignment = BoxContainer.ALIGNMENT_CENTER
 	speed_unit_layout.add_theme_constant_override("separation", 6)
@@ -1330,6 +1341,9 @@ func build_drawers() -> void:
 		entry.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		entry.custom_minimum_size.y = 56
 		menu_index.add_child(entry)
+	menu_fullscreen_button = button("FULLSCREEN", toggle_fullscreen)
+	menu_fullscreen_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	menu_index.add_child(menu_fullscreen_button)
 	build_welcome_menu()
 	var control_help: VBoxContainer = section("CONTROL_HELP")
 	help_text = label("TOUCH_HELP")
@@ -1646,14 +1660,19 @@ func build_drawers() -> void:
 	listening.show_keyboard.connect(func() -> void: input_show.button_pressed = true)
 	listening.stop_playback.connect(pause)
 	tuner_section.add_child(listening)
-	quick_tuner = check("INPUT_TUNER_ENABLED", true)
-	quick_mute = check("INPUT_PLAYBACK_MUTE", false)
-	quick_tuner.toggled.connect(func(enabled: bool) -> void: listening.tuner_check.button_pressed = enabled)
-	quick_mute.toggled.connect(func(muted_audio: bool) -> void: listening.playback_mute.button_pressed = muted_audio)
+	quick_tuner = button("INPUT_TUNER_ENABLED", func() -> void: pass)
+	quick_tuner.toggle_mode = true
+	quick_mute = button("INPUT_PLAYBACK_MUTE", func() -> void: pass)
+	quick_mute.toggle_mode = true
+	quick_tuner.toggled.connect(func(enabled: bool) -> void:
+		if (quick_tuner as FriendlyButton).suppress_action: update_quick_listening()
+		else: listening.tuner_check.button_pressed = enabled)
+	quick_mute.toggled.connect(func(muted_audio: bool) -> void:
+		if (quick_mute as FriendlyButton).suppress_action: update_quick_listening()
+		else: listening.playback_mute.button_pressed = muted_audio)
 	listening.playback_mute_changed.connect(func(muted_audio: bool) -> void:
-		# Player gain silences queued audio and effect tails without moving time.
-		audio.volume_linear = 0.0 if muted_audio else 1.0
-		preview_audio.volume_linear = audio.volume_linear)
+		audio.set_instrument_muted(muted_audio)
+		preview_audio.set_instrument_muted(muted_audio))
 	listening.quick_controls_changed.connect(update_quick_listening)
 	update_quick_listening()
 	listening.commands_requested.connect(func() -> void: toggle_drawer("AUDIO_COMMANDS"))
@@ -1669,9 +1688,9 @@ func build_drawers() -> void:
 	command_section.add_child(audio_commands)
 	command_section.add_child(button("TUNER", func() -> void: toggle_drawer("TUNER")))
 	listening.listener.observation.connect(audio_commands.observe)
-	tuner_section.add_child(button("INPUT_RETURN", func() -> void:
+	listening.practice_requested.connect(func() -> void:
 		input_show.button_pressed = true
-		close_menu()))
+		close_menu())
 	var keys: VBoxContainer = section("KEYBOARD")
 	keys.add_child(label("KEYBOARD_LAYOUT"))
 	keyboard_picker = OptionButton.new()
@@ -1877,6 +1896,9 @@ func update_fullscreen() -> void:
 	fullscreen_button.text = tr(key) if size.x >= 1100 and not controls_on_side else ""
 	fullscreen_button.icon = UIIcons.get_icon(key)
 	fullscreen_button.tooltip_text = tr(key)
+	menu_fullscreen_button.text = tr(key)
+	menu_fullscreen_button.icon = UIIcons.get_icon(key)
+	menu_fullscreen_button.tooltip_text = tr(key)
 	if tv_edge_fullscreen != null:
 		tv_edge_fullscreen.icon = UIIcons.get_icon(key)
 		tv_edge_fullscreen.tooltip_text = tr(key)
@@ -2159,7 +2181,7 @@ func change_view() -> void:
 func build_music_layout_controls(parent: Control, quick: bool) -> void:
 	for key: String in MUSIC_LAYOUT_VALUES:
 		var picker: OptionButton = OptionButton.new()
-		picker.custom_minimum_size = Vector2(150, 56)
+		picker.custom_minimum_size = Vector2(220 if quick else 150, 56)
 		picker.fit_to_longest_item = false
 		picker.tooltip_text = tr("MUSIC_" + key.to_upper() + "_HELP")
 		if key == "lines": picker.add_icon_item(UIIcons.get_icon("VIEW_SCROLL"), tr("VIEW_SCROLL"))
@@ -2492,11 +2514,14 @@ func responsive() -> void:
 	tight_controls = not side_dock and size.y < 440
 	root_box.vertical = not side_dock
 	header.vertical = side_dock
+	header_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO if side_dock else ScrollContainer.SCROLL_MODE_DISABLED
+	header_margin.size_flags_vertical = Control.SIZE_EXPAND_FILL if side_dock else Control.SIZE_FILL
+	header_scroll.scroll_vertical = 0
 	apply_control_layout(effective_position)
 	header_margin.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN if side_dock or (tv_active and handedness == "left") else (Control.SIZE_SHRINK_END if tv_active else Control.SIZE_FILL)
 	header_actions.custom_minimum_size.x = 0
 	for side: String in ["left", "right", "top", "bottom"]:
-		header_margin.add_theme_constant_override("margin_" + side, (8 if side in ["left", "right", "top"] else 0) if side_dock else ((16 if tv_active else maxi(16, int((size.x - 1280) / 2))) if side in ["left", "right"] else 8))
+		header_margin.add_theme_constant_override("margin_" + side, (4 if side in ["left", "right"] else (8 if side == "top" else 0)) if side_dock else ((16 if tv_active else maxi(16, int((size.x - 1280) / 2))) if side in ["left", "right"] else 8))
 	# Keep direct speed adjustment at every scale. Reduce auxiliary actions
 	# before taking space away from the score.
 	if menu_tween != null: menu_tween.kill()
@@ -2510,6 +2535,9 @@ func responsive() -> void:
 		item.custom_minimum_size.x = 56 if header_icons else 0
 	songs_button.show()
 	import_button.visible = not side_dock and not tv_active
+	# The same actions remain in Menu; retain Songs and Menu on short phones.
+	tv_button.visible = not side_dock or size.y >= 360
+	fullscreen_button.visible = not side_dock or size.y >= 360
 	if not side_dock and size.x >= 600 and expanded_controls:
 		tv_button.text = tr("TV_VIEW")
 	theater_toggle.text = tr("TV_EXIT" if tv_active else "TV_ENTER")
@@ -2615,6 +2643,7 @@ func responsive() -> void:
 		for edge: String in ["left", "right"]: dock_margin.add_theme_constant_override("margin_" + edge, 8)
 		metro_button.visible = expanded_controls
 		metro_button.text = ""
+	style_quick_listening()
 	adapt_flow(menu_overlay)
 	adapt_flow(root_box)
 	if not fit_theater_context_controls():
@@ -2662,10 +2691,23 @@ func set_child_order(parent: Node, ordered: Array) -> void:
 		if child != null and child.get_parent() == parent: parent.move_child(child, index)
 
 func update_quick_listening() -> void:
-	quick_tuner.set_pressed_no_signal(listening.tuner_check.button_pressed)
+	quick_tuner.set_pressed_no_signal(listening.listener.capture.enabled and not listening.listener.paused)
 	quick_mute.set_pressed_no_signal(listening.playback_mute.button_pressed)
 	quick_tuner.visible = listening.listener.capture.enabled
 	quick_mute.visible = listening.listener.capture.enabled or listening.playback_mute.button_pressed
+	style_quick_listening()
+	if dock != null: adapt_flow(dock)
+
+func style_quick_listening() -> void:
+	if quick_tuner == null or quick_mute == null: return
+	var tuner_key: String = "INPUT_MIC_PAUSE" if quick_tuner.button_pressed else "INPUT_MIC_RESUME"
+	quick_tuner.text = "" if controls_on_side else tr(tuner_key)
+	quick_tuner.icon = UIIcons.get_icon(tuner_key)
+	quick_tuner.tooltip_text = tr(tuner_key)
+	var mute_key: String = "INPUT_PLAYBACK_UNMUTE" if quick_mute.button_pressed else "INPUT_PLAYBACK_MUTE"
+	quick_mute.text = "" if controls_on_side else tr(mute_key)
+	quick_mute.icon = UIIcons.get_icon("INPUT_PLAYBACK_MUTE" if quick_mute.button_pressed else "SOUND")
+	quick_mute.tooltip_text = tr(mute_key)
 
 func update_main_scroll() -> void:
 	if score_frame == null or score == null: return
@@ -2739,6 +2781,9 @@ func adapt_flow(node: Node) -> void:
 	if node != page_navigation and (node is HFlowContainer or (node is BoxContainer and not node.vertical)):
 		for child: Node in node.get_children():
 			if child is Button:
+				# OptionButton owns its selected label; never expand a compact row
+				# to the full translated item width. Its picker retains the full text.
+				if child is OptionButton: continue
 				child.clip_text = false
 				if child.text.is_empty():
 					child.custom_minimum_size.x = 120 if child == play_button and not controls_on_side and not tight_controls else 56
@@ -2757,7 +2802,7 @@ func adapt_flow(node: Node) -> void:
 		if tv_active and not controls_on_side:
 			play_button.custom_minimum_size = Vector2(64, 64)
 		elif controls_on_side:
-			play_button.custom_minimum_size = Vector2(dock.custom_minimum_size.x - (64 if theme.default_font_size >= 30 or size.y < 320 else 0), 80 if size.y >= 360 or (theme.default_font_size >= 30 and size.y >= 320) else 64)
+			play_button.custom_minimum_size = Vector2(dock.custom_minimum_size.x - (64 if theme.default_font_size >= 30 or size.y < 360 else 0), 80 if size.y >= 360 or (theme.default_font_size >= 30 and size.y >= 320) else 64)
 		elif size.x < 760 and not tight_controls:
 			play_button.custom_minimum_size = Vector2(maxf(120, size.x - 64), 72)
 		else:
@@ -3428,7 +3473,7 @@ func report_state() -> void:
 	if host.trace_enabled():
 		var evidence: Dictionary = audio.metrics()
 		evidence.merge({"muted_parts": muted.duplicate(), "focused_part": part})
-		evidence.merge({"tv_active": tv_active, "tv_tucked": tv_tucked, "tv_zoom": tv_zoom, "status_visible": status_toast.visible, "tv_systems": score_frame.visible_systems(), "page_slide_count": score_frame.follow_slide_count, "page_slide_offset": score_frame.follow_offset, "music_lines": score_frame.music_lines, "note_spacing": score_frame.note_spacing, "staff_height": score_frame.staff_height, "score_height": score.drawing_height(), "fitted_rows": score.fitted_rows, "fullscreen": host.is_fullscreen(), "follow_pages": score.follow_pages, "upcoming_tick": score.upcoming_tick, "count_beat": int(count_badge.text) if count_badge.visible else 0, "capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "shape_cues": shape_cues, "font_style": font_style, "control_position": control_position, "handedness": handedness, "controls_on_side": controls_on_side, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "input_visible": live.visible, "piano_held": live.piano.pointers.size(), "input_result": {"kind": live.latest.get("kind", ""), "timing": live.latest.get("timing", "")}, "midi_status": playing_devices.midi.status, "microphone_status": listening.listener.capture.status, "tuner_enabled": not listening.listener.paused, "playback_muted": listening.playback_mute.button_pressed, "pitch_analysis_ms": listening.listener.max_analysis_ms, "microphone_dropped": listening.listener.capture.dropped, "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "background_style": background_style, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "notation_rows": notation_rows, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "arrangement_style": projection.style, "placed": projection.placed, "eligible": projection.eligible, "omitted": projection.omitted.size(), "mute_marks": projection.mute_marks, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
+		evidence.merge({"tv_active": tv_active, "tv_tucked": tv_tucked, "tv_zoom": tv_zoom, "status_visible": status_toast.visible, "tv_systems": score_frame.visible_systems(), "page_slide_count": score_frame.follow_slide_count, "page_slide_offset": score_frame.follow_offset, "music_lines": score_frame.music_lines, "note_spacing": score_frame.note_spacing, "staff_height": score_frame.staff_height, "score_height": score.drawing_height(), "fitted_rows": score.fitted_rows, "fullscreen": host.is_fullscreen(), "follow_pages": score.follow_pages, "upcoming_tick": score.upcoming_tick, "count_beat": int(count_badge.text) if count_badge.visible else 0, "capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "shape_cues": shape_cues, "font_style": font_style, "control_position": control_position, "handedness": handedness, "controls_on_side": controls_on_side, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "input_visible": live.visible, "piano_held": live.piano.pointers.size(), "input_result": {"kind": live.latest.get("kind", ""), "timing": live.latest.get("timing", "")}, "midi_status": playing_devices.midi.status, "microphone_status": listening.listener.capture.status, "tuner_enabled": listening.listener.capture.enabled and not listening.listener.paused, "playback_muted": listening.playback_mute.button_pressed, "pitch_analysis_ms": listening.listener.max_analysis_ms, "microphone_dropped": listening.listener.capture.dropped, "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "background_style": background_style, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "controls_scroll_y": header_scroll.scroll_vertical, "tuner_profile": listening.listener.profile, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "notation_rows": notation_rows, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "arrangement_style": projection.style, "placed": projection.placed, "eligible": projection.eligible, "omitted": projection.omitted.size(), "mute_marks": projection.mute_marks, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
 		host.report(evidence)
 	offline.text = tr("OFFLINE_READY") if host.offline_ready() else tr("OFFLINE_PENDING")
 	if host.offline_ready() and not host.trace_enabled(): idle_timer.stop()

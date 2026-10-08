@@ -11,6 +11,7 @@ var effects: PracticeEffects = PracticeEffects.new()
 var live_notes: Dictionary = {}
 var release_timer: Timer
 var metronome_enabled: bool = true
+var instrument_muted: bool = false
 var instrument_level: float = 0.85
 var metronome_level: float = 0.35
 var instrument_current: float = 0.85
@@ -79,6 +80,13 @@ func set_level(instrument: bool, value: float) -> void:
 	mutex.lock()
 	if instrument: instrument_level = clampf(value, 0, 1)
 	else: metronome_level = clampf(value, 0, 1)
+	mutex.unlock()
+
+# Only the musical signal (including live notes and effects) is muted. The
+# metronome keeps its own level and schedule; preferences and time stay intact.
+func set_instrument_muted(muted: bool) -> void:
+	mutex.lock()
+	instrument_muted = muted
 	mutex.unlock()
 
 # Click events remain on the shared timeline. Muting future playback clicks
@@ -210,27 +218,7 @@ func fill() -> void:
 			apply_event(events[event_index])
 			event_index += 1
 		var end: int = mini(frame + RENDER_QUANTUM, int(events[event_index].offset) if event_index < events.size() else frames)
-		var samples: PackedFloat32Array = synth.render(end - frame)
-		var stereo: PackedVector2Array = effects.render(samples)
-		var dry: bool = stereo.is_empty()
-		if dry: stereo.resize(samples.size())
-		for index: int in range(samples.size()):
-			instrument_current = move_toward(instrument_current, instrument_level, 0.002)
-			metronome_current = move_toward(metronome_current, metronome_level, 0.002)
-			var click: float = 0.0
-			if click_gain > 0.00001:
-				click_phase = fmod(click_phase + click_step, TABLE_SIZE)
-				click = synth.sine[int(click_phase)] * click_gain
-				click_gain *= 0.991
-			if dry:
-				var mixed: float = mix_levels(samples[index], click, instrument_current, metronome_current)
-				stereo[index] = Vector2(mixed, mixed)
-			else:
-				# Same limiter as mix_levels, without two GDScript calls per frame.
-				var pulse: float = click * metronome_current
-				var left: float = stereo[index].x * instrument_current + pulse
-				var right: float = stereo[index].y * instrument_current + pulse
-				stereo[index] = Vector2(0.9 * left / (0.9 + absf(left)), 0.9 * right / (0.9 + absf(right)))
+		var stereo: PackedVector2Array = render_block(end - frame)
 		# One native handoff per small block, rather than per stereo sample.
 		playback.push_buffer(stereo)
 		frame = end
@@ -240,6 +228,32 @@ func fill() -> void:
 	skips_snapshot = playback.get_skips()
 	mix_snapshot = max_mix_usec
 	steals_snapshot = synth.steals
+
+# Called with the mixer mutex held by fill(); also supplies deterministic audio
+# samples for tests without involving a host device or advancing musical time.
+func render_block(frames: int) -> PackedVector2Array:
+	var samples: PackedFloat32Array = synth.render(frames)
+	var stereo: PackedVector2Array = effects.render(samples)
+	var dry: bool = stereo.is_empty()
+	if dry: stereo.resize(samples.size())
+	for index: int in range(samples.size()):
+		instrument_current = move_toward(instrument_current, 0.0 if instrument_muted else instrument_level, 0.002)
+		metronome_current = move_toward(metronome_current, metronome_level, 0.002)
+		var click: float = 0.0
+		if click_gain > 0.00001:
+			click_phase = fmod(click_phase + click_step, TABLE_SIZE)
+			click = synth.sine[int(click_phase)] * click_gain
+			click_gain *= 0.991
+		if dry:
+			var mixed: float = mix_levels(samples[index], click, instrument_current, metronome_current)
+			stereo[index] = Vector2(mixed, mixed)
+		else:
+			# Same limiter as mix_levels, without two GDScript calls per frame.
+			var pulse: float = click * metronome_current
+			var left: float = stereo[index].x * instrument_current + pulse
+			var right: float = stereo[index].y * instrument_current + pulse
+			stereo[index] = Vector2(0.9 * left / (0.9 + absf(left)), 0.9 * right / (0.9 + absf(right)))
+	return stereo
 
 # Smooth bounded output keeps dense chords below full scale. The channels stay
 # independent before the limiter; neither slider changes transport or voices.
@@ -299,7 +313,7 @@ func release_live() -> void:
 
 func metrics() -> Dictionary:
 	mutex.lock()
-	var snapshot: Dictionary = {"queued_ms": (capacity - playback.get_frames_available()) * 1000.0 / PracticeTransport.RATE if playback != null else 0.0, "live_notes": live_notes.size(), "instrument": synth.instrument, "reverb": effects.reverb_enabled, "reverb_amount": effects.reverb_amount, "chorus": effects.chorus_enabled, "effects_active": effects.active(), "effects_frames": effects.processed_frames, "tail_playing": playback != null and not playing_practice and live_notes.is_empty(), "out_of_range_notes": synth.out_of_range, "instrument_level": instrument_level, "metronome_level": metronome_level, "active_voices": active_snapshot, "voice_steals": steals_snapshot, "max_mix_ms": mix_snapshot / 1000.0, "underruns": skips_snapshot, "generated_frame": generated_snapshot, "rate": PracticeTransport.RATE, "worker": worker_enabled}
+	var snapshot: Dictionary = {"queued_ms": (capacity - playback.get_frames_available()) * 1000.0 / PracticeTransport.RATE if playback != null else 0.0, "live_notes": live_notes.size(), "instrument": synth.instrument, "reverb": effects.reverb_enabled, "reverb_amount": effects.reverb_amount, "chorus": effects.chorus_enabled, "effects_active": effects.active(), "effects_frames": effects.processed_frames, "tail_playing": playback != null and not playing_practice and live_notes.is_empty(), "out_of_range_notes": synth.out_of_range, "instrument_muted": instrument_muted, "instrument_level": instrument_level, "metronome_level": metronome_level, "active_voices": active_snapshot, "voice_steals": steals_snapshot, "max_mix_ms": mix_snapshot / 1000.0, "underruns": skips_snapshot, "generated_frame": generated_snapshot, "rate": PracticeTransport.RATE, "worker": worker_enabled}
 	snapshot["count_frames"] = transport.count_frames
 	mutex.unlock()
 	snapshot.merge({"audible_frame": audible_frame(), "device_rate": AudioServer.get_mix_rate(), "output_latency": AudioServer.get_output_latency(), "capacity": capacity, "fps": Engine.get_frames_per_second()})

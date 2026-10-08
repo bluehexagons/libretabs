@@ -3,17 +3,17 @@ class_name UIAppearance
 extends RefCounted
 
 const LIGHT: Dictionary = {
-	"background": "ede7f1", "paper": "fffbf2", "ink": "30283e", "muted": "66596e",
+	"background": "eeecf0", "paper": "fffbf2", "ink": "30283e", "muted": "66596e",
 	"accent": "7040a0", "control": "eee8f3", "hover": "e1d4ec", "pressed": "d3bee5",
 	"disabled": "eae6e8", "line": "8b7e95", "primary": "12645f", "primary_hover": "0c514f", "primary_pressed": "083e3d", "live": "9b461d",
-	"library": "f7dfa9", "practice": "f4d4c6", "sound": "cce8df", "reading": "e0d5f3",
+	"library": "f1e7d0", "practice": "efdfd9", "sound": "dceae4", "reading": "e7e1ef",
 	"note_open": "004a77", "note_first": "557d2b", "note_move": "a33c00", "rest": "5f536b", "warning": "a52d38"
 }
 const DARK: Dictionary = {
 	"background": "171725", "paper": "242439", "ink": "faf2e3", "muted": "c8bdd7",
 	"accent": "d0b2ff", "control": "37354c", "hover": "49405f", "pressed": "584867",
 	"disabled": "2c2b3d", "line": "9e90af", "primary": "12645f", "primary_hover": "0c514f", "primary_pressed": "083e3d", "live": "ffc18e",
-	"library": "4d3d2b", "practice": "50333e", "sound": "24483f", "reading": "413659",
+	"library": "3d352e", "practice": "41333b", "sound": "2c3d38", "reading": "393347",
 	"note_open": "63d9ed", "note_first": "b7f075", "note_move": "ff9f5b", "rest": "d6c8ec", "warning": "ff9eaa"
 }
 const MIDNIGHT: Dictionary = {

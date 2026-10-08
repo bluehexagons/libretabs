@@ -73,6 +73,66 @@ func run() -> void:
 				var tick: float = app.get("source_tick")
 				app.get("page_next").pressed.emit()
 				check(app.get("source_tick") == tick, "page navigation never seeks playback " + context)
+	# Capture adds controls while the app is already laid out. Every action must
+	# remain reachable at phone landscape heights, including enlarged text.
+	var listening: ListeningControls = app.get("listening")
+	listening.listener.capture.enabled = true
+	listening.listener.capture.status = "INPUT_MIC_READY"
+	listening.listener.capture.changed.emit()
+	for factor: float in [1.0, 2.0]:
+		app.call("apply_scale", factor)
+		for viewport: Vector2i in [Vector2i(844,320), Vector2i(740,260), Vector2i(480,280)]:
+			root.size = viewport
+			for position: String in ["left", "right"]:
+				app.set("control_position", position)
+				app.call("responsive")
+				await settle_layout(app, score)
+				var context: String = "%s %s %s%% active capture" % [viewport, position, factor * 100]
+				var shell: Control = app.get("root_box")
+				check(shell.size.x <= viewport.x + 1 and shell.size.y <= viewport.y + 1, "shell fits " + context)
+				var controls: ScrollContainer = app.get("header_scroll")
+				var tick: float = app.get("source_tick")
+				for key: String in ["play_button", "main_speed", "quick_tuner", "quick_mute", "menu_button", "songs_button"]:
+					var control: Control = app.get(key)
+					controls.ensure_control_visible(control)
+					await settle(2)
+					var rect: Rect2 = control.get_global_rect()
+					check(control.is_visible_in_tree() and controls.get_global_rect().encloses(rect), key + " reachable by scrolling " + context)
+				check(app.get("source_tick") == tick and not listening.listener.paused, "browsing controls preserves playback and listening " + context)
+	# A finger drag and keyboard focus expose clipped controls without firing an
+	# action; an overlay must not also scroll the controls behind it.
+	root.size = Vector2i(740,240)
+	app.call("responsive")
+	await settle_layout(app, score)
+	var side_scroll: TouchScrollContainer = app.get("header_scroll")
+	side_scroll.scroll_vertical = 0
+	await settle(2)
+	var touch: InputEventScreenTouch = InputEventScreenTouch.new()
+	touch.index = 0
+	touch.position = app.get("play_button").get_global_rect().get_center()
+	touch.pressed = true
+	root.push_input(touch)
+	var drag: InputEventScreenDrag = InputEventScreenDrag.new()
+	drag.index = 0
+	drag.position = touch.position - Vector2(0, 80)
+	root.push_input(drag)
+	touch.position = drag.position
+	touch.pressed = false
+	root.push_input(touch)
+	check(side_scroll.scroll_vertical > 0 and not listening.listener.paused and not app.get("audio").playing_practice, "finger drag reveals lower controls without pausing listening")
+	app.get("play_button").grab_focus()
+	await settle(3)
+	check(side_scroll.get_global_rect().encloses(app.get("play_button").get_global_rect()), "keyboard focus scrolls play into view")
+	app.call("toggle_drawer", "TUNER")
+	var side_before: int = side_scroll.scroll_vertical
+	touch.pressed = true
+	side_scroll._input(touch)
+	side_scroll._input(drag)
+	touch.pressed = false
+	side_scroll._input(touch)
+	check(side_scroll.scroll_vertical == side_before, "menu input cannot scroll controls behind the overlay")
+	app.call("close_menu")
+	listening.listener.capture.stop()
 	root.size = Vector2i(320,568)
 	app.call("toggle_drawer", "DISPLAY")
 	await settle_layout(app, score)

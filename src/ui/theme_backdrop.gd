@@ -15,16 +15,9 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	focus_mode = Control.FOCUS_NONE
-	# Broad repeating curves read as a deliberate textile/ribbon motif at every
-	# density; the former field of tiny randomized dashes looked like noise.
-	# The value AND tangent match at x=0 and x=256. Overscan keeps line caps
-	# outside the tile, so repeating it cannot leave a cut or kink in a wave.
-	var path: String = 'M-128 48 C-96 8 -32 8 0 48 S96 88 128 48 S224 8 256 48 S352 88 384 48'
-	var svg: String = '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="192"><g fill="none" stroke="white">'
-	for y: int in [0, 96]:
-		svg += '<path opacity=".42" stroke-width="2" transform="translate(0 %d)" d="%s"/>' % [y, path]
-		svg += '<path opacity=".2" stroke-width="1" transform="translate(0 %d)" d="%s"/>' % [y + 8, path]
-	svg += '</g></svg>'
+	# Small interlaced dashes form a seamless, quiet cloth texture. It is static
+	# and sits behind opaque score/control surfaces, never behind musical marks.
+	var svg: String = '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48"><g fill="none" stroke="white" stroke-width="1"><path opacity=".5" d="M6 6h10M30 30h10M6 30v10M30 6v10"/><path opacity=".25" d="M6 10h10M30 34h10M10 30v10M34 6v10"/></g></svg>'
 	var source: Image = Image.new()
 	source.load_svg_from_string(svg)
 	ribbon = ImageTexture.create_from_image(source)
@@ -48,7 +41,7 @@ func set_palette(value: bool, oled: bool = false, style: String = "ribbon") -> v
 	if wash == null: return
 	var gradient: Gradient = Gradient.new()
 	var start: Color = base_color(background_style, dark, midnight)
-	var finish: Color = Color("19302e" if dark else "dbeae8") if background_style == "horizon" else start.lerp(UIAppearance.color("library", dark, midnight), 0.32)
+	var finish: Color = start.lerp(UIAppearance.color("sound", dark, midnight), 0.12) if background_style == "horizon" else start.lerp(UIAppearance.color("reading", dark, midnight), 0.08)
 	gradient.colors = PackedColorArray([start, finish])
 	wash.fill_from = Vector2(0.5, 0.0) if background_style == "horizon" else Vector2.ZERO
 	wash.fill_to = Vector2(0.5, 1.0) if background_style == "horizon" else Vector2.ONE
@@ -65,15 +58,15 @@ static func base_color(style: String, is_dark: bool, oled: bool = false) -> Colo
 func _draw() -> void:
 	if ribbon == null: return
 	var area: Rect2 = Rect2(Vector2.ZERO, size)
-	if midnight or background_style in ["solid", "warm", "slate", "dots"]:
+	if midnight or background_style in ["ribbon", "solid", "warm", "slate", "dots"]:
 		draw_rect(area, base_color(background_style, dark, midnight))
+		if not midnight and background_style == "ribbon":
+			var tint: Color = UIAppearance.color("ink", dark)
+			tint.a = 0.085 if dark else 0.06
+			draw_texture_rect(ribbon, area, true, tint)
 		if not midnight and background_style == "dots":
 			var dot_tint: Color = UIAppearance.color("ink", dark)
 			dot_tint.a = 0.13 if dark else 0.11
 			draw_texture_rect(dots, area, true, dot_tint)
 		return
 	draw_texture_rect(wash, area, false)
-	if background_style == "ribbon":
-		var tint: Color = UIAppearance.color("ink", dark)
-		tint.a = 0.09 if dark else 0.065
-		draw_texture_rect(ribbon, area, true, tint)

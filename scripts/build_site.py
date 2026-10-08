@@ -70,7 +70,7 @@ def build(output, player_url='', itch_url='', threaded_player=None, compatibilit
     page = page.replace('{{RELEASE_DOWNLOAD_URL}}', release_download_url(release_version))
     bundled = threaded_player is not None
     page = page.replace('{{PAGES_NAV}}', '<a href="play/">Play</a>' if bundled else '')
-    page = page.replace('{{PAGES_PLAYER_LINK}}', '<a class="button" href="play/">Play on GitHub Pages</a>' if bundled else '')
+    page = page.replace('{{PAGES_PLAYER_LINK}}', '<a class="button" href="play/"><svg class="icon" aria-hidden="true"><use href="#play"/></svg>Open player</a>' if bundled else '')
     compatibility = ''
     if compatibility_player is not None:
         compatibility = '<p class="compatibility">If the main player does not start in your browser, <a class="text-action" href="play-compatible/">try the compatibility player</a>. It supports more browser configurations, but timing and audio response may be less consistent.</p>'

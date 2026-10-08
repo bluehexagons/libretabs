@@ -980,10 +980,10 @@ msgid "BACKGROUND_STYLE"
 msgstr "Background"
 
 msgid "BACKGROUND_RIBBON"
-msgstr "Ribbon pattern"
+msgstr "Woven texture"
 
 msgid "BACKGROUND_GRADIENT"
-msgstr "Soft gradient"
+msgstr "Soft shade"
 
 msgid "BACKGROUND_SOLID"
 msgstr "Solid color"
@@ -995,7 +995,7 @@ msgid "BACKGROUND_SLATE"
 msgstr "Cool slate (plain)"
 
 msgid "BACKGROUND_HORIZON"
-msgstr "Horizon wash"
+msgstr "Soft horizon"
 
 msgid "BACKGROUND_DOTS"
 msgstr "Quiet dots"
@@ -1772,13 +1772,13 @@ msgid "TUNER"
 msgstr "Tuner & listening"
 
 msgid "CARD_TUNER"
-msgstr "Tuner & listening · one note at a time"
+msgstr "Tuner & listening"
 
 msgid "INPUT_MIC_HELP"
-msgstr "Use a microphone or audio interface. Sing or play one clear note at a time and damp other ringing notes. Mute practice audio or use headphones so the app does not hear its own speaker."
+msgstr "Use a microphone or audio interface. Sing or play one clear note at a time and damp other ringing notes. Mute song notes or use headphones to keep playback out of the microphone. Metronome clicks remain audible."
 
 msgid "INPUT_MIC_START"
-msgstr "Start microphone / tuner"
+msgstr "Start listening"
 
 msgid "INPUT_MIC_STOP"
 msgstr "Stop microphone"
@@ -1790,7 +1790,7 @@ msgid "INPUT_MIC_CONNECTING"
 msgstr "Waiting for microphone access…"
 
 msgid "INPUT_MIC_READY"
-msgstr "Microphone is active. Audio stays on this device."
+msgstr "Microphone connected"
 
 msgid "INPUT_MIC_UNSUPPORTED"
 msgstr "Microphone capture is unavailable here. Use a current browser over HTTPS, or a Windows/Linux app."
@@ -1811,7 +1811,7 @@ msgid "INPUT_MIC_NO_SIGNAL"
 msgstr "No audio frames arrived. Check the device and microphone permissions, then stop and start again."
 
 msgid "INPUT_MIC_DEVICE"
-msgstr "Audio input device (changing it stops capture)"
+msgstr "Microphone device"
 
 msgid "INPUT_MIC_DEFAULT"
 msgstr "System default input"
@@ -1823,7 +1823,7 @@ msgid "INPUT_MIC_MISSING"
 msgstr "Selected audio input unavailable"
 
 msgid "INPUT_MIC_INSTRUMENT"
-msgstr "Instrument setup"
+msgstr "Instrument"
 
 msgid "INPUT_MIC_PIANO"
 msgstr "Acoustic piano"
@@ -1838,16 +1838,16 @@ msgid "INPUT_MIC_RANGE"
 msgstr "Listen to one clear note at a time. Piano: A1–C7; guitar: D2–F6; voice: A1–F6; bass: A0–F5; violin: F#3–C7; ukulele: F#3–F6. Distortion, effects and overlapping sounds may confuse the tuner. Instrument choices never change song pitches."
 
 msgid "INPUT_LEVEL_QUIET"
-msgstr "Input level: quiet — play a clear note"
+msgstr "Quiet input"
 
 msgid "INPUT_LEVEL_UNAVAILABLE"
-msgstr "Input level: no audio measurement yet"
+msgstr "No input measured yet"
 
 msgid "INPUT_LEVEL_PAUSED"
-msgstr "Input level: tuner paused"
+msgstr "Listening paused"
 
 msgid "INPUT_LEVEL_CALIBRATING"
-msgstr "Input level: measuring background noise"
+msgstr "Measuring room noise…"
 
 msgid "INPUT_TUNER_START"
 msgstr "Choose Start microphone to tune a note."
@@ -1856,10 +1856,10 @@ msgid "INPUT_TUNER_NO_AUDIO"
 msgstr "Waiting for microphone audio. Check the microphone status above."
 
 msgid "INPUT_LEVEL_OK"
-msgstr "Input level: sound detected"
+msgstr "Input level OK"
 
 msgid "INPUT_LEVEL_CLIP"
-msgstr "Input level: too loud — reduce the input gain"
+msgstr "Input is clipping"
 
 msgid "INPUT_LEVEL_HELP"
 msgstr "Current input level. Sound detected does not mean a note has been identified."
@@ -1868,10 +1868,10 @@ msgid "INPUT_TUNER_WAIT"
 msgstr "Waiting for a clear, steady note…"
 
 msgid "INPUT_TUNER_TARGET"
-msgstr "Tuning target"
+msgstr "Target note"
 
 msgid "INPUT_TUNER_AUTO"
-msgstr "Nearest note automatically"
+msgstr "Nearest note"
 
 msgid "INPUT_TUNER_STRING"
 msgstr "String %d · %s"
@@ -1883,7 +1883,7 @@ msgid "INPUT_TUNER_LOCKED"
 msgstr "Held target · %s"
 
 msgid "INPUT_REFERENCE"
-msgstr "Tuning reference: A4 frequency (Hz)"
+msgstr "Pitch reference (A4, Hz)"
 
 msgid "INPUT_CENTS_HELP"
 msgstr "Frequency in Hz measures vibrations per second. Cents measure tuning: 100 cents is one semitone. A negative reading is low (flat); positive is high (sharp). Center means the selected target pitch. Match the A4 reference on your physical tuner before comparing."
@@ -1898,13 +1898,13 @@ msgid "INPUT_TUNER_VALUE"
 msgstr "%s · %.1f Hz · %+.1f cents"
 
 msgid "INPUT_SETUP_RUN"
-msgstr "Run input setup again"
+msgstr "Check room noise"
 
 msgid "INPUT_SETUP_CANCEL"
-msgstr "Reset input setup"
+msgstr "Cancel setup"
 
 msgid "INPUT_SETUP_IDLE"
-msgstr "Setup is optional. Run it after changing rooms, microphones or instruments. It measures background noise, then checks three notes; it never retunes the instrument or hides tuning errors."
+msgstr "Room setup is optional. Use it if background noise is being detected."
 
 msgid "INPUT_SETUP_START_FIRST"
 msgstr "Start the microphone and wait for it to become active, then run setup."
@@ -1931,7 +1931,7 @@ msgid "INPUT_SENSITIVITY_HELP"
 msgstr "Higher sensitivity accepts softer notes. Run room setup to keep the threshold above background noise. Electronic piano is for a clean speaker heard through a microphone; use MIDI input for a direct MIDI connection."
 
 msgid "INPUT_LISTEN"
-msgstr "Use microphone for practice feedback"
+msgstr "Practice feedback"
 
 msgid "INPUT_LISTEN_HELP"
 msgstr "Return to practice and press Play. Listening checks single notes in the selected part while playback continues. Chords and overlapping source notes are not assessed. Piano sustain, ringing strings and other sounds can still confuse detection; unclear readings are not marked correct or wrong."
@@ -2021,7 +2021,7 @@ msgid "AUDIO_COMMANDS_SHORT_FASTER"
 msgstr "%s twice — Faster"
 
 msgid "INPUT_MIC_DIGITAL_PIANO"
-msgstr "Electronic piano (speaker to microphone)"
+msgstr "Electronic piano"
 
 msgid "INPUT_MIC_VOICE"
 msgstr "Voice"
@@ -2036,13 +2036,13 @@ msgid "INPUT_MIC_UKULELE"
 msgstr "Ukulele (high G)"
 
 msgid "INPUT_TUNER_ENABLED"
-msgstr "Tuner on"
+msgstr "Listening"
 
 msgid "INPUT_PLAYBACK_MUTE"
-msgstr "Mute practice audio"
+msgstr "Mute song notes"
 
 msgid "INPUT_PLAYBACK_MUTE_HELP"
-msgstr "Mute all app notes and clicks while the score keeps moving. Use this when your microphone hears the phone speaker. Your volume settings stay saved."
+msgstr "Mute song notes, keyboard sound and their echoes. The metronome and count-in remain audible. Use headphones if clicks reach your microphone."
 
 msgid "INPUT_TARGET_CUSTOM"
 msgstr "Choose a note"
@@ -2286,3 +2286,24 @@ msgstr "Low"
 
 msgid "INPUT_GAUGE_HIGH_SHORT"
 msgstr "High"
+
+msgid "INPUT_MIC_PAUSE"
+msgstr "Pause listening"
+
+msgid "INPUT_MIC_RESUME"
+msgstr "Resume listening"
+
+msgid "INPUT_PLAYBACK_UNMUTE"
+msgstr "Unmute song notes"
+
+msgid "INPUT_PRACTICE_START"
+msgstr "Use microphone in practice"
+
+msgid "INPUT_SETTINGS"
+msgstr "Input settings"
+
+msgid "INPUT_TUNER_HELP"
+msgstr "Tuner help"
+
+msgid "INPUT_INSTRUMENT_HELP"
+msgstr "Choose the instrument you are playing. This sets the detection range and string targets. Choose Electronic piano when using its speakers with a microphone."

@@ -75,6 +75,26 @@ stable single-note evidence. Calibrated room noise bounds sensitivity.
 
 Provide synchronized tuner pause and practice-audio mute switches in the tuner
 and practice controls. Pause clears input history while keeping capture open;
-Stop releases capture. Mute applies player output gain to notes, clicks and tails
-while preserving the existing timeline and saved mixer preferences. No automatic
+Stop releases capture. The mute behavior below was refined by owner feedback on 2026-10-07. No automatic
 echo cancellation or speaker/instrument separation is claimed.
+
+## Owner-requested control refinements (2026-10-07)
+
+Start listening is one action; instrument and target selection precede it. Room
+calibration is optional, with device, sensitivity, reference and timing controls
+under an expandable Input settings group. Use microphone in practice starts or
+resumes capture and enables pitch feedback together. Pause retains capture; Stop
+releases it. Both clear stale observations. No capture is automatically started
+on app load or restored from preferences.
+
+Mute song notes fades the musical mixer signal, including keyboard previews and
+wet effect tails. Metronome and count-in pulses retain their own level and shared
+schedule. Saved levels, held voices and transport position stay intact. The fade
+is at most 20 ms plus the existing queued audio/device latency; no stream restart
+or queue flush is introduced. Click bleed remains possible; headphones are the
+appropriate isolation option, without an echo-cancellation claim.
+
+Landscape controls use a touch-scrollable column when available height cannot
+fit all actions, retaining keyboard focus following and normal touch target sizes.
+The default background uses a static woven texture on a flat base; legacy
+background preference identifiers remain valid with quieter shade alternatives.
