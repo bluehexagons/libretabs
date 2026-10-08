@@ -1058,10 +1058,10 @@ msgid "SETTINGS"
 msgstr "Settings"
 
 msgid "SETTINGS_SAVED"
-msgstr "Practice preferences are saved on this device. Imported songs and keyboard notes are not saved."
+msgstr "Settings are kept on this device. Imported music and played notes are not saved."
 
 msgid "SETTINGS_RECOVERY"
-msgstr "Practice preferences are session-only. Storage may be unavailable or contain unreadable/newer settings. Reset practice preferences in Settings to start fresh."
+msgstr "Settings may last only for this session. Storage may be unavailable or contain unreadable or newer settings. Reset settings in Settings to start fresh."
 
 msgid "RESET_PRACTICE"
 msgstr "Reset practice preferences"
@@ -2343,3 +2343,75 @@ msgstr "Try another interface without resetting your song or playback."
 
 msgid "INTERFACE_EDGE_AUTO"
 msgstr "This interface places controls automatically. Preferred hand still applies; your saved screen edge is used in Classic, Focus and Theater."
+
+msgid "RESET_SETTINGS"
+msgstr "Reset settings"
+
+msgid "RESET_SETTINGS_CONFIRM"
+msgstr "Restore the default interface, appearance, reading, sound, keyboard and tuner settings? Your learned marks stay. Playback will pause."
+
+msgid "RESET_SETTINGS_DO"
+msgstr "Restore defaults"
+
+msgid "SETTINGS_CANCEL"
+msgstr "Cancel"
+
+msgid "SETTINGS_RESET"
+msgstr "Default settings restored. Your learned marks are unchanged."
+
+msgid "SETTINGS_RESET_FAILED"
+msgstr "Defaults apply for this session, but some saved settings could not be reset. They may return next time."
+
+msgid "LEARNING_PROGRESS"
+msgstr "Learning progress"
+
+msgid "LEARNING_CURRENT"
+msgstr "I've learned this piece"
+
+msgid "LEARNING_LEARNED"
+msgstr "Learned"
+
+msgid "LEARNING_ALL"
+msgstr "All pieces"
+
+msgid "LEARNING_TO_LEARN"
+msgstr "To learn"
+
+msgid "LEARNING_FILTER_HELP"
+msgstr "Show all library pieces, those still to learn, or those you have marked learned."
+
+msgid "LEARNING_LIBRARY_COUNT"
+msgstr "%d of %d library pieces learned"
+
+msgid "LEARNING_MARK_HELP"
+msgstr "Mark %s learned whenever you feel ready. Uncheck it to keep practicing."
+
+msgid "LEARNING_NOT_EXERCISE"
+msgstr "This sound test has no learning objective to check off."
+
+msgid "LEARNING_COUNTS"
+msgstr "%d library pieces, %d exercises and %d imported pieces marked learned."
+
+msgid "LEARNING_EXPLAIN"
+msgstr "Check Learned at your own pace in Songs. You can uncheck any piece. Playback and tuner feedback never mark it for you. Reopen an imported MIDI to see its mark."
+
+msgid "LEARNING_SAVED"
+msgstr "Learned marks are saved on this device."
+
+msgid "LEARNING_RECOVERY"
+msgstr "Changes may last only for this session. Reopen the app to load saved marks. If progress still cannot be loaded, check storage access or clear learned marks in Settings to start fresh."
+
+msgid "LEARNING_LIMIT"
+msgstr "Learned marks are full. Uncheck some pieces or clear learning progress in Settings."
+
+msgid "LEARNING_EXERCISE_LABEL"
+msgstr "%s \u00b7 Learned"
+
+msgid "LEARNING_CLEAR"
+msgstr "Clear learned marks"
+
+msgid "LEARNING_CLEAR_CONFIRM"
+msgstr "Clear every learned mark for songs, exercises and imported pieces on this device? Your settings stay. This cannot be undone."
+
+msgid "LEARNING_CLEAR_DO"
+msgstr "Clear all learned marks"

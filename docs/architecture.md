@@ -370,6 +370,14 @@ accepts live notes without introducing another song clock. UI overlays consume
 the same centered staff/tab geometry as imported-note highlights. The host
 adapter alone handles preferences, focus/visibility and file access.
 
+[Decision 0028](decisions/0028-settings-and-manual-learning-progress.md) adds
+optional reading/input/tuner/sort preferences and a scene-independent
+`LearningProgress` service. HostAdapter owns the separately versioned, bounded
+progress document and confirmed scoped resets. IDs identify bundled file stems or
+the SHA-256 of exact imported bytes; no music, titles, paths or played notes enter
+the store. UI checkboxes make manual changes without touching the transport or
+canonical model. Layout waits cancel when their composition root is removed.
+
 ## Platform adapters
 
 Define interfaces around capabilities rather than checking feature tags throughout UI code:

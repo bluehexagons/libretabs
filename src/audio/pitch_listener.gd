@@ -9,6 +9,7 @@ var detector: PitchDetector = PitchDetector.new()
 var reference: float = 440
 enum Profile { ACOUSTIC_PIANO, ELECTRONIC_PIANO, ACOUSTIC_GUITAR, ELECTRIC_GUITAR, VOICE, BASS, VIOLIN, UKULELE }
 const PROFILE_KEYS: Array[String] = ["INPUT_MIC_PIANO", "INPUT_MIC_DIGITAL_PIANO", "INPUT_MIC_ACOUSTIC", "INPUT_MIC_ELECTRIC", "INPUT_MIC_VOICE", "INPUT_MIC_BASS", "INPUT_MIC_VIOLIN", "INPUT_MIC_UKULELE"]
+const PROFILE_IDS: Array[String] = ["acoustic_piano", "electronic_piano", "acoustic_guitar", "electric_guitar", "voice", "bass", "violin", "ukulele"]
 var profile: int = Profile.ACOUSTIC_PIANO
 var noise_gate: float = 0
 var paused: bool = false

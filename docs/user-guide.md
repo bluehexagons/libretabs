@@ -132,8 +132,41 @@ limits, not a promise that every file within them will make readable guitar musi
 If import fails, try a shorter or simpler file; the previous song remains available.
 
 Imported files stay on your device and are available only for the open session.
-Reopen them after reloading or restarting. Preference saving does not save songs
-or practice progress. See [privacy details](privacy.md).
+Reopen them after reloading or restarting. Settings and learned marks are saved;
+the imported music, selected part, speed, position and loop are not. See
+[privacy details](privacy.md).
+
+## Keep track of what you have learned
+
+In **Songs**, check **Learned** on a library card whenever you feel ready. The
+current piece also has **I've learned this piece**, including built-in exercises
+and imported MIDI. Uncheck it whenever you want to return to it. Playing a piece
+or receiving tuner feedback never checks it automatically.
+
+Choose **To learn** or **Learned** to filter the library; **All pieces** shows
+everything again. Exercises show their mark in the example selector. For an
+imported piece, reopen the same MIDI to see its mark, even if its filename changed.
+Editing the MIDI makes it a different piece. No imported song list is stored.
+
+Marks stay in this device's app profile or browser storage. **Settings → Learning
+progress** shows the totals. **Clear learned marks** confirms before removing
+them; your settings stay. If storage is unavailable or unreadable, the visible
+notice explains that new marks may last only for this session.
+
+## Saved settings and defaults
+
+LibreTabs remembers sound, effects, count-in, beat clicks, volumes, keyboard
+layout/octave/visibility/feedback, regular reading mode, song sorting and tuner
+instrument/sensitivity/reference. It also keeps the existing appearance, text,
+interface, notation rows, handedness, control edge and regular/Theater layout
+preferences. Microphone/controller connections, calibration and temporary musical
+muting still need an explicit action each session.
+
+Open **Settings → Reset settings** to restore defaults after confirmation. It
+pauses playback and stops microphone capture, keeps your current piece and learned
+marks, and brings back Quick start on the next launch. If saved settings could not
+be cleared, a notice explains that the defaults apply for this session and older
+values may return next time.
 
 ## Adjust playback and repeat a passage
 
@@ -399,8 +432,9 @@ separate human timing error from device latency. Setup or device changes disable
 microphone timing again. Keyboard/MIDI timing is also approximate.
 
 Stop microphone releases the stream. Hiding the app or leaving its window stops
-active capture; returning does not restart it automatically. Input choices and
-setup last for this session; audio is never saved or uploaded.
+active capture; returning does not restart it automatically. Tuner instrument,
+sensitivity and reference are remembered. Devices, targets and calibration last
+for this session; audio is never saved or uploaded.
 
 ## Hands-free note commands
 

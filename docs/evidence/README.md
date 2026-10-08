@@ -1,5 +1,8 @@
 # Evidence records
 
+Saved settings and manual learned marks: [persistence, reset and restart checks,
+2026-10-08](local-state-2026-10-08.md).
+
 Interface comparison: [shared presentation providers and four candidates,
 2026-10-08](interface-comparison-2026-10-08.md).
 

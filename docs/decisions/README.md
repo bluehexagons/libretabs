@@ -1,5 +1,9 @@
 # Decision records
 
+[0028 — Saved settings and manual learning progress](0028-settings-and-manual-learning-progress.md)
+extends device preferences, scopes reset actions, and adds reversible learned marks
+for bundled pieces, exercises and anonymously identified imported MIDI.
+
 [0027 — Interchangeable practice interfaces](0027-interchangeable-practice-interfaces.md)
 adds saved Classic/Focus/Touch/Workspace candidates over shared widgets and one
 session, with a bounded presentation-provider extension seam.

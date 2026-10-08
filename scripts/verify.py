@@ -41,6 +41,7 @@ run([engine,'--headless','--path','.','--script','res://tests/audio_effects.gd']
 run([engine,'--headless','--path','.','--script','res://tests/practice_ui.gd'])
 run([engine,'--headless','--path','.','--script','res://tests/layout_ui.gd'])
 run([engine,'--headless','--path','.','--script','res://tests/interface_ui.gd'])
+run([engine,'--headless','--path','.','--script','res://tests/local_state.gd'])
 run([engine,'--headless','--path','.','--script','res://tests/theater_ui.gd'])
 run([engine,'--headless','--path','.','--script','res://tests/page_follow_ui.gd'])
 run([engine,'--headless','--path','.','--quit-after','10'])

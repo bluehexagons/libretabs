@@ -128,3 +128,74 @@ test('blocked display storage returns a fallback and an actionable save failure'
   assert.equal(api.loadDisplayChoice('interface', 'classic'), 'classic');
   assert.equal(api.saveDisplayChoice('interface', 'focus'), false);
 });
+
+
+test('learning marks reload independently and settings reset preserves progress and unrelated data', () => {
+  const values = new Map();
+  const storage = {getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value), removeItem: key => values.delete(key)};
+  const {api} = host(storage);
+  const progress = JSON.stringify({version: 1, learned: ['song:ode_to_joy']});
+  assert.equal(api.saveProgress(progress), true);
+  assert.equal(api.savePractice('{"version":1}'), true);
+  assert.equal(api.saveScale(2), true);
+  assert.equal(api.saveAppearance('dark'), true);
+  assert.equal(api.saveDisplayChoice('interface', 'touch'), true);
+  values.set('unrelated.application', 'leave alone');
+  values.set('libretabs.future.v2', 'newer namespace');
+  assert.equal(host(storage).api.loadProgress(), progress);
+  assert.equal(api.resetSettings(), true);
+  assert.equal(api.loadPractice(), '');
+  assert.equal(api.loadScale(), 1);
+  assert.equal(api.loadAppearance(), 'system');
+  assert.equal(api.loadDisplayChoice('interface', 'classic'), 'classic');
+  assert.equal(api.loadProgress(), progress);
+  assert.equal(values.get('unrelated.application'), 'leave alone');
+  assert.equal(values.get('libretabs.future.v2'), 'newer namespace');
+  api.saveDisplayChoice('interface', 'workspace');
+  assert.equal(api.resetProgress(), true);
+  assert.equal(api.loadProgress(), '');
+  assert.equal(api.loadDisplayChoice('interface', 'classic'), 'workspace');
+});
+
+test('learning storage reports denial and bounds reads and writes', () => {
+  const denied = {getItem() { throw Error('denied'); }, setItem() { throw Error('quota'); }, removeItem() { throw Error('denied'); }};
+  const {api} = host(denied);
+  assert.equal(api.loadProgress(), '!unavailable');
+  assert.equal(api.saveProgress('{}'), false);
+  assert.equal(api.resetProgress(), false);
+  assert.equal(api.resetSettings(), false);
+  let saved = false;
+  const oversized = host({getItem: () => 'x'.repeat(49153), setItem() { saved = true; }}).api;
+  assert.equal(oversized.loadProgress(), '!oversize');
+  assert.equal(oversized.saveProgress('x'.repeat(49153)), false);
+  assert.equal(oversized.saveProgress({}), false);
+  assert.equal(saved, false);
+});
+
+test('partially blocked settings reset reports failure and still preserves learning', () => {
+  const values = new Map([['libretabs.practice.v1', '{}'], ['libretabs.font.v1', 'simple'], ['libretabs.learning.v1', 'marks']]);
+  const storage = {getItem: key => values.get(key), removeItem(key) { if (key === 'libretabs.font.v1') throw Error('blocked'); values.delete(key); }};
+  const {api} = host(storage);
+  assert.equal(api.resetSettings(), false);
+  assert.equal(values.has('libretabs.practice.v1'), false);
+  assert.equal(values.get('libretabs.font.v1'), 'simple');
+  assert.equal(api.loadProgress(), 'marks');
+});
+
+
+test('stale learning writes preserve marks and future schemas from another session', () => {
+  const values = new Map();
+  const storage = {getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value)};
+  const first = host(storage).api, second = host(storage).api;
+  const expected = second.loadProgress();
+  const one = JSON.stringify({version: 1, learned: ['song:ode_to_joy']});
+  const both = JSON.stringify({version: 1, learned: ['song:ode_to_joy', 'song:fur_elise']});
+  assert.equal(first.saveProgress(one, ''), true);
+  assert.equal(second.saveProgress(both, expected), false);
+  assert.equal(second.loadProgress(), one);
+  assert.equal(second.saveProgress(both, one), true);
+  const future = '{"version":2,"learned":[]}';
+  values.set('libretabs.learning.v1', future);
+  assert.equal(first.saveProgress(one, one), false);
+  assert.equal(second.loadProgress(), future);
+});

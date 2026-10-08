@@ -26,6 +26,8 @@ var command_status: Label
 signal commands_requested
 signal quick_controls_changed
 signal playback_mute_changed(muted: bool)
+signal preference_changed
+var sensitivity: HSlider
 var tuner_check: Button
 var instrument_picker: OptionButton
 var settings_toggle: Button
@@ -51,7 +53,8 @@ func _ready() -> void:
 	instrument_picker = choice("INPUT_MIC_INSTRUMENT", PitchListener.PROFILE_KEYS, func(index: int) -> void:
 		listener.set_profile(index)
 		refresh_targets()
-		timing_check.button_pressed = false)
+		timing_check.button_pressed = false
+		preference_changed.emit())
 	for index: int in range(instrument_picker.item_count):
 		instrument_picker.set_item_icon(index, UIIcons.get_icon("INPUT_RANGE" if index <= 1 else ("INPUT_MIC_START" if index == PitchListener.Profile.VOICE else "SONG_INSTRUMENT")))
 	instrument_picker.tooltip_text = tr("INPUT_INSTRUMENT_HELP")
@@ -126,13 +129,15 @@ func _ready() -> void:
 		timing_check.button_pressed = false)
 	mic_picker.set_item_metadata(0, "")
 	caption("INPUT_SENSITIVITY")
-	var sensitivity: HSlider = HSlider.new()
+	sensitivity = HSlider.new()
 	sensitivity.min_value = 0
 	sensitivity.max_value = 100
 	sensitivity.value = 50
 	sensitivity.custom_minimum_size.y = 44
 	sensitivity.tooltip_text = tr("INPUT_SENSITIVITY_HELP")
-	sensitivity.value_changed.connect(func(value: float) -> void: listener.set_sensitivity(value))
+	sensitivity.value_changed.connect(func(value: float) -> void:
+		listener.set_sensitivity(value)
+		preference_changed.emit())
 	add_child(sensitivity)
 	var setup_actions: HFlowContainer = HFlowContainer.new()
 	add_child(setup_actions)
@@ -152,7 +157,8 @@ func _ready() -> void:
 	mic_reference.step = 0.1
 	mic_reference.value_changed.connect(func(value: float) -> void:
 		listener.reference = value
-		listener.reset())
+		listener.reset()
+		preference_changed.emit())
 	listen_check = toggle("INPUT_LISTEN", false, func(enabled: bool) -> void:
 		if live != null: live.release("microphone:0")
 		listener.reset()
@@ -180,6 +186,23 @@ func _ready() -> void:
 	help.hide()
 	help_toggle.toggled.connect(func(enabled: bool) -> void: help.visible = enabled)
 	update_microphone()
+
+func preference_values() -> Dictionary:
+	return {"tuner_profile": PitchListener.PROFILE_IDS[listener.profile], "tuner_sensitivity": roundi(sensitivity.value), "tuner_reference": listener.reference}
+
+func apply_preferences(values: Dictionary) -> void:
+	var profile_index: int = PitchListener.PROFILE_IDS.find(values.tuner_profile)
+	instrument_picker.select(profile_index)
+	listener.set_profile(profile_index)
+	refresh_targets()
+	sensitivity.set_value_no_signal(values.tuner_sensitivity)
+	listener.set_sensitivity(values.tuner_sensitivity)
+	mic_reference.set_value_no_signal(values.tuner_reference)
+	listener.reference = values.tuner_reference
+	listener.reset()
+	# Stored setup choices never grant permission or restore capture/calibration.
+	timing_check.set_pressed_no_signal(false)
+	update_reading()
 
 func set_listening(enabled: bool) -> void:
 	if not enabled: practice_pending = false

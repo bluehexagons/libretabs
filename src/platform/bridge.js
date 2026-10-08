@@ -71,6 +71,30 @@
     resetPractice() {
       try { localStorage.removeItem('libretabs.practice.v1'); return true; } catch (_) { return false; }
     },
+    loadProgress() {
+      try { const raw = localStorage.getItem('libretabs.learning.v1') || ''; return raw.length <= 49152 ? raw : '!oversize'; }
+      catch (_) { return '!unavailable'; }
+    },
+    saveProgress(raw, expected = '') {
+      if (typeof raw !== 'string' || raw.length > 49152 || typeof expected !== 'string') return false;
+      try {
+        if ((localStorage.getItem('libretabs.learning.v1') || '') !== expected) return false;
+        localStorage.setItem('libretabs.learning.v1', raw); return true;
+      } catch (_) { return false; }
+    },
+    resetProgress() {
+      try { localStorage.removeItem('libretabs.learning.v1'); return true; } catch (_) { return false; }
+    },
+    resetSettings() {
+      // Remove only settings owned by this release. Learning and unrelated
+      // same-origin data survive; failures are reported even after partial reset.
+      let success = true;
+      for (const key of ['practice', 'scale', 'appearance', ...displayChoiceKeys]) {
+        try { localStorage.removeItem('libretabs.' + key + '.v1'); }
+        catch (_) { success = false; }
+      }
+      return success;
+    },
     report(json) {
       if (new URLSearchParams(location.search).has('trace')) window.libretabsEvidence = JSON.parse(json);
     },

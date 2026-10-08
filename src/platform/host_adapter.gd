@@ -18,6 +18,9 @@ var export_dialog: FileDialog
 var pending_export: String = ""
 var settings_path: String = "user://practice-v1.json"
 var settings_writable: bool = true
+var progress_path: String = "user://learning-v1.json"
+var progress_writable: bool = true
+var progress_snapshot: String = ""
 var focus_callback: JavaScriptObject
 var display_path: String = "user://display.cfg"
 var dialog: FileDialog
@@ -193,28 +196,77 @@ func load_practice_settings() -> Dictionary:
 	var raw: String = ""
 	if web != null:
 		raw = String(web.loadPractice())
-	elif FileAccess.file_exists(settings_path):
-		var file: FileAccess = FileAccess.open(settings_path, FileAccess.READ)
-		if file == null: raw = "!unavailable"
-		elif file.get_length() > PracticeSettings.MAX_BYTES: raw = "!oversize"
-		else: raw = file.get_as_text()
+	else: raw = read_record(settings_path, PracticeSettings.MAX_BYTES)
 	var result: Dictionary = PracticeSettings.decode(raw)
 	settings_writable = result.status == "ok"
 	return result
 
 func save_practice_settings(values: Dictionary) -> bool:
 	if not settings_writable: return false
+	# Recheck before writing: another build may have upgraded the document.
+	var current: String = str(web.loadPractice()) if web != null else read_record(settings_path, PracticeSettings.MAX_BYTES)
+	if PracticeSettings.decode(current).status != "ok":
+		settings_writable = false
+		return false
 	var raw: String = PracticeSettings.encode(values)
 	if raw.is_empty(): return false
 	if web != null: return bool(web.savePractice(raw))
-	var file: FileAccess = FileAccess.open(settings_path + ".tmp", FileAccess.WRITE)
+	return write_record(settings_path, raw)
+
+func read_record(path: String, maximum: int) -> String:
+	if not FileAccess.file_exists(path): return ""
+	var file: FileAccess = FileAccess.open(path, FileAccess.READ)
+	if file == null: return "!unavailable"
+	var raw: String = "!oversize" if file.get_length() > maximum else file.get_as_text()
+	file.close()
+	return raw
+
+func write_record(path: String, raw: String) -> bool:
+	var file: FileAccess = FileAccess.open(path + ".tmp", FileAccess.WRITE)
 	if file == null: return false
 	file.store_string(raw)
 	file.flush()
 	var success: bool = file.get_error() == OK
 	file.close()
 	if not success: return false
-	return DirAccess.rename_absolute(ProjectSettings.globalize_path(settings_path + ".tmp"), ProjectSettings.globalize_path(settings_path)) == OK
+	return DirAccess.rename_absolute(ProjectSettings.globalize_path(path + ".tmp"), ProjectSettings.globalize_path(path)) == OK
+
+func load_learning_progress() -> Dictionary:
+	var raw: String = str(web.loadProgress()) if web != null else read_record(progress_path, LearningProgress.MAX_BYTES)
+	var result: Dictionary = LearningProgress.decode(raw)
+	progress_snapshot = raw
+	progress_writable = result.status == "ok"
+	return result
+
+func save_learning_progress(progress: LearningProgress) -> bool:
+	if not progress_writable: return false
+	var raw: String = LearningProgress.encode(progress.ids())
+	if raw.is_empty(): return false
+	var success: bool = false
+	if web != null: success = bool(web.saveProgress(raw, progress_snapshot))
+	elif read_record(progress_path, LearningProgress.MAX_BYTES) == progress_snapshot:
+		success = write_record(progress_path, raw)
+	if success: progress_snapshot = raw
+	return success
+
+func reset_learning_progress() -> bool:
+	if web != null:
+		if not bool(web.resetProgress()): return false
+	elif FileAccess.file_exists(progress_path):
+		if DirAccess.remove_absolute(ProjectSettings.globalize_path(progress_path)) != OK: return false
+	progress_writable = true
+	progress_snapshot = ""
+	return true
+
+func reset_all_settings() -> bool:
+	if web != null:
+		var success: bool = bool(web.resetSettings())
+		if success: settings_writable = true
+		return success
+	var success: bool = reset_practice_settings()
+	if FileAccess.file_exists(display_path):
+		if DirAccess.remove_absolute(ProjectSettings.globalize_path(display_path)) != OK: success = false
+	return success
 
 func reset_practice_settings() -> bool:
 	if web != null:

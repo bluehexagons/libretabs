@@ -126,7 +126,9 @@ Prioritize these existing MVP requirements next:
 
 1. **Saved practice defaults (M1.6/M4.2):** the prototype now retains click,
    count-in, volume and keyboard preferences under decision 0006, with versioned
-   validation and session-only recovery. Production progress/export is still open. Keep imported-song
+   validation and session-only recovery. Decision 0028 extends these defaults and
+   adds manual learned marks for existing pieces, with separate progress/reset
+   storage. The curriculum, lesson resume and progress export remain open. Keep imported-song
    location and bytes out of that store; source speed still needs an explicit
    per-import/default policy before persistence.
 2. **Quicker mute-my-part access (M4.2):** make listen-versus-play-along easy to

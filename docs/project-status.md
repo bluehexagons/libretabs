@@ -25,6 +25,13 @@ widget construction and geometry are separate from application coordination.
 See the [interface comparison](evidence/interface-comparison-2026-10-08.md) and
 decision 0027 for extension instructions and the current refactoring boundary.
 
+Settings now also retain regular reading mode, keyboard visibility/feedback,
+library sorting and tuner instrument/sensitivity/reference. Manual learned marks
+are reversible for library pieces, exercises and reopened imported MIDI. Reset
+settings preserves marks; clearing marks is a separate confirmed action. See
+decision 0028 and the [local-state checks](evidence/local-state-2026-10-08.md).
+The course, lesson resume and progress export remain open.
+
 Godot is retained by [owner decision 0005](decisions/0005-godot-and-appearance.md).
 Full screen-reader integration is deferred; it no longer blocks product work or
 requires an Electron/Tauri comparison. Keyboard access, readable text, touch

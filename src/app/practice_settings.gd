@@ -4,8 +4,9 @@ extends RefCounted
 
 const VERSION: int = 1
 const MAX_BYTES: int = 4096
-const OPTIONAL: Array[String] = ["instrument", "reverb", "reverb_amount", "chorus", "audio_commands"]
-const DEFAULTS: Dictionary = {"audio_commands": false, "reverb": true, "reverb_amount": PracticeEffects.DEFAULT_AMOUNT, "chorus": false, "instrument": PracticeSynth.DEFAULT, "metronome": true, "count_in": true, "count_measures": 1, "instrument_volume": 85, "click_volume": 35, "keyboard_octave": 4, "keyboard_layout": "lower"}
+const OPTIONAL: Array[String] = ["instrument", "reverb", "reverb_amount", "chorus", "audio_commands", "reading_view", "input_show", "input_feedback", "tuner_profile", "tuner_sensitivity", "tuner_reference", "catalog_sort"]
+const CATALOG_SORT_IDS: Array[String] = ["level", "title", "seconds", "bpm"]
+const DEFAULTS: Dictionary = {"audio_commands": false, "reverb": true, "reverb_amount": PracticeEffects.DEFAULT_AMOUNT, "chorus": false, "instrument": PracticeSynth.DEFAULT, "metronome": true, "count_in": true, "count_measures": 1, "instrument_volume": 85, "click_volume": 35, "keyboard_octave": 4, "keyboard_layout": "lower", "reading_view": "auto", "input_show": false, "input_feedback": true, "tuner_profile": "acoustic_piano", "tuner_sensitivity": 50, "tuner_reference": 440.0, "catalog_sort": "level"}
 
 # Allow-list only device preferences: never source bytes, song names or notes.
 static func decode(raw: String) -> Dictionary:
@@ -36,11 +37,19 @@ static func valid(values: Variant) -> bool:
 			if not value is String or value not in PracticeSynth.INSTRUMENTS: return false
 		elif key == "keyboard_layout":
 			if value not in ["lower", "home"]: return false
-		elif key in ["metronome", "count_in", "reverb", "chorus", "audio_commands"]:
+		elif key == "reading_view":
+			if value not in ["auto", "scroll", "pages", "follow"]: return false
+		elif key == "catalog_sort":
+			if not value is String or value not in CATALOG_SORT_IDS: return false
+		elif key == "tuner_profile":
+			if not value is String or value not in PitchListener.PROFILE_IDS: return false
+		elif key == "tuner_reference":
+			if not (value is float or value is int) or not is_finite(float(value)) or value < 400 or value > 480: return false
+		elif key in ["metronome", "count_in", "reverb", "chorus", "audio_commands", "input_show", "input_feedback"]:
 			if not value is bool: return false
 		else:
 			if not (value is float or value is int) or not is_finite(float(value)) or float(value) != floorf(float(value)): return false
-			var limits: Array = [0, PracticeEffects.MAX_AMOUNT] if key == "reverb_amount" else ([0, 100] if key.ends_with("volume") else ([1, 4] if key == "count_measures" else [2, 5]))
+			var limits: Array = [0, PracticeEffects.MAX_AMOUNT] if key == "reverb_amount" else ([0, 100] if key.ends_with("volume") or key == "tuner_sensitivity" else ([1, 4] if key == "count_measures" else [2, 5]))
 			if value < limits[0] or value > limits[1]: return false
 	return true
 

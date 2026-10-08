@@ -249,7 +249,13 @@ See [decision 0023](decisions/0023-practice-effects.md).
 The evaluation prototype now saves instrument sound, effects, count-in, click, independent volumes and
 keyboard layout/octave through a versioned preference service, alongside existing
 display storage. Library, Practice and Settings provide the initial app structure.
-Song-specific state and lesson progress remain future implementation work.
+Under [decision 0028](decisions/0028-settings-and-manual-learning-progress.md), it
+also retains regular reading mode, keyboard visibility/feedback, library sorting
+and tuner instrument/sensitivity/reference. Learned checkmarks are manual and
+reversible for library pieces, exercises and reopened imported MIDI. Settings reset
+preserves those marks; clearing marks is a separate confirmed action. Imported
+music and song-relative practice state remain session-only. The planned curriculum,
+lesson resume and progress export remain future implementation work.
 
 - Save lesson completion, last location, accessibility/display settings, and user defaults in a versioned local schema.
 - Imported MIDI is session-only in MVP. Remembered files, song libraries, and persisted file permissions are deferred; returning to an imported song requires reopening it. “Last location” never implies that its bytes were saved.

@@ -97,6 +97,16 @@ var library_song_buttons: Dictionary = {}
 var library_preview_buttons: Dictionary = {}
 var library_song_titles: Dictionary = {}
 var library_current_marks: Dictionary = {}
+var library_learned_checks: Dictionary = {}
+var learning: LearningProgress = LearningProgress.new()
+var current_learning_id: String = ""
+var current_learning_check: CheckBox
+var learning_notice: Label
+var learning_settings_notice: Label
+var learning_summary: Label
+var catalog_learned_count: Label
+var catalog_learning: OptionButton
+var progress_saved: bool = true
 var preview_audio: PracticeAudio
 var preview_importer: MidiImport
 var preview_index: int = -1
@@ -141,6 +151,8 @@ var keyboard: KeyboardNotes = KeyboardNotes.new()
 var live: LivePlaying
 var input_epoch: int = 0
 var input_show: CheckButton
+var input_feedback: CheckButton
+var reading_view: String = "auto"
 var playing_devices: PlayingDevices
 var listening: ListeningControls
 var audio_commands: AudioCommandControls
@@ -307,7 +319,7 @@ const PRACTICE_PRESETS: Array[Dictionary] = [
 ]
 
 func _ready() -> void:
-	host = HostAdapter.new()
+	if host == null: host = HostAdapter.new()
 	add_child(host)
 	host.picked.connect(_file_picked)
 	host.hidden.connect(_suspended)
@@ -318,11 +330,15 @@ func _ready() -> void:
 		if listening != null and listening.listener.capture.enabled and listening.listener.capture.status != "INPUT_MIC_CONNECTING": listening.suspend_capture())
 	host.fullscreen_changed.connect(update_fullscreen)
 	host.fullscreen_failed.connect(func() -> void: set_status("FULLSCREEN_UNAVAILABLE"))
-	motion_mode = host.load_display_choice("motion", ["system", "reduced", "full"], "system")
-	shape_cues = host.load_display_choice("shape_cues", ["off", "on"], "off") == "on"
-	font_style = host.load_display_choice("font", ["rounded", "simple"], "rounded")
-	control_position = host.load_display_choice("control_position", ["left", "top", "right", "bottom"], "bottom")
-	handedness = host.load_display_choice("handedness", ["left", "right"], "right")
+	var progress_result: Dictionary = host.load_learning_progress() if persist_preferences else {"ids": [], "status": "ok"}
+	learning = LearningProgress.new(progress_result.ids)
+	progress_saved = progress_result.status == "ok"
+	if persist_preferences:
+		motion_mode = host.load_display_choice("motion", ["system", "reduced", "full"], "system")
+		shape_cues = host.load_display_choice("shape_cues", ["off", "on"], "off") == "on"
+		font_style = host.load_display_choice("font", ["rounded", "simple"], "rounded")
+		control_position = host.load_display_choice("control_position", ["left", "top", "right", "bottom"], "bottom")
+		handedness = host.load_display_choice("handedness", ["left", "right"], "right")
 	if persist_preferences: interface_id = host.load_display_choice("interface", PracticeInterfaces.IDS, "classic")
 	interface_provider = PracticeInterfaces.create(interface_id)
 	startup_help_enabled = host.load_display_choice("startup_help", ["show", "hide"], "show") == "show" if persist_preferences else true
@@ -358,12 +374,12 @@ func _ready() -> void:
 	capture_view = CaptureView.new()
 	add_child(capture_view)
 	resized.connect(responsive)
-	appearance_mode = host.load_appearance()
-	background_style = host.load_display_choice("background_style", ThemeBackdrop.STYLES, "ribbon")
+	appearance_mode = host.load_appearance() if persist_preferences else "system"
+	background_style = host.load_display_choice("background_style", ThemeBackdrop.STYLES, "ribbon") if persist_preferences else "ribbon"
 	host.appearance_changed.connect(apply_appearance)
 	apply_appearance()
 	apply_motion()
-	apply_scale(host.load_scale())
+	apply_scale(host.load_scale() if persist_preferences else 1.0)
 	load_preferences()
 	host.configure_activity(false)
 	idle_timer = Timer.new()
@@ -467,6 +483,7 @@ func close_choice_picker() -> void:
 	picker_source = null
 
 func set_status(key: String) -> void:
+	if key in ["STORAGE_SESSION", "SETTINGS_RECOVERY"] and settings_notice != null: settings_notice.text = tr("SETTINGS_RECOVERY")
 	status_key = key
 	status.text = tr(key)
 	status.hide()
@@ -708,6 +725,17 @@ func build_song_grid(parent: VBoxContainer) -> GridContainer:
 	parent.add_child(grid)
 	return grid
 
+func learned_check(key: String, font_size: int = 20) -> CheckBox:
+	var item: CheckBox = CheckBox.new()
+	item.text = tr(key)
+	item.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	item.tooltip_text = tr(key)
+	item.add_theme_font_size_override("font_size", font_size)
+	item.set_meta("base_font_size", font_size)
+	item.custom_minimum_size.y = 48
+	item.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	return item
+
 func add_song_button(grid: GridContainer, index: int) -> void:
 	var key: String = str(BUILT_IN_LIBRARY[index].title_key)
 	var card: PanelContainer = PanelContainer.new()
@@ -718,10 +746,18 @@ func add_song_button(grid: GridContainer, index: int) -> void:
 	var content: VBoxContainer = VBoxContainer.new()
 	content.add_theme_constant_override("separation", 8)
 	card.add_child(content)
+	var marking: HFlowContainer = flow(content)
 	var marker: Label = label("SONG_CURRENT_BADGE", 14)
+	marker.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	marker.autowrap_mode = TextServer.AUTOWRAP_OFF
 	marker.text = " "
-	content.add_child(marker)
+	marking.add_child(marker)
 	library_current_marks[index] = marker
+	var learned: CheckBox = learned_check("LEARNING_LEARNED", 16)
+	learned.custom_minimum_size.y = 48
+	learned.toggled.connect(func(enabled: bool) -> void: mark_learned("song:" + str(BUILT_IN_LIBRARY[index].file), enabled))
+	marking.add_child(learned)
+	library_learned_checks[index] = learned
 	var title_label: Label = label(key + "_NAME", 23)
 	title_label.add_theme_font_override("font", UIAppearance.ui_font(font_style, true))
 	title_label.add_to_group("catalog_heading")
@@ -782,6 +818,9 @@ func catalog_indices() -> Array[int]:
 	var query: String = catalog_search.text.strip_edges().to_lower()
 	for index: int in range(BUILT_IN_LIBRARY.size()):
 		var entry: Dictionary = BUILT_IN_LIBRARY[index]
+		var learned: bool = learning.has("song:" + str(entry.file))
+		if catalog_learning.selected == 1 and learned: continue
+		if catalog_learning.selected == 2 and not learned: continue
 		var searchable: String = tr(str(entry.title_key)).to_lower() + " " + str(entry.file).replace("_", " ")
 		if not query.is_empty() and not searchable.contains(query): continue
 		if catalog_level.selected > 0 and int(entry.level) != catalog_level.selected - 1: continue
@@ -816,6 +855,7 @@ func refresh_song_catalog() -> void:
 	library_preview_buttons.clear()
 	library_song_titles.clear()
 	library_current_marks.clear()
+	library_learned_checks.clear()
 	var indices: Array[int] = catalog_indices()
 	for index: int in indices: add_song_button(more_song_grid, index)
 	catalog_count.text = tr("SONG_CATALOG_COUNT") % [indices.size(), BUILT_IN_LIBRARY.size()]
@@ -830,6 +870,8 @@ func update_song_button(index: int) -> void:
 	library_song_titles[index].text = tr(str(entry.title_key) + "_NAME")
 	library_song_titles[index].tooltip_text = title_text
 	library_current_marks[index].text = tr("SONG_CURRENT_BADGE") if index == active_library else " "
+	library_learned_checks[index].set_pressed_no_signal(learning.has("song:" + str(entry.file)))
+	library_learned_checks[index].tooltip_text = tr("LEARNING_MARK_HELP") % title_text
 	item.tooltip_text = tr("SONG_TRY_HELP") % title_text
 	var preview: Button = library_preview_buttons[index]
 	var playing: bool = index == preview_index and preview_audio != null and preview_audio.playing_practice
@@ -1121,6 +1163,10 @@ func build_drawers() -> void:
 	library_title.max_lines_visible = 1
 	library_title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	library.add_child(library_title)
+	current_learning_check = learned_check("LEARNING_CURRENT")
+	current_learning_check.custom_minimum_size.y = 48
+	current_learning_check.toggled.connect(func(enabled: bool) -> void: mark_learned(current_learning_id, enabled))
+	library.add_child(current_learning_check)
 	catalog_search = LineEdit.new()
 	catalog_search.right_icon = UIIcons.get_tinted_icon("SONG_SEARCH", UIAppearance.color("ink", dark_mode, appearance_mode == "midnight"))
 	catalog_search.add_theme_color_override("font_placeholder_color", UIAppearance.color("muted", dark_mode, appearance_mode == "midnight"))
@@ -1140,6 +1186,17 @@ func build_drawers() -> void:
 	catalog_filter_toggle.text = tr("SONG_FILTERS_SHORT")
 	catalog_filter_toggle.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	catalog_actions.add_child(catalog_filter_toggle)
+	catalog_learning = OptionButton.new()
+	catalog_learning.custom_minimum_size.y = 48
+	catalog_learning.fit_to_longest_item = false
+	catalog_learning.tooltip_text = tr("LEARNING_FILTER_HELP")
+	for key: String in ["LEARNING_ALL", "LEARNING_TO_LEARN", "LEARNING_LEARNED"]: catalog_learning.add_item(tr(key))
+	catalog_learning.item_selected.connect(func(_index: int) -> void: refresh_song_catalog())
+	library.add_child(catalog_learning)
+	catalog_learned_count = label("LEARNING_LIBRARY_COUNT", 16)
+	library.add_child(catalog_learned_count)
+	learning_notice = label("LEARNING_RECOVERY", 16)
+	library.add_child(learning_notice)
 	catalog_filter_panel = VBoxContainer.new()
 	catalog_filter_panel.add_theme_constant_override("separation", 10)
 	library.add_child(catalog_filter_panel)
@@ -1168,6 +1225,7 @@ func build_drawers() -> void:
 	catalog_tempo = filter_choices[2]
 	catalog_instrument = filter_choices[3]
 	catalog_sort = catalog_choice(catalog_filter_panel, "SONG_CATALOG_SORT", ["SONG_SORT_LEVEL", "SONG_SORT_TITLE", "SONG_SORT_DURATION", "SONG_SORT_BPM"])
+	catalog_sort.item_selected.connect(func(_index: int) -> void: save_preferences())
 	catalog_filter_panel.add_child(label("SONG_LEVEL_HELP", 16))
 	catalog_count = label("SONG_CATALOG_COUNT", 18)
 	library.add_child(catalog_count)
@@ -1343,7 +1401,24 @@ func build_drawers() -> void:
 	for key: String in ["INTERFACE", "TEMPO", "SCORE_VIEW", "LAYOUTS", "LOOP_TOOL", "SOUND", "SOUND_EFFECTS", "DISPLAY", "KEYBOARD", "INPUTS", "TUNER", "AUDIO_COMMANDS", "TV_VIEW"]: settings.add_child(button(key, func() -> void: toggle_drawer(key)))
 	settings_notice = label("SETTINGS_SAVED", 18)
 	settings.add_child(settings_notice)
-	settings.add_child(button("RESET_PRACTICE", reset_preferences))
+	settings.add_child(button("LEARNING_PROGRESS", func() -> void: toggle_drawer("LEARNING_PROGRESS")))
+	settings.add_child(button("RESET_SETTINGS", func() -> void: toggle_drawer("RESET_SETTINGS")))
+	var reset_section: VBoxContainer = section("RESET_SETTINGS")
+	reset_section.add_child(label("RESET_SETTINGS_CONFIRM", 18))
+	reset_section.add_child(button("RESET_SETTINGS_DO", reset_preferences))
+	reset_section.add_child(button("SETTINGS_CANCEL", go_back))
+	var progress_section: VBoxContainer = section("LEARNING_PROGRESS")
+	learning_summary = label("LEARNING_COUNTS", 20)
+	progress_section.add_child(learning_summary)
+	progress_section.add_child(label("LEARNING_EXPLAIN", 18))
+	learning_settings_notice = label("LEARNING_SAVED", 16)
+	progress_section.add_child(learning_settings_notice)
+	progress_section.add_child(button("SONG_MENU", func() -> void: toggle_drawer("SONG_MENU")))
+	progress_section.add_child(button("LEARNING_CLEAR", func() -> void: toggle_drawer("LEARNING_CLEAR")))
+	var clear_section: VBoxContainer = section("LEARNING_CLEAR")
+	clear_section.add_child(label("LEARNING_CLEAR_CONFIRM", 18))
+	clear_section.add_child(button("LEARNING_CLEAR_DO", clear_learning_progress))
+	clear_section.add_child(button("SETTINGS_CANCEL", go_back))
 	var inputs: VBoxContainer = section("INPUTS")
 	inputs.add_child(label("INPUT_EXPLAIN", 18))
 	input_show = check("INPUT_SHOW", false)
@@ -1354,15 +1429,18 @@ func build_drawers() -> void:
 		live.visible = enabled
 		if not enabled: live.piano.release_all()
 		sync_preset_marker()
+		save_preferences()
 		update_main_scroll.call_deferred())
 	inputs.add_child(input_show)
 	var feedback_check: CheckButton = check("INPUT_FEEDBACK", true)
+	input_feedback = feedback_check
 	feedback_check.text = tr("INPUT_FEEDBACK")
 	feedback_check.tooltip_text = tr("INPUT_FEEDBACK_HELP")
 	feedback_check.button_pressed = true
 	feedback_check.toggled.connect(func(enabled: bool) -> void:
 		live.feedback_enabled = enabled
-		live.clear())
+		live.clear()
+		save_preferences())
 	inputs.add_child(feedback_check)
 	inputs.add_child(button("INPUT_PANIC", release_playing_inputs))
 	inputs.add_child(button("INPUT_RETURN", func() -> void:
@@ -1381,6 +1459,7 @@ func build_drawers() -> void:
 	listening.show_keyboard.connect(func() -> void: input_show.button_pressed = true)
 	listening.stop_playback.connect(pause)
 	tuner_section.add_child(listening)
+	listening.preference_changed.connect(save_preferences)
 	quick_tuner = button("INPUT_TUNER_ENABLED", func() -> void: pass)
 	quick_tuner.toggle_mode = true
 	quick_mute = button("INPUT_PLAYBACK_MUTE", func() -> void: pass)
@@ -1476,14 +1555,14 @@ func build_drawers() -> void:
 	motion_check.toggled.connect(func(value: bool) -> void:
 		motion_mode = "reduced" if value else "full"
 		apply_motion()
-		if not host.save_display_choice("motion", motion_mode): set_status("STORAGE_SESSION"))
+		if persist_preferences and not host.save_display_choice("motion", motion_mode): set_status("STORAGE_SESSION"))
 	display.add_child(motion_check)
 	motion_note = label("MOTION_SYSTEM", 18)
 	display.add_child(motion_note)
 	display.add_child(button("MOTION_FOLLOW", func() -> void:
 		motion_mode = "system"
 		apply_motion()
-		if not host.save_display_choice("motion", motion_mode): set_status("STORAGE_SESSION")))
+		if persist_preferences and not host.save_display_choice("motion", motion_mode): set_status("STORAGE_SESSION")))
 	display.add_child(label("FONT_CHOICE"))
 	font_picker = OptionButton.new()
 	font_picker.custom_minimum_size.y = 56
@@ -1493,7 +1572,7 @@ func build_drawers() -> void:
 	font_picker.item_selected.connect(func(index: int) -> void:
 		font_style = ["rounded", "simple"][index]
 		apply_appearance()
-		if not host.save_display_choice("font", font_style): set_status("STORAGE_SESSION"))
+		if persist_preferences and not host.save_display_choice("font", font_style): set_status("STORAGE_SESSION"))
 	display.add_child(font_picker)
 	shape_cue_check = check("NOTE_SHAPE_CUES", shape_cues)
 	shape_cue_check.tooltip_text = tr("NOTE_SHAPE_CUES_HELP")
@@ -1510,7 +1589,7 @@ func build_drawers() -> void:
 	control_position_picker.item_selected.connect(func(index: int) -> void:
 		control_position = ["left", "top", "right", "bottom"][index]
 		responsive()
-		if not host.save_display_choice("control_position", control_position): set_status("STORAGE_SESSION"))
+		if persist_preferences and not host.save_display_choice("control_position", control_position): set_status("STORAGE_SESSION"))
 	display.add_child(control_position_picker)
 	display.add_child(label("HANDEDNESS"))
 	handedness_picker = OptionButton.new()
@@ -1521,7 +1600,7 @@ func build_drawers() -> void:
 	handedness_picker.item_selected.connect(func(index: int) -> void:
 		handedness = ["left", "right"][index]
 		responsive()
-		if not host.save_display_choice("handedness", handedness): set_status("STORAGE_SESSION"))
+		if persist_preferences and not host.save_display_choice("handedness", handedness): set_status("STORAGE_SESSION"))
 	display.add_child(handedness_picker)
 	control_layout_note = label("CONTROL_LAYOUT_HELP", 18)
 	display.add_child(control_layout_note)
@@ -1535,7 +1614,7 @@ func build_drawers() -> void:
 	scale_picker.item_selected.connect(func(index: int) -> void:
 		var factor: float = [1.0, 1.5, 2.0][index]
 		apply_scale(factor)
-		if not host.save_scale(factor): set_status("STORAGE_SESSION"))
+		if persist_preferences and not host.save_scale(factor): set_status("STORAGE_SESSION"))
 	display.add_child(scale_picker)
 	if host.trace_enabled():
 		display.add_child(button("PSEUDO", func() -> void:
@@ -1648,7 +1727,7 @@ func build_capture_menu() -> void:
 		for index: int in range(values.size()):
 			picker.add_item(tr("SCALE_VALUE") % int(values[index]) if key == "capture_zoom" else tr(definitions[key][1][index]))
 			picker.set_item_metadata(index, values[index])
-		var selected: String = host.load_display_choice(key, values, str(values[0]))
+		var selected: String = host.load_display_choice(key, values, str(values[0])) if persist_preferences else str(values[0])
 		if key == "capture_background" and host.web == null:
 			picker.set_item_disabled(0, true)
 			if selected == "transparent": selected = "green"
@@ -1898,6 +1977,8 @@ func change_view() -> void:
 	update_page_controls()
 	scroll.scroll_vertical = 0
 	sync_music_layout_choices()
+	reading_view = ["scroll", "pages", "follow"][choice]
+	save_preferences()
 
 func build_music_layout_controls(parent: Control, quick: bool) -> void:
 	for key: String in MUSIC_LAYOUT_VALUES:
@@ -1930,6 +2011,9 @@ func change_music_layout(key: String, value: int) -> void:
 		view_picker.select(2)
 	apply_music_layout()
 	if persist_preferences and not host.save_display_choice(("tv_music_" if tv_active else "music_") + key, str(value)): set_status("STORAGE_SESSION")
+	if key == "lines" and not tv_active:
+		reading_view = "follow"
+		save_preferences()
 
 func apply_music_layout() -> void:
 	var profile: Dictionary = tv_music_layout if tv_active else music_layout
@@ -2073,6 +2157,9 @@ func toggle_page_follow() -> void:
 	if score.follow_pages: score.page_to_playback()
 	score_frame.update_overview()
 	update_page_controls()
+	if not tv_active:
+		reading_view = "follow" if score.follow_pages else "pages"
+		save_preferences()
 
 func update_page_controls() -> void:
 	if page_navigation == null: return
@@ -2447,6 +2534,7 @@ func update_song_picker() -> void:
 		demo_picker.select(-1)
 		demo_picker.text = tr("CHOOSE_EXERCISE")
 	for index: int in library_song_buttons: update_song_button(index)
+	update_learning_controls()
 
 func _file_picked(name_value: String, bytes: PackedByteArray, error: String) -> void:
 	if not error.is_empty():
@@ -2490,6 +2578,9 @@ func finish_import() -> void:
 	library_title.tooltip_text = title
 	active_demo = pending_demo
 	active_library = pending_library
+	if active_library >= 0: current_learning_id = "song:" + str(BUILT_IN_LIBRARY[active_library].file)
+	elif active_demo >= 0: current_learning_id = "exercise:" + fixtures[active_demo] if fixtures[active_demo] != "dense_chord" else ""
+	else: current_learning_id = LearningProgress.midi_id(song.source.bytes_copy())
 	update_song_picker()
 	speed = 1.0
 	speed_picker.select(SPEEDS.find(1.0))
@@ -3031,7 +3122,9 @@ func update_effects() -> void:
 	save_preferences()
 
 func preference_values() -> Dictionary:
-	return {"audio_commands": audio_commands.enabled, "reverb": reverb_check.button_pressed, "reverb_amount": roundi(reverb_amount.value), "chorus": chorus_check.button_pressed, "instrument": PracticeSynth.INSTRUMENTS[instrument_picker.selected], "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "count_measures": int(count_length.value), "instrument_volume": roundi(instrument_slider.value), "click_volume": roundi(click_slider.value), "keyboard_octave": keyboard.octave, "keyboard_layout": keyboard.layout}
+	var values: Dictionary = {"audio_commands": audio_commands.enabled, "reverb": reverb_check.button_pressed, "reverb_amount": roundi(reverb_amount.value), "chorus": chorus_check.button_pressed, "instrument": PracticeSynth.INSTRUMENTS[instrument_picker.selected], "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "count_measures": int(count_length.value), "instrument_volume": roundi(instrument_slider.value), "click_volume": roundi(click_slider.value), "keyboard_octave": keyboard.octave, "keyboard_layout": keyboard.layout, "reading_view": reading_view, "input_show": input_show.button_pressed, "input_feedback": input_feedback.button_pressed, "catalog_sort": PracticeSettings.CATALOG_SORT_IDS[catalog_sort.selected]}
+	values.merge(listening.preference_values())
+	return values
 
 func apply_preferences(values: Dictionary) -> void:
 	preferences_ready = false
@@ -3056,6 +3149,25 @@ func apply_preferences(values: Dictionary) -> void:
 	keyboard_picker.select(0 if keyboard.layout == "lower" else 1)
 	octave_picker.set_value_no_signal(keyboard.octave)
 	update_keyboard_help()
+	listening.apply_preferences(values)
+	input_show.set_pressed_no_signal(values.input_show)
+	live.visible = values.input_show
+	input_feedback.set_pressed_no_signal(values.input_feedback)
+	live.feedback_enabled = values.input_feedback
+	sync_preset_marker()
+	reading_view = values.reading_view
+	var chosen_view: String = reading_view
+	# Missing fields in older files retain their existing multi-line reading setup.
+	if chosen_view == "auto": chosen_view = "follow" if int(music_layout.lines) > 1 else "scroll"
+	if chosen_view == "scroll": music_layout.lines = 1
+	view_picker.select(["scroll", "pages", "follow"].find(chosen_view))
+	score.follow_pages = chosen_view == "follow"
+	score.set_view("scroll" if chosen_view == "scroll" else "pages", score.notation)
+	apply_music_layout()
+	update_page_controls()
+	catalog_sort.select(PracticeSettings.CATALOG_SORT_IDS.find(values.catalog_sort))
+	refresh_song_catalog()
+	update_learning_controls()
 	preferences_ready = true
 
 func load_preferences() -> void:
@@ -3070,12 +3182,109 @@ func save_preferences() -> void:
 	if not saved: set_status("SETTINGS_RECOVERY")
 
 func reset_preferences() -> void:
-	release_playing_inputs()
-	if persist_preferences and not host.reset_practice_settings():
-		settings_notice.text = tr("SETTINGS_RECOVERY")
+	if importer != null:
+		set_status("IMPORTING")
 		return
+	pause()
+	if tv_active: enter_tv()
+	leave_capture()
+	release_playing_inputs()
+	listening.suspend_capture()
+	listening.listen_check.set_pressed_no_signal(false)
+	listening.playback_mute.button_pressed = false
+	var success: bool = not persist_preferences or host.reset_all_settings()
+	var previous_persistence: bool = persist_preferences
+	persist_preferences = false
+	preferences_ready = false
+	motion_mode = "system"
+	shape_cues = false
+	font_style = "rounded"
+	control_position = "bottom"
+	handedness = "right"
+	control_position_picker.select(3)
+	handedness_picker.select(1)
+	font_picker.select(0)
+	change_interface("classic")
+	startup_help_enabled = true
+	startup_help_check.set_pressed_no_signal(true)
+	welcome_storage.hide()
+	music_layout = {"lines": 1, "spacing": 100, "staff": 150}
+	tv_music_layout = {"lines": 6, "spacing": 80, "staff": 150}
+	tv_zoom = 0.65
+	theater_keep_controls = false
+	theater_keep_check.set_pressed_no_signal(false)
+	change_tv_zoom(65)
+	notation_rows = NotationRows.defaults()
+	notation_picker.select(0)
+	apply_notation_rows()
+	rebuild_notation_rows_editor()
+	for key: String in capture_choices:
+		capture_choices[key].select(1 if key == "capture_background" and host.web == null else 0)
+	appearance_mode = "system"
+	background_style = "ribbon"
+	apply_appearance()
+	apply_motion()
+	set_shape_cues(false)
+	apply_scale(1.0)
 	apply_preferences(PracticeSettings.DEFAULTS)
-	settings_notice.text = tr("SETTINGS_SAVED")
+	persist_preferences = previous_persistence
+	settings_notice.text = tr("SETTINGS_RESET" if success else "SETTINGS_RESET_FAILED")
+	if not success: set_status("SETTINGS_RESET_FAILED")
+	if opened_drawer == "RESET_SETTINGS": go_back()
+	else: toggle_drawer("SETTINGS", false)
+
+func mark_learned(id: String, learned: bool) -> void:
+	if id.is_empty(): return
+	if not learning.set_learned(id, learned):
+		set_status("LEARNING_LIMIT")
+		update_learning_controls()
+		return
+	progress_saved = not persist_preferences or host.save_learning_progress(learning)
+	update_learning_controls()
+	if not progress_saved: set_status("LEARNING_RECOVERY")
+	if catalog_learning.selected != 0:
+		# Defer removal of a filtered-out card until its toggle event is finished.
+		refresh_learning_catalog.call_deferred()
+
+func refresh_learning_catalog() -> void:
+	refresh_song_catalog()
+	if opened_drawer == "SONG_MENU": catalog_learning.grab_focus()
+
+func update_learning_controls() -> void:
+	if current_learning_check == null: return
+	current_learning_check.disabled = current_learning_id.is_empty()
+	current_learning_check.set_pressed_no_signal(learning.has(current_learning_id))
+	current_learning_check.tooltip_text = tr("LEARNING_MARK_HELP") % title if not current_learning_id.is_empty() else tr("LEARNING_NOT_EXERCISE")
+	var songs_learned: int = 0
+	for entry: Dictionary in BUILT_IN_LIBRARY:
+		if learning.has("song:" + str(entry.file)): songs_learned += 1
+	for index: int in library_song_buttons: update_song_button(index)
+	for index: int in range(fixtures.size()):
+		var learned: bool = learning.has("exercise:" + fixtures[index])
+		demo_picker.set_item_text(index, tr("LEARNING_EXERCISE_LABEL") % tr("DEMO_%d" % index) if learned else tr("DEMO_%d" % index))
+	catalog_learned_count.text = tr("LEARNING_LIBRARY_COUNT") % [songs_learned, BUILT_IN_LIBRARY.size()]
+	learning_notice.visible = not progress_saved
+	if learning_settings_notice != null:
+		learning_settings_notice.text = tr("LEARNING_SAVED" if progress_saved else "LEARNING_RECOVERY")
+		var exercises: int = 0
+		var imports: int = 0
+		for id: String in learning.ids():
+			if id.begins_with("exercise:") and id.trim_prefix("exercise:") in fixtures: exercises += 1
+			elif id.begins_with("midi:"): imports += 1
+		learning_summary.text = tr("LEARNING_COUNTS") % [songs_learned, exercises, imports]
+
+func clear_learning_progress() -> void:
+	if persist_preferences and not host.reset_learning_progress():
+		progress_saved = false
+		update_learning_controls()
+		set_status("LEARNING_RECOVERY")
+		return
+	learning = LearningProgress.new()
+	progress_saved = true
+	update_learning_controls()
+	refresh_song_catalog()
+	if opened_drawer == "LEARNING_CLEAR": go_back()
+	else: toggle_drawer("LEARNING_PROGRESS", false)
 
 func show_control_help(text: String) -> void:
 	help_text.text = text

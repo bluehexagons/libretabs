@@ -236,6 +236,7 @@ static func order_children(parent: Node, ordered: Array) -> void:
 		if child != null and child.get_parent() == parent: parent.move_child(child, index)
 
 static func fit_score(app: Control) -> void:
+	if not is_instance_valid(app) or not app.is_inside_tree() or app.is_queued_for_deletion(): return
 	if app.score_frame == null or app.score == null: return
 	if app.fitting_layout: return
 	app.fit_pending = false
@@ -254,9 +255,11 @@ static func fit_score(app: Control) -> void:
 	app.update_page_controls()
 	# Measure the surrounding controls without exposing a temporary tiny score.
 	await app.wait_for_layout_stability()
+	if not is_instance_valid(app) or not app.is_inside_tree() or app.is_queued_for_deletion(): return
 	if app.tv_active:
 		app.fit_theater_margins()
 		await app.wait_for_layout_stability()
+		if not is_instance_valid(app) or not app.is_inside_tree() or app.is_queued_for_deletion(): return
 	for extra: Control in [app.cue.get_parent(), app.reading_tools, app.song_title, app.seek_navigation]:
 		if app.content_margin.get_combined_minimum_size().y - app.score_frame.get_combined_minimum_size().y + 96 <= app.content_height_budget() + 1: break
 		if not extra.visible: continue
@@ -264,6 +267,7 @@ static func fit_score(app: Control) -> void:
 		if extra == app.cue.get_parent(): app.fit_hide_cue = true
 		if extra == app.seek_navigation: app.fit_hide_seek = true
 		await app.wait_for_layout_stability()
+		if not is_instance_valid(app) or not app.is_inside_tree() or app.is_queued_for_deletion(): return
 	var other_height: float = app.content_margin.get_combined_minimum_size().y - app.score_frame.get_combined_minimum_size().y
 	var music_space: float = app.content_height_budget() - other_height
 	app.score_frame.fit_height(maxf(100, music_space) if app.live.visible else music_space)
@@ -272,6 +276,7 @@ static func fit_score(app: Control) -> void:
 	app.scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO if app.live.visible else ScrollContainer.SCROLL_MODE_DISABLED
 	app.scroll.scroll_vertical = 0
 	await app.wait_for_layout_stability()
+	if not is_instance_valid(app) or not app.is_inside_tree() or app.is_queued_for_deletion(): return
 	app.fitting_layout = false
 	app.place_tv_edge()
 	app.report_state()
@@ -289,7 +294,9 @@ static func wait_stable(app: Control, max_frames: int = 8) -> void:
 	var previous: String = ""
 	var stable_frames: int = 0
 	for _frame: int in range(max_frames):
+		if not is_instance_valid(app) or not app.is_inside_tree() or app.is_queued_for_deletion(): return
 		await app.get_tree().process_frame
+		if not is_instance_valid(app) or not app.is_inside_tree() or app.is_queued_for_deletion(): return
 		var current: String = app.layout_signature()
 		if current == previous:
 			stable_frames += 1
@@ -318,7 +325,7 @@ static func fit_controls(app: Control, node: Node) -> void:
 				var font_size: int = roundi(float(child.get_meta("base_font_size", 20)) * app.theme.default_font_size / 20.0)
 				var available: float = minf(app.size.x - 64, 496) if app.drawer.is_ancestor_of(node) else app.size.x - 56
 				if app.controls_on_side and app.dock.is_ancestor_of(node): available = app.dock.custom_minimum_size.x
-				var needed: float = font.get_string_size(child.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + (34 if child.icon != null else 0) + (20 if child.has_meta("compact") else (72 if child is CheckButton else 28))
+				var needed: float = font.get_string_size(child.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + (34 if child.icon != null else 0) + (20 if child.has_meta("compact") else (72 if child is CheckButton or child is CheckBox else 28))
 				var limit: float = available
 				if node == app.seek_navigation: limit = (available - 56) / 2
 				elif node is BoxContainer and node != app.header: limit = available / 2
