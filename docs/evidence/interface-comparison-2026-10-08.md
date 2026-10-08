@@ -43,7 +43,8 @@ disables an ineffective edge picker and explains where the saved edge still appl
   prepares the export head after bridge edits; release scripts already do this.
 - Managed threaded HTTPS export passes all nine asset hashes, MIME and native
   isolation headers. T3 collaborative browser renders Classic, Focus and the
-  Workspace rail at 1280×800, and Workspace's compact fallback at 390×844.
+  Workspace rail at 1280×800, Workspace's compact fallback at 390×844, and Touch
+  at 390×844 and 844×320. Touch's controls remain accessible in short landscape.
   The actual interface selection writes the browser preference, and normal reload
   restores Workspace. Browser text/geometry observations need settled frames;
   immediate resize captures and idle trace snapshots can precede fitting.
@@ -55,5 +56,38 @@ diagnostics. Input tests simulate capture readiness; no physical microphone is
 certified by these checks. Physical phones, other browsers/platforms and
 independent audible timing remain manual acceptance in the release checklist.
 
-Ignored evidence is retained under build/ui-alternatives-evidence after integration.
-Final release/source/workflow verification is recorded after publication.
+## Published comparison build
+
+[`v0.0.1-prototype.15`](https://github.com/bluehexagons/libretabs/releases/tag/v0.0.1-prototype.15)
+was published on 2026-10-08 from source
+`b7810cb51559132c659b5057391b6ce7d9ecfb5d`. Both
+[source CI](https://github.com/bluehexagons/libretabs/actions/runs/37788899399) and
+[release/package/Pages workflow](https://github.com/bluehexagons/libretabs/actions/runs/37788900252)
+completed successfully on that source.
+
+All public release downloads pass the manifest/checksum validator. Each web,
+Windows and Linux ZIP passes integrity checks, identifies that exact source and
+version in BUILD.json, and includes the Godot notices. The exact downloaded Linux
+binary starts with only /usr/bin:/bin on PATH and a private test profile. Its
+1100×700 window renders the welcome drawer and score; it closes normally. Its log
+contains only the VM driver's unsupported V-Sync warning, with no application
+errors. Windows package integrity is verified; Windows runtime is untested here.
+
+The public guide advertises prototype.15. Both public web paths pass HTTPS, MIME
+and all nine service-worker asset hashes. T3 renders the threaded public player
+with crossOriginIsolated true and a worker. Actual Menu → Interface clicks change
+Classic to Focus and Workspace, show the selected check icon, save the choice and
+restore Workspace's rail on a normal reload. The application remains ready and
+silent after inspection. Public Focus and Workspace screenshots supplement the
+managed phone and landscape captures.
+
+No actual network-disabled reload was performed for this change. Service-worker
+unit coverage and asset checks pass; earlier offline evidence remains separate.
+The physical-device, browser and audible timing limitations above still apply.
+
+Ignored evidence is retained under build/ui-alternatives-evidence and
+build/prototype15-review in the primary checkout after integration. It includes
+the verifier log, managed export/doctor metadata, source/workflow identities,
+public asset-check results, screenshots and Linux startup log. Early Focus and
+Workspace captures include the subsequently fixed save-failure toast; the public
+prototype.15 captures show the final behavior.
