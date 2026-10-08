@@ -4,6 +4,8 @@ extends RefCounted
 
 # Project-authored outlines. Text labels remain the primary accessible names.
 const PATHS: Dictionary = {
+	"CAPTURE_BACK": "M14 4l-8 8 8 8",
+	"CAPTURE_CLEAN": "M3 9V3h6M15 3h6v6M21 15v6h-6M9 21H3v-6M9 12h6",
 	"SETTINGS_CANCEL": "M5 5l14 14M19 5 5 19",
 	"LEARNING_PROGRESS": "M3 4h7l2 2 2-2h7v16h-7l-2 2-2-2H3zM12 6v16M15 12l2 2 3-4",
 	"RESET_SETTINGS": "M4 9a8 8 0 1 1 0 6M4 3v6h6",

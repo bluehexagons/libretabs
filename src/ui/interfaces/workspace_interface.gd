@@ -10,6 +10,7 @@ func describe(viewport: Vector2, font_size: int, requested_edge: String, hand: S
 	if result.rail:
 		result.edge = hand
 		result.rail_width = 232
+		result.inspector = viewport.x >= 1400
 	else:
 		result.compact_primary = viewport.x < 760
 	return result

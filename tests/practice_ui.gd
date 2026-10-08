@@ -1007,7 +1007,7 @@ func run() -> void:
 	app.get("capture_choices")["capture_title"].select(1)
 	app.call("enter_capture")
 	for _frame: int in range(10): await process_frame
-	check(app.get("capture_active") and not app.get("root_box").visible and not app.get("menu_overlay").visible, "capture hides all player controls")
+	check(app.get("capture_active") and not app.get("root_box").visible and app.get("capture_toolbar").visible and not app.get("menu_overlay").visible and Input.mouse_mode == Input.MOUSE_MODE_VISIBLE, "capture preview keeps a toolbar and visible pointer")
 	check(not app.get("backdrop").visible, "capture hides the texture to preserve transparent margins")
 	check(capture.score.notation == "tab" and score.notation == "both" and score.mode == "pages", "tab-only capture preserves paired practice and manual page settings")
 	check(capture.score.song == song and capture.score.projection == score.projection, "capture reuses immutable song and derived arrangement")
@@ -1037,6 +1037,8 @@ func run() -> void:
 	app.get("capture_choices")["capture_notation"].select(2)
 	app.call("enter_capture")
 	check(capture.score.notation == "staff" and is_equal_approx(capture.score.custom_minimum_size.y, ScoreLayout.row_height("staff")), "staff-only capture uses its own compact height")
+	app.get("capture_clean").pressed.emit()
+	check(not app.get("capture_toolbar").visible and Input.mouse_mode == Input.MOUSE_MODE_VISIBLE, "clean frame hides only the explicit toolbar")
 	var tap: InputEventScreenTouch = InputEventScreenTouch.new()
 	tap.pressed = true
 	app.call("_input", tap)
@@ -1044,7 +1046,9 @@ func run() -> void:
 	tap.pressed = false
 	app.call("_input", tap)
 	await process_frame
-	check(not app.get("capture_active") and app.get("root_box").visible, "touch exits capture without needing a small button")
+	check(app.get("capture_active") and app.get("capture_toolbar").visible, "touch reveals capture controls without leaving the preview")
+	app.get("capture_back").pressed.emit()
+	check(not app.get("capture_active") and app.get("root_box").visible, "visible Back returns to the player")
 	var tv_tick: float = app.get("source_tick")
 	var tv_rows: Array = score.notation_rows.duplicate(true)
 	var normal_score: ScoreView = score

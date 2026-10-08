@@ -155,6 +155,20 @@ static func build(app: Control) -> void:
 	app.notice_button.reparent(app.drawers["SCORE_VIEW"])
 	app.drawer.hide()
 	app.menu_overlay.hide()
+	app.workspace_inspector = PanelContainer.new()
+	app.workspace_inspector.custom_minimum_size.x = 220
+	app.root_box.add_child(app.workspace_inspector)
+	app.workspace_scroll = TouchScrollContainer.new()
+	app.workspace_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	app.workspace_scroll.follow_focus = true
+	app.workspace_inspector.add_child(app.workspace_scroll)
+	app.workspace_tools = VBoxContainer.new()
+	app.workspace_tools.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	app.workspace_tools.add_theme_constant_override("separation", 12)
+	app.workspace_scroll.add_child(app.workspace_tools)
+	app.workspace_tools.add_child(app.label("WORKSPACE_SCORE_TOOLS", 22))
+	app.workspace_tools.add_child(app.button("HELP", func() -> void: app.toggle_drawer("HELP")))
+	app.workspace_inspector.hide()
 	app.paper = PanelContainer.new()
 	app.paper.mouse_filter = Control.MOUSE_FILTER_PASS
 	app.paper.gui_input.connect(app.page_gesture)
@@ -241,11 +255,17 @@ static func build(app: Control) -> void:
 	app.dock_panel = PanelContainer.new()
 	app.dock_panel.add_theme_stylebox_override("panel", app.surface("ffffff", 12))
 	app.dock_margin.add_child(app.dock_panel)
+	app.dock_shell = VBoxContainer.new()
+	app.dock_shell.add_theme_constant_override("separation", 8)
+	app.dock_panel.add_child(app.dock_shell)
+	app.console_primary = HBoxContainer.new()
+	app.console_primary.hide()
+	app.dock_shell.add_child(app.console_primary)
 	app.dock = BoxContainer.new()
 	app.dock.vertical = true
 	app.dock.alignment = BoxContainer.ALIGNMENT_CENTER
 	app.dock.add_theme_constant_override("separation", 8)
-	app.dock_panel.add_child(app.dock)
+	app.dock_shell.add_child(app.dock)
 	app.transport_row = HFlowContainer.new()
 	app.transport_row.add_theme_constant_override("h_separation", 8)
 	app.transport_row.add_theme_constant_override("v_separation", 4)

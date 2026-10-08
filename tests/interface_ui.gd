@@ -23,6 +23,7 @@ func settle(app: Control) -> void:
 
 func reachable(app: Control, control: Control, message: String) -> void:
 	var header: ScrollContainer = app.get("header_scroll")
+	if app.get("workspace_scroll").is_ancestor_of(control): header = app.get("workspace_scroll")
 	if header.is_ancestor_of(control):
 		header.ensure_control_visible(control)
 		await process_frame
@@ -87,6 +88,25 @@ func run() -> void:
 		check(audio.playing_practice and app.get("state") == "STATE_PLAYING" and int(audio.metrics().generated_frame) >= frames, "switch keeps playback running " + id)
 		check(audio.transport.get_instance_id() == transport_id, "playing switch uses one timeline " + id)
 	app.call("pause")
+	# Candidate structure must differ, not just labels or decoration.
+	root.size = Vector2i(1440,900)
+	app.call("change_interface", "focus")
+	await settle(app)
+	check(app.get("header").is_ancestor_of(app.get("play_button")) and app.get("header_margin").get_global_rect().end.y <= app.get("score_frame").global_position.y, "Focus groups transport above the plain music stand")
+	check(app.get("control_position_picker").disabled, "Focus makes its automatic toolbar placement explicit")
+	app.call("change_interface", "classic")
+	await settle(app)
+	check(not app.get("control_position_picker").disabled, "Classic restores the control placement preference")
+	app.call("change_interface", "workspace")
+	await settle(app)
+	check(app.get("workspace_inspector").visible and app.get("workspace_scroll").is_ancestor_of(app.get("reading_tools")), "Workspace exposes a separate scrollable score inspector")
+	check(app.get("header_actions").get_children().filter(func(item: Node) -> bool: return item is Button and item.visible and not item.text.is_empty()).size() >= 3, "Workspace rail actions have visible names")
+	for picker: OptionButton in app.get("quick_music_layout"): await reachable(app, picker, "Workspace score option reachable")
+	root.size = Vector2i(390,844)
+	app.call("change_interface", "touch")
+	await settle(app)
+	check(app.get("console_primary").is_ancestor_of(app.get("play_button")) and app.get("play_button").size.x > 250 and not app.get("play_button").text.is_empty(), "Touch has a separate wide labeled primary action")
+	check(app.get("transport_row").global_position.y >= app.get("play_button").get_global_rect().end.y, "Touch practice shortcuts occupy a separate row")
 	for factor: float in [1.0, 2.0]:
 		app.call("apply_scale", factor)
 		for viewport: Vector2i in [Vector2i(320,568), Vector2i(390,844), Vector2i(844,320), Vector2i(740,260), Vector2i(1280,800), Vector2i(1920,1080)]:
@@ -109,6 +129,9 @@ func run() -> void:
 					if mode == "pages":
 						await reachable(app, app.get("page_previous"), "previous page reachable " + context)
 						await reachable(app, app.get("page_next"), "next page reachable " + context)
+					for key: String in ["play_button", "menu_button", "stop_button", "loop_button", "tuner_button"]:
+						var item: Button = app.get(key)
+						if item.visible and item.text.is_empty() and item.icon != null: check(item.icon_alignment == HORIZONTAL_ALIGNMENT_CENTER, "icon centered in target " + context + " " + key)
 	root.size = Vector2i(320,568)
 	app.call("toggle_drawer", "INTERFACE")
 	await settle(app)
@@ -129,6 +152,32 @@ func run() -> void:
 		app.call("enter_tv")
 		await settle(app)
 		check(app.get("interface_id") == id, "leaving Theater restores selected interface " + id)
+	app.call("change_interface", "classic")
+	var saved_tick: float = app.get("source_tick")
+	app.call("enter_capture")
+	app.get("capture_play").pressed.emit()
+	check(app.get("capture_active") and audio.playing_practice, "preview Play starts the shared transport")
+	app.get("capture_play").pressed.emit()
+	check(app.get("capture_active") and not audio.playing_practice, "preview Pause keeps the overlay open")
+	for factor: float in [1.0, 2.0]:
+		app.call("apply_scale", factor)
+		for viewport: Vector2i in [Vector2i(390,844), Vector2i(844,320), Vector2i(1440,900)]:
+			root.size = viewport
+			app.call("fit_capture_toolbar")
+			for _frame: int in range(10): await process_frame
+			for key: String in ["capture_back", "capture_play", "capture_settings", "capture_clean"]: await reachable(app, app.get(key), "capture toolbar reachable %s %s%% %s" % [viewport,factor*100,key])
+			check(app.get("capture_view").card.get_global_rect().position.y >= app.get("capture_toolbar").get_global_rect().end.y, "preview toolbar never covers the score")
+	app.get("capture_clean").pressed.emit()
+	check(not app.get("capture_toolbar").visible and Input.mouse_mode == Input.MOUSE_MODE_VISIBLE, "clean frame keeps the mouse pointer visible")
+	var reveal: InputEventKey = InputEventKey.new()
+	reveal.keycode = KEY_F10
+	reveal.pressed = true
+	app.call("_input", reveal)
+	check(app.get("capture_toolbar").visible and app.get("capture_active"), "F10 restores a clean-frame toolbar")
+	app.get("capture_settings").pressed.emit()
+	check(app.get("opened_drawer") == "CAPTURE" and app.get("menu_overlay").visible and not app.get("capture_active"), "preview Settings opens the overlay options")
+	app.call("close_menu")
+	app.call("seek_tick", saved_tick)
 	listening.listener.capture.enabled = false
 	app.queue_free()
 	for _frame: int in range(4): await process_frame

@@ -17,11 +17,13 @@ review; treat them as practice suggestions.
 Open **Menu → Interface** to compare the current player (**Classic**) with three
 alternatives:
 
-- **Focus:** fewer shortcuts and more room for music. Play and speed remain nearby.
-- **Touch:** grouped bottom controls and a compact navigation row; short landscape
-  screens place controls on your preferred hand side.
-- **Workspace:** a controls rail with direct settings shortcuts on wide screens.
-  Smaller windows and enlarged text use the compact player.
+- **Focus:** a plain music stand with Play and speed above the score, sharing
+  one slim toolbar on wide screens. Secondary actions are in Menu.
+- **Touch:** navigation tabs and a wide, labeled Play button above a separate
+  row of practice actions. Short windows use a compact dock; short landscape
+  screens put controls on your preferred hand side.
+- **Workspace:** a labeled controls rail, plus a separate score setup panel on
+  large screens. Smaller windows and enlarged text use the compact player.
 
 Select a choice, then **Done** to return to practice. Switching keeps your song,
 playback position, speed, loop, music layout and listening connection. The choice
@@ -310,9 +312,12 @@ the start of each row; crowded measures receive more space. Printing retains
 the prototype's arrangement limitations.
 
 **Menu → Capture & overlay:** choose the music, background and placement, then
-**Enter capture view** for a score-only layout. Use separate recording or streaming
-software to record it; LibreTabs does not record video. F8, Escape or a tap returns
-to the player. Space still plays or pauses. Entering capture does not start audio.
+**Preview overlay**. The toolbar has **Play/Pause**, **Settings** and **Back to
+player**. Choose **Clean frame** to hide the toolbar for separate recording or
+streaming software; tap the frame or press F10 to reveal controls again. The
+mouse pointer stays visible. Escape or F8 returns to the player; Space plays or
+pauses. Previewing never starts audio automatically. LibreTabs does not record
+video.
 
 **Menu → Keyboard notes:** play reference pitches with your computer keyboard.
 The default Z X C V B N M comma keys play C D E F G A B C; S D G H J play the

@@ -354,7 +354,10 @@ The owner-requested [interface comparison slice](decisions/0027-interchangeable-
 offers Classic, Focus, Touch and Workspace in Menu → Interface. They share the
 same song, timeline and input services; switching changes presentation rather
 than starting another session. Classic remains the default until a redesign is
-selected. Resizing adapts the candidate without changing music preferences.
+selected. Focus uses a music stand and top toolbar, Touch separates a wide primary
+action from its practice shortcuts, and Workspace adds a labeled rail and a score
+inspector on large screens. Resizing adapts the candidate without changing music
+preferences.
 
 The runnable M0 prototype is a feasibility slice, not the completed product described above. [Decision 0002](decisions/0002-m0-evaluation-build.md) records its smaller import, notation, and audio contracts; [M0 evidence](evidence/m0-prototype.md) provides evaluation steps and next gates.
 
@@ -373,7 +376,9 @@ This does not complete print-grade engraving or change imported music.
 [Decision 0009](decisions/0009-capture-view.md) adds an optional view with only the
 score for video capture and streaming. It exposes notation, score size, placement,
 optional title, and transparent/green/theme margins; the score card remains opaque
-for readability. F8 enters/leaves; Escape or a tap restores the player. Capture
+for readability. A preview toolbar has Play/Pause, Settings and Back to player.
+Clean frame hides that toolbar; a tap or F10 reveals it again. The pointer remains
+visible. F8 enters/leaves; Escape returns to the player. Capture
 uses the existing transport and audio controls. Recording, video editing, remote
 control, and cross-window song synchronization are not part of this slice.
 

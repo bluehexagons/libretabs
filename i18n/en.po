@@ -1355,10 +1355,22 @@ msgid "CARD_CAPTURE"
 msgstr "Capture & overlay\nA score-only view for recording and streaming"
 
 msgid "CAPTURE_HELP"
-msgstr "Show only the score for separate recording or streaming software. LibreTabs does not record video. Choose your layout, then Enter capture view. F8, Escape or a tap returns to the player. Space still plays or pauses."
+msgstr "Preview a score overlay for recording or streaming with other software. Play and pause in the preview, then hide the toolbar with Clean frame. Tap the frame or press F10 to show controls again. Back, Escape or F8 returns to the player. LibreTabs does not record video."
+
+msgid "CAPTURE_BACK"
+msgstr "Back to player"
+
+msgid "CAPTURE_CLEAN"
+msgstr "Clean frame"
+
+msgid "TIP_CAPTURE_CLEAN"
+msgstr "Hide the toolbar for capture. Tap anywhere or press F10 to show it again. The mouse pointer stays visible."
+
+msgid "TIP_CAPTURE_BACK"
+msgstr "Return to the player without changing playback. Escape and F8 also return."
 
 msgid "CAPTURE_ENTER"
-msgstr "Enter capture view"
+msgstr "Preview overlay"
 
 msgid "CAPTURE_NOTATION"
 msgstr "Music to show"
@@ -1513,11 +1525,17 @@ msgstr "Consecutive lines of music share the available height. Short screens sho
 msgid "MUSIC_SPACING"
 msgstr "Note spacing: %d%%"
 
+msgid "MUSIC_SPACING_SHORT"
+msgstr "Spacing: %d%%"
+
 msgid "MUSIC_SPACING_HELP"
 msgstr "Lower spacing fits more notes across the screen without reducing staff height."
 
 msgid "MUSIC_STAFF"
 msgstr "Staff height: %d%%"
+
+msgid "MUSIC_STAFF_SHORT"
+msgstr "Staff: %d%%"
 
 msgid "MUSIC_STAFF_HELP"
 msgstr "Give the five pitch lines more height relative to the other notation rows. Notes and highlights stay aligned with their lines."
@@ -2324,25 +2342,31 @@ msgid "INTERFACE_FOCUS"
 msgstr "Focus"
 
 msgid "INTERFACE_FOCUS_HELP"
-msgstr "More room for music. Play and speed stay nearby; other controls are in Menu."
+msgstr "A plain music stand with a slim toolbar above the score. Secondary controls stay in Menu."
 
 msgid "INTERFACE_TOUCH"
 msgstr "Touch"
 
 msgid "INTERFACE_TOUCH_HELP"
-msgstr "A compact navigation row and grouped controls at the bottom. Short landscape screens use the hand side."
+msgstr "A touch console with a wide Play button, a separate row of practice actions, and navigation tabs. Short landscape screens use the hand side."
 
 msgid "INTERFACE_WORKSPACE"
 msgstr "Workspace"
 
 msgid "INTERFACE_WORKSPACE_HELP"
-msgstr "A controls rail with direct settings shortcuts on wide screens. Smaller screens use the compact player."
+msgstr "A practice desk with a labeled controls rail and a separate score setup panel on large screens. Smaller screens use a compact dock."
+
+msgid "TUNER_SHORT"
+msgstr "Tuner"
+
+msgid "WORKSPACE_SCORE_TOOLS"
+msgstr "Score setup"
 
 msgid "TIP_INTERFACE"
 msgstr "Try another interface without resetting your song or playback."
 
 msgid "INTERFACE_EDGE_AUTO"
-msgstr "This interface places controls automatically. Preferred hand still applies; your saved screen edge is used in Classic, Focus and Theater."
+msgstr "This interface places controls automatically. Preferred hand still applies; your saved screen edge is used in Classic and Theater."
 
 msgid "RESET_SETTINGS"
 msgstr "Reset settings"

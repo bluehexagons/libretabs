@@ -25,6 +25,15 @@ widget construction and geometry are separate from application coordination.
 See the [interface comparison](evidence/interface-comparison-2026-10-08.md) and
 decision 0027 for extension instructions and the current refactoring boundary.
 
+The [player feedback follow-up](evidence/player-feedback-2026-10-08.md) makes
+those candidates structurally different: a top-toolbar music stand, a touch
+console and a controls rail with a score inspector. Icon-only buttons center
+their symbols. Capture opens with visible controls and pointer; Clean frame
+hides only the toolbar, which tap/F10 reveals again. Tuner refinement corrects
+a reproduced sharp interpolation bias, improves soft electronic-piano pickup
+and steadies the gauge. Native render and synthetic audio checks pass; physical
+phone/instrument testing and browser interaction remain open.
+
 Settings now also retain regular reading mode, keyboard visibility/feedback,
 library sorting and tuner instrument/sensitivity/reference. Manual learned marks
 are reversible for library pieces, exercises and reopened imported MIDI. Reset

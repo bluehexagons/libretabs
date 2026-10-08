@@ -21,6 +21,17 @@ preferences. Resizing adapts the candidate without changing that choice.
    the exported candidate at the relevant sizes.
 
 `PracticeSurface` builds widgets; `PracticeLayout` sizes and arranges them.
+Focus's inline toolbar, Touch's separate primary row and Workspace's score
+inspector are presentation capabilities in `PracticePresentation`. The shared
+containers exist for every candidate; switches reparent existing controls.
+Keep root ordering explicit when switching between side rails and top/bottom
+toolbars. Validate the switch direction as well as a fresh launch.
+
+For native appearance checks, run `tests/presentation_render.gd` through the
+managed desktop after import. It checks visible capture ink and saves ten
+deterministic PNGs to ignored `build/presentation-audit`. Browser checks remain
+separate; these images do not certify WebGL, phone hardware or audio timing.
+
 `app.gd` remains the composition/presentation bridge, with named widget references
 and several settings panels. A fully different widget tree can replace the shared
 surface later, but must bind existing actions and retain music/input contracts.

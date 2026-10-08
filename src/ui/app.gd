@@ -7,10 +7,21 @@ var presentation: PracticePresentation = PracticePresentation.new()
 var interface_choices: Dictionary = {}
 var interface_button: Button
 var interface_navigation: VBoxContainer
+var workspace_inspector: PanelContainer
+var workspace_scroll: TouchScrollContainer
+var workspace_tools: VBoxContainer
+var dock_shell: VBoxContainer
+var console_primary: HBoxContainer
 
 var page_swipe_start: Vector2
 var capture_view: CaptureView
 var capture_active: bool = false
+var capture_toolbar: PanelContainer
+var capture_actions: HFlowContainer
+var capture_play: Button
+var capture_back: Button
+var capture_settings: Button
+var capture_clean: Button
 var tv_active: bool = false
 var tv_tucked: bool = false
 var tv_was_playing: bool = false
@@ -373,6 +384,7 @@ func _ready() -> void:
 	apply_music_layout()
 	capture_view = CaptureView.new()
 	add_child(capture_view)
+	build_capture_toolbar()
 	resized.connect(responsive)
 	appearance_mode = host.load_appearance() if persist_preferences else "system"
 	background_style = host.load_display_choice("background_style", ThemeBackdrop.STYLES, "ribbon") if persist_preferences else "ribbon"
@@ -1737,6 +1749,56 @@ func build_capture_menu() -> void:
 		content.add_child(picker)
 	content.add_child(label("CAPTURE_SETUP", 18))
 
+func build_capture_toolbar() -> void:
+	capture_toolbar = PanelContainer.new()
+	capture_toolbar.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 8))
+	capture_view.add_child(capture_toolbar)
+	capture_actions = flow(capture_toolbar)
+	capture_back = button("CAPTURE_BACK", leave_capture)
+	capture_actions.add_child(capture_back)
+	capture_play = button("PLAY", toggle_play)
+	capture_actions.add_child(capture_play)
+	capture_settings = button("SETTINGS", func() -> void: toggle_drawer("CAPTURE"))
+	capture_actions.add_child(capture_settings)
+	capture_clean = button("CAPTURE_CLEAN", func() -> void: set_capture_controls(false))
+	capture_actions.add_child(capture_clean)
+	for item: Button in [capture_back, capture_play, capture_settings, capture_clean]:
+		item.autowrap_mode = TextServer.AUTOWRAP_OFF
+		item.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	capture_view.resized.connect(fit_capture_toolbar)
+	capture_actions.minimum_size_changed.connect(func() -> void: fit_capture_toolbar.call_deferred())
+
+func fit_capture_toolbar() -> void:
+	if capture_toolbar == null: return
+	var labels: bool = size.x >= 900 and theme.default_font_size < 30
+	for item: Button in [capture_back, capture_settings, capture_clean]:
+		var key: String = "CAPTURE_BACK" if item == capture_back else ("SETTINGS" if item == capture_settings else "CAPTURE_CLEAN")
+		item.text = tr(key) if labels else ""
+		item.custom_minimum_size = Vector2(56, 48)
+	update_capture_play()
+	capture_toolbar.position = Vector2(8, 8)
+	capture_toolbar.size = Vector2(maxf(1, size.x - 16), 0)
+	capture_view.controls_inset = capture_toolbar.get_combined_minimum_size().y + 16 if capture_toolbar.visible else 0
+	capture_view.arrange()
+
+func update_capture_play() -> void:
+	if capture_play == null: return
+	var key: String = "PAUSE" if audio.playing_practice else ("REPLAY" if state == "STATE_COMPLETE" else "PLAY")
+	capture_play.text = tr(key) if size.x >= 900 and theme.default_font_size < 30 else ""
+	capture_play.icon = UIIcons.get_icon(key)
+	capture_play.tooltip_text = tr("TIP_" + key)
+
+func set_capture_controls(shown: bool) -> void:
+	capture_toolbar.visible = shown
+	fit_capture_toolbar()
+	# Rebuild static ink when removing the sibling toolbar; native render checks
+	# cover the previously blank clean frame as well as the preview.
+	capture_view.score.invalidate()
+	if shown: capture_play.grab_focus()
+	else:
+		var focus: Control = get_viewport().gui_get_focus_owner()
+		if focus != null: focus.release_focus()
+
 func capture_choice(key: String) -> String:
 	var picker: OptionButton = capture_choices[key]
 	return str(picker.get_selected_metadata())
@@ -1759,8 +1821,9 @@ func enter_capture() -> void:
 	tv_controls_layer.hide()
 	tv_edge.hide()
 	capture_view.show()
+	set_capture_controls(true)
 	apply_capture_background()
-	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 func leave_capture() -> void:
 	if not capture_active: return
@@ -1882,10 +1945,10 @@ func _input(event: InputEvent) -> void:
 	if not menu_overlay.visible and not capture_active and not tv_tucked and main_speed.handle_pointer(event):
 		get_viewport().set_input_as_handled()
 		return
-	if capture_active and ((event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT) or event is InputEventScreenTouch):
+	if capture_active and not capture_toolbar.visible and ((event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT) or event is InputEventScreenTouch):
 		# Consume the whole gesture, including touch's emulated mouse events,
 		# before showing controls that might lie under the pointer.
-		if not event.pressed: leave_capture.call_deferred()
+		if not event.pressed: set_capture_controls.call_deferred(true)
 		get_viewport().set_input_as_handled()
 		return
 	if not capture_active and not menu_overlay.visible and (event is InputEventScreenTouch or event is InputEventScreenDrag):
@@ -1897,6 +1960,10 @@ func _input(event: InputEvent) -> void:
 			return
 	if event is InputEventKey and event.pressed and not event.echo and not event.ctrl_pressed and not event.meta_pressed and not event.alt_pressed:
 		var focused: Control = get_viewport().gui_get_focus_owner()
+		if event.keycode == KEY_F10 and capture_active:
+			set_capture_controls(not capture_toolbar.visible)
+			get_viewport().set_input_as_handled()
+			return
 		if event.keycode == KEY_F10 and tv_active and not capture_active and not menu_overlay.visible and not focused is LineEdit and not focused is TextEdit:
 			reveal_tv_controls()
 			get_viewport().set_input_as_handled()
@@ -1987,7 +2054,7 @@ func build_music_layout_controls(parent: Control, quick: bool) -> void:
 		picker.tooltip_text = tr("MUSIC_" + key.to_upper() + "_HELP")
 		if key == "lines": picker.add_icon_item(UIIcons.get_icon("VIEW_SCROLL"), tr("VIEW_SCROLL"))
 		for value: int in MUSIC_LAYOUT_VALUES[key]:
-			var caption: String = tr("MUSIC_PAGE_LINE") if key == "lines" and value == 1 else tr("MUSIC_PAGE_LINES" if key == "lines" else "MUSIC_" + key.to_upper()) % value
+			var caption: String = tr("MUSIC_PAGE_LINE") if key == "lines" and value == 1 else tr("MUSIC_PAGE_LINES" if key == "lines" else "MUSIC_" + key.to_upper() + ("_SHORT" if quick else "")) % value
 			picker.add_icon_item(UIIcons.get_icon("MUSIC_" + key.to_upper()), caption)
 		picker.item_selected.connect(func(index: int) -> void:
 			if key == "lines" and index == 0:
@@ -2166,7 +2233,7 @@ func update_page_controls() -> void:
 	page_label.visible = score.mode == "pages" and not tv_active
 	# On very short portrait windows the synchronized score carries the same
 	# current-note information; dropping this duplicate row keeps practice fixed.
-	cue.get_parent().visible = (score.mode == "scroll" or tv_active) and not landscape and size.y >= 620 and not fit_hide_cue
+	cue.get_parent().visible = (presentation.show_cue or tv_active) and (score.mode == "scroll" or tv_active) and not landscape and size.y >= 620 and not fit_hide_cue
 	seek_navigation.visible = (score.mode == "scroll" or tv_active) and not landscape and not fit_hide_seek
 	var small_navigation: bool = compact or controls_on_side or size.x < 900
 	page_label.text = tr("PAGE_NUMBER_COMPACT" if small_navigation else "PAGE_NUMBER") % [score.page_index + 1, score.pages()]
@@ -2231,6 +2298,7 @@ func apply_appearance() -> void:
 	dock_panel.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 12, midnight))
 	speed_control.add_theme_stylebox_override("panel", UIAppearance.tempo_unit_style(dark_mode, 7, midnight))
 	status_toast.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 12, midnight))
+	if capture_toolbar != null: capture_toolbar.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 8, midnight))
 	tv_edge.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 8, midnight))
 	for action: Button in [play_button, welcome_practice, tv_edge_pause]:
 		for state_name: String in ["normal", "hover", "pressed", "hover_pressed"]:
@@ -2305,6 +2373,7 @@ func reveal_scale_choice() -> void:
 func responsive() -> void:
 	presentation = interface_provider.describe(size, theme.default_font_size, control_position, handedness, tv_active)
 	PracticeLayout.fit(self)
+	if capture_active: fit_capture_toolbar()
 
 func apply_control_layout(position: String) -> void:
 	PracticeLayout.arrange_controls(self, position)
@@ -2329,11 +2398,11 @@ func compact_listening_transport() -> bool:
 func style_quick_listening() -> void:
 	if quick_tuner == null or quick_mute == null: return
 	var tuner_key: String = "INPUT_MIC_PAUSE" if quick_tuner.button_pressed else "INPUT_MIC_RESUME"
-	quick_tuner.text = "" if controls_on_side or size.x < 760 else tr(tuner_key)
+	quick_tuner.text = "" if presentation.inline_transport or controls_on_side or size.x < 760 else tr(tuner_key)
 	quick_tuner.icon = UIIcons.get_icon(tuner_key)
 	quick_tuner.tooltip_text = tr(tuner_key)
 	var mute_key: String = "INPUT_PLAYBACK_UNMUTE" if quick_mute.button_pressed else "INPUT_PLAYBACK_MUTE"
-	quick_mute.text = "" if controls_on_side or size.x < 760 else tr(mute_key)
+	quick_mute.text = "" if presentation.inline_transport or controls_on_side or size.x < 760 else tr(mute_key)
 	quick_mute.icon = UIIcons.get_icon("INPUT_PLAYBACK_MUTE" if quick_mute.button_pressed else "SOUND")
 	quick_mute.tooltip_text = tr(mute_key)
 
@@ -2850,6 +2919,7 @@ func loop_changed(end_edited: bool = false) -> void:
 
 func update_play_control(frame: int = -1) -> void:
 	if count_badge == null: return
+	update_capture_play()
 	update_tv_playback()
 	var beat: int = 0
 	if audio.playing_practice and not score.manual_pan:
@@ -2866,7 +2936,7 @@ func update_play_control(frame: int = -1) -> void:
 		play_button.icon = null
 		play_button.tooltip_text = tr("TIP_COUNT_BEAT") % beat
 	else:
-		play_button.text = "" if tv_active or controls_on_side or tight_controls or compact_listening_transport() else tr(key)
+		play_button.text = tr(key) if presentation.console and not tv_active else ("" if tv_active or controls_on_side or tight_controls or compact_listening_transport() else tr(key))
 		play_button.icon = UIIcons.get_icon(key)
 		play_button.tooltip_text = tr("TIP_" + key)
 	if key != play_control_key:

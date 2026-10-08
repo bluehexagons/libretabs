@@ -31,15 +31,25 @@ or introduce another clock. Menu retains Help, Interface and omitted shortcuts.
 ## Candidates and preference
 
 - Classic retains the current edge-based player.
-- Focus removes secondary shortcuts and uses a small Play/speed group.
-- Touch groups controls at the bottom and uses the hand side on short landscape
-  screens.
-- Workspace puts controls and settings shortcuts in a scrollable rail on wide
-  screens. It uses the compact player as width or text size changes.
+- Focus uses a flat music stand and a top toolbar, combining navigation with
+  Play/speed on wide screens. It omits duplicate cue and secondary shortcut rows.
+- Touch uses navigation tabs and, when height permits, a wide labeled primary
+  action above a separate practice-action row. Short screens use a compact dock,
+  with controls on the hand side in short landscape.
+- Workspace puts labeled controls and settings shortcuts in a scrollable rail
+  on wide screens, plus a separate score inspector at 1400 logical pixels. It
+  uses the compact player as width or text size changes.
 
 All candidates share the score, tuner, settings and themes. Theater and capture
 keep their specialized surfaces; leaving them returns to the selected interface.
 Resizing never changes the saved candidate or music/control-edge preferences.
+
+The 2026-10-08 feedback pass makes these structural differences more pronounced.
+Shared primary-action and inspector containers are built once; providers declare
+inline transport, console, inspector, cue and plain-score capabilities. Layout
+reparents existing widgets and restores root order when leaving a side rail.
+The inspector reuses the regular music-layout choices. No candidate owns a
+separate setting, session, timer or microphone connection.
 
 Menu → Interface changes the candidate immediately, leaving the chooser open for
 comparison. Done returns to practice. The host adapter saves the allow-listed

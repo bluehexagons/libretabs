@@ -56,6 +56,11 @@ func cancel_pointer_action() -> void:
 	animate_feedback(Vector2.ONE)
 
 func _notification(what: int) -> void:
+	if what == NOTIFICATION_DRAW:
+		# Compact layouts remove the label after construction. Center that icon
+		# inside the actual hit target; labeled buttons keep normal icon/text flow.
+		var target: HorizontalAlignment = HORIZONTAL_ALIGNMENT_CENTER if text.is_empty() else HORIZONTAL_ALIGNMENT_LEFT
+		if icon_alignment != target: icon_alignment = target
 	if what == NOTIFICATION_SCROLL_BEGIN or what == NOTIFICATION_APPLICATION_FOCUS_OUT:
 		if is_instance_valid(help_timer): cancel_pointer_action()
 

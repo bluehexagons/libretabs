@@ -362,6 +362,10 @@ services and audio transport. Classic is the default; Focus, Touch and Workspace
 are comparison candidates. The surface/layout bridge retains named widget
 references in the composition root; this is not a complete production presenter
 rewrite. See `src/ui/interfaces/README.md` for extension instructions.
+Providers can now request inline transport, a separate console primary-action
+row or a score inspector, plus cue/plain-score policy. Those containers are
+built once; layout reparents the existing controls and restores root order on
+each switch. The inspector uses the same regular music-layout choices.
 
 [Decision 0006](decisions/0006-player-preferences-and-keyboard.md) defines the
 initial `PracticeSettings` service under `src/app`, validated independently of UI
@@ -508,6 +512,11 @@ It adds no clock or mixer. `HostAdapter` owns browser/viewport background change
 Web-only per-pixel transparency enables the WebGL alpha channel at context creation.
 Presentation choices use validated display-setting keys; capture activation and
 imported songs are never persisted. Native capture offers chroma-key margins.
+A session-only preview toolbar uses the composition root's transport actions.
+It reserves frame space while shown; Clean frame hides it explicitly, while tap
+or F10 restores it. The pointer remains visible. Changing toolbar visibility
+rebuilds static score ink; the optional native audit checks that clean-frame
+notation still renders.
 
 The numeric-field wrapper retains SpinBox as the range/value authority and only
 commits pending text when the user edited it, avoiding stale deferred display

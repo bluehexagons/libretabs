@@ -1,5 +1,8 @@
 # Evidence records
 
+Player/tuner feedback: [structural interfaces, capture controls and pitch
+response, 2026-10-08](player-feedback-2026-10-08.md).
+
 Saved settings and manual learned marks: [persistence, reset and restart checks,
 2026-10-08](local-state-2026-10-08.md).
 

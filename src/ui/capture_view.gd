@@ -12,6 +12,7 @@ var background: String = "transparent"
 var show_title: bool = false
 var zoom: float = 1.0
 var placement: String = "bottom"
+var controls_inset: float = 0
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -71,10 +72,11 @@ func capture_font(source: Font) -> Font:
 func arrange() -> void:
 	if card == null: return
 	var natural_height: float = ScoreLayout.row_height(symbols) + 16 + (40 if show_title else 0)
-	var factor: float = minf(zoom, maxf(0.1, minf((size.y - 32) / natural_height, (size.x - 32) / 256)))
+	var available_height: float = maxf(1, size.y - controls_inset)
+	var factor: float = minf(zoom, maxf(0.01, minf((available_height - 32) / natural_height, (size.x - 32) / 256)))
 	card.scale = Vector2.ONE * factor
 	card.size = Vector2(maxf(256, (size.x - 32) / factor), natural_height)
-	var y: float = 16
+	var y: float = controls_inset + 16
 	if placement == "bottom": y = size.y - natural_height * factor - 16
-	elif placement == "center": y = (size.y - natural_height * factor) / 2
+	elif placement == "center": y = controls_inset + (available_height - natural_height * factor) / 2
 	card.position = Vector2(16, maxf(0, y))
