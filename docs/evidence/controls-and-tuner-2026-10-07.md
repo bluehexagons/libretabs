@@ -86,3 +86,41 @@ Final local baseline: Python 55, Node 23, core 6623, live input 59, pitch 102,
 WAV replay 383, commands 74, synth 48, part audio 22, effects 46, practice UI 837,
 layout UI 820, Theater 145 and page following 274 checks; zero failures. Exact
 engine import/editor checks, failure-exit self-test, boot and whitespace pass.
+
+## Published release verification
+
+[`v0.0.1-prototype.14`](https://github.com/bluehexagons/libretabs/releases/tag/v0.0.1-prototype.14)
+was published at 2026-10-08 02:34 UTC (October 7 locally), from
+`91364aada1ef98b47c690828ccfa4b834cf8517b`.
+[Source CI](https://github.com/bluehexagons/libretabs/actions/runs/37718117848)
+and the complete [release/Pages workflow](https://github.com/bluehexagons/libretabs/actions/runs/37718117366)
+passed. An earlier run from 9a37621 was cancelled before publication to include
+the short-portrait listening and sound-restore fixes; it created no release.
+
+- Downloaded Windows/Linux/web archives pass ZIP integrity, SHA256SUMS and
+  manifest size/hash validation. Each BUILD.json contains prototype.14 and the
+  exact source above; engine/font/software notices are present.
+- The downloaded Linux binary opens in the managed desktop with private test
+  preferences and no Godot on PATH. Its 1100×700 client screenshot renders
+  correctly; it closes normally. No application errors; the known llvmpipe
+  VSync-mode warning remains. This does not establish Windows runtime support.
+- The public guide has prototype.14 download links; 320/390/1280 CSS widths at
+  100/200% text have no horizontal overflow and no missing SVG references.
+- Both public players pass HTTPS asset MIME/hash checks (nine assets each) and
+  render at 844×320 in VM Chromium 152. About on the main player displays
+  prototype.14. Play advances the timeline; Pause settles with zero active voices.
+  The compatibility build uses the main-thread mixer; its previously documented
+  timing limits remain.
+- The public threaded cache reports ready with matching release/activeRelease.
+  A reload with context networking disabled reaches READY with isolation intact;
+  an uncached request fails, proving network blocking. The intentional probe and
+  a missing BUILD.json request used during inspection are separate from app
+  diagnostics. Pages does not serve native isolation headers: its shipped worker
+  supplies them in the browser. The strict VM deployment checker passes on the
+  managed HTTPS preview; public checks verify actual browser isolation and each
+  manifest hash rather than treating missing origin headers as an app failure.
+
+Stable ignored artifacts: build/compact-controls-evidence (final local fixtures,
+screenshots and full verifier log) and build/prototype14-review (downloaded
+packages, manifest/checksums and native release capture/log). Physical device
+and musical acceptance are still the manual checks listed in the release notes.

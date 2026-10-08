@@ -35,7 +35,7 @@ is available on the managed network. It is not a public launch URL.
   Pages. Desktop packages use official release templates, not the editor.
   Checksums, notices, and curated or generated release notes accompany releases.
 - The latest public evaluation prerelease,
-  [`0.0.1-prototype.13`](https://github.com/bluehexagons/libretabs/releases/tag/v0.0.1-prototype.13),
+  [`0.0.1-prototype.14`](https://github.com/bluehexagons/libretabs/releases/tag/v0.0.1-prototype.14),
   was published on 2026-10-07 by that workflow. Its web, Windows, Linux, manifest,
   and checksum assets are public. All downloaded package checksums, ZIP integrity,
   build identities and notices passed review. The exact downloaded Linux package
@@ -106,4 +106,7 @@ The [controls and tuner follow-up](evidence/controls-and-tuner-2026-10-07.md)
 adds reachable landscape controls, one-action listening/practice entry, prominent
 instrument selection, optional input setup, musical mute with audible metronome,
 quieter backgrounds and a utility-focused Pages guide. The prototype.14 notes
-contain the next phone and instrument test checklist.
+contain the next phone and instrument test checklist. Its full local/CI checks,
+downloaded package identities/checksums, Linux launch and public Pages/browser
+checks passed. The threaded player retains isolation on a network-disabled
+reload; physical phone and microphone acceptance remain open.
