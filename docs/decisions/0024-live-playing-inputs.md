@@ -98,3 +98,21 @@ Landscape controls use a touch-scrollable column when available height cannot
 fit all actions, retaining keyboard focus following and normal touch target sizes.
 The default background uses a static woven texture on a flat base; legacy
 background preference identifiers remain valid with quieter shade alternatives.
+
+## Owner-feedback tuning refinement (2026-10-08)
+
+Correct fractional-period refinement using the raw YIN difference minimum,
+following [YIN step 5](https://www.ee.columbia.edu/~dpwe/e6820/papers/deChevK02-yin.pdf),
+and interpolate the confidence dip before thresholding. Short-period estimates
+are refined over several periods without changing the chosen fundamental. This
+addresses measured sharp bias; it applies no fixed offset and does not use the
+song's expected note or learn an instrument's tuning as correct.
+
+Analyze at most every 50 ms and require distinct fresh audio windows for the
+two-observation lock. Electronic piano starts at a lower level gate; calibrated
+room-noise, periodicity, clipping and stale-input gates still apply. The tuner
+needle uses three-observation median filtering and light smoothing, with a small
+center-indicator hysteresis. Those display choices never modify pitch feedback
+or hands-free command evidence. Actual phone/piano sensitivity, guitar steadiness
+and singing accuracy still need hardware comparison; synthetic fixtures alone
+cannot establish them.

@@ -26,6 +26,7 @@ var previous_rms: float = 0
 var last_block: int = 0
 var last_age: float = 0
 var analyzed_at: int = 0
+var analyzed_block: int = -1
 var candidate: int = -1
 var stable: int = 0
 var max_analysis_ms: float = 0
@@ -45,6 +46,8 @@ func reset() -> void:
 	candidate = -1
 	stable = 0
 	last_block = 0
+	analyzed_block = -1
+	analyzed_at = 0
 	previous_rms = 0
 	last_onset = -1
 	emitted_onset = -1
@@ -94,7 +97,7 @@ func open_strings() -> Array[int]:
 
 func invalidate_setup() -> void:
 	reset()
-	gate = 0.001 if profile == Profile.ELECTRONIC_PIANO else (0.0015 if profile == Profile.ACOUSTIC_PIANO else 0.003)
+	gate = 0.0002 if profile == Profile.ELECTRONIC_PIANO else (0.0015 if profile == Profile.ACOUSTIC_PIANO else 0.003)
 	noise_gate = 0
 	detector.gate = gate
 	setup_levels.clear()
@@ -152,8 +155,6 @@ func analyze_at(now: int) -> void:
 			setup_state = "INPUT_SETUP_FAILED" if noise > 0.03 else "INPUT_SETUP_NOTES"
 		setup_levels.clear()
 		setup_changed.emit()
-	if now - analyzed_at < 100: return
-	analyzed_at = now
 	if last_block == 0 or now - last_block > 250 or setup_state == "INPUT_SETUP_QUIET":
 		if last_block > 0 and now - last_block > 250:
 			reset()
@@ -161,6 +162,10 @@ func analyze_at(now: int) -> void:
 		latest = {"valid": false}
 		observation.emit(latest)
 		return
+	# Two distinct fresh windows establish a note; repeated idle frames cannot.
+	if now - analyzed_at < 50 or analyzed_block == last_block: return
+	analyzed_at = now
+	analyzed_block = last_block
 	var started: int = Time.get_ticks_usec()
 	detector.gate = effective_gate()
 	var result: Dictionary = detector.estimate()

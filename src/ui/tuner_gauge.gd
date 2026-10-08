@@ -6,6 +6,8 @@ var cents: float = 0
 var active: bool = false
 var pitch: int = -1
 var state_key: String = "INPUT_TUNER_START"
+var recent: Array[float] = []
+var in_tune: bool = false
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -28,7 +30,18 @@ func status_text() -> String:
 func observe(valid: bool, expected: int, deviation: float, status: String) -> void:
 	# Smooth only the visual needle, never the detector or feedback results.
 	# A lost/stale input clears immediately; a different target resets smoothing.
-	cents = lerpf(cents, deviation, 0.3) if valid and active and expected == pitch else deviation
+	if not valid or not active or expected != pitch: recent.clear()
+	if valid:
+		recent.append(deviation)
+		if recent.size() > 3: recent.pop_front()
+		var ordered: Array[float] = recent.duplicate()
+		ordered.sort()
+		var middle: float = ordered[ordered.size() / 2]
+		cents = lerpf(cents, middle, 0.5) if active and expected == pitch else deviation
+		in_tune = absf(cents) <= (10 if in_tune and active and expected == pitch else 8)
+	else:
+		cents = 0
+		in_tune = false
 	active = valid
 	pitch = expected if valid else -1
 	state_key = status
@@ -52,7 +65,7 @@ func _draw() -> void:
 	elif state_key == "INPUT_SETUP_QUIET": label_key = "INPUT_GAUGE_QUIET"
 	if active:
 		centered(LivePlaying.note_name(pitch), 40 * factor, roundi(32 * factor), ink)
-		label_key = "INPUT_GAUGE_CENTER" if absf(cents) <= 8 else ("INPUT_GAUGE_LOW" if cents < 0 else "INPUT_GAUGE_HIGH")
+		label_key = "INPUT_GAUGE_CENTER" if in_tune else ("INPUT_GAUGE_LOW" if cents < 0 else "INPUT_GAUGE_HIGH")
 	else:
 		var icon: Texture2D = UIIcons.get_tinted_icon(state_key, ink)
 		if icon != null: draw_texture_rect(icon, Rect2(Vector2(size.x / 2 - 16 * factor, 4 * factor), Vector2(32, 32) * factor), false)
