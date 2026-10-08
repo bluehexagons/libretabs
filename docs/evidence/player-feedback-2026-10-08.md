@@ -76,3 +76,31 @@ Retest piano pickup/intonation, guitar steadiness and singing with physical
 devices. OBS, Windows runtime, actual phone orientation/input, browser timing and
 offline network-disabled reload remain separate evidence gates. No new runtime
 dependency, persisted schema, music mutation or recording capability is added.
+
+## Published testing build
+
+[`v0.0.1-prototype.17`](https://github.com/bluehexagons/libretabs/releases/tag/v0.0.1-prototype.17)
+was published on 2026-10-08 from source
+`39ac79cdbd882aba72094f515ddd758a81d1ea74`. The
+[source checks](https://github.com/bluehexagons/libretabs/actions/runs/37834324138)
+and [release/Pages workflow](https://github.com/bluehexagons/libretabs/actions/runs/37835135700)
+both pass on that source, including reproducible generated inputs.
+
+Downloaded web, Windows and Linux packages pass manifest/checksum validation,
+ZIP integrity, exact BUILD.json source/version and license-notice checks.
+The exact Linux executable renders its welcome and score at 1100×700 with
+`/usr/bin:/bin` on PATH and a private test profile. Its window closes normally,
+with exit 0 and only the driver's unsupported V-Sync warning. Windows runtime
+remains untested. The native presentation audit was also repeated on this final
+source: 25 checks, zero failures.
+
+The public guide names prototype.17. Both public players pass HTTPS, MIME and
+all nine offline asset hashes. Ordinary navigation to the threaded player
+succeeds; read-only T3 evaluation sees the canvas element, isolation and cache
+readiness with the updated worker release ID. Snapshot still fails on the same
+T3 client and no runtime trace is returned, so rendering, interaction and audio
+are not certified by those observations. No forced worker activation or storage
+clearing was used. Follow the release notes for the physical retest.
+
+Ignored screenshots, logs, deployment metadata and downloaded-package reports
+remain in the primary checkout's `build/player-feedback-evidence` directory.

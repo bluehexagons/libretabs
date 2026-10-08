@@ -57,17 +57,20 @@ is available on the managed network. It is not a public launch URL.
   Pages. Desktop packages use official release templates, not the editor.
   Checksums, notices, and curated or generated release notes accompany releases.
 - The latest public evaluation prerelease,
-  [`0.0.1-prototype.16`](https://github.com/bluehexagons/libretabs/releases/tag/v0.0.1-prototype.16),
+  [`0.0.1-prototype.17`](https://github.com/bluehexagons/libretabs/releases/tag/v0.0.1-prototype.17),
   was published on 2026-10-08 by that workflow. Its web, Windows, Linux, manifest,
   and checksum assets are public. All downloaded package checksums, ZIP integrity,
   build identities and notices passed review. The exact downloaded Linux package
   ran without Godot on PATH; Windows runtime still needs a physical-device check.
-  The managed web build restores learned marks and tuner choices on reload. Both
-  public web builds pass all nine asset hashes and MIME checks, and the public
-  guide names prototype.16. Public runtime inspection hit repeated T3 snapshot
-  failures; it remains a manual check. See the
-  [local-state evidence](evidence/local-state-2026-10-08.md) for the source,
-  workflows and verification boundaries. The
+  The managed and public web builds pass all nine asset hashes and MIME checks,
+  and the public guide names prototype.17. Native rendering checks cover the
+  interface candidates and capture controls. Synthetic audio checks cover pitch
+  accuracy, soft-note response and steadier display behavior. Public runtime
+  inspection hit repeated T3 snapshot failures; it remains a manual check. See the
+  [player feedback evidence](evidence/player-feedback-2026-10-08.md) for the
+  source, workflows and next physical retest. The
+  [local-state evidence](evidence/local-state-2026-10-08.md) retains prototype.16's
+  browser checks for restoring learned marks and tuner choices. The
   [interface comparison](evidence/interface-comparison-2026-10-08.md) retains
   prototype.15's public rendering evidence.
   The Pages guide links to versioned downloads
