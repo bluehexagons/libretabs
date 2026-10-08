@@ -65,27 +65,23 @@ is available on the managed network. It is not a public launch URL.
   Pages. Desktop packages use official release templates, not the editor.
   Checksums, notices, and curated or generated release notes accompany releases.
 - The latest public evaluation prerelease,
-  [`0.0.1-prototype.17`](https://github.com/bluehexagons/libretabs/releases/tag/v0.0.1-prototype.17),
-  was published on 2026-10-08 by that workflow. Its web, Windows, Linux, manifest,
-  and checksum assets are public. All downloaded package checksums, ZIP integrity,
-  build identities and notices passed review. The exact downloaded Linux package
-  ran without Godot on PATH; Windows runtime still needs a physical-device check.
-  The managed and public web builds pass all nine asset hashes and MIME checks,
-  and the public guide names prototype.17. Native rendering checks cover the
-  interface candidates and capture controls. Synthetic audio checks cover pitch
-  accuracy, soft-note response and steadier display behavior. Public runtime
-  inspection hit repeated T3 snapshot failures; it remains a manual check. See the
-  [player feedback evidence](evidence/player-feedback-2026-10-08.md) for the
-  source, workflows and next physical retest. The
-  [local-state evidence](evidence/local-state-2026-10-08.md) retains prototype.16's
-  browser checks for restoring learned marks and tuner choices. The
-  [interface comparison](evidence/interface-comparison-2026-10-08.md) retains
-  prototype.15's public rendering evidence.
-  The Pages guide links to versioned downloads
-  when deployed with a release version; a standalone source deployment can show
-  “current source build” instead.
+  [`0.0.1-prototype.18`](https://github.com/bluehexagons/libretabs/releases/tag/v0.0.1-prototype.18),
+  was published on 2026-10-08 by that workflow. Its web, Windows, Linux, manifest
+  and checksum assets pass downloaded-package review. The exact Linux binary
+  renders welcome and practice without Godot on PATH; Windows runtime remains
+  open. Managed and public web assets pass hash/MIME checks, and the public guide
+  names prototype.18. Automated and native checks cover restrained hover,
+  bounded seeking, count-in dots and reachable phone timelines. T3 snapshots
+  still fail; browser interaction, physical phones and audible response remain
+  manual checks. See the [navigation evidence](evidence/practice-navigation-2026-10-08.md)
+  for source/workflows, artifacts and limits. Earlier records retain
+  [prototype.17's tuner/capture checks](evidence/player-feedback-2026-10-08.md),
+  [prototype.16's saved-state checks](evidence/local-state-2026-10-08.md) and
+  [prototype.15's public rendering evidence](evidence/interface-comparison-2026-10-08.md).
+  The Pages guide links to versioned downloads when deployed with a release
+  version; a standalone source deployment can show “current source build” instead.
 - The repository is public. The [instructional/download site](https://bluehexagons.github.io/libretabs/)
-  now links to live threaded and compatibility players on Pages. Public Chromium
+  now links to live threaded and compatibility players on Pages. Earlier prototype Chromium checks
   confirmed both builds render; the threaded build remains isolated on an offline
   reload. Private vulnerability reporting is enabled in GitHub.
 - The Godot infra-tools manifest and export script support explicit VM

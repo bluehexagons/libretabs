@@ -78,3 +78,31 @@ Browser rendering, pointer/touch interaction, device-pixel mapping, offline
 reload and audible response remain manual checks. Native checks do not stand
 in for physical phones or browser timing; M0 platform/musician/beginner gates
 remain open.
+
+## Published testing build
+
+[`v0.0.1-prototype.18`](https://github.com/bluehexagons/libretabs/releases/tag/v0.0.1-prototype.18)
+was published on 2026-10-08 from source
+`1041c72dedf924f7c709ef33e0c2000bf957bf83`. The
+[source checks](https://github.com/bluehexagons/libretabs/actions/runs/37854854083)
+and [release/Pages workflow](https://github.com/bluehexagons/libretabs/actions/runs/37854854261)
+pass on that exact source.
+
+Downloaded web, Windows and Linux packages pass all manifest/checksum, ZIP
+integrity, exact BUILD.json source/version and notice checks. The downloaded
+Linux binary renders Quick start and the regular paired score with its timeline
+at 1100×700, using a private test profile and `/usr/bin:/bin` on PATH. The first
+smoke launch exited normally at its frame limit before a second capture; a fresh
+launch then rendered the practice view and closed normally, exit 0. Logs contain
+only the existing unsupported V-Sync warning. Windows runtime remains untested.
+
+The public guide names prototype.18. Both Pages players pass trusted HTTPS,
+MIME and all nine offline asset hashes. T3 navigation to the public player
+succeeds, and read-only evaluation finds its canvas element, isolation and
+controlling worker. Snapshot still fails, and no runtime trace is returned;
+these observations do not certify rendering, interaction or audio. No cache
+clearing, worker removal, forced activation or browser substitution was used.
+The release notes list the physical phone and mouse/keyboard retest.
+
+Current screenshots, logs and downloaded-package reports are retained outside
+Git in the primary checkout's `build/practice-navigation-evidence` directory.
