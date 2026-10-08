@@ -344,6 +344,12 @@ Engineering measures:
 
 ## Current evaluation scope
 
+The owner-requested [interface comparison slice](decisions/0027-interchangeable-practice-interfaces.md)
+offers Classic, Focus, Touch and Workspace in Menu → Interface. They share the
+same song, timeline and input services; switching changes presentation rather
+than starting another session. Classic remains the default until a redesign is
+selected. Resizing adapts the candidate without changing music preferences.
+
 The runnable M0 prototype is a feasibility slice, not the completed product described above. [Decision 0002](decisions/0002-m0-evaluation-build.md) records its smaller import, notation, and audio contracts; [M0 evidence](evidence/m0-prototype.md) provides evaluation steps and next gates.
 
 The owner-feedback changes to the evaluation practice view and tempo/volume controls are recorded in [decision 0003](decisions/0003-practice-feedback.md).

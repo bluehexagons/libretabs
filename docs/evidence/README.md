@@ -1,5 +1,8 @@
 # Evidence records
 
+Interface comparison: [shared presentation providers and four candidates,
+2026-10-08](interface-comparison-2026-10-08.md).
+
 Evidence files are dated snapshots of a particular build, review or device
 check. They preserve what was observed at that point, including older test
 counts and unresolved issues; they are not a live status dashboard.

@@ -353,6 +353,16 @@ The adapter must be optional, request permission only after an explicit action, 
 
 ## Evaluation application services
 
+[Decision 0027](decisions/0027-interchangeable-practice-interfaces.md) separates
+shared widget construction (`PracticeSurface`) and responsive geometry
+(`PracticeLayout`) from application coordination. Interface providers accept
+viewport/text/edge/handedness/Theater values and return a scene-independent
+`PracticePresentation` policy. Switching reuses controls, score, song, input
+services and audio transport. Classic is the default; Focus, Touch and Workspace
+are comparison candidates. The surface/layout bridge retains named widget
+references in the composition root; this is not a complete production presenter
+rewrite. See `src/ui/interfaces/README.md` for extension instructions.
+
 [Decision 0006](decisions/0006-player-preferences-and-keyboard.md) defines the
 initial `PracticeSettings` service under `src/app`, validated independently of UI
 and storage. `KeyboardNotes` is a pure held-key/pitch model; the existing mixer

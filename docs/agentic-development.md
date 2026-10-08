@@ -210,8 +210,13 @@ The September 2026 planning inventory reported desktop and web templates; rechec
 ```bash
 basaltw agent doctor --capability development --json
 python3 scripts/verify.py
+python3 scripts/prepare_export.py
 basaltwater-web publish godot --json
 ```
+
+The managed Godot exporter reads the preset's embedded HTML head. Run
+`prepare_export.py` after changing either platform bridge so the preview includes
+the current JavaScript; the release/export scripts perform this step themselves.
 
 Use the `game` value returned by publication:
 

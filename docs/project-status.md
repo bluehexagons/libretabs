@@ -2,7 +2,7 @@
 
 To use the current player, start with the [user guide](user-guide.md).
 
-Snapshot date: 2026-10-07. Current phase: evaluating public **prototype releases**.
+Snapshot date: 2026-10-08. Current phase: evaluating public **prototype releases**.
 
 The [evidence records](evidence/README.md) are dated snapshots. This handoff is
 the current summary; older measurements remain useful for their stated scope.
@@ -18,6 +18,12 @@ input and an on-screen piano provide local live-playing feedback; microphone
 pitch estimates are limited to one note at a time. The default library contains
 29 public-domain teaching arrangements and an original two-hand piano study. The
 six-lesson course and musical/platform acceptance gates remain incomplete.
+
+Menu → Interface compares Classic, Focus, Touch and Workspace over the same
+session. Classic remains the default; selection is saved on the device. Shared
+widget construction and geometry are separate from application coordination.
+See the [interface comparison](evidence/interface-comparison-2026-10-08.md) and
+decision 0027 for extension instructions and the current refactoring boundary.
 
 Godot is retained by [owner decision 0005](decisions/0005-godot-and-appearance.md).
 Full screen-reader integration is deferred; it no longer blocks product work or

@@ -1,6 +1,13 @@
 # SPDX-License-Identifier: Apache-2.0
 extends Control
 
+var interface_id: String = "classic"
+var interface_provider: PracticeInterface = PracticeInterface.new()
+var presentation: PracticePresentation = PracticePresentation.new()
+var interface_choices: Dictionary = {}
+var interface_button: Button
+var interface_navigation: VBoxContainer
+
 var page_swipe_start: Vector2
 var capture_view: CaptureView
 var capture_active: bool = false
@@ -316,6 +323,8 @@ func _ready() -> void:
 	font_style = host.load_display_choice("font", ["rounded", "simple"], "rounded")
 	control_position = host.load_display_choice("control_position", ["left", "top", "right", "bottom"], "bottom")
 	handedness = host.load_display_choice("handedness", ["left", "right"], "right")
+	if persist_preferences: interface_id = host.load_display_choice("interface", PracticeInterfaces.IDS, "classic")
+	interface_provider = PracticeInterfaces.create(interface_id)
 	startup_help_enabled = host.load_display_choice("startup_help", ["show", "hide"], "show") == "show" if persist_preferences else true
 	var notation_result: Dictionary = host.load_notation_rows() if persist_preferences else {"rows": NotationRows.defaults(), "status": "ok"}
 	notation_rows.assign(notation_result.rows)
@@ -877,326 +886,37 @@ func surface(color: String, padding: int = 16) -> StyleBoxFlat:
 	return box
 
 func build_ui() -> void:
-	theme = UIAppearance.make_theme(false, 20, font_style)
-	backdrop = ThemeBackdrop.new()
-	add_child(backdrop)
-	root_box = BoxContainer.new()
-	root_box.vertical = true
-	root_box.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	root_box.add_theme_constant_override("separation", 0)
-	add_child(root_box)
-	root_box.visibility_changed.connect(func() -> void: backdrop.visible = root_box.visible)
-	scroll = ScrollContainer.new()
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	scroll.follow_focus = true
-	root_box.add_child(scroll)
-	var margin: MarginContainer = MarginContainer.new()
-	content_margin = margin
-	margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	for side: String in ["left", "right", "top", "bottom"]:
-		margin.add_theme_constant_override("margin_" + side, 16)
-	scroll.add_child(margin)
-	panel = VBoxContainer.new()
-	panel.add_theme_constant_override("separation", 12)
-	margin.add_child(panel)
-	header = BoxContainer.new()
-	header_margin = MarginContainer.new()
-	header_margin.draw.connect(func() -> void:
-		if tv_active: header_margin.draw_style_box(UIAppearance.panel_style(dark_mode, 8), Rect2(Vector2.ZERO, header_margin.size)))
-	root_box.add_child(header_margin)
-	root_box.move_child(header_margin, 0)
-	header_scroll = TouchScrollContainer.new()
-	header_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	header_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	header_scroll.follow_focus = true
-	header_scroll.input_allowed = func() -> bool: return not menu_overlay.visible and (picker_overlay == null or not picker_overlay.visible) and not capture_active and not tv_tucked
-	header_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	header_margin.add_child(header_scroll)
-	header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	header_scroll.add_child(header)
-	brand_label = label("BRAND", 24)
-	brand_label.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	brand_label.autowrap_mode = TextServer.AUTOWRAP_OFF
-	brand_label.add_theme_font_override("font", UIAppearance.ui_font(font_style, true))
-	header.add_child(brand_label)
-	header_actions = HFlowContainer.new()
-	header_actions.add_theme_constant_override("separation", 8)
-	header_actions.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	header_actions.alignment = FlowContainer.ALIGNMENT_END
-	header.add_child(header_actions)
-	songs_button = button("SONG_MENU", func() -> void: toggle_drawer("SONG_MENU"))
-	header_actions.add_child(songs_button)
-	import_button = button("IMPORT_MIDI", open_midi)
-	header_actions.add_child(import_button)
-	tv_button = button("TV_VIEW", enter_tv)
-	tv_button.toggle_mode = true
-	header_actions.add_child(tv_button)
-	tv_button.gui_input.connect(theater_pointer_options)
-	fullscreen_button = button("FULLSCREEN", toggle_fullscreen)
-	header_actions.add_child(fullscreen_button)
-	tuner_button = button("TUNER", func() -> void: toggle_drawer("TUNER"))
-	header_actions.add_child(tuner_button)
-	menu_button = button("MENU", func() -> void: toggle_drawer("MENU"))
-	header_actions.add_child(menu_button)
-	song_title = label("DEMO_0", 32)
-	song_title.add_theme_font_override("font", UIAppearance.ui_font(font_style, true))
-	theater_context = HBoxContainer.new()
-	theater_context.add_theme_constant_override("separation", 16)
-	panel.add_child(theater_context)
-	theater_context.hide()
-	panel.add_child(song_title)
-	status = label("START_HINT", 18)
-	add_child(status)
-	status.hide()
-	var details: VBoxContainer = VBoxContainer.new()
-	panel.add_child(details)
-	cue = StableMessageLabel.new()
-	cue.text = tr("CUE_READY")
-	cue.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	cue.add_theme_font_size_override("font_size", 24)
-	cue.set_meta("base_font_size", 24)
-	cue.examples = func() -> Array[String]:
-		var widest: String = ""
-		var font: Font = cue.get_theme_font("font")
-		for pitch: int in range(128):
-			var name_text: String = LivePlaying.note_name(pitch)
-			if font.get_string_size(name_text).x > font.get_string_size(widest).x: widest = name_text
-		return [tr("CUE_READY"), tr("CUE_REST"), tr("CUE_PICK_OMITTED"), tr("CUE_UNPLACED"), tr("CUE_NOTE") % [6, 22], tr("CUE_MANY_PITCHES") % 128, tr("CUE_PITCHES") % ", ".join([widest, widest, widest])]
-	# Share the compact cue row with the arrangement disclosure.
-	details.add_child(cue)
-	notice_button = button("ARRANGEMENT_SHORT", func() -> void: toggle_drawer("DETAILS"))
-	details.add_child(notice_button)
-	view_button = button("SCORE_VIEW", func() -> void: toggle_drawer("SCORE_VIEW"))
-	reading_tools = flow(panel)
-	reading_tools.add_child(view_button)
-	layout_button = button("LAYOUTS", func() -> void: toggle_drawer("LAYOUTS"))
-	reading_tools.add_child(layout_button)
-	build_music_layout_controls(reading_tools, true)
-	tv_inline_zoom = BoxContainer.new()
-	reading_tools.add_child(tv_inline_zoom)
-	build_tv_zoom(tv_inline_zoom)
-	notice_button.reparent(reading_tools)
-	menu_overlay = Control.new()
-	menu_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(menu_overlay)
-	var shade: ColorRect = ColorRect.new()
-	shade.color = Color(0.08, 0.12, 0.22, 0.65)
-	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	shade.gui_input.connect(func(event: InputEvent) -> void:
-		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed: close_menu())
-	menu_overlay.add_child(shade)
-	drawer = PanelContainer.new()
-	drawer.add_theme_stylebox_override("panel", surface("ffffff"))
-	menu_overlay.add_child(drawer)
-	var menu_column: VBoxContainer = VBoxContainer.new()
-	drawer.add_child(menu_column)
-	var drawer_header: HFlowContainer = flow(menu_column)
-	menu_back = button("MENU_BACK", go_back)
-	drawer_header.add_child(menu_back)
-	menu_close = button("CLOSE", close_menu)
-	drawer_header.add_child(menu_close)
-	menu_scroll = TouchScrollContainer.new()
-	menu_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	menu_scroll.follow_focus = true
-	menu_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	menu_column.add_child(menu_scroll)
-	drawer_body = VBoxContainer.new()
-	drawer_body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	drawer_body.add_theme_constant_override("separation", 14)
-	menu_scroll.add_child(drawer_body)
-	drawer_title = label("MENU", 24)
-	# Keep the section name visible while its long help/settings content scrolls.
-	menu_column.add_child(drawer_title)
-	menu_column.move_child(drawer_title, 1)
-	build_drawers()
-	build_color_legend(drawers["HELP"] as VBoxContainer)
-	drawers["MENU"].add_child(button("LAST_STATUS", func() -> void:
-		close_menu()
-		if not last_status.is_empty(): status_toast.show_message(tr(last_status))))
-	notice_button.reparent(drawers["SCORE_VIEW"])
-	drawer.hide()
-	menu_overlay.hide()
-	paper = PanelContainer.new()
-	paper.mouse_filter = Control.MOUSE_FILTER_PASS
-	paper.gui_input.connect(page_gesture)
-	paper.add_theme_stylebox_override("panel", surface("ffffff", 8))
-	panel.add_child(paper)
-	score_frame = ScoreFrame.new()
-	paper.add_child(score_frame)
-	score = ScoreView.new()
-	score.shape_cues = shape_cues
-	score.set_notation_rows(notation_rows)
-	score.seek_requested.connect(seek_tick)
-	score.page_turn_requested.connect(turn_page)
-	score.follow_changed.connect(update_play_control)
-	score_frame.add_child(score)
-	score_frame.score = score
-	panel.move_child(details, panel.get_children().find(paper) + 1)
-	live = LivePlaying.new()
-	live.context = input_context
-	playing_devices.live = live
-	listening.live = live
-	panel.add_child(live)
-	live.settings_requested.connect(func() -> void: toggle_drawer("INPUTS"))
-	live.note_on.connect(audio.live_on)
-	live.note_off.connect(audio.live_off)
-	live.live_changed.connect(func(notes: Array[Dictionary]) -> void:
-		score.set_live(notes)
-		score_frame.update_overview()
-		if capture_active: capture_view.score.set_live(notes))
-	var navigation: HBoxContainer = HBoxContainer.new()
-	navigation.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	seek_navigation = navigation
-	panel.add_child(navigation)
+	PracticeSurface.build(self)
 
-	seek = HSlider.new()
-	# Source ticks keep a scrub at the same precision as the shared transport.
-	# Measures remain a reading aid, rather than artificial seek boundaries.
-	seek.min_value = 0
-	seek.max_value = 1
-	seek.step = 1
-	seek.scrollable = false
-	seek.custom_minimum_size = Vector2(40, 44)
-	seek.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	seek.focus_mode = Control.FOCUS_ALL
-	seek.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	seek.tooltip_text = tr("SEEK_CONTINUOUS")
-	seek.drag_started.connect(begin_seek_drag)
-	seek.drag_ended.connect(end_seek_drag)
-	seek.gui_input.connect(seek_input)
-	seek.value_changed.connect(seek_tick)
-	navigation.add_child(seek)
-	seek_label = label("SEEK_POSITION", 16)
-	seek_label.autowrap_mode = TextServer.AUTOWRAP_WORD
-	seek_label.custom_minimum_size.x = 112
-	seek_label.size_flags_horizontal = Control.SIZE_SHRINK_END
-	seek_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	seek_label.tooltip_text = tr("SEEK_CONTINUOUS")
-	navigation.add_child(seek_label)
+func change_interface(id: String) -> void:
+	if id not in PracticeInterfaces.IDS or id == interface_id: return
+	interface_id = id
+	interface_provider = PracticeInterfaces.create(id)
+	for choice: String in interface_choices:
+		(interface_choices[choice] as Button).set_pressed_no_signal(choice == id)
+		(interface_choices[choice] as Button).icon = UIIcons.get_icon("INTERFACE_SELECTED" if choice == id else PracticeInterfaces.LABELS[choice])
+	responsive()
+	if persist_preferences and not host.save_display_choice("interface", id): set_status("STORAGE_SESSION")
 
-	page_navigation = HBoxContainer.new()
-	page_navigation.add_theme_constant_override("separation", 8)
-	panel.add_child(page_navigation)
-	page_previous = button("PAGE_PREVIOUS", func() -> void: turn_page(-1))
-	page_previous.icon = UIIcons.get_icon("PREVIOUS")
-	page_navigation.add_child(page_previous)
-	page_label = label("PAGE_NUMBER", 16)
-	page_label.autowrap_mode = TextServer.AUTOWRAP_OFF
-	page_label.clip_text = true
-	page_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	page_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	page_navigation.add_child(page_label)
-	page_next = button("PAGE_NEXT", func() -> void: turn_page(1))
-	page_next.icon = UIIcons.get_icon("NEXT")
-	page_navigation.add_child(page_next)
-	page_follow = button("PAGE_FOLLOW", toggle_page_follow)
-	page_follow.toggle_mode = true
-	page_navigation.add_child(page_follow)
-	for item: Button in [page_previous, page_next, page_follow]:
-		item.autowrap_mode = TextServer.AUTOWRAP_OFF
-		item.clip_text = true
-	page_navigation.hide()
-	# Keep play/pause reachable while the score and settings scroll on phones.
-	dock_margin = MarginContainer.new()
-	root_box.add_child(dock_margin)
-	dock_panel = PanelContainer.new()
-	dock_panel.add_theme_stylebox_override("panel", surface("ffffff", 12))
-	dock_margin.add_child(dock_panel)
-	dock = BoxContainer.new()
-	dock.vertical = true
-	dock.alignment = BoxContainer.ALIGNMENT_CENTER
-	dock.add_theme_constant_override("separation", 8)
-	dock_panel.add_child(dock)
-	transport_row = HFlowContainer.new()
-	transport_row.add_theme_constant_override("h_separation", 8)
-	transport_row.add_theme_constant_override("v_separation", 4)
-	transport_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	transport_row.alignment = FlowContainer.ALIGNMENT_CENTER
-	transport_row.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	dock.add_child(transport_row)
-	play_button = button("PLAY", activate_play_control)
-	play_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	play_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	play_button.custom_minimum_size.y = 64
-	for mode: String in ["normal", "hover", "pressed"]:
-		play_button.add_theme_stylebox_override(mode, surface("4665d8" if mode == "normal" else "3551bd", 12))
-	for mode: String in ["font_color", "font_focus_color", "font_hover_color", "font_pressed_color"]:
-		play_button.add_theme_color_override(mode, Color.WHITE)
-	transport_row.add_child(play_button)
-	count_badge = Label.new()
-	count_badge.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	count_badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	count_badge.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	count_badge.add_theme_font_size_override("font_size", 28)
-	count_badge.add_theme_color_override("font_color", Color.WHITE)
-	count_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	play_button.add_child(count_badge)
-	count_badge.hide()
-	stop_button = button("RESTART", restart_song)
-	stop_button.icon = UIIcons.get_icon("REPLAY")
-	stop_button.custom_minimum_size.x = 56
-	transport_row.add_child(stop_button)
-	quick_row = flow(dock)
-	quick_row.add_child(quick_tuner)
-	quick_row.add_child(quick_mute)
-	quick_row.alignment = FlowContainer.ALIGNMENT_CENTER
-	quick_row.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	speed_control = PanelContainer.new()
-	speed_control.custom_minimum_size.x = 144
-	speed_control.custom_minimum_size.y = 64
-	speed_control.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	quick_row.add_child(speed_control)
-	quick_row.move_child(speed_control, 0)
-	speed_unit_layout = BoxContainer.new()
-	speed_unit_layout.alignment = BoxContainer.ALIGNMENT_CENTER
-	speed_unit_layout.add_theme_constant_override("separation", 6)
-	speed_control.add_child(speed_unit_layout)
-	tempo_button = button("TEMPO", func() -> void: toggle_drawer("TEMPO"))
-	tempo_button.autowrap_mode = TextServer.AUTOWRAP_OFF
-	tempo_button.remove_meta("color_role")
-	tempo_button.theme_type_variation = "TempoDisplayButton"
-	tempo_button.custom_minimum_size.y = 48
-	tempo_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	speed_unit_layout.add_child(tempo_button)
-	main_speed = RelativeSpeedSlider.new()
-	main_speed.scrollable = false
-	main_speed.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	main_speed.theme_type_variation = "TempoSlider"
-	main_speed.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	main_speed.min_value = 25
-	main_speed.max_value = 200
-	main_speed.step = 1
-	main_speed.value = 100
-	main_speed.custom_minimum_size = Vector2(120, 48)
-	main_speed.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	main_speed.tooltip_text = tr("SPEED")
-	main_speed.drag_started.connect(func() -> void: speed_dragging = true)
-	main_speed.drag_ended.connect(func(changed: bool) -> void:
-		speed_dragging = false
-		if changed: set_speed(main_speed.value / 100.0)
-		else: update_tempo())
-	main_speed.value_changed.connect(func(value: float) -> void:
-		if speed_dragging: tempo_button.text = tr("TEMPO_BUTTON") % roundi(value)
-		else: set_speed(value / 100.0))
-	speed_unit_layout.add_child(main_speed)
-	main_speed.press_control = tempo_button
-	main_speed.tap_control.connect(func() -> void: toggle_drawer("TEMPO"))
-	metro_button = button("CLICK_ON", func() -> void: set_metronome(not metro_check.button_pressed))
-	metro_button.toggle_mode = true
-	metro_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	transport_row.add_child(metro_button)
-	loop_button = button("LOOP_TOOL", func() -> void: toggle_drawer("LOOP_TOOL"))
-	loop_button.toggle_mode = true
-	loop_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	# This opens an editor; the pressed appearance reports the loop setting.
-	loop_button.pressed.connect(update_loop_controls)
-	transport_row.add_child(loop_button)
-	transport_row.move_child(loop_button, transport_row.get_children().find(metro_button))
-	update_metronome()
-	update_loop_controls()
-
+func build_interface_menu() -> void:
+	var choices: VBoxContainer = section("INTERFACE")
+	choices.add_child(label("INTERFACE_HELP", 18))
+	for id: String in PracticeInterfaces.IDS:
+		var card: VBoxContainer = VBoxContainer.new()
+		card.add_theme_constant_override("separation", 4)
+		choices.add_child(card)
+		var action: Button = button(PracticeInterfaces.LABELS[id], func() -> void: change_interface(id))
+		action.toggle_mode = true
+		action.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		action.tooltip_text = tr(PracticeInterfaces.HELP[id])
+		action.set_pressed_no_signal(interface_id == id)
+		action.icon = UIIcons.get_icon("INTERFACE_SELECTED" if interface_id == id else PracticeInterfaces.LABELS[id])
+		# The active choice is still a choice, not an off switch.
+		action.pressed.connect(func() -> void: action.set_pressed_no_signal(interface_id == id))
+		card.add_child(action)
+		interface_choices[id] = action
+		card.add_child(label(PracticeInterfaces.HELP[id], 16))
+	choices.add_child(button("LAYOUT_DONE", close_menu))
 
 func section(key: String) -> VBoxContainer:
 	var content: VBoxContainer = VBoxContainer.new()
@@ -1330,7 +1050,7 @@ func set_startup_help(enabled: bool) -> void:
 
 func build_drawers() -> void:
 	var menu_index: VBoxContainer = section("MENU")
-	for key: String in ["SONG_MENU", "LAYOUTS", "INPUTS", "TUNER", "SETTINGS", "HELP"]:
+	for key: String in ["SONG_MENU", "LAYOUTS", "INPUTS", "TUNER", "INTERFACE", "SETTINGS", "HELP"]:
 		var entry: Button = button(key, func() -> void: toggle_drawer(key))
 		entry.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		entry.custom_minimum_size.y = 56
@@ -1344,6 +1064,7 @@ func build_drawers() -> void:
 	menu_fullscreen_button = button("FULLSCREEN", toggle_fullscreen)
 	menu_fullscreen_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	menu_index.add_child(menu_fullscreen_button)
+	build_interface_menu()
 	build_welcome_menu()
 	var control_help: VBoxContainer = section("CONTROL_HELP")
 	help_text = label("TOUCH_HELP")
@@ -1619,7 +1340,7 @@ func build_drawers() -> void:
 	warning = label("PROTOTYPE_LIMIT", 18)
 	details.add_child(warning)
 	var settings: VBoxContainer = section("SETTINGS")
-	for key: String in ["TEMPO", "SCORE_VIEW", "LAYOUTS", "LOOP_TOOL", "SOUND", "SOUND_EFFECTS", "DISPLAY", "KEYBOARD", "INPUTS", "TUNER", "AUDIO_COMMANDS", "TV_VIEW"]: settings.add_child(button(key, func() -> void: toggle_drawer(key)))
+	for key: String in ["INTERFACE", "TEMPO", "SCORE_VIEW", "LAYOUTS", "LOOP_TOOL", "SOUND", "SOUND_EFFECTS", "DISPLAY", "KEYBOARD", "INPUTS", "TUNER", "AUDIO_COMMANDS", "TV_VIEW"]: settings.add_child(button(key, func() -> void: toggle_drawer(key)))
 	settings_notice = label("SETTINGS_SAVED", 18)
 	settings.add_child(settings_notice)
 	settings.add_child(button("RESET_PRACTICE", reset_preferences))
@@ -2496,199 +2217,14 @@ func reveal_scale_choice() -> void:
 	if scale_picker.is_visible_in_tree(): menu_scroll.ensure_control_visible(scale_picker)
 
 func responsive() -> void:
-	if tv_controls_tween != null: tv_controls_tween.kill()
-	fit_position_label()
-	header_margin.queue_redraw()
-	compact = size.y < 780 or (theme.default_font_size >= 30 and size.y < 1000)
-	var short_screen: bool = size.x > size.y and size.y < 500 and size.x >= 480
-	landscape = short_screen
-	var effective_position: String = control_position
-	if landscape and control_position in ["top", "bottom"]:
-		effective_position = handedness
-	elif size.x < 600 and size.y >= size.x and control_position in ["left", "right"]:
-		effective_position = "bottom"
-	effective_control_position = effective_position
-	var side_dock: bool = effective_position in ["left", "right"]
-	controls_on_side = side_dock
-	set_theater_context_layout(tv_active and not side_dock and size.x >= 1200 and theme.default_font_size < 30)
-	tight_controls = not side_dock and size.y < 440
-	root_box.vertical = not side_dock
-	header.vertical = side_dock
-	header_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO if side_dock else ScrollContainer.SCROLL_MODE_DISABLED
-	header_margin.size_flags_vertical = Control.SIZE_EXPAND_FILL if side_dock else Control.SIZE_FILL
-	header_scroll.scroll_vertical = 0
-	apply_control_layout(effective_position)
-	header_margin.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN if side_dock or (tv_active and handedness == "left") else (Control.SIZE_SHRINK_END if tv_active else Control.SIZE_FILL)
-	header_actions.custom_minimum_size.x = 0
-	for side: String in ["left", "right", "top", "bottom"]:
-		header_margin.add_theme_constant_override("margin_" + side, (4 if side in ["left", "right"] else (8 if side == "top" else 0)) if side_dock else ((16 if tv_active else maxi(16, int((size.x - 1280) / 2))) if side in ["left", "right"] else 8))
-	# Keep direct speed adjustment at every scale. Reduce auxiliary actions
-	# before taking space away from the score.
-	if menu_tween != null: menu_tween.kill()
-	drawer.modulate.a = 1
-	var expanded_controls: bool = theme.default_font_size < 30
-	var header_icons: bool = side_dock or size.x < 1100 or not expanded_controls
-	for item: Button in [songs_button, import_button, tv_button, fullscreen_button, menu_button]:
-		var key: String = "SONG_MENU" if item == songs_button else ("IMPORT_MIDI" if item == import_button else ("TV_VIEW" if item == tv_button else (("EXIT_FULLSCREEN" if host.is_fullscreen() else "FULLSCREEN") if item == fullscreen_button else "MENU")))
-		item.text = "" if header_icons else tr(key)
-		item.icon = UIIcons.get_icon(key) if header_icons or size.x >= 760 else null
-		item.custom_minimum_size.x = 56 if header_icons else 0
-	songs_button.show()
-	import_button.visible = not side_dock and not tv_active
-	# The same actions remain in Menu; retain Songs and Menu on short phones.
-	tv_button.visible = not side_dock or size.y >= 360
-	fullscreen_button.visible = not side_dock or size.y >= 360
-	if not side_dock and size.x >= 600 and expanded_controls:
-		tv_button.text = tr("TV_VIEW")
-	theater_toggle.text = tr("TV_EXIT" if tv_active else "TV_ENTER")
-	tv_button.set_pressed_no_signal(tv_active)
-	tv_button.tooltip_text = tr("THEATER_EXIT_TIP" if tv_active else "THEATER_ENTER_TIP")
-	header_actions.alignment = FlowContainer.ALIGNMENT_CENTER if side_dock or size.x < 760 else (FlowContainer.ALIGNMENT_BEGIN if handedness == "left" else FlowContainer.ALIGNMENT_END)
-	tempo_button.icon = UIIcons.get_icon("TEMPO")
-	if tight_controls: tempo_button.icon = null
-	quick_row.visible = true
-	tempo_button.visible = true
-	metro_button.visible = expanded_controls and not tight_controls and (not side_dock or size.y >= 320)
-	loop_button.visible = not tight_controls and not tv_active
-	stop_button.visible = not tight_controls and not landscape and (not tv_active or size.x >= 760)
-	stop_button.text = "" if side_dock or size.x < 760 or tv_active else tr("RESTART")
-	stop_button.tooltip_text = tr("TIP_RESTART")
-	update_play_control()
-	metro_button.text = tr("CLICK_ON" if metro_check.button_pressed else "CLICK_OFF") if not side_dock and size.x >= 760 else ""
-	metro_button.custom_minimum_size.x = 56
-	update_loop_controls()
-	dock_panel.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 4 if side_dock else 10, appearance_mode == "midnight"))
-	speed_control.add_theme_stylebox_override("panel", UIAppearance.tempo_unit_style(dark_mode, 2 if side_dock else 7, appearance_mode == "midnight"))
-	# Keep score drawing (including the opaque clef gutter) inside the rounded border.
-	paper.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 10, appearance_mode == "midnight"))
-	for side: String in ["left", "right", "top", "bottom"]:
-		var inset: int = 8 if side_dock else (12 if side in ["left", "right", "bottom"] else 4)
-		if not side_dock and side in ["left", "right"]: inset = (inset if tv_active else maxi(inset, int((size.x - 1320) / 2)))
-		dock_margin.add_theme_constant_override("margin_" + side, inset)
-	dock.custom_minimum_size.x = 0
-	dock.add_theme_constant_override("separation", 4 if side_dock else 8)
-	if side_dock: dock.custom_minimum_size.x = 144 if expanded_controls else 152
-	speed_unit_layout.vertical = side_dock
-	speed_unit_layout.add_theme_constant_override("separation", 0 if side_dock else 6)
-	speed_control.custom_minimum_size.x = (144 if expanded_controls else 152) if side_dock else (320 if size.x >= 760 else minf(240, size.x - 80))
-	speed_control.custom_minimum_size.y = 72 if side_dock else 56
-	main_speed.custom_minimum_size = Vector2(112 if side_dock else (176 if size.x >= 760 else minf(100, maxf(64, size.x - 220))), 24 if side_dock else 48)
-	if tight_controls:
-		speed_control.custom_minimum_size.x = 0
-		main_speed.custom_minimum_size.x = 64
-	tempo_button.custom_minimum_size.x = 0 if side_dock else 104
-	tempo_button.custom_minimum_size.y = 44 if side_dock else 48
-	if side_dock and (size.y < 360 or not expanded_controls):
-		dock.custom_minimum_size.x = 144 if expanded_controls else 164
-		speed_unit_layout.vertical = false
-		tempo_button.icon = null
-		tempo_button.custom_minimum_size.y = 40
-		main_speed.custom_minimum_size = Vector2(48 if expanded_controls else 32, 40)
-		speed_control.custom_minimum_size = Vector2(dock.custom_minimum_size.x, 44)
-		for edge: String in ["top", "bottom"]: dock_margin.add_theme_constant_override("margin_" + edge, 0)
-
-	if not side_dock and not expanded_controls and size.x < 760: main_speed.custom_minimum_size.x = 64
-	brand_label.visible = not tv_active and not side_dock and size.x >= (760 if expanded_controls else 1100)
-	menu_button.size_flags_horizontal = Control.SIZE_FILL if side_dock else Control.SIZE_SHRINK_END
-	header.alignment = BoxContainer.ALIGNMENT_BEGIN if side_dock else BoxContainer.ALIGNMENT_END
-	song_title.visible = not landscape and (tv_active or not compact)
-	tv_inline_zoom.vertical = size.x < 600 and theme.default_font_size >= 30
-	for caption: Label in tv_zoom_captions:
-		if caption.get_parent() == tv_inline_zoom: caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART if tv_inline_zoom.vertical else TextServer.AUTOWRAP_OFF
-	tv_inline_zoom.visible = tv_active
-	reading_tools.visible = not landscape and (tv_active or not compact)
-	for picker: OptionButton in quick_music_layout: picker.visible = size.x >= (600 if picker == quick_music_layout[0] else (1700 if theater_context.visible else 1200)) and theme.default_font_size < 30
-	place_status()
-	for side: String in ["left", "right", "top", "bottom"]:
-		content_margin.add_theme_constant_override("margin_" + side, 8 if side_dock else ((16 if tv_active else maxi(16, int((size.x - 1280) / 2))) if side in ["left", "right"] else (4 if compact else 10)))
-	if tv_active:
-		for edge: String in ["top", "bottom"]: content_margin.add_theme_constant_override("margin_" + edge, 0)
-	panel.add_theme_constant_override("separation", 4 if landscape or compact else 10)
-	cue.custom_minimum_size.x = minf(size.x - 64, 200 * theme.default_font_size / 20.0)
-	status.custom_minimum_size.y = 0
-	dock.vertical = side_dock or (size.x < 900 and not tight_controls)
-	drawer.position = Vector2(0 if handedness == "left" else maxf(0, size.x - 560), 0)
-	drawer.size = Vector2(minf(size.x, 560), size.y)
-	var song_columns: int = 2 if size.x >= 600 and theme.default_font_size < 30 else 1
-	if catalog_filter_grid != null: catalog_filter_grid.columns = song_columns
-	more_song_grid.columns = song_columns
-	if welcome_step_pair != null: welcome_step_pair.vertical = song_columns == 1
-	if layout_preset_grid != null: layout_preset_grid.columns = song_columns
-	if layout_button != null: layout_button.visible = not tv_active and size.x >= 900
-	if tuner_button != null: tuner_button.visible = not tv_active and size.x >= 900 and size.y >= 600
-	if opened_drawer == "WELCOME":
-		var inset: float = 8 if size.x < 600 else 24
-		drawer.size = Vector2(minf(size.x - inset * 2, 720), minf(size.y - inset * 2, 760))
-		drawer.position = (size - drawer.size) / 2
-	var small_menu_header: bool = theme.default_font_size >= 30 and (size.x < 600 or size.y < 500)
-	menu_back.text = "" if small_menu_header else tr("MENU_BACK")
-	menu_close.text = "" if small_menu_header else tr("CLOSE")
-	for control: Control in [header_margin, dock_margin]:
-		control.show()
-		control.modulate.a = 0.0 if tv_tucked else 1.0
-		control.mouse_behavior_recursive = Control.MOUSE_BEHAVIOR_DISABLED if tv_tucked else Control.MOUSE_BEHAVIOR_INHERITED
-		control.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_DISABLED if tv_tucked else Control.FOCUS_BEHAVIOR_INHERITED
-	if tv_edge != null:
-		tv_edge.visible = tv_tucked and not menu_overlay.visible
-		tv_edge_row.vertical = side_dock
-		place_tv_edge.call_deferred()
-	dock_margin.size_flags_horizontal = Control.SIZE_SHRINK_CENTER if tv_active and not side_dock else Control.SIZE_FILL
-	if tv_active and not side_dock:
-		dock.vertical = false
-		tempo_button.icon = null
-		tempo_button.custom_minimum_size.x = 0
-		speed_control.custom_minimum_size.x = 0
-		main_speed.custom_minimum_size.x = 48 if size.x < 600 else 64
-		speed_unit_layout.add_theme_constant_override("separation", 0)
-		for edge: String in ["left", "right"]: dock_margin.add_theme_constant_override("margin_" + edge, 8)
-		metro_button.visible = expanded_controls
-		metro_button.text = ""
-	style_quick_listening()
-	adapt_flow(menu_overlay)
-	adapt_flow(root_box)
-	if not fit_theater_context_controls():
-		set_theater_context_layout(false)
-		for picker: OptionButton in quick_music_layout: picker.visible = size.x >= (600 if picker == quick_music_layout[0] else 1200) and theme.default_font_size < 30
-		adapt_flow(root_box)
-	if tv_active:
-		adapt_flow(header_margin)
-		if dock_margin.get_parent() != header: adapt_flow(dock_margin)
-		if not side_dock:
-			var action_width: float = 0
-			for action: Button in [songs_button, tv_button, fullscreen_button, menu_button]:
-				action_width += action.get_combined_minimum_size().x
-			header_actions.custom_minimum_size.x = action_width + 3 * header_actions.get_theme_constant("h_separation")
-	if score != null: update_page_controls()
-	if fitting_layout: fit_pending = true
-	else: update_main_scroll.call_deferred()
+	presentation = interface_provider.describe(size, theme.default_font_size, control_position, handedness, tv_active)
+	PracticeLayout.fit(self)
 
 func apply_control_layout(position: String) -> void:
-	var side_dock: bool = position in ["left", "right"]
-	var header_parent: Node = tv_controls_layer if tv_active else root_box
-	if header_margin.get_parent() != header_parent: header_margin.reparent(header_parent)
-	if tv_controls_layer != null: tv_controls_layer.vertical = not side_dock
-	var dock_parent: Node = header if side_dock else header_parent
-	if dock_margin.get_parent() != dock_parent: dock_margin.reparent(dock_parent)
-	if side_dock:
-		header_parent.move_child(header_margin, 0 if position == "left" else header_parent.get_child_count() - 1)
-	else:
-		header_parent.move_child(header_margin, 0)
-		header_parent.move_child(dock_margin, 1 if position == "top" else header_parent.get_child_count() - 1)
-	if side_dock: header.move_child(dock_margin, 0 if handedness == "left" else header.get_child_count() - 1)
-	# Hand preference changes reach order without changing text direction.
-	header.move_child(brand_label, header.get_child_count() - 1 if handedness == "left" else 0)
-	set_child_order(header_actions, [menu_button, tuner_button, fullscreen_button, tv_button, import_button, songs_button] if handedness == "left" else [songs_button, import_button, tv_button, fullscreen_button, tuner_button, menu_button])
-	set_child_order(transport_row, [metro_button, loop_button, play_button, stop_button] if handedness == "left" else [play_button, loop_button, metro_button, stop_button])
-	set_child_order(dock, [quick_row, transport_row] if handedness == "left" else [transport_row, quick_row])
-	set_child_order(seek_navigation, [seek_label, seek] if handedness == "left" else [seek, seek_label])
-	seek_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT if handedness == "left" else HORIZONTAL_ALIGNMENT_RIGHT
-	drawer.position = Vector2(0 if handedness == "left" else maxf(0, size.x - 560), 0)
-	scroll.scroll_vertical = 0
+	PracticeLayout.arrange_controls(self, position)
 
 func set_child_order(parent: Node, ordered: Array) -> void:
-	for index: int in range(ordered.size()):
-		var child: Node = ordered[index]
-		if child != null and child.get_parent() == parent: parent.move_child(child, index)
+	PracticeLayout.order_children(parent, ordered)
 
 func update_quick_listening() -> void:
 	quick_tuner.set_pressed_no_signal(listening.listener.capture.enabled and not listening.listener.paused)
@@ -2702,7 +2238,7 @@ func update_quick_listening() -> void:
 		adapt_flow(dock)
 
 func compact_listening_transport() -> bool:
-	return not controls_on_side and size.x < 480 and size.y < 700 and listening != null and (listening.listener.capture.enabled or listening.playback_mute.button_pressed)
+	return presentation.compact_primary or (not controls_on_side and size.x < 480 and size.y < 700 and listening != null and (listening.listener.capture.enabled or listening.playback_mute.button_pressed))
 
 func style_quick_listening() -> void:
 	if quick_tuner == null or quick_mute == null: return
@@ -2716,111 +2252,19 @@ func style_quick_listening() -> void:
 	quick_mute.tooltip_text = tr(mute_key)
 
 func update_main_scroll() -> void:
-	if score_frame == null or score == null: return
-	if fitting_layout: return
-	fit_pending = false
-	fitting_layout = true
-	# Container minima settle after wrapping and reparenting. Begin with all
-	# appropriate context restored, then remove duplicates before scaling music.
-	fit_hide_cue = false
-	fit_hide_seek = false
-	song_title.visible = not landscape and (tv_active or not compact)
-	tv_inline_zoom.vertical = size.x < 600 and theme.default_font_size >= 30
-	for caption: Label in tv_zoom_captions:
-		if caption.get_parent() == tv_inline_zoom: caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART if tv_inline_zoom.vertical else TextServer.AUTOWRAP_OFF
-	tv_inline_zoom.visible = tv_active
-	reading_tools.visible = not landscape and (tv_active or not compact)
-	for picker: OptionButton in quick_music_layout: picker.visible = size.x >= (600 if picker == quick_music_layout[0] else (1700 if theater_context.visible else 1200)) and theme.default_font_size < 30
-	update_page_controls()
-	# Measure the surrounding controls without exposing a temporary tiny score.
-	await wait_for_layout_stability()
-	if tv_active:
-		fit_theater_margins()
-		await wait_for_layout_stability()
-	for extra: Control in [cue.get_parent(), reading_tools, song_title, seek_navigation]:
-		if content_margin.get_combined_minimum_size().y - score_frame.get_combined_minimum_size().y + 96 <= content_height_budget() + 1: break
-		if not extra.visible: continue
-		extra.hide()
-		if extra == cue.get_parent(): fit_hide_cue = true
-		if extra == seek_navigation: fit_hide_seek = true
-		await wait_for_layout_stability()
-	var other_height: float = content_margin.get_combined_minimum_size().y - score_frame.get_combined_minimum_size().y
-	var music_space: float = content_height_budget() - other_height
-	score_frame.fit_height(maxf(100, music_space) if live.visible else music_space)
-	# Optional input controls can scroll on short or enlarged layouts while the
-	# transport stays reachable. Preserve the ordinary score-only fit policy.
-	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO if live.visible else ScrollContainer.SCROLL_MODE_DISABLED
-	scroll.scroll_vertical = 0
-	await wait_for_layout_stability()
-	fitting_layout = false
-	place_tv_edge()
-	report_state()
-	if fit_pending: update_main_scroll.call_deferred()
+	await PracticeLayout.fit_score(self)
 
 func layout_signature() -> String:
-	var parts: PackedStringArray = []
-	for control: Control in [root_box, content_margin, scroll, score_frame, score]:
-		parts.append("%s:%s:%s:%s" % [control.name, control.position, control.size, control.get_combined_minimum_size()])
-	parts.append("score_height:%f" % score.drawing_height())
-	parts.append("systems:%d" % score_frame.system_count)
-	return "|".join(parts)
+	return PracticeLayout.signature(self)
 
 func wait_for_layout_stability(max_frames: int = 8) -> void:
-	var previous: String = ""
-	var stable_frames: int = 0
-	for _frame: int in range(max_frames):
-		await get_tree().process_frame
-		var current: String = layout_signature()
-		if current == previous:
-			stable_frames += 1
-		else:
-			stable_frames = 0
-		previous = current
-		if stable_frames >= 2: return
+	await PracticeLayout.wait_stable(self, max_frames)
 
 func content_height_budget() -> float:
-	if controls_on_side: return size.y
-	return size.y if tv_active else maxf(0, size.y - header_margin.get_combined_minimum_size().y - dock_margin.get_combined_minimum_size().y)
+	return PracticeLayout.height_budget(self)
 
 func adapt_flow(node: Node) -> void:
-	if node.has_meta("input_actions"): return
-	if node != page_navigation and (node is HFlowContainer or (node is BoxContainer and not node.vertical)):
-		for child: Node in node.get_children():
-			if child is Button:
-				# OptionButton owns its selected label; never expand a compact row
-				# to the full translated item width. Its picker retains the full text.
-				if child is OptionButton: continue
-				child.clip_text = false
-				if child.text.is_empty():
-					child.custom_minimum_size.x = 120 if child == play_button and not controls_on_side and not tight_controls else 56
-					continue
-				var font: Font = child.get_theme_font("font")
-				var font_size: int = roundi(float(child.get_meta("base_font_size", 20)) * theme.default_font_size / 20.0)
-				var available: float = minf(size.x - 64, 496) if drawer.is_ancestor_of(node) else size.x - 56
-				if controls_on_side and dock.is_ancestor_of(node): available = dock.custom_minimum_size.x
-				var needed: float = font.get_string_size(child.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + (34 if child.icon != null else 0) + (20 if child.has_meta("compact") else (72 if child is CheckButton else 28))
-				var limit: float = available
-				if node == seek_navigation: limit = (available - 56) / 2
-				elif node is BoxContainer and node != header: limit = available / 2
-				child.custom_minimum_size.x = maxf(120, minf(needed, available)) if child == play_button else minf(needed, maxf(80, limit))
-	for child: Node in node.get_children(): adapt_flow(child)
-	if node == dock:
-		if tv_active and not controls_on_side:
-			play_button.custom_minimum_size = Vector2(64, 64)
-		elif controls_on_side:
-			play_button.custom_minimum_size = Vector2(dock.custom_minimum_size.x - (64 if theme.default_font_size >= 30 or size.y < 360 else 0), 80 if size.y >= 360 or (theme.default_font_size >= 30 and size.y >= 320) else 64)
-		elif compact_listening_transport():
-			play_button.custom_minimum_size = Vector2(72, 64)
-		elif size.x < 760 and not tight_controls:
-			play_button.custom_minimum_size = Vector2(maxf(120, size.x - 64), 72)
-		else:
-			play_button.custom_minimum_size.y = 64
-		for row: Control in dock.get_children():
-			var row_width: float = 0
-			for item: Control in row.get_children():
-				if item.visible: row_width += maxf(item.custom_minimum_size.x, item.get_combined_minimum_size().x) + 8
-			row.custom_minimum_size.x = maxf(0, row_width - 8) if not dock.vertical else 0
-			row.size_flags_horizontal = Control.SIZE_SHRINK_CENTER if not dock.vertical else Control.SIZE_FILL
+	PracticeLayout.fit_controls(self, node)
 
 func scale_labels(node: Node, factor: float) -> void:
 	if node is Control and node.has_meta("base_font_size"):
@@ -3481,7 +2925,7 @@ func report_state() -> void:
 	if host.trace_enabled():
 		var evidence: Dictionary = audio.metrics()
 		evidence.merge({"muted_parts": muted.duplicate(), "focused_part": part})
-		evidence.merge({"tv_active": tv_active, "tv_tucked": tv_tucked, "tv_zoom": tv_zoom, "status_visible": status_toast.visible, "tv_systems": score_frame.visible_systems(), "page_slide_count": score_frame.follow_slide_count, "page_slide_offset": score_frame.follow_offset, "music_lines": score_frame.music_lines, "note_spacing": score_frame.note_spacing, "staff_height": score_frame.staff_height, "score_height": score.drawing_height(), "fitted_rows": score.fitted_rows, "fullscreen": host.is_fullscreen(), "follow_pages": score.follow_pages, "upcoming_tick": score.upcoming_tick, "count_beat": int(count_badge.text) if count_badge.visible else 0, "capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "shape_cues": shape_cues, "font_style": font_style, "control_position": control_position, "handedness": handedness, "controls_on_side": controls_on_side, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "input_visible": live.visible, "piano_held": live.piano.pointers.size(), "input_result": {"kind": live.latest.get("kind", ""), "timing": live.latest.get("timing", "")}, "midi_status": playing_devices.midi.status, "microphone_status": listening.listener.capture.status, "tuner_enabled": listening.listener.capture.enabled and not listening.listener.paused, "playback_muted": listening.playback_mute.button_pressed, "pitch_analysis_ms": listening.listener.max_analysis_ms, "microphone_dropped": listening.listener.capture.dropped, "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "background_style": background_style, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "controls_scroll_y": header_scroll.scroll_vertical, "tuner_profile": listening.listener.profile, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "notation_rows": notation_rows, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "arrangement_style": projection.style, "placed": projection.placed, "eligible": projection.eligible, "omitted": projection.omitted.size(), "mute_marks": projection.mute_marks, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
+		evidence.merge({"tv_active": tv_active, "tv_tucked": tv_tucked, "tv_zoom": tv_zoom, "status_visible": status_toast.visible, "tv_systems": score_frame.visible_systems(), "page_slide_count": score_frame.follow_slide_count, "page_slide_offset": score_frame.follow_offset, "music_lines": score_frame.music_lines, "note_spacing": score_frame.note_spacing, "staff_height": score_frame.staff_height, "score_height": score.drawing_height(), "fitted_rows": score.fitted_rows, "fullscreen": host.is_fullscreen(), "follow_pages": score.follow_pages, "upcoming_tick": score.upcoming_tick, "count_beat": int(count_badge.text) if count_badge.visible else 0, "capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "shape_cues": shape_cues, "font_style": font_style, "control_position": control_position, "handedness": handedness, "controls_on_side": controls_on_side, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "input_visible": live.visible, "piano_held": live.piano.pointers.size(), "input_result": {"kind": live.latest.get("kind", ""), "timing": live.latest.get("timing", "")}, "midi_status": playing_devices.midi.status, "microphone_status": listening.listener.capture.status, "tuner_enabled": listening.listener.capture.enabled and not listening.listener.paused, "playback_muted": listening.playback_mute.button_pressed, "pitch_analysis_ms": listening.listener.max_analysis_ms, "microphone_dropped": listening.listener.capture.dropped, "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "interface": interface_id, "interface_rail": presentation.rail, "background_style": background_style, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "controls_scroll_y": header_scroll.scroll_vertical, "tuner_profile": listening.listener.profile, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "notation_rows": notation_rows, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "arrangement_style": projection.style, "placed": projection.placed, "eligible": projection.eligible, "omitted": projection.omitted.size(), "mute_marks": projection.mute_marks, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
 		host.report(evidence)
 	offline.text = tr("OFFLINE_READY") if host.offline_ready() else tr("OFFLINE_PENDING")
 	if host.offline_ready() and not host.trace_enabled(): idle_timer.stop()

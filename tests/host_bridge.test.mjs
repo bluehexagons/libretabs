@@ -5,7 +5,7 @@ import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 
 const code = readFileSync(new URL('../src/platform/bridge.js', import.meta.url), 'utf8');
-function host() {
+function host(localStorage) {
   const inputs = [];
   const document = {
     body: {append() {}},
@@ -23,7 +23,7 @@ function host() {
     }
   };
   const sandbox = {window: {addEventListener() {}}, document, navigator: {}, URLSearchParams,
-    location: {search: ''}, Blob, URL: {createObjectURL: () => 'blob:print', revokeObjectURL() {}}, setTimeout() {}};
+    location: {search: ''}, localStorage, Blob, URL: {createObjectURL: () => 'blob:print', revokeObjectURL() {}}, setTimeout() {}};
   vm.runInNewContext(code, sandbox);
   return {api: sandbox.window.libretabsHost, inputs};
 }
@@ -107,4 +107,24 @@ test('print download keeps a bounded song basename and rejects paths', () => {
     assert.equal(api.downloadPrint('<html></html>', name), true);
     assert.equal(inputs.at(-1).download, expected);
   }
+});
+
+
+test('interface preference survives a new bridge and rejects unrelated namespaces', () => {
+  const values = new Map();
+  const storage = {getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value)};
+  const first = host(storage).api;
+  assert.equal(first.loadDisplayChoice('interface', 'classic'), 'classic');
+  assert.equal(first.saveDisplayChoice('interface', 'workspace'), true);
+  assert.equal(host(storage).api.loadDisplayChoice('interface', 'classic'), 'workspace');
+  assert.equal(first.saveDisplayChoice('imported_song', 'private song'), false);
+  assert.equal(first.loadDisplayChoice('imported_song', 'fallback'), 'fallback');
+  assert.deepEqual([...values.keys()], ['libretabs.interface.v1']);
+});
+
+test('blocked display storage returns a fallback and an actionable save failure', () => {
+  const storage = {getItem() {throw Error('blocked');}, setItem() {throw Error('quota');}};
+  const {api} = host(storage);
+  assert.equal(api.loadDisplayChoice('interface', 'classic'), 'classic');
+  assert.equal(api.saveDisplayChoice('interface', 'focus'), false);
 });

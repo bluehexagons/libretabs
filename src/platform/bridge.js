@@ -2,6 +2,7 @@
 // Included verbatim in the Godot HTML head. No imported text is executed.
 (() => {
   let chooser, generation = 0, fullscreenFailure;
+  const displayChoiceKeys = new Set(['interface', 'motion', 'font', 'shape_cues', 'startup_help', 'control_position', 'handedness', 'background_style', 'tv_zoom', 'theater_controls', 'music_lines', 'music_spacing', 'music_staff', 'tv_music_lines', 'tv_music_spacing', 'tv_music_staff', 'notation_rows', 'capture_notation', 'capture_background', 'capture_title', 'capture_zoom', 'capture_position']);
   window.libretabsHost = {
     isFullscreen() { return !!(document.fullscreenElement || document.webkitFullscreenElement); },
     onFullscreen(callback) {
@@ -86,11 +87,11 @@
       try { localStorage.setItem('libretabs.appearance.v1', value); return true; } catch (_) { return false; }
     },
     loadDisplayChoice(key, fallback) {
-      if (!['motion', 'font', 'shape_cues', 'startup_help', 'control_position', 'handedness', 'background_style', 'tv_zoom', 'theater_controls', 'music_lines', 'music_spacing', 'music_staff', 'tv_music_lines', 'tv_music_spacing', 'tv_music_staff', 'notation_rows', 'capture_notation', 'capture_background', 'capture_title', 'capture_zoom', 'capture_position'].includes(key)) return fallback;
+      if (!displayChoiceKeys.has(key)) return fallback;
       try { return localStorage.getItem('libretabs.' + key + '.v1') || fallback; } catch (_) { return fallback; }
     },
     saveDisplayChoice(key, value) {
-      if (!['motion', 'font', 'shape_cues', 'startup_help', 'control_position', 'handedness', 'background_style', 'tv_zoom', 'theater_controls', 'music_lines', 'music_spacing', 'music_staff', 'tv_music_lines', 'tv_music_spacing', 'tv_music_staff', 'notation_rows', 'capture_notation', 'capture_background', 'capture_title', 'capture_zoom', 'capture_position'].includes(key)) return false;
+      if (!displayChoiceKeys.has(key)) return false;
       try { localStorage.setItem('libretabs.' + key + '.v1', value); return true; } catch (_) { return false; }
     },
     prefersReducedMotion() { return matchMedia('(prefers-reduced-motion: reduce)').matches; },

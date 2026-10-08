@@ -2307,3 +2307,39 @@ msgstr "Tuner help"
 
 msgid "INPUT_INSTRUMENT_HELP"
 msgstr "Choose the instrument you are playing. This sets the detection range and string targets. Choose Electronic piano when using its speakers with a microphone."
+
+msgid "INTERFACE"
+msgstr "Interface"
+
+msgid "INTERFACE_HELP"
+msgstr "Choose an interface to try. Your song, playback and music layout stay in place. This choice is saved on this device."
+
+msgid "INTERFACE_CLASSIC"
+msgstr "Classic"
+
+msgid "INTERFACE_CLASSIC_HELP"
+msgstr "The current player, with controls on your chosen screen edge."
+
+msgid "INTERFACE_FOCUS"
+msgstr "Focus"
+
+msgid "INTERFACE_FOCUS_HELP"
+msgstr "More room for music. Play and speed stay nearby; other controls are in Menu."
+
+msgid "INTERFACE_TOUCH"
+msgstr "Touch"
+
+msgid "INTERFACE_TOUCH_HELP"
+msgstr "A compact navigation row and grouped controls at the bottom. Short landscape screens use the hand side."
+
+msgid "INTERFACE_WORKSPACE"
+msgstr "Workspace"
+
+msgid "INTERFACE_WORKSPACE_HELP"
+msgstr "A controls rail with direct settings shortcuts on wide screens. Smaller screens use the compact player."
+
+msgid "TIP_INTERFACE"
+msgstr "Try another interface without resetting your song or playback."
+
+msgid "INTERFACE_EDGE_AUTO"
+msgstr "This interface places controls automatically. Preferred hand still applies; your saved screen edge is used in Classic, Focus and Theater."

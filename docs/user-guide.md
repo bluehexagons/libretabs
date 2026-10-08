@@ -12,6 +12,23 @@ This guide describes the current prototype. The planned six-lesson course is
 not yet available. Generated guitar arrangements and notation still need musician
 review; treat them as practice suggestions.
 
+## Try another interface
+
+Open **Menu → Interface** to compare the current player (**Classic**) with three
+alternatives:
+
+- **Focus:** fewer shortcuts and more room for music. Play and speed remain nearby.
+- **Touch:** grouped bottom controls and a compact navigation row; short landscape
+  screens place controls on your preferred hand side.
+- **Workspace:** a controls rail with direct settings shortcuts on wide screens.
+  Smaller windows and enlarged text use the compact player.
+
+Select a choice, then **Done** to return to practice. Switching keeps your song,
+playback position, speed, loop, music layout and listening connection. The choice
+is saved on this device; choosing Classic returns to the original interface.
+Theater and capture use their usual shared music views. These are comparison
+layouts; a final redesign has not been selected.
+
 ## Your first five minutes
 
 1. Open the player. An exercise is already loaded. Choose **Start practicing**

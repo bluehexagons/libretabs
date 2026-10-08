@@ -29,6 +29,7 @@ const SWITCH_OFF: DPITexture = preload("res://assets/ui/switch-off.svg")
 const SWITCH_ON: DPITexture = preload("res://assets/ui/switch-on.svg")
 
 const BUTTON_ROLES: Dictionary = {
+	"INTERFACE": "reading", "INTERFACE_CLASSIC": "reading", "INTERFACE_FOCUS": "reading", "INTERFACE_TOUCH": "reading", "INTERFACE_WORKSPACE": "reading",
 	"SONG_MENU": "library", "IMPORT_MIDI": "library", "OPEN": "library", "SONG_IMPORT_SHORT": "library", "PRINT": "library", "SONG_PREVIEW": "sound", "SONG_TRY": "practice",
 	"LOOP_TOOL": "practice", "KEYBOARD": "practice",
 	"TEMPO": "sound", "SOUND": "sound", "SOUND_EFFECTS": "sound", "CLICK_ON": "sound", "CLICK_OFF": "sound",

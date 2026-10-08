@@ -1,5 +1,9 @@
 # Decision records
 
+[0027 — Interchangeable practice interfaces](0027-interchangeable-practice-interfaces.md)
+adds saved Classic/Focus/Touch/Workspace candidates over shared widgets and one
+session, with a bounded presentation-provider extension seam.
+
 Use a decision record for an accepted or reversed choice that changes the application stack, canonical data contract, parser, audio backend, platform boundary, dependency, license policy, supported MIDI contract, or target platform.
 
 Copy `0000-template.md` to the next four-digit number and a short kebab-case title. Keep superseded records; change their status and link to the replacement so the reasoning remains visible.
