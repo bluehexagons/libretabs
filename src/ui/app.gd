@@ -858,6 +858,8 @@ func refresh_song_catalog() -> void:
 	catalog_count.text = tr("SONG_CATALOG_COUNT") % [indices.size(), BUILT_IN_LIBRARY.size()]
 	if indices.is_empty(): catalog_count.text = tr("SONG_CATALOG_EMPTY")
 	catalog_count.show()
+	# Rebuilt cards need sizing at the current text scale without a window resize.
+	adapt_flow.call_deferred(more_song_grid)
 
 func update_song_button(index: int) -> void:
 	if not library_song_buttons.has(index): return

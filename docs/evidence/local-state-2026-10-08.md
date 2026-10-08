@@ -31,7 +31,7 @@ uses a temporary file and rename; this is not a cross-process locking service.
 - The baseline verifier passes with the exact Godot 4.7.2.ed1daf0bf pin. Python
   has 55 checks, Node 28, core 6623, live input 59, pitch 102, WAV replay 383,
   audio commands 74, synth 48, part audio 22, effects 46, practice UI 841,
-  layout UI 844, interface UI 843, local state 202, Theater 145 and page following
+  layout UI 844, interface UI 843, local state 203, Theater 145 and page following
   274; zero failures. Import, editor, deliberate failure-exit self-test,
   application boot and whitespace checks pass.
 - The local-state suite destroys and recreates the actual application against
@@ -58,7 +58,8 @@ uses a temporary file and rename; this is not a cross-process locking service.
   dedicated settings cancellation translation/icon correct those findings.
   A filtered card's removal also exposed focus being sent to an inactive native
   OptionButton; focus now returns to its actual in-app choice target, with a
-  keyboard regression. Native cancellation and browser storage/reset tests cover
+  keyboard regression. Rebuilt cards also run shared sizing at the current scale,
+  without waiting for a viewport resize. Native cancellation and browser storage/reset tests cover
   their behavior.
 
 Browser reset execution is covered by the bridge tests; actual in-app reset and

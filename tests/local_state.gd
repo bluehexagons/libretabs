@@ -110,6 +110,10 @@ func run() -> void:
 	check(app.call("catalog_indices") == [0], "learned filter shows checked pieces")
 	app.call("toggle_drawer", "SONG_MENU")
 	app.call("refresh_song_catalog")
+	for _frame: int in range(8): await process_frame
+	var filtered_check: CheckBox = app.get("library_learned_checks")[0]
+	var filtered_text: float = filtered_check.get_theme_font("font").get_string_size(filtered_check.text, HORIZONTAL_ALIGNMENT_LEFT, -1, filtered_check.get_theme_font_size("font_size")).x
+	check(filtered_check.size.x >= filtered_text + 64 and filtered_check.size.y <= 64, "filtered cards fit their learned labels without resizing the window")
 	app.get("library_learned_checks")[0].button_pressed = false
 	for _frame: int in range(4): await process_frame
 	check(app.get("library_song_buttons").is_empty() and app.get("catalog_learning").is_ancestor_of(root.gui_get_focus_owner()), "unchecking the last filtered card returns keyboard focus to the filter target")
