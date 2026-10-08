@@ -108,6 +108,14 @@ func run() -> void:
 	check(app.get("song") == song and song.source.bytes_copy() == before and app.get("source_tick") == tick, "marking does not change source or practice position")
 	app.get("catalog_learning").select(2)
 	check(app.call("catalog_indices") == [0], "learned filter shows checked pieces")
+	app.call("toggle_drawer", "SONG_MENU")
+	app.call("refresh_song_catalog")
+	app.get("library_learned_checks")[0].button_pressed = false
+	for _frame: int in range(4): await process_frame
+	check(app.get("library_song_buttons").is_empty() and app.get("catalog_learning").is_ancestor_of(root.gui_get_focus_owner()), "unchecking the last filtered card returns keyboard focus to the filter target")
+	app.call("mark_learned", "song:ode_to_joy", true)
+	for _frame: int in range(4): await process_frame
+	app.call("close_menu")
 	app.get("catalog_learning").select(1)
 	check(not (app.call("catalog_indices") as Array).has(0), "to-learn filter excludes checked pieces")
 	app.get("catalog_learning").select(0)

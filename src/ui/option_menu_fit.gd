@@ -17,6 +17,14 @@ static func set_disabled(option: OptionButton, value: bool) -> void:
 	for child: Node in option.get_children():
 		if child is OptionMenuFit: child.refresh_target_help()
 
+# OptionButton itself has FOCUS_NONE; its in-app choice target owns focus.
+static func focus_target(option: OptionButton) -> void:
+	if not is_instance_valid(option) or option.disabled or not option.is_visible_in_tree(): return
+	for child: Node in option.get_children():
+		if child is OptionMenuFit and is_instance_valid(child.touch_target):
+			child.touch_target.grab_focus()
+			return
+
 func _ready() -> void:
 	picker = get_parent() as OptionButton
 	picker.get_popup().about_to_popup.connect(fit_items)

@@ -476,10 +476,7 @@ func choose_picker_item(index: int) -> void:
 
 func close_choice_picker() -> void:
 	picker_overlay.hide()
-	if is_instance_valid(picker_source) and picker_source.is_visible_in_tree():
-		for child: Node in picker_source.get_children():
-			var fit: OptionMenuFit = child as OptionMenuFit
-			if fit != null and is_instance_valid(fit.touch_target): fit.touch_target.grab_focus()
+	OptionMenuFit.focus_target(picker_source)
 	picker_source = null
 
 func set_status(key: String) -> void:
@@ -3248,7 +3245,7 @@ func mark_learned(id: String, learned: bool) -> void:
 
 func refresh_learning_catalog() -> void:
 	refresh_song_catalog()
-	if opened_drawer == "SONG_MENU": catalog_learning.grab_focus()
+	if opened_drawer == "SONG_MENU": OptionMenuFit.focus_target(catalog_learning)
 
 func update_learning_controls() -> void:
 	if current_learning_check == null: return
