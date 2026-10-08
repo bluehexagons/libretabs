@@ -202,7 +202,7 @@ static func build(app: Control) -> void:
 	app.seek_navigation = navigation
 	app.panel.add_child(navigation)
 
-	app.seek = HSlider.new()
+	app.seek = CaptionSlider.new()
 	# Source ticks keep a scrub at the same precision as the shared transport.
 	# Measures remain a reading aid, rather than artificial seek boundaries.
 	app.seek.min_value = 0
@@ -214,6 +214,7 @@ static func build(app: Control) -> void:
 	app.seek.focus_mode = Control.FOCUS_ALL
 	app.seek.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	app.seek.tooltip_text = app.tr("SEEK_CONTINUOUS")
+	app.seek.set_meta("hover_caption", app.tr("SEEK_CAPTION"))
 	app.seek.drag_started.connect(app.begin_seek_drag)
 	app.seek.drag_ended.connect(app.end_seek_drag)
 	app.seek.gui_input.connect(app.seek_input)
@@ -282,15 +283,9 @@ static func build(app: Control) -> void:
 	for mode: String in ["font_color", "font_focus_color", "font_hover_color", "font_pressed_color"]:
 		app.play_button.add_theme_color_override(mode, Color.WHITE)
 	app.transport_row.add_child(app.play_button)
-	app.count_badge = Label.new()
-	app.count_badge.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	app.count_badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	app.count_badge.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	app.count_badge.add_theme_font_size_override("font_size", 28)
-	app.count_badge.add_theme_color_override("font_color", Color.WHITE)
-	app.count_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	app.count_badge = CountPulse.new()
 	app.play_button.add_child(app.count_badge)
-	app.count_badge.hide()
+	app.count_badge.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	app.stop_button = app.button("RESTART", app.restart_song)
 	app.stop_button.icon = UIIcons.get_icon("REPLAY")
 	app.stop_button.custom_minimum_size.x = 56

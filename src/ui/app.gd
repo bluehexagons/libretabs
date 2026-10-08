@@ -100,7 +100,7 @@ var arrangement_picker: OptionButton
 var arrangement_help: Label
 var offline: Label
 var play_button: Button
-var count_badge: Label
+var count_badge: CountPulse
 var play_control_key: String = ""
 var part_picker: OptionButton
 var demo_picker: OptionButton
@@ -330,11 +330,13 @@ const PRACTICE_PRESETS: Array[Dictionary] = [
 ]
 
 func _ready() -> void:
+	HoverHelp.reset()
 	if host == null: host = HostAdapter.new()
 	add_child(host)
 	host.picked.connect(_file_picked)
 	host.hidden.connect(_suspended)
 	host.focus_lost.connect(func() -> void:
+		HoverHelp.pointer_down = false
 		release_playing_inputs()
 		# A permission prompt may temporarily take focus while connecting. Every
 		# established capture, including one with no signal, must stop on blur.
@@ -643,7 +645,7 @@ func build_tv_zoom(parent: Control) -> void:
 	caption.autowrap_mode = TextServer.AUTOWRAP_OFF if parent == tv_inline_zoom else TextServer.AUTOWRAP_WORD_SMART
 	parent.add_child(caption)
 	tv_zoom_captions.append(caption)
-	var slider: HSlider = HSlider.new()
+	var slider: HSlider = CaptionSlider.new()
 	slider.min_value = 40
 	slider.max_value = 200
 	slider.step = 5
@@ -682,6 +684,7 @@ func button(key: String, action: Callable) -> Button:
 	var item: FriendlyButton = FriendlyButton.new()
 	item.reduced_motion = reduced_motion
 	item.text = tr(key)
+	item.set_meta("hover_caption", tr(key))
 	item.icon = UIIcons.get_icon(key)
 	if UIAppearance.BUTTON_ROLES.has(key): item.set_meta("color_role", UIAppearance.BUTTON_ROLES[key])
 	item.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
@@ -814,7 +817,7 @@ func add_song_button(grid: GridContainer, index: int) -> void:
 
 func catalog_choice(parent: VBoxContainer, title_key: String, keys: Array[String]) -> OptionButton:
 	parent.add_child(label(title_key, 18))
-	var choice: OptionButton = OptionButton.new()
+	var choice: OptionButton = CaptionOption.new()
 	choice.fit_to_longest_item = false
 	choice.custom_minimum_size.y = 56
 	for key: String in keys: choice.add_item(tr(key))
@@ -1133,7 +1136,7 @@ func build_drawers() -> void:
 	presets.add_child(button("SCORE_VIEW", func() -> void: toggle_drawer("SCORE_VIEW")))
 	var views: VBoxContainer = section("SCORE_VIEW")
 	views.add_child(button("LAYOUTS", func() -> void: toggle_drawer("LAYOUTS")))
-	view_picker = OptionButton.new()
+	view_picker = CaptionOption.new()
 	view_picker.tooltip_text = tr("VIEW_HELP")
 	view_picker.custom_minimum_size.y = 56
 	view_picker.fit_to_longest_item = false
@@ -1145,7 +1148,7 @@ func build_drawers() -> void:
 	views.add_child(button("TV_VIEW", func() -> void: toggle_drawer("TV_VIEW")))
 	views.add_child(label("MUSIC_LAYOUT_HELP", 18))
 	build_music_layout_controls(views, false)
-	notation_picker = OptionButton.new()
+	notation_picker = CaptionOption.new()
 	notation_picker.custom_minimum_size.y = 56
 	notation_picker.fit_to_longest_item = false
 	for key: String in ["NOTATION_BOTH", "NOTATION_TAB", "NOTATION_STAFF"]: notation_picker.add_item(tr(key))
@@ -1197,7 +1200,7 @@ func build_drawers() -> void:
 	catalog_filter_toggle.text = tr("SONG_FILTERS_SHORT")
 	catalog_filter_toggle.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	catalog_actions.add_child(catalog_filter_toggle)
-	catalog_learning = OptionButton.new()
+	catalog_learning = CaptionOption.new()
 	catalog_learning.custom_minimum_size.y = 48
 	catalog_learning.fit_to_longest_item = false
 	catalog_learning.tooltip_text = tr("LEARNING_FILTER_HELP")
@@ -1248,7 +1251,7 @@ func build_drawers() -> void:
 	library.add_child(label("SONG_FILE_BRIEF", 16))
 	library.add_child(label("SONG_FILE_HELP", 18))
 	library.add_child(label("DEMOS", 18))
-	demo_picker = OptionButton.new()
+	demo_picker = CaptionOption.new()
 	demo_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	demo_picker.fit_to_longest_item = false
 	demo_picker.clip_text = true
@@ -1260,7 +1263,7 @@ func build_drawers() -> void:
 	cancel_button.hide()
 	library.add_child(cancel_button)
 	library.add_child(label("PART_PICKER", 18))
-	part_picker = OptionButton.new()
+	part_picker = CaptionOption.new()
 	part_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	part_picker.fit_to_longest_item = false
 	part_picker.clip_text = true
@@ -1296,7 +1299,7 @@ func build_drawers() -> void:
 	count_length.value_changed.connect(func(_value: float) -> void: save_preferences())
 	number_field(tempo, count_length, "COUNT_LENGTH")
 	tempo.add_child(label("SPEED_PRESETS", 18))
-	speed_picker = OptionButton.new()
+	speed_picker = CaptionOption.new()
 	speed_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	speed_picker.fit_to_longest_item = false
 	speed_picker.clip_text = true
@@ -1323,7 +1326,7 @@ func build_drawers() -> void:
 	backing_box = flow(sound)
 	mute_check.toggled.connect(func(pressed: bool) -> void: set_part_enabled(part, not pressed))
 	sound.add_child(label("PRACTICE_INSTRUMENT"))
-	instrument_picker = OptionButton.new()
+	instrument_picker = CaptionOption.new()
 	instrument_picker.custom_minimum_size.y = 56
 	instrument_picker.fit_to_longest_item = false
 	instrument_picker.tooltip_text = tr("PRACTICE_INSTRUMENT_HELP")
@@ -1343,7 +1346,7 @@ func build_drawers() -> void:
 	effects.add_child(reverb_check)
 	reverb_caption = label("REVERB_AMOUNT", 18)
 	effects.add_child(reverb_caption)
-	reverb_amount = HSlider.new()
+	reverb_amount = CaptionSlider.new()
 	reverb_amount.min_value = 0
 	reverb_amount.max_value = PracticeEffects.MAX_AMOUNT
 	reverb_amount.step = 1
@@ -1396,7 +1399,7 @@ func build_drawers() -> void:
 
 	var details: VBoxContainer = section("DETAILS")
 	details.add_child(label("ARRANGEMENT_STYLE", 18))
-	arrangement_picker = OptionButton.new()
+	arrangement_picker = CaptionOption.new()
 	arrangement_picker.custom_minimum_size.y = 56
 	arrangement_picker.fit_to_longest_item = false
 	for key: String in ["ARRANGEMENT_BASIC", "ARRANGEMENT_STRUM", "ARRANGEMENT_FINGER"]: arrangement_picker.add_item(tr(key))
@@ -1504,7 +1507,7 @@ func build_drawers() -> void:
 		close_menu())
 	var keys: VBoxContainer = section("KEYBOARD")
 	keys.add_child(label("KEYBOARD_LAYOUT"))
-	keyboard_picker = OptionButton.new()
+	keyboard_picker = CaptionOption.new()
 	keyboard_picker.custom_minimum_size.y = 56
 	keyboard_picker.fit_to_longest_item = false
 	for key: String in ["KEYBOARD_LOWER", "KEYBOARD_HOME"]: keyboard_picker.add_item(tr(key))
@@ -1545,7 +1548,7 @@ func build_drawers() -> void:
 	about.add_child(button("REPORT_SECURITY", func() -> void: host.open_url("https://github.com/bluehexagons/libretabs/security/advisories/new")))
 	var display: VBoxContainer = section("DISPLAY")
 	display.add_child(label("APPEARANCE"))
-	appearance_picker = OptionButton.new()
+	appearance_picker = CaptionOption.new()
 	appearance_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	appearance_picker.fit_to_longest_item = false
 	appearance_picker.custom_minimum_size.y = 56
@@ -1553,7 +1556,7 @@ func build_drawers() -> void:
 	appearance_picker.item_selected.connect(change_appearance)
 	display.add_child(appearance_picker)
 	display.add_child(label("BACKGROUND_STYLE"))
-	background_picker = OptionButton.new()
+	background_picker = CaptionOption.new()
 	background_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	background_picker.fit_to_longest_item = false
 	background_picker.custom_minimum_size.y = 56
@@ -1575,7 +1578,7 @@ func build_drawers() -> void:
 		apply_motion()
 		if persist_preferences and not host.save_display_choice("motion", motion_mode): set_status("STORAGE_SESSION")))
 	display.add_child(label("FONT_CHOICE"))
-	font_picker = OptionButton.new()
+	font_picker = CaptionOption.new()
 	font_picker.custom_minimum_size.y = 56
 	font_picker.fit_to_longest_item = false
 	for key: String in ["FONT_ROUNDED", "FONT_SIMPLE"]: font_picker.add_item(tr(key))
@@ -1591,7 +1594,7 @@ func build_drawers() -> void:
 	display.add_child(shape_cue_check)
 	display.add_child(label("NOTE_SHAPE_CUES_HELP", 18))
 	display.add_child(label("CONTROL_POSITION"))
-	control_position_picker = OptionButton.new()
+	control_position_picker = CaptionOption.new()
 	control_position_picker.custom_minimum_size.y = 56
 	control_position_picker.fit_to_longest_item = false
 	for key: String in ["CONTROL_LEFT", "CONTROL_TOP", "CONTROL_RIGHT", "CONTROL_BOTTOM"]:
@@ -1603,7 +1606,7 @@ func build_drawers() -> void:
 		if persist_preferences and not host.save_display_choice("control_position", control_position): set_status("STORAGE_SESSION"))
 	display.add_child(control_position_picker)
 	display.add_child(label("HANDEDNESS"))
-	handedness_picker = OptionButton.new()
+	handedness_picker = CaptionOption.new()
 	handedness_picker.custom_minimum_size.y = 56
 	handedness_picker.fit_to_longest_item = false
 	for key: String in ["HANDED_LEFT", "HANDED_RIGHT"]: handedness_picker.add_item(tr(key))
@@ -1616,7 +1619,7 @@ func build_drawers() -> void:
 	control_layout_note = label("CONTROL_LAYOUT_HELP", 18)
 	display.add_child(control_layout_note)
 	display.add_child(label("TEXT_SIZE"))
-	scale_picker = OptionButton.new()
+	scale_picker = CaptionOption.new()
 	scale_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	scale_picker.fit_to_longest_item = false
 	scale_picker.clip_text = true
@@ -1640,7 +1643,7 @@ func volume_control(parent: Node, key: String, initial: float, instrument: bool)
 	var caption: Label = label(key)
 	caption.text = tr(key) % roundi(initial)
 	parent.add_child(caption)
-	var slider: HSlider = HSlider.new()
+	var slider: HSlider = CaptionSlider.new()
 	slider.theme_type_variation = "VolumeSlider"
 	slider.scrollable = false
 	slider.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
@@ -1729,7 +1732,7 @@ func build_capture_menu() -> void:
 	}
 	for key: String in definitions:
 		content.add_child(label(key.to_upper(), 18))
-		var picker: OptionButton = OptionButton.new()
+		var picker: OptionButton = CaptionOption.new()
 		picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 		picker.fit_to_longest_item = false
 		picker.custom_minimum_size.y = 56
@@ -1922,6 +1925,7 @@ func close_menu() -> void:
 	else: menu_button.grab_focus()
 
 func _input(event: InputEvent) -> void:
+	HoverHelp.observe(event)
 	if picker_overlay != null and picker_overlay.visible:
 		if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
 			close_choice_picker()
@@ -2048,7 +2052,7 @@ func change_view() -> void:
 
 func build_music_layout_controls(parent: Control, quick: bool) -> void:
 	for key: String in MUSIC_LAYOUT_VALUES:
-		var picker: OptionButton = OptionButton.new()
+		var picker: OptionButton = CaptionOption.new()
 		picker.custom_minimum_size = Vector2(220 if quick else 150, 56)
 		picker.fit_to_longest_item = false
 		picker.tooltip_text = tr("MUSIC_" + key.to_upper() + "_HELP")
@@ -2121,7 +2125,7 @@ func rebuild_notation_rows_editor() -> void:
 		order.custom_minimum_size.x = 72
 		order.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 		header.add_child(order)
-		var type: OptionButton = OptionButton.new()
+		var type: OptionButton = CaptionOption.new()
 		type.custom_minimum_size = Vector2(150, 56)
 		type.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		type.fit_to_longest_item = false
@@ -2234,7 +2238,7 @@ func update_page_controls() -> void:
 	# On very short portrait windows the synchronized score carries the same
 	# current-note information; dropping this duplicate row keeps practice fixed.
 	cue.get_parent().visible = (presentation.show_cue or tv_active) and (score.mode == "scroll" or tv_active) and not landscape and size.y >= 620 and not fit_hide_cue
-	seek_navigation.visible = (score.mode == "scroll" or tv_active) and not landscape and not fit_hide_seek
+	seek_navigation.visible = not tv_active or (not landscape and not fit_hide_seek)
 	var small_navigation: bool = compact or controls_on_side or size.x < 900
 	page_label.text = tr("PAGE_NUMBER_COMPACT" if small_navigation else "PAGE_NUMBER") % [score.page_index + 1, score.pages()]
 	page_label.tooltip_text = tr("PAGE_NUMBER") % [score.page_index + 1, score.pages()]
@@ -2401,10 +2405,12 @@ func style_quick_listening() -> void:
 	quick_tuner.text = "" if presentation.inline_transport or controls_on_side or size.x < 760 else tr(tuner_key)
 	quick_tuner.icon = UIIcons.get_icon(tuner_key)
 	quick_tuner.tooltip_text = tr(tuner_key)
+	quick_tuner.set_meta("hover_caption", tr(tuner_key))
 	var mute_key: String = "INPUT_PLAYBACK_UNMUTE" if quick_mute.button_pressed else "INPUT_PLAYBACK_MUTE"
 	quick_mute.text = "" if presentation.inline_transport or controls_on_side or size.x < 760 else tr(mute_key)
 	quick_mute.icon = UIIcons.get_icon("INPUT_PLAYBACK_MUTE" if quick_mute.button_pressed else "SOUND")
 	quick_mute.tooltip_text = tr(mute_key)
+	quick_mute.set_meta("hover_caption", tr(mute_key))
 
 func update_main_scroll() -> void:
 	await PracticeLayout.fit_score(self)
@@ -2448,6 +2454,7 @@ func update_metronome() -> void:
 	metro_button.set_pressed_no_signal(metro_check.button_pressed)
 	metro_button.text = tr("CLICK_ON" if metro_check.button_pressed else "CLICK_OFF") if not tv_active and not controls_on_side and size.x >= 760 else ""
 	metro_button.tooltip_text = tr("CLICK_HELP")
+	metro_button.set_meta("hover_caption", tr("CLICK_ON" if metro_check.button_pressed else "CLICK_OFF"))
 	metro_button.icon = UIIcons.get_icon("CLICK_ON" if metro_check.button_pressed else "CLICK_OFF")
 	adapt_flow(dock)
 
@@ -2797,13 +2804,21 @@ func start(count_in: bool) -> void:
 		return
 	score.resume_follow()
 	var start_tick: float = source_tick
-	var end_tick: float = float(song.measures.back().end)
+	var end_tick: float = float(song.end_tick)
 	var loop_start_tick: float = -1.0
 	if loop_check.button_pressed:
 		loop_start_tick = float(song.measures[int(loop_from.value) - 1].start)
-		end_tick = float(song.measures[int(loop_to.value) - 1].end)
+		end_tick = minf(song.end_tick, float(song.measures[int(loop_to.value) - 1].end))
 		if start_tick < loop_start_tick or start_tick >= end_tick:
 			start_tick = loop_start_tick
+	if start_tick >= end_tick:
+		source_tick = end_tick
+		state = "STATE_COMPLETE"
+		set_activity(false)
+		update_position()
+		update_play_control()
+		return
+	source_tick = start_tick
 	audio.transport.configure(song, start_tick, end_tick, speed, loop_check.button_pressed, count_in, true, muted.duplicate(), loop_start_tick, int(count_length.value))
 	audio.begin()
 	set_activity(true)
@@ -2816,7 +2831,7 @@ func pause() -> void:
 	release_playing_inputs()
 	if audio != null and audio.playing_practice:
 		paused_in_count = audio.audible_frame() < audio.transport.count_frames
-		source_tick = song.tick_at(audio.transport.seconds_at_frame(audio.audible_frame()))
+		source_tick = clampf(song.tick_at(audio.transport.seconds_at_frame(audio.audible_frame())), 0, song.end_tick)
 		audio.stop_practice()
 		state = "STATE_PAUSED"
 		update_position()
@@ -2921,17 +2936,22 @@ func update_play_control(frame: int = -1) -> void:
 	if count_badge == null: return
 	update_capture_play()
 	update_tv_playback()
-	var beat: int = 0
-	if audio.playing_practice and not score.manual_pan:
-		beat = audio.transport.count_beat_at(audio.audible_frame() if frame < 0 else frame)
+	HoverHelp.playing = audio.playing_practice
+	var count: Dictionary = audio.transport.count_snapshot_at(audio.audible_frame() if frame < 0 else frame) if audio.playing_practice and not score.manual_pan else {}
+	var beat: int = int(count.get("beat", 0))
+	count_badge.reduced_motion = reduced_motion
+	count_badge.set_count(count)
+	score.set_count(count)
+	if capture_active: capture_view.score.set_count(count)
+	score_frame.update_count()
+
 	var key: String = "RECENTER" if score.manual_pan else ("COUNT" if beat > 0 else ("PAUSE" if audio.playing_practice else ("REPLAY" if state == "STATE_COMPLETE" else "PLAY")))
 	if tv_edge_pause != null:
 		tv_edge_pause.text = str(beat) if beat > 0 else ""
 		tv_edge_pause.icon = null if beat > 0 else UIIcons.get_icon("RECENTER" if score.manual_pan else "PAUSE")
 		tv_edge_pause.tooltip_text = tr("TIP_COUNT_BEAT") % beat if beat > 0 else tr("TIP_RECENTER" if score.manual_pan else "TIP_PAUSE")
-	count_badge.visible = beat > 0
+	play_button.set_meta("hover_caption", tr(key))
 	if beat > 0:
-		count_badge.text = str(beat)
 		play_button.text = ""
 		play_button.icon = null
 		play_button.tooltip_text = tr("TIP_COUNT_BEAT") % beat
@@ -3018,6 +3038,11 @@ func end_seek_drag(_changed: bool) -> void:
 func seek_tick(value: float) -> void:
 	if updating or song == null:
 		return
+	var previous_offset: float = score.view_offset
+	var previous_page: int = score.page_index
+	score.finish_seek_transition()
+	if page_tween != null: page_tween.kill()
+	paper.modulate.a = 1
 	score.resume_follow()
 	var next_tick: float = clampf(value, 0.0, float(song.end_tick))
 	if not audio.playing_practice and audio.playback != null and state == "STATE_COMPLETE": audio.stop_practice()
@@ -3033,9 +3058,13 @@ func seek_tick(value: float) -> void:
 	var was_playing: bool = audio.playing_practice
 	pause()
 	source_tick = next_tick
-	if was_playing:
+	if next_tick >= song.end_tick and not loop_check.button_pressed:
+		state = "STATE_COMPLETE"
+		update_play_control()
+	elif was_playing:
 		start(false)
 	update_position()
+	score.animate_seek(previous_offset, previous_page)
 
 func _suspended() -> void:
 	stop_song_preview()
@@ -3069,7 +3098,7 @@ func _process(_delta: float) -> void:
 			pause()
 			set_status("AUDIO_BLOCKED")
 			return
-		source_tick = song.tick_at(audio.transport.seconds_at_frame(frame))
+		source_tick = clampf(song.tick_at(audio.transport.seconds_at_frame(frame)), 0, song.end_tick)
 		set_status("FOLLOW_HINT")
 		if audio.transport.complete(frame):
 			audio.finish_practice()
@@ -3091,11 +3120,16 @@ func report_state() -> void:
 	if host.offline_ready() and not host.trace_enabled(): idle_timer.stop()
 
 func fit_position_label() -> void:
+	if song != null:
+		var elapsed: int = floori(song.seconds_at(source_tick))
+		seek_label.text = tr("SEEK_POSITION_COMPACT" if size.x < 760 or landscape or presentation.mobile_rail else "SEEK_POSITION") % [song.measure_at(source_tick) + 1, elapsed / 60, posmod(elapsed, 60)]
 	# Word wrapping avoids misleading fragments, but Label does not reserve
 	# the longest word's width automatically. Measure it after font changes.
 	var font: Font = seek_label.get_theme_font("font")
 	var font_size: int = seek_label.get_theme_font_size("font_size")
-	var width: float = 112
+	var compact_position: bool = size.x < 760 or landscape or presentation.mobile_rail
+	seek_label.autowrap_mode = TextServer.AUTOWRAP_OFF if compact_position else TextServer.AUTOWRAP_WORD
+	var width: float = maxf(56, font.get_string_size(seek_label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x) if compact_position else 112
 	for word: String in seek_label.text.split(" "):
 		width = maxf(width, font.get_string_size(word, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x)
 	seek_label.custom_minimum_size.x = width
@@ -3118,7 +3152,8 @@ func update_position(animate_follow: bool = false) -> void:
 	seek.value = source_tick
 	updating = false
 	var elapsed: int = floori(song.seconds_at(source_tick))
-	var position_text: String = tr("SEEK_POSITION") % [score.measure_index + 1, elapsed / 60, posmod(elapsed, 60)]
+	var position_text: String = tr("SEEK_POSITION_COMPACT" if size.x < 760 or landscape or presentation.mobile_rail else "SEEK_POSITION") % [score.measure_index + 1, elapsed / 60, posmod(elapsed, 60)]
+	seek_label.tooltip_text = tr("SEEK_POSITION") % [score.measure_index + 1, elapsed / 60, posmod(elapsed, 60)]
 	if seek_label.text != position_text:
 		seek_label.text = position_text
 		fit_position_label()
@@ -3379,6 +3414,7 @@ func apply_motion() -> void:
 		header_margin.modulate.a = 0.0 if tv_tucked else 1.0
 		if dock_margin.get_parent() != header: dock_margin.modulate.a = header_margin.modulate.a
 		if score_frame != null and score_frame.follow_tween != null: score_frame.finish_follow_transition()
+		if score != null: score.finish_seek_transition()
 	apply_button_motion(self)
 	score.reduced_motion = reduced_motion
 	score.invalidate()
@@ -3417,13 +3453,13 @@ func build_print_menu() -> void:
 	var menu: VBoxContainer = section("PRINT")
 	menu.add_child(label("PRINT_HELP", 18))
 	menu.add_child(label("PRINT_CONTENT"))
-	print_notation = OptionButton.new()
+	print_notation = CaptionOption.new()
 	print_notation.fit_to_longest_item = false
 	print_notation.custom_minimum_size.y = 56
 	for key: String in ["NOTATION_BOTH", "NOTATION_TAB", "NOTATION_STAFF"]: print_notation.add_item(tr(key))
 	menu.add_child(print_notation)
 	menu.add_child(label("PRINT_PAPER"))
-	print_paper = OptionButton.new()
+	print_paper = CaptionOption.new()
 	print_paper.fit_to_longest_item = false
 	print_paper.custom_minimum_size.y = 56
 	for key: String in ["PAPER_A4", "PAPER_LETTER"]: print_paper.add_item(tr(key))

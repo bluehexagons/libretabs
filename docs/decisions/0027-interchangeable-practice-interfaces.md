@@ -38,7 +38,8 @@ or introduce another clock. Menu retains Help, Interface and omitted shortcuts.
   with controls on the hand side in short landscape.
 - Workspace puts labeled controls and settings shortcuts in a scrollable rail
   on wide screens, plus a separate score inspector at 1400 logical pixels. It
-  uses the compact player as width or text size changes.
+  uses an icon rail on phones of at least 360 × 620 logical pixels at normal
+  text size, and the compact player on smaller or enlarged-text windows.
 
 All candidates share the score, tuner, settings and themes. Theater and capture
 keep their specialized surfaces; leaving them returns to the selected interface.
@@ -65,3 +66,13 @@ and listening, object/source preservation, choice reachability and Theater round
 trips. Inspect the exported UI in a browser. Physical phone/piano and musical/
 platform acceptance remain open. The candidates do not select the final design
 or add production lessons, progress, dependencies or analytics.
+
+## Phone navigation refinement, 2026-10-08
+
+Focus now stacks its shared header/transport on portrait phones; Touch reparents
+its shared timeline above the primary action; Workspace uses a scrollable narrow
+icon rail with direct tool shortcuts. These remain provider capabilities and
+reuse existing widget instances. Every regular layout keeps the timeline in both
+scrolling and manual pages, including short landscape and 200% text. The minimum
+rail footprint leaves the existing 240-pixel score width intact. The smallest
+windows and enlarged-text layouts favor common reachability over the rail.

@@ -28,6 +28,7 @@ func _ready() -> void:
 	gui_input.connect(pointer_input)
 
 func pointer_input(event: InputEvent) -> void:
+	if (event is InputEventMouseButton or event is InputEventMouseMotion) and event.device == InputEvent.DEVICE_ID_EMULATION: return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed: begin_pointer(event.position)
 		else: end_pointer()
@@ -35,16 +36,23 @@ func pointer_input(event: InputEvent) -> void:
 		if event.position.distance_to(press_origin) > 14:
 			cancel_pointer_action()
 	elif event is InputEventScreenTouch:
-		if event.pressed: begin_pointer(event.position)
+		if event.pressed: begin_pointer(event.position, true)
 		else: end_pointer()
 	elif event is InputEventScreenDrag and pointer_down:
 		if event.position.distance_to(press_origin) > 14:
 			cancel_pointer_action()
 
-func begin_pointer(position: Vector2) -> void:
+func begin_pointer(position: Vector2, touch: bool = false) -> void:
 	pointer_down = true
 	press_origin = position
-	help_timer.start()
+	if touch: help_timer.start()
+
+func _get_tooltip(_at_position: Vector2) -> String:
+	if not HoverHelp.allowed(): return ""
+	return text if not text.is_empty() else str(get_meta("hover_caption", tooltip_text))
+
+func _make_custom_tooltip(for_text: String) -> Object:
+	return HoverHelp.card(self, for_text)
 
 func end_pointer() -> void:
 	pointer_down = false

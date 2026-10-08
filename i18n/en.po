@@ -2348,13 +2348,13 @@ msgid "INTERFACE_TOUCH"
 msgstr "Touch"
 
 msgid "INTERFACE_TOUCH_HELP"
-msgstr "A touch console with a wide Play button, a separate row of practice actions, and navigation tabs. Short landscape screens use the hand side."
+msgstr "A touch console with a wide Play button, a position slider, a separate row of practice actions, and navigation tabs. Short landscape screens use the hand side."
 
 msgid "INTERFACE_WORKSPACE"
 msgstr "Workspace"
 
 msgid "INTERFACE_WORKSPACE_HELP"
-msgstr "A practice desk with a labeled controls rail and a separate score setup panel on large screens. Smaller screens use a compact dock."
+msgstr "A practice desk with a labeled controls rail and a separate score setup panel on large screens. Phones use an icon rail; the smallest screens and enlarged text use a compact dock."
 
 msgid "TUNER_SHORT"
 msgstr "Tuner"
@@ -2439,3 +2439,9 @@ msgstr "Clear every learned mark for songs, exercises and imported pieces on thi
 
 msgid "LEARNING_CLEAR_DO"
 msgstr "Clear all learned marks"
+
+msgid "SEEK_POSITION_COMPACT"
+msgstr "%d · %d:%02d"
+
+msgid "SEEK_CAPTION"
+msgstr "Song position"

@@ -18,12 +18,14 @@ Open **Menu → Interface** to compare the current player (**Classic**) with thr
 alternatives:
 
 - **Focus:** a plain music stand with Play and speed above the score, sharing
-  one slim toolbar on wide screens. Secondary actions are in Menu.
+  one slim toolbar on wide screens and a compact stacked header on phones.
+  Secondary actions are in Menu.
 - **Touch:** navigation tabs and a wide, labeled Play button above a separate
-  row of practice actions. Short windows use a compact dock; short landscape
-  screens put controls on your preferred hand side.
+  row of practice actions. Its position slider sits beside these thumb controls.
+  Short windows use a compact dock; short landscape screens put controls on your preferred hand side.
 - **Workspace:** a labeled controls rail, plus a separate score setup panel on
-  large screens. Smaller windows and enlarged text use the compact player.
+  large screens, and a narrow icon rail with direct tool shortcuts on phones.
+  The smallest windows and enlarged text use the compact player.
 
 Select a choice, then **Done** to return to practice. Switching keeps your song,
 playback position, speed, loop, music layout and listening connection. The choice
@@ -37,8 +39,9 @@ layouts; a final redesign has not been selected.
    in **Quick start**. This does not start the sound. To change how the music is
    shown, choose **Practice layouts** in Quick start or Menu.
 2. Press **Play** and listen once without playing your guitar. The clicks before
-   the music are a **count-in**: time to get ready. The moving line follows the
-   music. Rounded outlines mark sounding tab numbers; slightly larger, bolder
+   the music are a **count-in**: time to get ready. A number and a row of beat dots
+   appear in Play and beside the starting music; the filled dot moves each beat.
+   The moving line follows the music. Rounded outlines mark sounding tab numbers; slightly larger, bolder
    staff noteheads mark sounding notes without changing their shape.
 3. Open **Menu → Playback** and choose a slower speed, such as **50%** under
    **Speed presets**. That means half the original speed, with the same pitches.
@@ -184,8 +187,10 @@ values may return next time.
   when you want a new count-in.
 - **Move to a passage:** click or tap the music to move playback there. In
   scrolling view, drag sideways across the music to browse without changing playback.
-  The position slider lets you seek through the song. **Restart** returns to the beginning of
-  the song, or the beginning of an enabled loop.
+  The position slider is available in every regular interface, including phone
+  landscape and manual pages. Its compact label shows measure number and elapsed
+  time. Small score jumps ease into place; Reduced Motion makes them immediate.
+  **Restart** returns to the beginning of the song, or the beginning of an enabled loop.
 - **Loop:** From and Through include the first and last measures you choose.
   **Repeat this measure** sets and enables a one-measure loop. **Start at current
   measure** and **End at current measure** set the range from the current position.
@@ -329,8 +334,10 @@ including while paused, and do not record notes or assess your playing.
 ## Get help and recover
 
 Open **Menu → Quick start** to reread the introduction or change **Show on startup**.
-**Menu → Help** explains the symbols and shortcuts. Hover over a control for a
-hint, hold an action button on touch, or focus a control and press F1.
+**Menu → Help** explains the symbols and shortcuts. Mouse hover shows a short
+caption after a pause, and stays quiet while playing or using the keyboard. The
+music itself does not open hover text. Hold an action button on touch, or focus a
+control and press F1 for its full explanation.
 Tab moves keyboard focus. With menus closed, Space plays or pauses; left/right
 arrows move by measure or turn a manual page. When the position slider has focus,
 arrows move one beat, Page Up/Down one measure, and Home/End to the start/end.

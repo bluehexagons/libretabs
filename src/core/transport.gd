@@ -103,6 +103,13 @@ func count_beat_at(frame: int) -> int:
 	if frame < 0 or frame >= count_frames or count_beats.is_empty(): return 0
 	return (count_beats.bsearch(frame, false) - 1) % count_meter + 1
 
+func count_snapshot_at(frame: int) -> Dictionary:
+	var beat: int = count_beat_at(frame)
+	if beat == 0: return {}
+	var index: int = count_beats.bsearch(frame, false) - 1
+	var finish: int = count_beats[index + 1] if index + 1 < count_beats.size() else count_frames
+	return {"beat": beat, "pulses": count_meter, "phase": clampf(float(frame - count_beats[index]) / maxi(1, finish - count_beats[index]), 0, 1)}
+
 func set_part_enabled(part: int, enabled: bool) -> void:
 	if enabled: mute_parts.erase(part)
 	elif not mute_parts.has(part): mute_parts.append(part)

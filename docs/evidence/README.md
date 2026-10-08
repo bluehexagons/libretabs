@@ -1,5 +1,8 @@
 # Evidence records
 
+Practice navigation: [hover, bounded seeking, count-in and phone timelines,
+2026-10-08](practice-navigation-2026-10-08.md).
+
 Player/tuner feedback: [structural interfaces, capture controls and pitch
 response, 2026-10-08](player-feedback-2026-10-08.md).
 

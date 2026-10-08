@@ -16,3 +16,6 @@ var console: bool = false
 var inspector: bool = false
 var show_cue: bool = true
 var plain_score: bool = false
+
+var stacked_toolbar: bool = false
+var mobile_rail: bool = false

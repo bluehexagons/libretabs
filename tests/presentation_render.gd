@@ -6,6 +6,7 @@ const OUTPUT: String = "res://build/presentation-audit"
 var app: Control
 var checks: int = 0
 var failures: int = 0
+var count_frame_override: int = -1
 
 func check(value: bool, message: String) -> void:
 	checks += 1
@@ -21,6 +22,10 @@ func settle() -> void:
 
 func capture(name_text: String) -> void:
 	await settle()
+	if count_frame_override >= 0:
+		app.call("update_play_control", count_frame_override)
+		app.queue_redraw()
+		await RenderingServer.frame_post_draw
 	if app.get("capture_active"):
 		var score: ScoreView = app.get("capture_view").score
 		var image: Image = root.get_texture().get_image()
@@ -54,9 +59,11 @@ func run() -> void:
 		root.size = Vector2i(1440,800)
 		app.call("change_interface", candidate)
 		await capture(candidate + "-wide")
-	app.call("change_interface", "touch")
 	root.size = Vector2i(390,844)
-	await capture("touch-phone")
+	for candidate: String in PracticeInterfaces.IDS:
+		app.call("change_interface", candidate)
+		await capture(candidate + "-phone")
+	app.call("change_interface", "touch")
 	root.size = Vector2i(844,320)
 	await capture("touch-landscape")
 	app.call("change_interface", "classic")
@@ -73,6 +80,26 @@ func run() -> void:
 	app.call("change_interface", "workspace")
 	root.size = Vector2i(390,844)
 	await capture("workspace-large-phone")
+	app.call("apply_scale", 1.0)
+	app.call("change_interface", "focus")
+	root.size = Vector2i(1280,800)
+	app.call("seek_tick", 0)
+	app.call("start", true)
+	app.set_process(false)
+	count_frame_override = 0
+	await capture("count-start")
+	count_frame_override = app.get("audio").transport.count_beats[1]
+	await capture("count-next")
+	root.size = Vector2i(390,844)
+	await capture("count-phone")
+	app.call("apply_scale", 2.0)
+	await capture("count-large-phone")
+	app.call("apply_scale", 1.0)
+	root.size = Vector2i(1280,800)
+	count_frame_override = -1
+	app.call("pause")
+	app.call("seek_tick", app.get("song").end_tick)
+	await capture("exact-end")
 	app.queue_free()
 	for _frame: int in range(6): await process_frame
 	print("Native presentation: %d checks, %d failures" % [checks, failures])

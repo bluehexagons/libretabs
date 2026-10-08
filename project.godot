@@ -36,3 +36,7 @@ gdscript/warnings/inferred_declaration=1
 
 [editor_plugins]
 enabled=PackedStringArray("res://addons/offline_export/plugin.cfg")
+
+[gui]
+
+timers/tooltip_delay_sec=1.2

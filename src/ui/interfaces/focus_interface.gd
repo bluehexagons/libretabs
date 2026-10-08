@@ -9,7 +9,8 @@ func describe(viewport: Vector2, font_size: int, requested_edge: String, hand: S
 	result.context_tools = false
 	result.compact_primary = true
 	result.single_row = viewport.x >= 600 and font_size < 30
-	result.inline_transport = viewport.x >= 900 and viewport.y >= 500 and font_size < 30
+	result.stacked_toolbar = viewport.x >= 360 and viewport.x < 900 and viewport.y >= 620 and font_size < 30
+	result.inline_transport = (viewport.x >= 900 and viewport.y >= 500 and font_size < 30) or result.stacked_toolbar
 	result.show_cue = false
 	result.plain_score = true
 	return result

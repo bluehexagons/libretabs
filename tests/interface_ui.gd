@@ -107,9 +107,17 @@ func run() -> void:
 	await settle(app)
 	check(app.get("console_primary").is_ancestor_of(app.get("play_button")) and app.get("play_button").size.x > 250 and not app.get("play_button").text.is_empty(), "Touch has a separate wide labeled primary action")
 	check(app.get("transport_row").global_position.y >= app.get("play_button").get_global_rect().end.y, "Touch practice shortcuts occupy a separate row")
+	check(app.get("dock_shell").is_ancestor_of(app.get("seek")), "Touch timeline shares the thumb console")
+	app.call("change_interface", "focus")
+	await settle(app)
+	check(app.get("presentation").stacked_toolbar and app.get("header").is_ancestor_of(app.get("play_button")), "phone Focus has a compact stacked toolbar")
+	app.call("change_interface", "workspace")
+	await settle(app)
+	check(app.get("presentation").mobile_rail and app.get("controls_on_side") and app.get("header_margin").size.x < 100, "phone Workspace uses a narrow icon rail")
+	check(app.get("interface_navigation").visible and app.get("interface_navigation").get_child(0).text.is_empty(), "phone Workspace keeps direct tool shortcuts")
 	for factor: float in [1.0, 2.0]:
 		app.call("apply_scale", factor)
-		for viewport: Vector2i in [Vector2i(320,568), Vector2i(390,844), Vector2i(844,320), Vector2i(740,260), Vector2i(1280,800), Vector2i(1920,1080)]:
+		for viewport: Vector2i in [Vector2i(320,568), Vector2i(360,640), Vector2i(390,844), Vector2i(844,320), Vector2i(740,260), Vector2i(1280,800), Vector2i(1920,1080)]:
 			root.size = viewport
 			for id: String in PracticeInterfaces.IDS:
 				app.call("change_interface", id)
@@ -121,7 +129,7 @@ func run() -> void:
 					var shell: Control = app.get("root_box")
 					check(shell.size.x <= viewport.x + 1 and shell.size.y <= viewport.y + 1, "shell fits " + context)
 					check(score.mode == mode and score.notation == "both", "notation remains explicit " + context)
-					for key: String in ["play_button", "main_speed", "menu_button", "quick_tuner", "quick_mute"]:
+					for key: String in ["play_button", "main_speed", "menu_button", "quick_tuner", "quick_mute", "seek"]:
 						await reachable(app, app.get(key), key + " reachable " + context)
 					var rail: Control = app.get("interface_navigation")
 					if rail.visible:

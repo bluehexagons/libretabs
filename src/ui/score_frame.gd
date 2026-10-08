@@ -145,6 +145,7 @@ func configure_line(view: ScoreView, page: int, preview: bool) -> void:
 	view.show()
 	view.update_tick(score.current_tick)
 	view.set_live(score.live_notes)
+	view.set_count(score.count_state)
 
 func apply_follow_offset(offset: float) -> void:
 	follow_offset = offset
@@ -183,3 +184,6 @@ func cancel_pointers() -> void:
 	if score != null: score.cancel_touch()
 	for next: ScoreView in continuations: next.cancel_touch()
 	if outgoing != null: outgoing.cancel_touch()
+
+func update_count() -> void:
+	for next: ScoreView in continuations: next.set_count(score.count_state)

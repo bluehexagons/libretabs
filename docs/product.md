@@ -278,7 +278,7 @@ The MVP has four routes/scenes:
 - **Import review:** part list, arrangement options, diagnostic summary, open practice.
 - **Practice:** song/part header, responsive paired staff/tab viewport with tab emphasized, current-position/fretboard cue, Help, and a compact transport bar.
 
-Advanced settings stay behind a disclosure. The practice screen should remain useful at roughly 360 CSS pixels wide and at desktop widths; touch targets should be at least 44 logical pixels where practical. Ordinary scrolling practice should fit without a main-page scrollbar at common laptop heights; short landscape uses direct score seeking and omits the duplicate timeline scrubber.
+Advanced settings stay behind a disclosure. The practice screen should remain useful at roughly 360 CSS pixels wide and at desktop widths; touch targets should be at least 44 logical pixels where practical. Ordinary scrolling practice should fit without a main-page scrollbar at common laptop heights; short landscape retains direct score seeking and a compact timeline scrubber.
 
 ## Accessibility and internationalization baseline
 
@@ -384,9 +384,10 @@ control, and cross-window song synchronization are not part of this slice.
 
 The practice control refinement uses full-height minus/plus buttons alongside
 editable numeric fields for loop/print ranges, count-in, custom BPM and keyboard
-octave. A count-in beat number occupies the existing Play target and follows the
-audio transport's scheduled pulses, including compound meter. Pause and Replay
-have state-specific labels/help. Capture lettering uses separate higher-resolution
+octave. A count-in number and beat dots occupy the existing Play target and sit
+beside the starting music. Both sample the same audible transport frames,
+including compound meter; reduced motion keeps discrete beat changes. Pause
+and Replay have state-specific labels/help. Capture lettering uses separate higher-resolution
 font caches so enlarging the score does not soften text or alter normal UI fonts.
 
 ### Technique-friendly arrangement options
@@ -415,3 +416,13 @@ for guitar, pick, bass-staff reading, and piano grand-staff reading. Under
 examples have separate higher and lower source parts and optional compact
 companion staffs. These views do not add bass fingering or general multi-part
 piano reduction to the MVP contract.
+
+The navigation feedback pass (2026-10-08) limits seek previews, playback endpoints
+and displayed ticks to the source song's exact end, including partially filled
+final measures. Small seeks ease only the score camera; large seeks briefly fade.
+Audio changes to the requested position immediately. Scrubbing still pauses once
+and resumes once. Mouse captions are delayed and suppressed during playback or
+keyboard use; F1 and touch hold retain full help. Regular phone interfaces retain
+a focusable timeline in both reading modes. Focus stacks its top toolbar, Touch
+puts the timeline in its console, and Workspace uses a narrow icon rail when
+space permits. Enlarged text and the smallest windows keep the common fit rules.

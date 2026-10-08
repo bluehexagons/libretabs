@@ -66,6 +66,10 @@ var touch_positions: Dictionary = {}
 var touch_released: Dictionary = {}
 var touch_cancelled: bool = false
 var note_halo: StyleBoxFlat
+var seek_shift: float = 0.0
+var seek_tween: Tween
+var count_state: Dictionary = {}
+var count_pulse: CountPulse
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(240, 320)
@@ -80,7 +84,10 @@ func _ready() -> void:
 	cursor.owner_score = self
 	cursor.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(cursor)
-	resized.connect(refresh)
+	count_pulse = CountPulse.new()
+	count_pulse.framed = true
+	add_child(count_pulse)
+	resized.connect(func() -> void: finish_seek_transition(); refresh())
 	gui_input.connect(pointer_input)
 	mouse_entered.connect(func() -> void: update_pointer_region(get_local_mouse_position()))
 	mouse_exited.connect(func() -> void:
@@ -90,6 +97,8 @@ func _ready() -> void:
 		if not pointer_pressed: cursor.queue_redraw())
 
 func set_document(document: SongDocument, selection: int, tab: TabProjection) -> void:
+	finish_seek_transition()
+	set_count({})
 	manual_pan = false
 	song = document
 	part = selection
@@ -113,6 +122,7 @@ func invalidate() -> void:
 	refresh()
 
 func set_view(value: String, symbols: String) -> void:
+	finish_seek_transition()
 	manual_pan = false
 	fitted_rows.clear()
 	var enter_pages: bool = mode != "pages" and value == "pages"
@@ -213,6 +223,7 @@ func page_to_playback() -> void:
 	refresh()
 
 func update_tick(tick: float) -> void:
+	tick = clampf(tick, 0, song.end_tick) if song != null else 0
 	var moved_back: bool = tick < current_tick
 	current_tick = tick
 	measure_index = song.measure_at(tick) if song != null else 0
@@ -264,6 +275,7 @@ func refresh() -> void:
 	# Paged reading uses exactly the same geometry, with a partial next page.
 	var follow_offset: float = maxf(-64, layout.timeline_x(current_tick) - playhead_x())
 	view_offset = clampf(pan_offset, -64, max_pan_offset()) if manual_pan and mode == "scroll" else (follow_offset if mode == "scroll" else layout.offsets[page_start()] - 64)
+	if mode == "scroll" and not manual_pan: view_offset += seek_shift
 	strip.position = Vector2(-view_offset, 0)
 	var wanted: Array[int] = []
 	for index: int in range(song.measures.size()):
@@ -301,6 +313,7 @@ func refresh() -> void:
 			tile.size = next_size
 			tile.resize_width(next_size.x)
 		tile.position = Vector2(layout.offsets[index], 0)
+	place_count()
 	var key: String = "%s:%s:%s:%s:%s" % [mode, page_index, size, current_tick, effects_playing]
 	if key != last_key:
 		last_key = key
@@ -336,7 +349,7 @@ func tick_at_timeline_position(timeline_position: float) -> float:
 	if mode == "pages" and not page_preview: index = clampi(index, page_start(), page_start() + page_capacity - 1)
 	var bar: Dictionary = song.measures[index]
 	var fraction: float = clampf((timeline_position - layout.offsets[index] - 16.0) / layout.widths[index], 0.0, 1.0)
-	return lerpf(float(bar.start), float(bar.end), fraction)
+	return clampf(lerpf(float(bar.start), float(bar.end), fraction), 0, song.end_tick)
 
 func pointer_input(event: InputEvent) -> void:
 	if song == null: return
@@ -425,6 +438,7 @@ func move_pointer(position: Vector2) -> void:
 	# Move the score under the finger without changing the shared transport.
 	# Vertical touch movement remains available to the surrounding page.
 	if mode == "scroll" and pointer_moved and absf(position.x - pointer_origin.x) > absf(position.y - pointer_origin.y) * 1.5:
+		finish_seek_transition()
 		manual_pan = true
 		pan_offset = clampf(pointer_anchor_offset + pointer_origin.x - position.x, -64, max_pan_offset())
 		refresh()
@@ -476,7 +490,7 @@ class CursorLayer extends Control:
 func draw_cursor(surface: Control) -> void:
 	if song == null: return
 	if pointer_hovered or pointer_pressed:
-		var preview_x: float = clampf(pointer_position.x, 44, size.x)
+		var preview_x: float = preview_position()
 		var preview_color: Color = get_theme_color("accent", "LibreTabs")
 		preview_color.a = 0.7 if pointer_pressed else 0.42
 		var wash: Color = preview_color
@@ -741,3 +755,51 @@ func ripple_phase(note: Dictionary) -> float:
 	var age: float = song.seconds_at(current_tick) - song.seconds_at(float(note.start))
 	var duration: float = ONSET_SECONDS * effects_speed
 	return age / duration if age >= 0 and age < duration else -1
+
+# This moves the camera only; source_tick and audio always jump to the exact
+# requested position. Large jumps fade rather than travelling through the song.
+func animate_seek(previous_offset: float, previous_page: int) -> void:
+	if reduced_motion: return
+	var difference: float = previous_offset - view_offset
+	seek_tween = create_tween()
+	if mode == "scroll" and absf(difference) <= size.x * 0.75:
+		apply_seek_shift(difference)
+		seek_tween.tween_method(apply_seek_shift, difference, 0.0, 0.18).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	elif absf(difference) > 1 or previous_page != page_index:
+		modulate.a = 0.65
+		seek_tween.tween_property(self, "modulate:a", 1.0, 0.16).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	seek_tween.tween_callback(finish_seek_transition)
+
+func apply_seek_shift(value: float) -> void:
+	seek_shift = value
+	refresh()
+	if cursor != null: cursor.queue_redraw()
+
+func finish_seek_transition() -> void:
+	if seek_tween != null: seek_tween.kill(); seek_tween = null
+	seek_shift = 0
+	modulate.a = 1
+
+func preview_position() -> float:
+	return clampf(layout.timeline_x(tick_at_position(pointer_position)) - view_offset, 44, size.x)
+
+func _get_tooltip(_at_position: Vector2) -> String:
+	# Reading music should not summon a paragraph over the notes.
+	return ""
+
+func set_count(value: Dictionary) -> void:
+	count_state = value
+	if count_pulse == null: return
+	count_pulse.reduced_motion = reduced_motion
+	count_pulse.set_count(value)
+	place_count()
+
+func place_count() -> void:
+	if count_pulse == null or song == null: return
+	var anchor: float = current_tick if oldest_sounding_tick >= 0 or upcoming_tick < 0 else upcoming_tick
+	var x: float = layout.timeline_x(anchor) - view_offset
+	count_pulse.visible = not count_state.is_empty() and x >= 44 and x <= size.x and tiles.has(song.measure_at(anchor))
+	# Like the measure captions, this belongs to the score geometry. Keep it
+	# inside the clef gutter even when application text is enlarged.
+	count_pulse.size = Vector2(56, 44)
+	count_pulse.position = Vector2(clampf(x - count_pulse.size.x - 8, 4, maxf(4, size.x - count_pulse.size.x)), 4)

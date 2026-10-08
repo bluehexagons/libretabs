@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 class_name RelativeSpeedSlider
-extends HSlider
+extends CaptionSlider
 
 signal tap_control
 var press_control: Control

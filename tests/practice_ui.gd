@@ -770,7 +770,7 @@ func run() -> void:
 			check(score.global_position.y <= 24 and (score.get_global_transform() * Vector2(0, 281)).y < viewport.y, "staff and all six tab lines visible without first scrolling")
 			check(app.get("root_box").size.x <= viewport.x and app.get("root_box").size.y <= viewport.y, "landscape shell fits at %s / %s: %s" % [viewport, factor, app.get("root_box").size])
 			check(app.get("main_speed").is_visible_in_tree(), "playback settings directly reachable at every scale")
-			check(not app.get("seek_navigation").visible and app.get("scroll").vertical_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "short landscape uses direct score seeking without a duplicate scrollbar")
+			check(app.get("seek_navigation").visible and app.get("scroll").vertical_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "short landscape retains its compact timeline without scrolling the player")
 			check(app.get("play_button").get_global_rect().end.y <= viewport.y and app.get("menu_button").size.y >= 56, "landscape transport and menu remain usable")
 			check(app.get("songs_button").is_visible_in_tree() and app.get("songs_button").size.x >= 56 and app.get("loop_button").is_visible_in_tree() and app.get("loop_button").size.x >= 56, "landscape keeps large song and loop controls directly reachable")
 			check(app.get("menu_button").global_position.y >= 8 and app.get("songs_button").global_position.x >= 8, "landscape header is inset from the screen edges")

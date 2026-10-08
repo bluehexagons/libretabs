@@ -34,6 +34,14 @@ a reproduced sharp interpolation bias, improves soft electronic-piano pickup
 and steadies the gauge. Native render and synthetic audio checks pass; physical
 phone/instrument testing and browser interaction remain open.
 
+The [navigation follow-up](evidence/practice-navigation-2026-10-08.md) keeps hover
+captions quiet while playing or using the keyboard, bounds score seeking to the
+actual song end, smooths its presentation and adds beat dots beside the starting
+music. Every regular phone layout keeps a timeline; Focus uses a compact top
+header, Touch a thumb console, and Workspace an icon rail when space permits.
+Native appearance/tooltip and automated geometry checks pass; browser/physical
+phone acceptance remains open.
+
 Settings now also retain regular reading mode, keyboard visibility/feedback,
 library sorting and tuner instrument/sensitivity/reference. Manual learned marks
 are reversible for library pieces, exercises and reopened imported MIDI. Reset
