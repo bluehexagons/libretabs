@@ -48,15 +48,19 @@ is available on the managed network. It is not a public launch URL.
   Pages. Desktop packages use official release templates, not the editor.
   Checksums, notices, and curated or generated release notes accompany releases.
 - The latest public evaluation prerelease,
-  [`0.0.1-prototype.15`](https://github.com/bluehexagons/libretabs/releases/tag/v0.0.1-prototype.15),
+  [`0.0.1-prototype.16`](https://github.com/bluehexagons/libretabs/releases/tag/v0.0.1-prototype.16),
   was published on 2026-10-08 by that workflow. Its web, Windows, Linux, manifest,
   and checksum assets are public. All downloaded package checksums, ZIP integrity,
   build identities and notices passed review. The exact downloaded Linux package
   ran without Godot on PATH; Windows runtime still needs a physical-device check.
-  The public threaded player renders the new interfaces and restores the saved
-  choice on reload. Both public web builds pass all nine asset hashes and MIME
-  checks. See the [interface comparison](evidence/interface-comparison-2026-10-08.md)
-  for the release source, workflow and test boundaries.
+  The managed web build restores learned marks and tuner choices on reload. Both
+  public web builds pass all nine asset hashes and MIME checks, and the public
+  guide names prototype.16. Public runtime inspection hit repeated T3 snapshot
+  failures; it remains a manual check. See the
+  [local-state evidence](evidence/local-state-2026-10-08.md) for the source,
+  workflows and verification boundaries. The
+  [interface comparison](evidence/interface-comparison-2026-10-08.md) retains
+  prototype.15's public rendering evidence.
   The Pages guide links to versioned downloads
   when deployed with a release version; a standalone source deployment can show
   “current source build” instead.

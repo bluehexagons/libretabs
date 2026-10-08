@@ -71,3 +71,31 @@ tests and physical/manual acceptance boundaries remain separate.
 
 Ignored logs, managed export metadata and screenshots are retained under
 `build/local-state-evidence` in the primary checkout after integration.
+
+## Published testing build
+
+[`v0.0.1-prototype.16`](https://github.com/bluehexagons/libretabs/releases/tag/v0.0.1-prototype.16)
+was published on 2026-10-08 from source
+`290a1d259ff451466c5fb231731c60cfe9ce5581`. Both the
+[source checks](https://github.com/bluehexagons/libretabs/actions/runs/37813213977)
+and [release/Pages workflow](https://github.com/bluehexagons/libretabs/actions/runs/37813494666)
+completed successfully on that source. Earlier source-check runs were superseded
+by the two browser-discovered fixes above.
+
+All downloaded web, Windows and Linux packages pass the manifest/checksum
+validator, ZIP integrity checks, exact BUILD.json source/version checks and
+license-notice checks. The exact Linux executable starts at 1100×700 with only
+`/usr/bin:/bin` on PATH and a private test profile. Its welcome/score render and
+its window closes normally, with exit 0. The log has only the VM driver's
+unsupported V-Sync warning; no application errors. Windows runtime is untested.
+
+The public guide names prototype.16. Both public player paths pass HTTPS, MIME
+and all nine service-worker asset hashes. Pages uses the existing service-worker
+isolation mechanism; the strict native-header checker is for the managed server.
+T3 evaluation observes crossOriginIsolated true and the new platform bridge on
+Pages, but its snapshot operation repeatedly fails on both public players,
+including a new tab and text-only snapshots. No runtime trace was returned there,
+so public rendering/boot is not certified by this check. The same T3 client still
+renders the final managed build with STATE_READY and the microphone off.
+Public-player interaction remains a manual check; no cache clearing or forced
+service-worker activation was used to bypass update behavior.
