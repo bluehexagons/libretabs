@@ -99,9 +99,24 @@ func run() -> void:
 					var rect: Rect2 = control.get_global_rect()
 					check(control.is_visible_in_tree() and controls.get_global_rect().encloses(rect), key + " reachable by scrolling " + context)
 				check(app.get("source_tick") == tick and not listening.listener.paused, "browsing controls preserves playback and listening " + context)
+	for factor: float in [1.0, 2.0]:
+		app.call("apply_scale", factor)
+		for viewport: Vector2i in [Vector2i(320,568), Vector2i(390,844), Vector2i(360,640)]:
+			root.size = viewport
+			app.set("control_position", "bottom")
+			for mode: String in ["scroll", "pages"]:
+				score.set_view(mode, "both")
+				app.call("responsive")
+				await settle_layout(app, score)
+				var context: String = "%s %s %s%% portrait capture" % [viewport, mode, factor * 100]
+				check(app.get("root_box").size.y <= viewport.y + 1, "portrait shell fits " + context)
+				for key: String in ["play_button", "main_speed", "quick_tuner", "quick_mute", "menu_button"]:
+					check(Rect2(Vector2.ZERO, Vector2(viewport)).encloses(app.get(key).get_global_rect()), key + " stays visible " + context)
 	# A finger drag and keyboard focus expose clipped controls without firing an
 	# action; an overlay must not also scroll the controls behind it.
+	app.call("apply_scale", 2.0)
 	root.size = Vector2i(740,240)
+	app.set("control_position", "right")
 	app.call("responsive")
 	await settle_layout(app, score)
 	var side_scroll: TouchScrollContainer = app.get("header_scroll")
@@ -133,6 +148,14 @@ func run() -> void:
 	check(side_scroll.scroll_vertical == side_before, "menu input cannot scroll controls behind the overlay")
 	app.call("close_menu")
 	listening.listener.capture.stop()
+	listening.playback_mute.button_pressed = true
+	root.size = Vector2i(320,568)
+	score.set_view("pages", "both")
+	app.set("control_position", "bottom")
+	app.call("responsive")
+	await settle_layout(app, score)
+	check(app.get("root_box").size.y <= 569 and Rect2(Vector2.ZERO, Vector2(root.size)).encloses(app.get("quick_mute").get_global_rect()), "restoring sound stays reachable at 200% after capture stops")
+	listening.playback_mute.button_pressed = false
 	root.size = Vector2i(320,568)
 	app.call("toggle_drawer", "DISPLAY")
 	await settle_layout(app, score)

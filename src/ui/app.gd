@@ -2696,16 +2696,22 @@ func update_quick_listening() -> void:
 	quick_tuner.visible = listening.listener.capture.enabled
 	quick_mute.visible = listening.listener.capture.enabled or listening.playback_mute.button_pressed
 	style_quick_listening()
-	if dock != null: adapt_flow(dock)
+	if dock != null:
+		update_play_control()
+		update_loop_controls()
+		adapt_flow(dock)
+
+func compact_listening_transport() -> bool:
+	return not controls_on_side and size.x < 480 and size.y < 700 and listening != null and (listening.listener.capture.enabled or listening.playback_mute.button_pressed)
 
 func style_quick_listening() -> void:
 	if quick_tuner == null or quick_mute == null: return
 	var tuner_key: String = "INPUT_MIC_PAUSE" if quick_tuner.button_pressed else "INPUT_MIC_RESUME"
-	quick_tuner.text = "" if controls_on_side else tr(tuner_key)
+	quick_tuner.text = "" if controls_on_side or size.x < 760 else tr(tuner_key)
 	quick_tuner.icon = UIIcons.get_icon(tuner_key)
 	quick_tuner.tooltip_text = tr(tuner_key)
 	var mute_key: String = "INPUT_PLAYBACK_UNMUTE" if quick_mute.button_pressed else "INPUT_PLAYBACK_MUTE"
-	quick_mute.text = "" if controls_on_side else tr(mute_key)
+	quick_mute.text = "" if controls_on_side or size.x < 760 else tr(mute_key)
 	quick_mute.icon = UIIcons.get_icon("INPUT_PLAYBACK_MUTE" if quick_mute.button_pressed else "SOUND")
 	quick_mute.tooltip_text = tr(mute_key)
 
@@ -2803,6 +2809,8 @@ func adapt_flow(node: Node) -> void:
 			play_button.custom_minimum_size = Vector2(64, 64)
 		elif controls_on_side:
 			play_button.custom_minimum_size = Vector2(dock.custom_minimum_size.x - (64 if theme.default_font_size >= 30 or size.y < 360 else 0), 80 if size.y >= 360 or (theme.default_font_size >= 30 and size.y >= 320) else 64)
+		elif compact_listening_transport():
+			play_button.custom_minimum_size = Vector2(72, 64)
 		elif size.x < 760 and not tight_controls:
 			play_button.custom_minimum_size = Vector2(maxf(120, size.x - 64), 72)
 		else:
@@ -3290,7 +3298,7 @@ func update_loop_controls() -> void:
 	loop_toggle.text = tr("DISABLE_LOOP" if enabled else "ENABLE_LOOP")
 	loop_toggle.tooltip_text = tr("TIP_DISABLE_LOOP" if enabled else "TIP_ENABLE_LOOP")
 	loop_button.set_pressed_no_signal(enabled)
-	loop_button.text = "" if controls_on_side or (theme.default_font_size >= 30 and size.x < 760) else (range_text if enabled else tr("LOOP_OFF"))
+	loop_button.text = "" if controls_on_side or compact_listening_transport() or (theme.default_font_size >= 30 and size.x < 760) else (range_text if enabled else tr("LOOP_OFF"))
 	loop_button.icon = UIIcons.get_icon("LOOP_TOOL") if loop_button.text.is_empty() or size.x >= 760 else null
 	loop_button.tooltip_text = tr("TIP_LOOP_ACTIVE") % [int(loop_from.value), int(loop_to.value)] if enabled else tr("TIP_LOOP_TOOL")
 	adapt_flow(dock)
@@ -3324,7 +3332,7 @@ func update_play_control(frame: int = -1) -> void:
 		play_button.icon = null
 		play_button.tooltip_text = tr("TIP_COUNT_BEAT") % beat
 	else:
-		play_button.text = "" if tv_active or controls_on_side or tight_controls else tr(key)
+		play_button.text = "" if tv_active or controls_on_side or tight_controls or compact_listening_transport() else tr(key)
 		play_button.icon = UIIcons.get_icon(key)
 		play_button.tooltip_text = tr("TIP_" + key)
 	if key != play_control_key:

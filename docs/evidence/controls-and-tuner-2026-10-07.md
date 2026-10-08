@@ -12,7 +12,10 @@ microphone/mute switches or enlarging text could put lower controls outside the
 viewport. A focus-following TouchScrollContainer now bounds the column. Short
 layouts keep Songs/Menu, Play/Loop and speed prominent; Theater and fullscreen
 remain in Menu. Compact microphone and musical-mute actions retain text on wide
-screens and state-specific SVG icons/help on side docks. Header scrolling ignores
+screens and state-specific SVG icons/help on side docks and narrow phones.
+Short portrait layouts also compact the transport when listening is active,
+keeping Play/Loop/Restart and all lower controls visible with enlarged text,
+including an audio-restore switch after capture stops. Header scrolling ignores
 input while an overlay or capture view is active. Music-line dropdowns have enough
 width for their selected labels; generic flow sizing no longer removes clipping
 from OptionButtons in compact rows.
@@ -44,13 +47,15 @@ were added.
 - Deterministic rendered-sample tests compare muted dry/wet music to a click-only
   mixer, and confirm exact click samples, retained voices/levels/time and unmute.
 - Active-capture layout checks at 844×320, 740×260 and 480×280, both control sides,
-  100/200% text; controls are reached through scrolling. A 740×240 touch sequence
+  100/200% text; controls are reached through scrolling. Portrait tests cover
+  320×568, 390×844 and 360×640, scrolling/pages and 100/200% text. A 740×240 touch sequence
   beginning on Play scrolls without starting playback; focus reveals Play and
   menu input does not move the dock behind it.
 - Connection-wait/failure/ready tests verify one-action practice entry. Profile
   dropdown tests verify actual detection profile and semantic target reset.
 - Native Mesa 25.0.7 llvmpipe/X11 visual fixtures: 844×320, 740×260 with 200% text,
-  390×844 tuner/settings, 1280×800 Light/Dark. These use simulated capture state,
+  320×568 with 200% text and active listening, 390×844 tuner/settings,
+  1280×800 Light/Dark. These use simulated capture state,
   without requesting a microphone. Idle rendering needed a process-frame delay;
   waiting for frame_post_draw after a fully static frame does not establish new
   geometry. Root Window.size drives native resize fixtures.
@@ -79,5 +84,5 @@ independent timing still require manual acceptance. See the prototype.14 notes.
 
 Final local baseline: Python 55, Node 23, core 6623, live input 59, pitch 102,
 WAV replay 383, commands 74, synth 48, part audio 22, effects 46, practice UI 837,
-layout UI 747, Theater 145 and page following 274 checks; zero failures. Exact
+layout UI 820, Theater 145 and page following 274 checks; zero failures. Exact
 engine import/editor checks, failure-exit self-test, boot and whitespace pass.
