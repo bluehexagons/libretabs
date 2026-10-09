@@ -33,6 +33,9 @@ func _ready() -> void:
 	# Use a scrollable in-app choice sheet. PopupMenu selects an item when a
 	# finger tries to drag its list, and can stop reopening on mobile Safari.
 	touch_target = FriendlyButton.new()
+	# This transparent input proxy sits over a labeled dropdown; it must not
+	# turn the field's explicit help into an automatic hover card.
+	touch_target.set_meta("hover_caption", "")
 	touch_target.flat = true
 	touch_target.theme_type_variation = "ChoiceTarget"
 	touch_target.focus_mode = Control.FOCUS_ALL

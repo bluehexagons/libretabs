@@ -421,8 +421,11 @@ The navigation feedback pass (2026-10-08) limits seek previews, playback endpoin
 and displayed ticks to the source song's exact end, including partially filled
 final measures. Small seeks ease only the score camera; large seeks briefly fade.
 Audio changes to the requested position immediately. Scrubbing still pauses once
-and resumes once. Mouse captions are delayed and suppressed during playback or
-keyboard use; F1 and touch hold retain full help. Regular phone interfaces retain
+and resumes once. Mouse captions supply missing information, such as unlabeled
+icon names, clipped titles or abbreviated library badges. Labeled actions,
+dropdowns and the music do not repeat their text.
+Captions are delayed and suppressed during playback or keyboard use; F1 and
+touch hold retain full help. Regular phone interfaces retain
 a focusable timeline in both reading modes. Focus stacks its top toolbar, Touch
 puts the timeline in its console, and Workspace uses a narrow icon rail when
 space permits. Enlarged text and the smallest windows keep the common fit rules.

@@ -671,7 +671,7 @@ func change_tv_zoom(value: float) -> void:
 	if persist_preferences and not host.save_display_choice("tv_zoom", str(roundi(tv_zoom * 100))): set_status("STORAGE_SESSION")
 
 func label(key: String, font_size: int = 20) -> Label:
-	var item: Label = Label.new()
+	var item: Label = CaptionLabel.new()
 	item.text = tr(key)
 	item.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	item.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -702,7 +702,6 @@ func check(key: String, checked: bool) -> CheckButton:
 	var item: CheckButton = CheckButton.new()
 	item.text = tr(key)
 	item.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
-	item.tooltip_text = tr(key)
 	item.mouse_filter = Control.MOUSE_FILTER_PASS
 	item.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	item.button_pressed = checked
@@ -741,7 +740,6 @@ func learned_check(key: String, font_size: int = 20) -> CheckBox:
 	var item: CheckBox = CheckBox.new()
 	item.text = tr(key)
 	item.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
-	item.tooltip_text = tr(key)
 	item.add_theme_font_size_override("font_size", font_size)
 	item.set_meta("base_font_size", font_size)
 	item.custom_minimum_size.y = 48
@@ -786,7 +784,10 @@ func add_song_button(grid: GridContainer, index: int) -> void:
 	for spec: Array in [["SONG_LEVEL", tr("SONG_LEVEL_GROWING_SHORT") if int(entry.level) == 1 else tr(level_key)], ["SONG_TIME", "%d:%02d" % [int(entry.seconds) / 60, int(entry.seconds) % 60]], ["TEMPO", tr("SONG_CARD_BPM") % int(entry.bpm)], ["SONG_INSTRUMENT", tr("SONG_VIEW_BOTH_SHORT") if entry.views.size() > 1 else tr(view_key)]]:
 		var chip: HBoxContainer = HBoxContainer.new()
 		chip.add_theme_constant_override("separation", 3)
-		chip.tooltip_text = tr(view_key) if str(spec[0]) == "SONG_INSTRUMENT" else (tr(level_key) if str(spec[0]) == "SONG_LEVEL" else str(spec[1]))
+		# Only expand abbreviated information; duration, BPM and full labels
+		# already say everything a repeated hover hint would say.
+		var full: String = tr(view_key) if str(spec[0]) == "SONG_INSTRUMENT" else (tr(level_key) if str(spec[0]) == "SONG_LEVEL" else str(spec[1]))
+		if full != str(spec[1]): chip.tooltip_text = full
 		var glyph: TextureRect = TextureRect.new()
 		glyph.texture = UIIcons.get_icon(str(spec[0]))
 		glyph.modulate = UIAppearance.color("ink", dark_mode, appearance_mode == "midnight")
@@ -882,7 +883,6 @@ func update_song_button(index: int) -> void:
 	var entry: Dictionary = BUILT_IN_LIBRARY[index]
 	var title_text: String = tr(str(entry.title_key))
 	library_song_titles[index].text = tr(str(entry.title_key) + "_NAME")
-	library_song_titles[index].tooltip_text = title_text
 	library_current_marks[index].text = tr("SONG_CURRENT_BADGE") if index == active_library else " "
 	library_learned_checks[index].set_pressed_no_signal(learning.has("song:" + str(entry.file)))
 	library_learned_checks[index].tooltip_text = tr("LEARNING_MARK_HELP") % title_text
@@ -1185,7 +1185,6 @@ func build_drawers() -> void:
 	catalog_search.right_icon = UIIcons.get_tinted_icon("SONG_SEARCH", UIAppearance.color("ink", dark_mode, appearance_mode == "midnight"))
 	catalog_search.add_theme_color_override("font_placeholder_color", UIAppearance.color("muted", dark_mode, appearance_mode == "midnight"))
 	catalog_search.placeholder_text = tr("SONG_CATALOG_SEARCH_PLACEHOLDER")
-	catalog_search.tooltip_text = tr("SONG_CATALOG_SEARCH_HELP")
 	catalog_search.custom_minimum_size.y = 56
 	catalog_search.text_changed.connect(func(_value: String) -> void: refresh_song_catalog())
 	library.add_child(catalog_search)
@@ -1437,7 +1436,6 @@ func build_drawers() -> void:
 	inputs.add_child(label("INPUT_EXPLAIN", 18))
 	input_show = check("INPUT_SHOW", false)
 	input_show.text = tr("INPUT_SHOW")
-	input_show.tooltip_text = tr("INPUT_SHOW")
 	input_show.custom_minimum_size.y = 48
 	input_show.toggled.connect(func(enabled: bool) -> void:
 		live.visible = enabled
@@ -2241,7 +2239,6 @@ func update_page_controls() -> void:
 	seek_navigation.visible = not tv_active or (not landscape and not fit_hide_seek)
 	var small_navigation: bool = compact or controls_on_side or size.x < 900
 	page_label.text = tr("PAGE_NUMBER_COMPACT" if small_navigation else "PAGE_NUMBER") % [score.page_index + 1, score.pages()]
-	page_label.tooltip_text = tr("PAGE_NUMBER") % [score.page_index + 1, score.pages()]
 	for item: Button in [page_previous, page_next]:
 		item.text = "" if small_navigation else tr("PAGE_PREVIOUS" if item == page_previous else "PAGE_NEXT")
 		item.custom_minimum_size.x = 56 if small_navigation else minf(220, size.x * 0.22)
@@ -3153,7 +3150,6 @@ func update_position(animate_follow: bool = false) -> void:
 	updating = false
 	var elapsed: int = floori(song.seconds_at(source_tick))
 	var position_text: String = tr("SEEK_POSITION_COMPACT" if size.x < 760 or landscape or presentation.mobile_rail else "SEEK_POSITION") % [score.measure_index + 1, elapsed / 60, posmod(elapsed, 60)]
-	seek_label.tooltip_text = tr("SEEK_POSITION") % [score.measure_index + 1, elapsed / 60, posmod(elapsed, 60)]
 	if seek_label.text != position_text:
 		seek_label.text = position_text
 		fit_position_label()

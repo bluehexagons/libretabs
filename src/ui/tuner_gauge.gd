@@ -45,7 +45,6 @@ func observe(valid: bool, expected: int, deviation: float, status: String) -> vo
 	active = valid
 	pitch = expected if valid else -1
 	state_key = status
-	tooltip_text = status_text()
 	queue_redraw()
 
 func centered(text: String, y: float, font_size: int, ink: Color) -> void:

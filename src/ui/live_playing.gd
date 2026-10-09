@@ -26,7 +26,7 @@ func _ready() -> void:
 	actions.add_theme_constant_override("separation", 4)
 	actions.set_meta("input_actions", true)
 	add_child(actions)
-	range_picker = OptionButton.new()
+	range_picker = CaptionOption.new()
 	range_picker.custom_minimum_size.y = 44
 	range_picker.fit_to_longest_item = false
 	range_picker.clip_text = true

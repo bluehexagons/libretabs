@@ -83,6 +83,41 @@ func run() -> void:
 	app.call("close_menu")
 	var button: FriendlyButton = app.get("menu_button")
 	HoverHelp.reset()
+	button.text = TranslationServer.translate("MENU")
+	check(button._get_tooltip(Vector2.ZERO).is_empty() and not button.tooltip_text.is_empty(), "labeled actions stay quiet while retaining explicit help")
+	var picker: CaptionOption = app.get("view_picker")
+	var proxy: FriendlyButton
+	for child: Node in picker.get_children():
+		if child is OptionMenuFit: proxy = child.touch_target
+	check(picker._get_tooltip(Vector2.ZERO).is_empty() and proxy != null and proxy._get_tooltip(Vector2.ZERO).is_empty(), "neither dropdown nor its input proxy repeats the selected value")
+	check(proxy.tooltip_text == picker.tooltip_text, "dropdown explanations remain reachable through its keyboard focus target")
+	proxy.grab_focus()
+	var help_key: InputEventKey = InputEventKey.new()
+	help_key.keycode = KEY_F1; help_key.pressed = true
+	Input.parse_input_event(help_key)
+	await process_frame
+	check(app.get("opened_drawer") == "CONTROL_HELP" and app.get("help_text").text == picker.tooltip_text, "F1 still opens the dropdown's full explanation")
+	app.call("close_menu")
+	HoverHelp.reset()
+	app.call("open_choice_picker", picker)
+	for choice: FriendlyButton in app.get("picker_choices").get_children():
+		check(choice._get_tooltip(Vector2.ZERO).is_empty(), "open choices do not repeat wrapped labels")
+	app.call("close_choice_picker")
+	check(app.get("seek")._get_tooltip(Vector2.ZERO).is_empty() and app.get("catalog_search").tooltip_text.is_empty(), "self-explanatory timeline and search stay quiet")
+	check(app.get("live").piano._get_tooltip(Vector2.ZERO).is_empty() and not app.get("live").piano.tooltip_text.is_empty(), "piano instructions stay on explicit help instead of covering the keys")
+	var title: CaptionLabel = CaptionLabel.new()
+	title.text = "A long imported song title"
+	title.tooltip_text = title.text
+	title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	root.add_child(title)
+	title.size.x = 40
+	check(title._get_tooltip(Vector2.ZERO) == title.text, "clipped titles retain the missing text")
+	title.size.x = 1000
+	check(title._get_tooltip(Vector2.ZERO).is_empty(), "a title that fits does not repeat itself")
+	title.size.x = 40
+	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	check(title._get_tooltip(Vector2.ZERO).is_empty(), "wrapped titles show their text without a hover card")
+	title.queue_free()
 	button.text = ""
 	check(button._get_tooltip(Vector2.ZERO) == TranslationServer.translate("MENU"), "icon hover is a short caption")
 	var key: InputEventKey = InputEventKey.new()

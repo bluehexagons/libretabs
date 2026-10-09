@@ -2,7 +2,7 @@
 
 To use the current player, start with the [user guide](user-guide.md).
 
-Snapshot date: 2026-10-08. Current phase: evaluating public **prototype releases**.
+Snapshot date: 2026-10-09. Current phase: evaluating public **prototype releases**.
 
 The [evidence records](evidence/README.md) are dated snapshots. This handoff is
 the current summary; older measurements remain useful for their stated scope.
@@ -42,6 +42,13 @@ header, Touch a thumb console, and Workspace an icon rail when space permits.
 Native appearance/tooltip and automated geometry checks pass; browser/physical
 phone acceptance remains open.
 
+The [hover cleanup](evidence/hover-cleanup-2026-10-09.md) removes repeated labels
+from actions, dropdowns, counters, library details and input forms. Unlabeled
+icons and clipped titles retain useful captions; explicit help remains reachable.
+Native mouse checks pass. The managed source export now renders in T3 preview,
+and keyboard F1 opens full help; this does not close the broader release/browser
+or physical-device acceptance gates.
+
 Settings now also retain regular reading mode, keyboard visibility/feedback,
 library sorting and tuner instrument/sensitivity/reference. Manual learned marks
 are reversible for library pieces, exercises and reopened imported MIDI. Reset
@@ -71,8 +78,8 @@ is available on the managed network. It is not a public launch URL.
   renders welcome and practice without Godot on PATH; Windows runtime remains
   open. Managed and public web assets pass hash/MIME checks, and the public guide
   names prototype.18. Automated and native checks cover restrained hover,
-  bounded seeking, count-in dots and reachable phone timelines. T3 snapshots
-  still fail; browser interaction, physical phones and audible response remain
+  bounded seeking, count-in dots and reachable phone timelines. That release's
+  T3 snapshots failed; browser interaction, physical phones and audible response remain
   manual checks. See the [navigation evidence](evidence/practice-navigation-2026-10-08.md)
   for source/workflows, artifacts and limits. Earlier records retain
   [prototype.17's tuner/capture checks](evidence/player-feedback-2026-10-08.md),

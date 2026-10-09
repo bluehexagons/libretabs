@@ -334,9 +334,10 @@ including while paused, and do not record notes or assess your playing.
 ## Get help and recover
 
 Open **Menu → Quick start** to reread the introduction or change **Show on startup**.
-**Menu → Help** explains the symbols and shortcuts. Mouse hover shows a short
-caption after a pause, and stays quiet while playing or using the keyboard. The
-music itself does not open hover text. Hold an action button on touch, or focus a
+**Menu → Help** explains the symbols and shortcuts. Mouse hover names unlabeled
+icons and reveals shortened song titles after a pause. Labeled buttons, dropdowns
+and the music stay quiet, as does hover while playing or using the keyboard.
+Hold an action button on touch, or focus a
 control and press F1 for its full explanation.
 Tab moves keyboard focus. With menus closed, Space plays or pauses; left/right
 arrows move by measure or turn a manual page. When the position slider has focus,

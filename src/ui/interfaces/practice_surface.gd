@@ -214,7 +214,6 @@ static func build(app: Control) -> void:
 	app.seek.focus_mode = Control.FOCUS_ALL
 	app.seek.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	app.seek.tooltip_text = app.tr("SEEK_CONTINUOUS")
-	app.seek.set_meta("hover_caption", app.tr("SEEK_CAPTION"))
 	app.seek.drag_started.connect(app.begin_seek_drag)
 	app.seek.drag_ended.connect(app.end_seek_drag)
 	app.seek.gui_input.connect(app.seek_input)
@@ -225,7 +224,6 @@ static func build(app: Control) -> void:
 	app.seek_label.custom_minimum_size.x = 112
 	app.seek_label.size_flags_horizontal = Control.SIZE_SHRINK_END
 	app.seek_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	app.seek_label.tooltip_text = app.tr("SEEK_CONTINUOUS")
 	navigation.add_child(app.seek_label)
 
 	app.page_navigation = HBoxContainer.new()

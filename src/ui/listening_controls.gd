@@ -76,10 +76,11 @@ func _ready() -> void:
 		target_picker.set_item_metadata(index, target)
 		target_picker.select(index))
 	lock_target.text = ""
+	lock_target.tooltip_text = tr("INPUT_TUNER_LOCK")
 	lock_target.custom_minimum_size.x = 56
 	custom_target = HBoxContainer.new()
 	add_child(custom_target)
-	target_note = OptionButton.new()
+	target_note = CaptionOption.new()
 	target_note.tooltip_text = tr("INPUT_TARGET_NOTE")
 	target_note.custom_minimum_size.y = 48
 	for name_text: String in ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]: target_note.add_item(tr("INPUT_TARGET_CLASS") % name_text)
@@ -241,7 +242,6 @@ func update_microphone() -> void:
 	var key: String = "INPUT_MIC_START" if not listener.capture.enabled else ("INPUT_MIC_RESUME" if listener.paused else "INPUT_MIC_PAUSE")
 	tuner_check.set_pressed_no_signal(listener.capture.enabled and not listener.paused)
 	tuner_check.text = tr(key)
-	tuner_check.tooltip_text = tr(key)
 	tuner_check.icon = UIIcons.get_icon("INPUT_MIC_START" if not listener.capture.enabled or listener.paused else "PAUSE")
 	stop_button.disabled = not listener.capture.enabled
 	mic_picker.clear()

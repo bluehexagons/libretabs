@@ -48,8 +48,10 @@ func begin_pointer(position: Vector2, touch: bool = false) -> void:
 	if touch: help_timer.start()
 
 func _get_tooltip(_at_position: Vector2) -> String:
-	if not HoverHelp.allowed(): return ""
-	return text if not text.is_empty() else str(get_meta("hover_caption", tooltip_text))
+	# A visible label already names the action. Keep captions for unlabeled icons
+	# and keep tooltip_text available to explicit F1/touch help.
+	if not HoverHelp.allowed() or not text.is_empty(): return ""
+	return str(get_meta("hover_caption", tooltip_text))
 
 func _make_custom_tooltip(for_text: String) -> Object:
 	return HoverHelp.card(self, for_text)

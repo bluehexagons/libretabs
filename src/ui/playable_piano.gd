@@ -22,6 +22,10 @@ func _ready() -> void:
 	focus_entered.connect(queue_redraw)
 	set_process_input(true)
 
+func _get_tooltip(_at_position: Vector2) -> String:
+	# Keep keyboard instructions on F1 without covering the keys on hover.
+	return ""
+
 func set_range(pitch: int) -> void:
 	release_all()
 	first_pitch = clampi(pitch, 24, 96)

@@ -3,7 +3,6 @@ class_name CaptionOption
 extends OptionButton
 
 func _get_tooltip(_at_position: Vector2) -> String:
-	return get_item_text(selected) if HoverHelp.allowed() and selected >= 0 else ""
-
-func _make_custom_tooltip(for_text: String) -> Object:
-	return HoverHelp.card(self, for_text)
+	# The selected value is already visible; the open choice sheet shows full
+	# labels when the closed control has to shorten them.
+	return ""

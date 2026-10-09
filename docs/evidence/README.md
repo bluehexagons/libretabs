@@ -1,5 +1,8 @@
 # Evidence records
 
+Hover cleanup: [quiet labeled controls and retained explicit help,
+2026-10-09](hover-cleanup-2026-10-09.md).
+
 Practice navigation: [hover, bounded seeking, count-in and phone timelines,
 2026-10-08](practice-navigation-2026-10-08.md).
 

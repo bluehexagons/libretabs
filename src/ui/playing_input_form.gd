@@ -14,7 +14,6 @@ func action(parent: Node, key: String, callback: Callable) -> Button:
 	var item: Button = Button.new()
 	item.text = tr(key)
 	item.icon = UIIcons.get_icon(key)
-	item.tooltip_text = tr(key)
 	item.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	item.custom_minimum_size.y = 48
 	item.pressed.connect(callback)
@@ -23,8 +22,7 @@ func action(parent: Node, key: String, callback: Callable) -> Button:
 
 func choice(key: String, entries: Array[String], callback: Callable) -> OptionButton:
 	caption(key)
-	var item: OptionButton = OptionButton.new()
-	item.tooltip_text = tr(key)
+	var item: OptionButton = CaptionOption.new()
 	item.fit_to_longest_item = false
 	item.clip_text = true
 	item.custom_minimum_size.y = 48
@@ -36,7 +34,6 @@ func choice(key: String, entries: Array[String], callback: Callable) -> OptionBu
 func toggle(key: String, initial: bool, callback: Callable) -> CheckButton:
 	var item: CheckButton = CheckButton.new()
 	item.text = tr(key)
-	item.tooltip_text = tr(key)
 	item.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	item.custom_minimum_size.y = 48
 	item.button_pressed = initial
@@ -51,6 +48,5 @@ func number(key: String, low: float, high: float, initial: float) -> SpinBox:
 	item.max_value = high
 	item.value = initial
 	item.custom_minimum_size.y = 48
-	item.tooltip_text = tr(key)
 	add_child(item)
 	return item

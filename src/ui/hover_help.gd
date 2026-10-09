@@ -2,7 +2,8 @@
 class_name HoverHelp
 extends RefCounted
 
-# Mouse hover is a caption; full explanations remain on F1 and touch-and-hold.
+# Mouse hover names unlabeled icons or expands clipped text. Full explanations
+# remain on F1 and touch-and-hold, without duplicating visible labels.
 static var keyboard_active: bool = false
 static var playing: bool = false
 static var pointer_down: bool = false
