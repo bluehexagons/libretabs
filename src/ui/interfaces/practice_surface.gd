@@ -149,7 +149,7 @@ static func build(app: Control) -> void:
 	menu_column.move_child(app.drawer_title, 1)
 	app.build_drawers()
 	app.build_color_legend(app.drawers["HELP"] as VBoxContainer)
-	app.drawers["MENU"].add_child(app.button("LAST_STATUS", func() -> void:
+	app.drawers["MENU_HELP_APP"].add_child(app.button("LAST_STATUS", func() -> void:
 		app.close_menu()
 		if not app.last_status.is_empty(): app.status_toast.show_message(app.tr(app.last_status))))
 	app.notice_button.reparent(app.drawers["SCORE_VIEW"])

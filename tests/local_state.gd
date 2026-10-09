@@ -175,11 +175,15 @@ func run() -> void:
 	for _frame: int in range(40): await process_frame
 	check(app.get("current_learning_check").disabled, "diagnostic sound test is not presented as a learning objective")
 	app.call("toggle_drawer", "SETTINGS")
-	var reset: Button = action(app.get("drawers")["SETTINGS"], "RESET_SETTINGS")
+	var options: OptionsMenu = app.get("options_menu")
+	options.category_buttons["MENU_HELP_APP"].pressed.emit()
+	var reset: Button = options.entry_buttons["RESET_SETTINGS"]
 	reset.pressed.emit()
 	check(app.get("opened_drawer") == "RESET_SETTINGS" and app.get("appearance_mode") == "dark", "reset opens confirmation without changing settings")
 	action(app.get("drawers")["RESET_SETTINGS"], "SETTINGS_CANCEL").pressed.emit()
-	check(app.get("opened_drawer") == "SETTINGS" and app.get("appearance_mode") == "dark", "cancel leaves settings intact")
+	check(app.get("opened_drawer") == "MENU_HELP_APP" and app.get("appearance_mode") == "dark", "cancel returns to the category with settings intact")
+	app.call("go_back")
+	check(app.get("opened_drawer") == "SETTINGS", "Back returns to the shared Settings directory")
 	var progress_raw: String = FileAccess.get_file_as_string(app.get("host").progress_path)
 	app.call("reset_preferences")
 	check(app.get("appearance_mode") == "system" and app.get("interface_id") == "classic" and app.get("theme").default_font_size == 20 and app.get("score").mode == "scroll", "reset restores display, interface and reading defaults")

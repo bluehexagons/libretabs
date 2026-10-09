@@ -12,9 +12,22 @@ This guide describes the current prototype. The planned six-lesson course is
 not yet available. Generated guitar arrangements and notation still need musician
 review; treat them as practice suggestions.
 
+## Find an option
+
+Open **Menu** for six groups: **Practice**, **Score & print**, **Sound & input**,
+**Screen & interface**, **Songs & progress**, and **Help & app**. Each card
+describes what it contains. Songs and Tuner also have direct buttons at the top.
+Cards use fewer columns on narrow screens or with larger text; scroll to reach
+the remaining choices.
+
+Use **Find an option** to search for a setting, such as “count-in,” “dark” or
+“microphone sensitivity.” Select a result, or press Enter to open the first one.
+**Back** keeps your search and position. **Close** returns to practice; reopening
+Menu shows the categories again.
+
 ## Try another interface
 
-Open **Menu → Interface** to compare the current player (**Classic**) with three
+Open **Menu → Screen & interface → Interface** to compare the current player (**Classic**) with three
 alternatives:
 
 - **Focus:** a plain music stand with Play and speed above the score, sharing
@@ -43,13 +56,13 @@ layouts; a final redesign has not been selected.
    appear in Play and beside the starting music; the filled dot moves each beat.
    The moving line follows the music. Rounded outlines mark sounding tab numbers; slightly larger, bolder
    staff noteheads mark sounding notes without changing their shape.
-3. Open **Menu → Playback** and choose a slower speed, such as **50%** under
+3. Open **Menu → Practice → Playback** and choose a slower speed, such as **50%** under
    **Speed presets**. That means half the original speed, with the same pitches.
    Choose **Restart** beside Play to return to the beginning. If sound is
    playing, it continues from the start.
 4. Follow just a few numbers on the guitar tabs, using the reading guide below.
    It is fine to listen again before joining in.
-5. To repeat a short section, open **Menu → Loop**, set **From** to **1** and
+5. To repeat a short section, open **Menu → Practice → Loop**, set **From** to **1** and
    **Through** to **2**, then choose **Play selected section**. Both measures
    repeat after your usual count-in. Choose **Turn loop off** when you want to
    continue through the song.
@@ -153,7 +166,7 @@ everything again. Exercises show their mark in the example selector. For an
 imported piece, reopen the same MIDI to see its mark, even if its filename changed.
 Editing the MIDI makes it a different piece. No imported song list is stored.
 
-Marks stay in this device's app profile or browser storage. **Settings → Learning
+Marks stay in this device's app profile or browser storage. **Menu → Songs & progress → Learning
 progress** shows the totals. **Clear learned marks** confirms before removing
 them; your settings stay. If storage is unavailable or unreadable, the visible
 notice explains that new marks may last only for this session.
@@ -167,7 +180,7 @@ interface, notation rows, handedness, control edge and regular/Theater layout
 preferences. Microphone/controller connections, calibration and temporary musical
 muting still need an explicit action each session.
 
-Open **Settings → Reset settings** to restore defaults after confirmation. It
+Open **Menu → Help & app → Reset settings** to restore defaults after confirmation. It
 pauses playback and stops microphone capture, keeps your current piece and learned
 marks, and brings back Quick start on the next launch. If saved settings could not
 be cleared, a notice explains that the defaults apply for this session and older
@@ -183,7 +196,7 @@ values may return next time.
   changes how quickly notes arrive, not their pitch.
 - **Beat clicks (metronome):** adds a click on each beat to help you keep time.
   **Count in before playing** adds preparation clicks on a fresh start; resuming
-  after Pause continues immediately. Use **Menu → Playback → Stop**, then Play,
+  after Pause continues immediately. Use **Menu → Practice → Playback → Stop**, then Play,
   when you want a new count-in.
 - **Move to a passage:** click or tap the music to move playback there. In
   scrolling view, drag sideways across the music to browse without changing playback.
@@ -216,7 +229,7 @@ values may return next time.
   Already queued audio and the short room echo may take a moment to fade.
   Each mute choice is kept when you switch focus; muting changes sound, not the
   displayed notes.
-- **Sound effects:** open **Menu → Settings → Sound effects**, also reachable
+- **Sound effects:** open **Menu → Sound & input → Sound effects**, also reachable
   from Volume & parts. **Room ambience (reverb)** adds a short room echo and
   starts at a gentle 18%; its amount slider ranges from 0 to 40%.
   **Soft chorus** blends gently moving copies of each note for a wider sound
@@ -245,7 +258,7 @@ transcription of someone's guitar performance.
 
 ## Make the music easier to see
 
-Open **Menu → Practice layouts** (or choose a layout in **Quick start**) for
+Open **Menu → Practice → Practice layouts** (or choose a layout in **Quick start**) for
 one-step guitar tabs, pick strumming, fingerpicking, bass-staff reading, or
 piano treble-plus-bass staff reading. Choose **Piano · staffs + playable keys**
 to show both staffs and the on-screen keyboard. The layout menu stays open as
@@ -267,7 +280,7 @@ hands.
 Menu and dropdown lists scroll at the distance you drag with a finger. Drag
 through a choice list to browse it, then tap a choice to select it.
 
-Open **Menu → Score view** for reading and layout choices:
+Open **Menu → Score & print → Score view** for reading and layout choices:
 
 - **Smooth scrolling** follows the music. **Manual pages** lets you read at your
   own pace. **Pages · follow playback** turns pages with the sound.
@@ -291,11 +304,11 @@ Open **Menu → Score view** for reading and layout choices:
 **Theater** uses the window for more music and remembers a separate layout.
 Try it on a desktop or tablet as well as a larger screen. Controls normally hide
 when playback starts; **Show controls** or **F10** brings them back. In
-**Menu → Theater**, enable **Keep controls visible while playing** if you prefer.
+**Menu → Screen & interface → Theater**, enable **Keep controls visible while playing** if you prefer.
 **Fullscreen** is a separate button; press it again or Escape to leave fullscreen.
 Theater does not connect to a TV itself; use your device's screen-mirroring controls.
 
-**Menu → Appearance & text** includes lettering, text size, Device setting, Light,
+**Menu → Screen & interface → Appearance & text** includes lettering, text size, Device setting, Light,
 Dark and Midnight appearance. Device setting follows the device's light or dark
 preference. Midnight uses black around and behind the music for OLED screens.
 Choose a backdrop for the space around the music in Light and Dark. Solid color,
@@ -307,7 +320,7 @@ For a stationary reading view, choose Manual pages as well as reduced motion.
 
 ## Print, capture and play reference notes
 
-**Menu → Print your music:** choose tabs, sheet music or both, a measure range,
+**Menu → Score & print → Print your music:** choose tabs, sheet music or both, a measure range,
 and A4 or US Letter. Select **Prepare pages**, then **Save printable file**.
 The filename includes the song title, such as `libretabs-Ode to Joy · Beethoven.html`.
 Open the saved HTML in a browser and print or choose Save as PDF.
@@ -316,7 +329,7 @@ works offline. Measures share continuous rows with a clef and time signature at
 the start of each row; crowded measures receive more space. Printing retains
 the prototype's arrangement limitations.
 
-**Menu → Capture & overlay:** choose the music, background and placement, then
+**Menu → Screen & interface → Capture & overlay:** choose the music, background and placement, then
 **Preview overlay**. The toolbar has **Play/Pause**, **Settings** and **Back to
 player**. Choose **Clean frame** to hide the toolbar for separate recording or
 streaming software; tap the frame or press F10 to reveal controls again. The
@@ -324,7 +337,7 @@ mouse pointer stays visible. Escape or F8 returns to the player; Space plays or
 pauses. Previewing never starts audio automatically. LibreTabs does not record
 video.
 
-**Menu → Keyboard notes:** play reference pitches with your computer keyboard.
+**Menu → Sound & input → Keyboard notes:** play reference pitches with your computer keyboard.
 The default Z X C V B N M comma keys play C D E F G A B C; S D G H J play the
 intervening black piano keys. Hold a key to sustain its note, then release it.
 Minus and equals lower or raise the register by an octave. An alternate A-row
@@ -333,8 +346,8 @@ including while paused, and do not record notes or assess your playing.
 
 ## Get help and recover
 
-Open **Menu → Quick start** to reread the introduction or change **Show on startup**.
-**Menu → Help** explains the symbols and shortcuts. Mouse hover names unlabeled
+Open **Menu → Help & app → Quick start** to reread the introduction or change **Show on startup**.
+**Menu → Help & app → Help** explains the symbols and shortcuts. Mouse hover names unlabeled
 icons and reveals shortened song titles after a pause. Labeled buttons, dropdowns
 and the music stay quiet, as does hover while playing or using the keyboard.
 Hold an action button on touch, or focus a
@@ -360,12 +373,12 @@ will not run the player. If the main web player cannot start, try the compatibil
 player linked from the [public guide](https://bluehexagons.github.io/libretabs/).
 
 For a problem you cannot resolve, [report it](https://github.com/bluehexagons/libretabs/issues)
-with the version shown in **Menu → About LibreTabs**, device/browser, what you tried and what happened. Use a
+with the version shown in **Menu → Help & app → About LibreTabs**, device/browser, what you tried and what happened. Use a
 built-in song or a redistributable example so someone else can reproduce it.
 
 ## Playing along with keys
 
-Open Menu → Playing inputs → Show keyboard & return to practice, or choose the
+Open Menu → Sound & input → Playing inputs → Show keyboard & return to practice, or choose the
 **Piano · staffs + playable keys** layout. Tap or hold
 keys, or use the existing computer-keyboard note layout. On the focused piano,
 Left/Right selects a note and Space/Enter holds it. Higher/lower range presets and
@@ -380,7 +393,7 @@ Use Stop all input notes to release input sound. Input state is session-only.
 
 ## MIDI controllers
 
-Menu → Playing inputs → Connect MIDI requests access to connected controllers.
+Menu → Sound & input → Playing inputs → Connect MIDI requests access to connected controllers.
 Choose one device/channel or all inputs. The on-screen piano opens automatically;
 return to practice to play it. Notes, velocity and sustain are supported. Turn off
 “Play MIDI notes through the app” if your electronic instrument already produces
@@ -451,7 +464,7 @@ for this session; audio is never saved or uploaded.
 
 ## Hands-free note commands
 
-Enable **Menu → Settings → Hands-free note commands** to control practice while
+Enable **Menu → Sound & input → Hands-free note commands** to control practice while
 your hands stay on an instrument. This is off by default. Start listening
 separately in **Tuner & listening**; the setting never starts it for you. Use
 headphones or mute playback speakers to avoid commands triggered by the app's own

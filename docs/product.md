@@ -22,7 +22,7 @@ choice to the preferred hand side.
 
 A startup Quick start guide explains the string lines, numbered frets, playback,
 and practice controls beside a ready exercise. Its “Show on startup” checkbox is
-saved on the device; Menu → Quick start always opens it again and can re-enable
+saved on the device; Menu → Help & app → Quick start always opens it again and can re-enable
 it. Starting practice dismisses the guide without automatically playing audio.
 Regular practice fills the available music height with the paired score, hiding
 secondary context before proportionally reducing the music; menus may scroll.
@@ -30,9 +30,13 @@ Compact manual pages use large previous/next arrows and a page counter on one
 row. Follow playback stays available in Score view. Very short windows retain
 Play and the tempo unit while secondary controls remain available in menus.
 
-Menu includes a compact Settings index for playback, score view, loops, sound,
-appearance and keyboard preferences. Back restores the previous section and its
-scroll position; Close returns directly to practice. Manual pages support
+Menu and Settings share a directory with six categories: Practice, Score &
+print, Sound & input, Screen & interface, Songs & progress, and Help & app. Songs
+and Tuner stay directly reachable. Cards show short summaries and use more
+columns when the viewport and text size allow. Find an option searches the
+translated titles, summaries and categories; Enter opens the first result. Back
+restores the previous section, scroll position, search and keyboard focus; Close
+returns directly to practice and clears the search. Manual pages support
 one- or two-finger horizontal swipes and a horizontal mouse wheel. Page gestures
 never seek audio; a single tap on the music still seeks. Help describes these
 optional shortcuts alongside the visible page arrows.
@@ -144,8 +148,8 @@ No owner decision currently blocks M0. The provisional name still needs a final 
 2. The active beat/notes are emphasized in both staff and tab, using shape/position as well as color.
 3. The learner can pause, seek by measure, choose 0–999% tempo or a custom starting BPM, enable the metronome, and define a measure loop.
 4. A compact fretboard guide shows the current string and fret and repeats the convention that string 1 is the thinnest/highest string.
-5. Menu → Help summarizes how tab lines/fret numbers align with staff pitch/rhythm. Close returns directly to practice.
-6. Music scrolls smoothly by default, with upcoming notes visible ahead of the playhead. Menu → Score view also offers manually turned screen pages with tabs, sheet music, or both. Pages share scrolling notation and spacing, with a next-page preview. Enable Follow playback for automatic page turns; manually turning a page suspends following without seeking audio. Reduced motion disables decorative effects while preserving the chosen scroll/page behavior. Curved underlines mark upcoming notes. Rounded outlines mark sounding tab numbers; sounding staff noteheads become slightly larger and bolder while retaining their filled or hollow shape.
+5. Menu → Help & app → Help summarizes how tab lines/fret numbers align with staff pitch/rhythm. Close returns directly to practice.
+6. Music scrolls smoothly by default, with upcoming notes visible ahead of the playhead. Menu → Score & print → Score view also offers manually turned screen pages with tabs, sheet music, or both. Pages share scrolling notation and spacing, with a next-page preview. Enable Follow playback for automatic page turns; manually turning a page suspends following without seeking audio. Reduced motion disables decorative effects while preserving the chosen scroll/page behavior. Curved underlines mark upcoming notes. Rounded outlines mark sounding tab numbers; sounding staff noteheads become slightly larger and bolder while retaining their filled or hollow shape.
 
 ## MVP functional requirements
 
@@ -209,7 +213,7 @@ Import is cancellable and transactional: a failed or cancelled replacement leave
 ### Playback and practice controls
 
 - Play/pause/stop, direct click/tap seeking on the music, a continuous timeline scrub with readable measure/time feedback, count-in, metronome, independent instrument/metronome volume, 0–999% tempo and custom starting BPM, and contiguous measure loop.
-- Keep speed and the metronome near Play. Present the direct speed control as one unit containing its icon, percentage and slider at all supported text sizes. Normal text also shows an explicit click on/off toggle; enlarged layouts reach it through the percentage control. Menu → Playback groups speed steps, original speed, metronome, count-in, presets and custom BPM; Volume & parts holds the mixer.
+- Keep speed and the metronome near Play. Present the direct speed control as one unit containing its icon, percentage and slider at all supported text sizes. Normal text also shows an explicit click on/off toggle; enlarged layouts reach it through the percentage control. Menu → Practice → Playback groups speed steps, original speed, metronome, count-in, presets and custom BPM; Volume & parts holds the mixer.
 - Dragging the speed control adjusts relative to the press position and pans its range; tapping the track selects a position and tapping the percentage opens Playback. Zero pauses at the current position.
 - Slower/faster steps change speed by five percentage points within 0–999%; Original speed restores 100%. Repeat this measure initializes the existing loop range from the current playback measure.
 - Metronome toggling leaves the active stream and position intact; count-in remains independent. Changing the count-in option affects the next start, not an ongoing phrase.
@@ -351,7 +355,7 @@ Engineering measures:
 ## Current evaluation scope
 
 The owner-requested [interface comparison slice](decisions/0027-interchangeable-practice-interfaces.md)
-offers Classic, Focus, Touch and Workspace in Menu → Interface. They share the
+offers Classic, Focus, Touch and Workspace in Menu → Screen & interface → Interface. They share the
 same song, timeline and input services; switching changes presentation rather
 than starting another session. Classic remains the default until a redesign is
 selected. Focus uses a music stand and top toolbar, Touch separates a wide primary

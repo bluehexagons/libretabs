@@ -19,7 +19,7 @@ pitch estimates are limited to one note at a time. The default library contains
 29 public-domain teaching arrangements and an original two-hand piano study. The
 six-lesson course and musical/platform acceptance gates remain incomplete.
 
-Menu → Interface compares Classic, Focus, Touch and Workspace over the same
+Menu → Screen & interface → Interface compares Classic, Focus, Touch and Workspace over the same
 session. Classic remains the default; selection is saved on the device. Shared
 widget construction and geometry are separate from application coordination.
 See the [interface comparison](evidence/interface-comparison-2026-10-08.md) and
@@ -48,6 +48,13 @@ icons and clipped titles retain useful captions; explicit help remains reachable
 Native mouse checks pass. The managed source export now renders in T3 preview,
 and keyboard F1 opens full help; this does not close the broader release/browser
 or physical-device acceptance gates.
+
+The [options menu follow-up](evidence/menu-organization-2026-10-09.md) replaces
+the flat Menu and Settings lists with a shared category directory and a search
+field for individual settings. Cards adapt to screen width and text size; Songs
+and Tuner remain direct shortcuts. Back keeps search, scroll and keyboard focus.
+The source checks include navigation and enlarged-text geometry; see the dated
+record for native and browser evidence and its limits.
 
 Settings now also retain regular reading mode, keyboard visibility/feedback,
 library sorting and tuner instrument/sensitivity/reference. Manual learned marks

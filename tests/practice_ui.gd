@@ -84,9 +84,9 @@ func run() -> void:
 	check(not app.get("startup_help_enabled"), "startup help can be disabled")
 	app.get("welcome_practice").pressed.emit()
 	check(not app.get("menu_overlay").visible and not app.get("audio").playing_practice, "welcome practice action returns to the player without unexpected audio")
-	var menu_index: VBoxContainer = app.get("drawers")["MENU"]
-	check((menu_index.get_child(0) as Button).text == TranslationServer.translate("SONG_MENU"), "Songs is the first Menu choice for compact Theater")
-	check((menu_index.get_child(1) as Button).text == TranslationServer.translate("LAYOUTS") and (menu_index.get_child(3) as Button).text == TranslationServer.translate("TUNER"), "layouts and tuner are visible among the first menu actions")
+	var menu_index: OptionsMenu = app.get("options_menu")
+	check((menu_index.shortcuts.get_child(0) as Button).text == TranslationServer.translate("SONG_MENU"), "Songs is the first Menu shortcut for compact Theater")
+	check((menu_index.shortcuts.get_child(1) as Button).text == TranslationServer.translate("TUNER") and menu_index.entry_buttons.has("LAYOUTS"), "tuner is a direct shortcut and layouts remain in Practice")
 	app.call("toggle_drawer", "SONG_MENU")
 	check(app.get("catalog_filter_toggle").is_visible_in_tree() and not app.get("catalog_filter_panel").visible, "song results are not hidden behind filters on first open")
 	app.get("catalog_filter_toggle").pressed.emit()

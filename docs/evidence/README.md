@@ -1,5 +1,8 @@
 # Evidence records
 
+Options menu: [categories, responsive cards and finding settings,
+2026-10-09](menu-organization-2026-10-09.md).
+
 Hover cleanup: [quiet labeled controls and retained explicit help,
 2026-10-09](hover-cleanup-2026-10-09.md).
 

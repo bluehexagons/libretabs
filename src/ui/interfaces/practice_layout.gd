@@ -126,8 +126,9 @@ static func fit(app: Control) -> void:
 	app.cue.custom_minimum_size.x = minf(app.size.x - 64, 200 * app.theme.default_font_size / 20.0)
 	app.status.custom_minimum_size.y = 0
 	app.dock.vertical = side_dock or (app.size.x < 900 and not app.tight_controls)
-	app.drawer.position = Vector2(0 if app.handedness == "left" else maxf(0, app.size.x - 560), 0)
-	app.drawer.size = Vector2(minf(app.size.x, 560), app.size.y)
+	var menu_width: float = 800 if app.opened_drawer in ["MENU", "SETTINGS"] and app.size.x >= 1000 else 560
+	app.drawer.position = Vector2(0 if app.handedness == "left" else maxf(0, app.size.x - menu_width), 0)
+	app.drawer.size = Vector2(minf(app.size.x, menu_width), app.size.y)
 	var song_columns: int = 2 if app.size.x >= 600 and app.theme.default_font_size < 30 else 1
 	if app.catalog_filter_grid != null: app.catalog_filter_grid.columns = song_columns
 	app.more_song_grid.columns = song_columns
@@ -276,7 +277,7 @@ static func arrange_controls(app: Control, position: String) -> void:
 	app.seek_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT if app.handedness == "left" else HORIZONTAL_ALIGNMENT_RIGHT
 	if app.presentation.rail:
 		app.set_child_order(app.header, [app.brand_label, app.header_actions, app.dock_margin, app.interface_navigation])
-	app.drawer.position = Vector2(0 if app.handedness == "left" else maxf(0, app.size.x - 560), 0)
+	app.drawer.position = Vector2(0 if app.handedness == "left" else maxf(0, app.size.x - app.drawer.size.x), 0)
 	app.scroll.scroll_vertical = 0
 
 static func arrange_surface(app: Control) -> void:

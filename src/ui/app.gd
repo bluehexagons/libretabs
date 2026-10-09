@@ -265,6 +265,7 @@ var color_legend_tokens: Array[String] = ["note_open", "note_first", "note_move"
 var drawer_history: Array[Dictionary] = []
 var drawer_navigation: int = 0
 var menu_back: Button
+var options_menu: OptionsMenu
 var previous_focus: Control
 var header: BoxContainer
 var header_scroll: TouchScrollContainer
@@ -1106,20 +1107,10 @@ func set_startup_help(enabled: bool) -> void:
 
 func build_drawers() -> void:
 	var menu_index: VBoxContainer = section("MENU")
-	for key: String in ["SONG_MENU", "LAYOUTS", "INPUTS", "TUNER", "INTERFACE", "SETTINGS", "HELP"]:
-		var entry: Button = button(key, func() -> void: toggle_drawer(key))
-		entry.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		entry.custom_minimum_size.y = 56
-		menu_index.add_child(entry)
-	menu_index.add_child(label("MENU_MORE", 18))
-	for key: String in ["WELCOME", "TV_VIEW", "PRINT", "CAPTURE", "ABOUT"]:
-		var entry: Button = button(key, func() -> void: toggle_drawer(key))
-		entry.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		entry.custom_minimum_size.y = 56
-		menu_index.add_child(entry)
-	menu_fullscreen_button = button("FULLSCREEN", toggle_fullscreen)
-	menu_fullscreen_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	menu_index.add_child(menu_fullscreen_button)
+	drawers["SETTINGS"] = menu_index
+	options_menu = OptionsMenu.new()
+	menu_index.add_child(options_menu)
+	options_menu.configure(self)
 	build_interface_menu()
 	build_welcome_menu()
 	var control_help: VBoxContainer = section("CONTROL_HELP")
@@ -1410,12 +1401,8 @@ func build_drawers() -> void:
 	details.add_child(summary)
 	warning = label("PROTOTYPE_LIMIT", 18)
 	details.add_child(warning)
-	var settings: VBoxContainer = section("SETTINGS")
-	for key: String in ["INTERFACE", "TEMPO", "SCORE_VIEW", "LAYOUTS", "LOOP_TOOL", "SOUND", "SOUND_EFFECTS", "DISPLAY", "KEYBOARD", "INPUTS", "TUNER", "AUDIO_COMMANDS", "TV_VIEW"]: settings.add_child(button(key, func() -> void: toggle_drawer(key)))
 	settings_notice = label("SETTINGS_SAVED", 18)
-	settings.add_child(settings_notice)
-	settings.add_child(button("LEARNING_PROGRESS", func() -> void: toggle_drawer("LEARNING_PROGRESS")))
-	settings.add_child(button("RESET_SETTINGS", func() -> void: toggle_drawer("RESET_SETTINGS")))
+	menu_index.add_child(settings_notice)
 	var reset_section: VBoxContainer = section("RESET_SETTINGS")
 	reset_section.add_child(label("RESET_SETTINGS_CONFIRM", 18))
 	reset_section.add_child(button("RESET_SETTINGS_DO", reset_preferences))
@@ -1708,9 +1695,7 @@ func update_fullscreen() -> void:
 	fullscreen_button.text = tr(key) if size.x >= 1100 and not controls_on_side else ""
 	fullscreen_button.icon = UIIcons.get_icon(key)
 	fullscreen_button.tooltip_text = tr(key)
-	menu_fullscreen_button.text = tr(key)
-	menu_fullscreen_button.icon = UIIcons.get_icon(key)
-	menu_fullscreen_button.tooltip_text = tr(key)
+	options_menu.update_fullscreen(key)
 	if tv_edge_fullscreen != null:
 		tv_edge_fullscreen.icon = UIIcons.get_icon(key)
 		tv_edge_fullscreen.tooltip_text = tr(key)
@@ -1876,7 +1861,7 @@ func toggle_drawer(key: String, remember: bool = true) -> void:
 	opened_drawer = key
 	menu_overlay.show()
 	drawer.show()
-	for name_key: String in drawers: drawers[name_key].visible = name_key == key
+	for name_key: String in drawers: drawers[name_key].visible = drawers[name_key] == drawers[key]
 	drawer_title.text = tr(key)
 	menu_scroll.scroll_vertical = 0
 	responsive()
@@ -1907,6 +1892,7 @@ func reset_menu_scroll(key: String) -> void:
 		menu_scroll.scroll_vertical = 0
 
 func close_menu() -> void:
+	options_menu.reset_search()
 	stop_song_preview()
 	if audio_commands != null: audio_commands.cancel()
 	drawer_history.clear()

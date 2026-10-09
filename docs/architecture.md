@@ -367,6 +367,12 @@ row or a score inspector, plus cue/plain-score policy. Those containers are
 built once; layout reparents the existing controls and restores root order on
 each switch. The inspector uses the same regular music-layout choices.
 
+`OptionsMenu` owns the shared Menu/Settings directory, category routes and
+localized search. `MenuGrid` selects columns from available width and text size;
+`MenuTile` supplies wrapped descriptions with one focusable action per card.
+The directory opens existing detail controls through the composition root and
+uses its navigation history. It owns no song, transport or stored preferences.
+
 [Decision 0006](decisions/0006-player-preferences-and-keyboard.md) defines the
 initial `PracticeSettings` service under `src/app`, validated independently of UI
 and storage. `KeyboardNotes` is a pure held-key/pitch model; the existing mixer

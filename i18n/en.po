@@ -1061,7 +1061,7 @@ msgid "SETTINGS_SAVED"
 msgstr "Settings are kept on this device. Imported music and played notes are not saved."
 
 msgid "SETTINGS_RECOVERY"
-msgstr "Settings may last only for this session. Storage may be unavailable or contain unreadable or newer settings. Reset settings in Settings to start fresh."
+msgstr "Settings may last only for this session. Storage may be unavailable or contain unreadable or newer settings. Use Reset settings under Help & app in Menu to start fresh."
 
 msgid "RESET_PRACTICE"
 msgstr "Reset practice preferences"
@@ -1151,7 +1151,7 @@ msgid "WELCOME_PACE_TITLE"
 msgstr "3. Find your pace"
 
 msgid "WELCOME_PACE_BODY"
-msgstr "Open Playback in Menu to slow the tune down, then try playing along."
+msgstr "Open Practice in Menu, then Playback, to slow the tune down before playing along."
 
 msgid "WELCOME_MORE"
 msgstr "Want to change the view or song?"
@@ -1163,7 +1163,7 @@ msgid "WELCOME_STARTUP"
 msgstr "Show on startup"
 
 msgid "WELCOME_STARTUP_HELP"
-msgstr "Open Menu, then Quick start any time to return here or turn startup help back on."
+msgstr "Open Help & app in Menu, then Quick start, to return here or turn startup help back on."
 
 msgid "PLAYER_SHORTCUTS"
 msgstr "Space always plays or pauses while a menu is closed. Left and Right move by measure, or turn a reading page. Focus the position scrubber for beat-by-beat Arrow keys, Page Up/Down by measure, and Home/End. Escape closes a menu or capture view. F8 toggles capture view. F9 toggles Theater. F10 shows Theater controls without pausing. Tab moves between controls. Swipe across a manual reading page to turn it. Piano keys are listed below."
@@ -2423,10 +2423,10 @@ msgid "LEARNING_SAVED"
 msgstr "Learned marks are saved on this device."
 
 msgid "LEARNING_RECOVERY"
-msgstr "Changes may last only for this session. Reopen the app to load saved marks. If progress still cannot be loaded, check storage access or clear learned marks in Settings to start fresh."
+msgstr "Changes may last only for this session. Reopen the app to load saved marks. If progress still cannot be loaded, check storage access or clear learned marks under Songs & progress in Menu to start fresh."
 
 msgid "LEARNING_LIMIT"
-msgstr "Learned marks are full. Uncheck some pieces or clear learning progress in Settings."
+msgstr "Learned marks are full. Uncheck some pieces or clear learning progress under Songs & progress in Menu."
 
 msgid "LEARNING_EXERCISE_LABEL"
 msgstr "%s \u00b7 Learned"
@@ -2445,3 +2445,115 @@ msgstr "%d · %d:%02d"
 
 msgid "SEEK_CAPTION"
 msgstr "Song position"
+
+#. Menu category names and visible summaries also provide localized search terms.
+msgid "MENU_PRACTICE"
+msgstr "Practice"
+
+msgid "MENU_PRACTICE_HINT"
+msgstr "Speed, count-in, loops and practice layouts."
+
+msgid "MENU_READING"
+msgstr "Score & print"
+
+msgid "MENU_READING_HINT"
+msgstr "Scrolling, pages, notation and printed copies."
+
+msgid "MENU_SOUND_INPUT"
+msgstr "Sound & input"
+
+msgid "MENU_SOUND_INPUT_HINT"
+msgstr "Volume, instruments, tuner, microphone and keyboard."
+
+msgid "MENU_APPEARANCE"
+msgstr "Screen & interface"
+
+msgid "MENU_APPEARANCE_HINT"
+msgstr "Theme, text size, interface, Theater and capture view."
+
+msgid "MENU_LIBRARY_PROGRESS"
+msgstr "Songs & progress"
+
+msgid "MENU_LIBRARY_PROGRESS_HINT"
+msgstr "Choose music and review your learned marks."
+
+msgid "MENU_HELP_APP"
+msgstr "Help & app"
+
+msgid "MENU_HELP_APP_HINT"
+msgstr "Quick start, reading help, app information and resets."
+
+msgid "MENU_FIND_OPTION"
+msgstr "Find an option…"
+
+msgid "MENU_NO_RESULTS"
+msgstr "No matching options."
+
+msgid "MENU_HINT_TEMPO"
+msgstr "Speed, count-in and beat clicks (metronome)."
+
+msgid "MENU_HINT_LOOP_TOOL"
+msgstr "Repeat a measure or a range of measures."
+
+msgid "MENU_HINT_LAYOUTS"
+msgstr "Guitar, piano and other practice layouts."
+
+msgid "MENU_HINT_SCORE_VIEW"
+msgstr "Scrolling, pages, note spacing and notation rows."
+
+msgid "MENU_HINT_DETAILS"
+msgstr "Practice part, guitar arrangement and source limitations."
+
+msgid "MENU_HINT_PRINT"
+msgstr "Choose a range and save a printable copy."
+
+msgid "MENU_HINT_SOUND"
+msgstr "Instrument sound, volume and part muting."
+
+msgid "MENU_HINT_SOUND_EFFECTS"
+msgstr "Room echo (reverb) and chorus."
+
+msgid "MENU_HINT_TUNER"
+msgstr "Tuning, instrument profile and microphone sensitivity."
+
+msgid "MENU_HINT_INPUTS"
+msgstr "On-screen keyboard, MIDI devices and playing feedback."
+
+msgid "MENU_HINT_KEYBOARD"
+msgstr "Computer-keyboard note layout and octave."
+
+msgid "MENU_HINT_AUDIO_COMMANDS"
+msgstr "Use microphone notes to control playback."
+
+msgid "MENU_HINT_INTERFACE"
+msgstr "Classic, Focus, Touch and Workspace interfaces."
+
+msgid "MENU_HINT_DISPLAY"
+msgstr "Light/dark theme, background, font, text size, motion and control placement."
+
+msgid "MENU_HINT_TV_VIEW"
+msgstr "Theater music layout, zoom and visible controls."
+
+msgid "MENU_HINT_CAPTURE"
+msgstr "Score presentation, title and background for recording."
+
+msgid "MENU_HINT_FULLSCREEN"
+msgstr "Enter or leave fullscreen."
+
+msgid "MENU_HINT_SONG_MENU"
+msgstr "Browse songs, import MIDI and try exercises."
+
+msgid "MENU_HINT_LEARNING_PROGRESS"
+msgstr "Review or clear your manual learned marks."
+
+msgid "MENU_HINT_WELCOME"
+msgstr "Read the introduction and choose startup help."
+
+msgid "MENU_HINT_HELP"
+msgstr "Reading symbols, guitar tabs and keyboard shortcuts."
+
+msgid "MENU_HINT_ABOUT"
+msgstr "Version, licenses and app information."
+
+msgid "MENU_HINT_RESET_SETTINGS"
+msgstr "Restore defaults while keeping learned marks."
