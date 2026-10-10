@@ -421,7 +421,13 @@ func run() -> void:
 	var about: VBoxContainer = app.get("drawers")["ABOUT"]
 	check("Apache License 2.0" in (about.get_child(1) as Label).text and "CC0 1.0" in (about.get_child(1) as Label).text, "about section explains the software and content licenses")
 	check((about.get_child(0) as Label).text == TranslationServer.translate("ABOUT_VERSION") % ProjectSettings.get_setting("application/config/version"), "About identifies the running build for feedback")
-	check(about.get_child_count() == 5 and (about.get_child(2) as Button).text == TranslationServer.translate("OPEN_SOURCE") and (about.get_child(3) as Button).text == TranslationServer.translate("REPORT_ISSUE") and (about.get_child(4) as Button).text == TranslationServer.translate("REPORT_SECURITY"), "about section offers source, problem-reporting and private-security links")
+	var about_actions: Array[String] = []
+	for child: Node in about.get_children():
+		if child is Button: about_actions.append(child.text)
+	var expected_about: Array[String] = []
+	for key: String in ["OPEN_SOURCE", "REPORT_ISSUE", "REPORT_SECURITY", "NOTICES"]: expected_about.append(TranslationServer.translate(key))
+	check(about_actions == expected_about, "About keeps source, reporting and license links together")
+	check(app.get("offline").get_parent() == about, "About includes app offline readiness")
 	app.call("seek_measure", 2)
 	before = app.get("position_updates")
 	for _frame: int in range(10): await process_frame
@@ -836,7 +842,8 @@ func run() -> void:
 	check(app.get("dock").get_child(0) == app.get("quick_row") and app.get("transport_row").get_child(0) == app.get("metro_button"), "left-handed layout mirrors both player-control groups")
 	app.call("toggle_drawer", "DISPLAY")
 	for _frame: int in range(20): await process_frame
-	check(app.get("drawer").position.x == 0 and app.get("control_layout_note").text.contains("preferred hand side"), "left-handed menu edge and adaptive layout explanation are visible")
+	check(app.get("drawer").position.x == 0 and app.get("control_layout_note").text == TranslationServer.translate("CONTROL_LAYOUT_SUMMARY"), "left-handed menu edge and concise placement explanation are visible")
+	check(app.get("control_position_picker").tooltip_text == TranslationServer.translate("CONTROL_LAYOUT_HELP") and app.get("handedness_picker").tooltip_text == TranslationServer.translate("CONTROL_LAYOUT_HELP"), "placement fields retain full handedness and small-screen help")
 	app.call("close_menu")
 	root.size = Vector2i(640, 320)
 	app.set("control_position", "top")

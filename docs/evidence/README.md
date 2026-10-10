@@ -1,5 +1,8 @@
 # Evidence records
 
+Options detail audit: [grouped appearance controls, broader search and prompt
+Back focus, 2026-10-09](options-polish-2026-10-09.md).
+
 Options menu: [categories, responsive cards and finding settings,
 2026-10-09](menu-organization-2026-10-09.md).
 

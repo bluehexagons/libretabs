@@ -34,7 +34,11 @@ Menu and Settings share a directory with six categories: Practice, Score &
 print, Sound & input, Screen & interface, Songs & progress, and Help & app. Songs
 and Tuner stay directly reachable. Cards show short summaries and use more
 columns when the viewport and text size allow. Find an option searches the
-translated titles, summaries and categories; Enter opens the first result. Back
+translated titles, summaries, categories and setting labels, with spaces and
+punctuation treated alike; Enter opens the first result. Results name their
+category. Appearance & text groups readability, theme, control placement and
+motion, with text size first and responsive paired fields. About holds license
+notices and offline readiness. Back
 restores the previous section, scroll position, search and keyboard focus; Close
 returns directly to practice and clears the search. Manual pages support
 one- or two-finger horizontal swipes and a horizontal mouse wheel. Page gestures

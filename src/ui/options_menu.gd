@@ -12,6 +12,32 @@ const GROUPS: Array[Dictionary] = [
 	{"key": "MENU_LIBRARY_PROGRESS", "icon": "LEARNING_PROGRESS", "entries": ["SONG_MENU", "LEARNING_PROGRESS"]},
 	{"key": "MENU_HELP_APP", "icon": "HELP", "entries": ["WELCOME", "HELP", "ABOUT", "RESET_SETTINGS"]},
 ]
+# Index stable setting names, never song titles, device names or status messages.
+# These keys reuse the same translations as the detail controls.
+const SEARCH_KEYS: Dictionary[String, Array] = {
+	"TEMPO": ["SLOWER", "FASTER", "ORIGINAL_SPEED", "COUNT_LENGTH", "SPEED_PRESETS", "BPM_LABEL"],
+	"LOOP_TOOL": ["LOOP_FIRST", "LOOP_LAST", "LOOP_START_HERE", "LOOP_END_HERE"],
+	"LAYOUTS": ["PRESET_GUITAR", "PRESET_PICK", "PRESET_FINGER", "PRESET_BASS", "PRESET_PIANO"],
+	"SCORE_VIEW": ["VIEW_SCROLL", "VIEW_PAGES", "VIEW_FOLLOW_PAGES", "MUSIC_LINES", "MUSIC_SPACING", "MUSIC_STAFF", "NOTATION_ROW_HEIGHT", "NOTATION_TREBLE_ROW", "NOTATION_BASS_ROW", "NOTATION_PIANO_ROW"],
+	"DETAILS": ["ARRANGEMENT_BASIC", "ARRANGEMENT_STRUM", "ARRANGEMENT_FINGER"],
+	"PRINT": ["PRINT_PAPER", "PAPER_A4", "PAPER_LETTER", "NOTATION_TAB", "NOTATION_STAFF"],
+	"SOUND": ["MUTE_MY_PART", "BACKING", "INSTRUMENT_VOLUME", "CLICK_VOLUME", "PRACTICE_INSTRUMENT"],
+	"SOUND_EFFECTS": ["ROOM_REVERB", "SOFT_CHORUS", "REVERB_AMOUNT", "EFFECTS_DRY"],
+	"TUNER": ["INPUT_MIC_DEVICE", "INPUT_SENSITIVITY", "INPUT_MIC_INSTRUMENT", "INPUT_MIC_PIANO", "INPUT_MIC_DIGITAL_PIANO", "INPUT_MIC_ACOUSTIC", "INPUT_MIC_ELECTRIC", "INPUT_MIC_VOICE", "INPUT_MIC_BASS", "INPUT_MIC_VIOLIN", "INPUT_MIC_UKULELE", "INPUT_REFERENCE", "INPUT_SETUP_RUN", "INPUT_TUNER_TARGET", "INPUT_TARGET_CUSTOM", "INPUT_PLAYBACK_MUTE"],
+	"INPUTS": ["INPUT_SHOW", "INPUT_FEEDBACK", "INPUT_MIDI_TITLE", "INPUT_MIDI_DEVICE", "INPUT_MIDI_CHANNEL", "INPUT_MIDI_SOUND"],
+	"KEYBOARD": ["KEYBOARD_LOWER", "KEYBOARD_HOME", "KEYBOARD_OCTAVE"],
+	"AUDIO_COMMANDS": ["AUDIO_COMMANDS_ENABLE", "AUDIO_COMMANDS_WAKE"],
+	"DISPLAY": ["APPEARANCE_SYSTEM", "APPEARANCE_MIDNIGHT", "TEXT_SIZE", "FONT_CHOICE", "FONT_ROUNDED", "FONT_SIMPLE", "BACKGROUND_RIBBON", "BACKGROUND_GRADIENT", "BACKGROUND_SOLID", "BACKGROUND_WARM", "BACKGROUND_SLATE", "BACKGROUND_HORIZON", "BACKGROUND_DOTS", "REDUCED_MOTION", "NOTE_SHAPE_CUES", "CONTROL_POSITION", "HANDEDNESS", "HANDED_LEFT", "HANDED_RIGHT"],
+	"TV_VIEW": ["TV_ZOOM", "THEATER_KEEP_CONTROLS", "TV_SETUP"],
+	"CAPTURE": ["CAPTURE_NOTATION", "CAPTURE_ZOOM", "CAPTURE_POSITION", "CAPTURE_TITLE", "CAPTURE_TRANSPARENT", "CAPTURE_GREEN", "CAPTURE_CLEAN"],
+	"SONG_MENU": ["IMPORT_MIDI", "SONG_CATALOG_SEARCH_PLACEHOLDER", "SONG_CATALOG_SORT", "LEARNING_TO_LEARN", "LEARNING_LEARNED"],
+	"LEARNING_PROGRESS": ["LEARNING_CLEAR"],
+	"WELCOME": ["WELCOME_STARTUP"],
+	"HELP": ["HELP_STRINGS", "HELP_FRETS", "HELP_STAFF", "HELP_TIMING", "PLAYER_SHORTCUTS"],
+	"ABOUT": ["REPORT_ISSUE", "REPORT_SECURITY", "OPEN_SOURCE", "NOTICES", "OFFLINE_READY"],
+}
+var separators: RegEx = RegEx.create_from_string("[\\p{P}\\p{Z}\\s]+")
+var setting_terms: Dictionary[String, String] = {}
 var search: LineEdit
 var shortcuts: MenuGrid
 var categories: MenuGrid
@@ -38,6 +64,7 @@ func configure(app: Control) -> void:
 	add_child(search)
 	categories = grid(self, 3)
 	results = grid(self, 3)
+	results.minimum_ems = 8
 	empty = app.label("MENU_NO_RESULTS", 18)
 	add_child(empty)
 	for group: Dictionary in GROUPS:
@@ -59,10 +86,16 @@ func configure(app: Control) -> void:
 			entries.add_child(entry)
 			entry_buttons[value] = entry
 			var result: MenuTile = tile(value, "MENU_HINT_" + value, str(group.icon), app)
+			result.set_category(tr(group_key))
 			result.pressed.connect(func() -> void:
 				if not result.suppress_action: action.call())
 			results.add_child(result)
 			result_buttons[value] = result
+			var names: PackedStringArray = []
+			for setting_key: String in SEARCH_KEYS.get(value, []): names.append(tr(setting_key))
+			if value == "SOUND":
+				for setting_key: String in PracticeSynth.LABELS: names.append(tr(setting_key))
+			setting_terms[value] = normalized(" ".join(names))
 			if value == "FULLSCREEN": app.menu_fullscreen_button = entry
 	search.text_changed.connect(func(_text: String) -> void: filter_results())
 	theme_changed.connect(func() -> void: refresh_search_style.call_deferred())
@@ -98,8 +131,11 @@ func tile(key: String, hint: String, fallback_icon: String, app: Control) -> Men
 	result.help_requested.connect(app.show_control_help)
 	return result
 
+func normalized(value: String) -> String:
+	return separators.sub(value.to_lower(), " ", true).strip_edges()
+
 func filter_results() -> void:
-	var words: PackedStringArray = search.text.strip_edges().to_lower().split(" ", false)
+	var words: PackedStringArray = normalized(search.text).split(" ", false)
 	var filtering: bool = not words.is_empty()
 	shortcuts.visible = not filtering
 	categories.visible = not filtering
@@ -107,10 +143,10 @@ func filter_results() -> void:
 	var found: bool = false
 	for key: String in result_buttons:
 		var item: MenuTile = result_buttons[key]
-		var terms: String = "%s %s %s" % [item.heading.text, item.description.text, tr(category_for[key])]
+		var terms: String = normalized("%s %s %s" % [item.heading.text, item.description.text, tr(category_for[key])]) + " " + setting_terms[key]
 		var matches: bool = true
 		for word: String in words:
-			if not terms.to_lower().contains(word): matches = false; break
+			if not terms.contains(word): matches = false; break
 		item.visible = filtering and matches
 		found = found or matches
 	empty.visible = filtering and not found

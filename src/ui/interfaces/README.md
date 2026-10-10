@@ -1,7 +1,7 @@
 <!-- SPDX-License-Identifier: CC0-1.0 -->
 # Practice interface development
 
-Choose **Menu → Interface**. Classic remains the default. The saved choice is
+Choose **Menu → Screen & interface → Interface**. Classic remains the default. The saved choice is
 independent of instrument presets, notation, appearance and control-edge
 preferences. Resizing adapts the candidate without changing that choice.
 

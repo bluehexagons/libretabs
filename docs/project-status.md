@@ -55,6 +55,11 @@ field for individual settings. Cards adapt to screen width and text size; Songs
 and Tuner remain direct shortcuts. Back keeps search, scroll and keyboard focus.
 The source checks include navigation and enlarged-text geometry; see the dated
 record for native and browser evidence and its limits.
+The [options detail audit](evidence/options-polish-2026-10-09.md) groups
+appearance controls, puts text size first, expands search to instrument and
+setting labels, and restores typing immediately on Back. Search results show
+their category and use wider cards on phones; About holds license notices and
+offline readiness.
 
 Settings now also retain regular reading mode, keyboard visibility/feedback,
 library sorting and tuner instrument/sensitivity/reference. Manual learned marks

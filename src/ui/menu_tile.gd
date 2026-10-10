@@ -6,6 +6,7 @@ var content: MarginContainer
 var heading: Label
 var description: Label
 var glyph: TextureRect
+var category: Label
 
 func configure(title: String, detail: String, graphic: Texture2D) -> void:
 	set_meta("hover_caption", "")
@@ -50,12 +51,21 @@ func make_label(value: String) -> Label:
 	result.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return result
 
+func set_category(value: String) -> void:
+	category = make_label(value)
+	var column: VBoxContainer = content.get_child(0)
+	column.add_child(category)
+	column.move_child(category, 0)
+	refresh_theme()
+
 func refresh_theme() -> void:
 	if glyph == null: return
 	var ink: Color = get_theme_color("font_color")
 	glyph.modulate = ink
 	glyph.custom_minimum_size = Vector2.ONE * maxi(24, get_theme_default_font_size())
 	description.add_theme_font_size_override("font_size", maxi(14, roundi(get_theme_default_font_size() * 0.8)))
+	if category != null:
+		category.add_theme_font_size_override("font_size", maxi(14, roundi(get_theme_default_font_size() * 0.7)))
 	fit_content()
 
 func fit_content() -> void:

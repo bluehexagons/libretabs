@@ -371,7 +371,10 @@ each switch. The inspector uses the same regular music-layout choices.
 localized search. `MenuGrid` selects columns from available width and text size;
 `MenuTile` supplies wrapped descriptions with one focusable action per card.
 The directory opens existing detail controls through the composition root and
-uses its navigation history. It owns no song, transport or stored preferences.
+uses its navigation history. A bounded list of translated setting keys extends
+search without indexing imported song titles, devices or status text.
+`SettingsGroup` lays out labeled fields in Appearance & text; it owns no settings
+state. The directory owns no song, transport or stored preferences.
 
 [Decision 0006](decisions/0006-player-preferences-and-keyboard.md) defines the
 initial `PracticeSettings` service under `src/app`, validated independently of UI

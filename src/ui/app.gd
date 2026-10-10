@@ -1531,79 +1531,21 @@ func build_drawers() -> void:
 	about.add_child(button("OPEN_SOURCE", func() -> void: host.open_url("https://github.com/bluehexagons/libretabs")))
 	about.add_child(button("REPORT_ISSUE", func() -> void: host.open_url("https://github.com/bluehexagons/libretabs/issues")))
 	about.add_child(button("REPORT_SECURITY", func() -> void: host.open_url("https://github.com/bluehexagons/libretabs/security/advisories/new")))
+	build_display_menu()
+	about.add_child(button("NOTICES", show_notices))
+	offline = label("OFFLINE_PENDING", 18)
+	about.add_child(offline)
+
+func settings_group(parent: Node, key: String, icon_key: String) -> SettingsGroup:
+	var group: SettingsGroup = SettingsGroup.new()
+	parent.add_child(group)
+	group.configure(tr(key), UIIcons.get_icon(icon_key))
+	return group
+
+func build_display_menu() -> void:
 	var display: VBoxContainer = section("DISPLAY")
-	display.add_child(label("APPEARANCE"))
-	appearance_picker = CaptionOption.new()
-	appearance_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
-	appearance_picker.fit_to_longest_item = false
-	appearance_picker.custom_minimum_size.y = 56
-	for key: String in ["APPEARANCE_SYSTEM", "APPEARANCE_LIGHT", "APPEARANCE_DARK", "APPEARANCE_MIDNIGHT"]: appearance_picker.add_item(tr(key))
-	appearance_picker.item_selected.connect(change_appearance)
-	display.add_child(appearance_picker)
-	display.add_child(label("BACKGROUND_STYLE"))
-	background_picker = CaptionOption.new()
-	background_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
-	background_picker.fit_to_longest_item = false
-	background_picker.custom_minimum_size.y = 56
-	for key: String in ["BACKGROUND_RIBBON", "BACKGROUND_GRADIENT", "BACKGROUND_SOLID", "BACKGROUND_WARM", "BACKGROUND_SLATE", "BACKGROUND_HORIZON", "BACKGROUND_DOTS"]: background_picker.add_item(tr(key))
-	background_picker.item_selected.connect(change_background_style)
-	background_picker.tooltip_text = tr("BACKGROUND_STYLE_HELP")
-	display.add_child(background_picker)
-	display.add_child(label("BACKGROUND_STYLE_HELP", 18))
-	motion_check = check("REDUCED_MOTION", false)
-	motion_check.toggled.connect(func(value: bool) -> void:
-		motion_mode = "reduced" if value else "full"
-		apply_motion()
-		if persist_preferences and not host.save_display_choice("motion", motion_mode): set_status("STORAGE_SESSION"))
-	display.add_child(motion_check)
-	motion_note = label("MOTION_SYSTEM", 18)
-	display.add_child(motion_note)
-	display.add_child(button("MOTION_FOLLOW", func() -> void:
-		motion_mode = "system"
-		apply_motion()
-		if persist_preferences and not host.save_display_choice("motion", motion_mode): set_status("STORAGE_SESSION")))
-	display.add_child(label("FONT_CHOICE"))
-	font_picker = CaptionOption.new()
-	font_picker.custom_minimum_size.y = 56
-	font_picker.fit_to_longest_item = false
-	for key: String in ["FONT_ROUNDED", "FONT_SIMPLE"]: font_picker.add_item(tr(key))
-	font_picker.select(0 if font_style == "rounded" else 1)
-	font_picker.item_selected.connect(func(index: int) -> void:
-		font_style = ["rounded", "simple"][index]
-		apply_appearance()
-		if persist_preferences and not host.save_display_choice("font", font_style): set_status("STORAGE_SESSION"))
-	display.add_child(font_picker)
-	shape_cue_check = check("NOTE_SHAPE_CUES", shape_cues)
-	shape_cue_check.tooltip_text = tr("NOTE_SHAPE_CUES_HELP")
-	shape_cue_check.toggled.connect(set_shape_cues)
-	display.add_child(shape_cue_check)
-	display.add_child(label("NOTE_SHAPE_CUES_HELP", 18))
-	display.add_child(label("CONTROL_POSITION"))
-	control_position_picker = CaptionOption.new()
-	control_position_picker.custom_minimum_size.y = 56
-	control_position_picker.fit_to_longest_item = false
-	for key: String in ["CONTROL_LEFT", "CONTROL_TOP", "CONTROL_RIGHT", "CONTROL_BOTTOM"]:
-		control_position_picker.add_item(tr(key))
-	control_position_picker.select(["left", "top", "right", "bottom"].find(control_position))
-	control_position_picker.item_selected.connect(func(index: int) -> void:
-		control_position = ["left", "top", "right", "bottom"][index]
-		responsive()
-		if persist_preferences and not host.save_display_choice("control_position", control_position): set_status("STORAGE_SESSION"))
-	display.add_child(control_position_picker)
-	display.add_child(label("HANDEDNESS"))
-	handedness_picker = CaptionOption.new()
-	handedness_picker.custom_minimum_size.y = 56
-	handedness_picker.fit_to_longest_item = false
-	for key: String in ["HANDED_LEFT", "HANDED_RIGHT"]: handedness_picker.add_item(tr(key))
-	handedness_picker.select(0 if handedness == "left" else 1)
-	handedness_picker.item_selected.connect(func(index: int) -> void:
-		handedness = ["left", "right"][index]
-		responsive()
-		if persist_preferences and not host.save_display_choice("handedness", handedness): set_status("STORAGE_SESSION"))
-	display.add_child(handedness_picker)
-	control_layout_note = label("CONTROL_LAYOUT_HELP", 18)
-	display.add_child(control_layout_note)
-	display.add_child(label("TEXT_SIZE"))
+	display.add_theme_constant_override("separation", 20)
+	var readability: SettingsGroup = settings_group(display, "DISPLAY_READABILITY", "SCORE_VIEW")
 	scale_picker = CaptionOption.new()
 	scale_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	scale_picker.fit_to_longest_item = false
@@ -1614,15 +1556,83 @@ func build_drawers() -> void:
 		var factor: float = [1.0, 1.5, 2.0][index]
 		apply_scale(factor)
 		if persist_preferences and not host.save_scale(factor): set_status("STORAGE_SESSION"))
-	display.add_child(scale_picker)
+	readability.field(tr("TEXT_SIZE")).add_child(scale_picker)
+	font_picker = CaptionOption.new()
+	font_picker.custom_minimum_size.y = 56
+	font_picker.fit_to_longest_item = false
+	for key: String in ["FONT_ROUNDED", "FONT_SIMPLE"]: font_picker.add_item(tr(key))
+	font_picker.select(0 if font_style == "rounded" else 1)
+	font_picker.item_selected.connect(func(index: int) -> void:
+		font_style = ["rounded", "simple"][index]
+		apply_appearance()
+		if persist_preferences and not host.save_display_choice("font", font_style): set_status("STORAGE_SESSION"))
+	readability.field(tr("FONT_CHOICE")).add_child(font_picker)
+	shape_cue_check = check("NOTE_SHAPE_CUES", shape_cues)
+	shape_cue_check.tooltip_text = tr("NOTE_SHAPE_CUES_HELP")
+	shape_cue_check.toggled.connect(set_shape_cues)
+	readability.add_child(shape_cue_check)
+	readability.add_child(label("NOTE_SHAPE_CUES_SUMMARY", 18))
+	var colors: SettingsGroup = settings_group(display, "DISPLAY_COLORS", "DISPLAY")
+	appearance_picker = CaptionOption.new()
+	appearance_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	appearance_picker.fit_to_longest_item = false
+	appearance_picker.custom_minimum_size.y = 56
+	for key: String in ["APPEARANCE_SYSTEM", "APPEARANCE_LIGHT", "APPEARANCE_DARK", "APPEARANCE_MIDNIGHT"]: appearance_picker.add_item(tr(key))
+	appearance_picker.item_selected.connect(change_appearance)
+	colors.field(tr("APPEARANCE")).add_child(appearance_picker)
+	background_picker = CaptionOption.new()
+	background_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	background_picker.fit_to_longest_item = false
+	background_picker.custom_minimum_size.y = 56
+	for key: String in ["BACKGROUND_RIBBON", "BACKGROUND_GRADIENT", "BACKGROUND_SOLID", "BACKGROUND_WARM", "BACKGROUND_SLATE", "BACKGROUND_HORIZON", "BACKGROUND_DOTS"]: background_picker.add_item(tr(key))
+	background_picker.item_selected.connect(change_background_style)
+	background_picker.tooltip_text = tr("BACKGROUND_STYLE_HELP")
+	colors.field(tr("BACKGROUND_STYLE")).add_child(background_picker)
+	colors.add_child(label("BACKGROUND_STYLE_HELP", 18))
+	var placement: SettingsGroup = settings_group(display, "DISPLAY_PLACEMENT", "INTERFACE")
+	control_position_picker = CaptionOption.new()
+	control_position_picker.custom_minimum_size.y = 56
+	control_position_picker.fit_to_longest_item = false
+	for key: String in ["CONTROL_LEFT", "CONTROL_TOP", "CONTROL_RIGHT", "CONTROL_BOTTOM"]:
+		control_position_picker.add_item(tr(key))
+	control_position_picker.select(["left", "top", "right", "bottom"].find(control_position))
+	control_position_picker.item_selected.connect(func(index: int) -> void:
+		control_position = ["left", "top", "right", "bottom"][index]
+		responsive()
+		if persist_preferences and not host.save_display_choice("control_position", control_position): set_status("STORAGE_SESSION"))
+	control_position_picker.tooltip_text = tr("CONTROL_LAYOUT_HELP")
+	placement.field(tr("CONTROL_POSITION")).add_child(control_position_picker)
+	handedness_picker = CaptionOption.new()
+	handedness_picker.custom_minimum_size.y = 56
+	handedness_picker.fit_to_longest_item = false
+	for key: String in ["HANDED_LEFT", "HANDED_RIGHT"]: handedness_picker.add_item(tr(key))
+	handedness_picker.select(0 if handedness == "left" else 1)
+	handedness_picker.item_selected.connect(func(index: int) -> void:
+		handedness = ["left", "right"][index]
+		responsive()
+		if persist_preferences and not host.save_display_choice("handedness", handedness): set_status("STORAGE_SESSION"))
+	handedness_picker.tooltip_text = tr("CONTROL_LAYOUT_HELP")
+	placement.field(tr("HANDEDNESS")).add_child(handedness_picker)
+	control_layout_note = label("CONTROL_LAYOUT_SUMMARY", 18)
+	placement.add_child(control_layout_note)
+	var motion: SettingsGroup = settings_group(display, "DISPLAY_MOTION", "PAGE_FOLLOW")
+	motion_check = check("REDUCED_MOTION", false)
+	motion_check.tooltip_text = tr("MOTION_HELP")
+	motion_check.toggled.connect(func(value: bool) -> void:
+		motion_mode = "reduced" if value else "full"
+		apply_motion()
+		if persist_preferences and not host.save_display_choice("motion", motion_mode): set_status("STORAGE_SESSION"))
+	motion.add_child(motion_check)
+	motion_note = label("MOTION_SYSTEM", 18)
+	motion.add_child(motion_note)
+	motion.add_child(button("MOTION_FOLLOW", func() -> void:
+		motion_mode = "system"
+		apply_motion()
+		if persist_preferences and not host.save_display_choice("motion", motion_mode): set_status("STORAGE_SESSION")))
 	if host.trace_enabled():
 		display.add_child(button("PSEUDO", func() -> void:
 			TranslationServer.pseudolocalization_enabled = not TranslationServer.pseudolocalization_enabled
 			get_tree().reload_current_scene()))
-	display.add_child(button("SETTINGS", func() -> void: toggle_drawer("SETTINGS")))
-	display.add_child(button("NOTICES", show_notices))
-	offline = label("OFFLINE_PENDING", 18)
-	display.add_child(offline)
 
 func volume_control(parent: Node, key: String, initial: float, instrument: bool) -> HSlider:
 	var caption: Label = label(key)
@@ -1832,13 +1842,15 @@ func go_back() -> void:
 		return
 	var destination: Dictionary = drawer_history.pop_back()
 	toggle_drawer(destination.key, false)
+	# Restore typing immediately. Waiting for layout here loses keys entered
+	# soon after Back, and could steal focus after the user has already Tabbed.
+	var focus: Control = destination.focus.get_ref() if destination.focus != null else null
+	if is_instance_valid(focus) and focus.is_visible_in_tree(): focus.grab_focus()
 	restore_drawer.call_deferred(drawer_navigation, destination)
 
 func restore_drawer(navigation: int, destination: Dictionary) -> void:
 	for _frame: int in range(4): await get_tree().process_frame
 	if navigation != drawer_navigation or not menu_overlay.visible: return
-	var focus: Control = destination.focus.get_ref() if destination.focus != null else null
-	if is_instance_valid(focus) and focus.is_visible_in_tree(): focus.grab_focus()
 	menu_scroll.scroll_vertical = destination.scroll
 
 func toggle_drawer(key: String, remember: bool = true) -> void:

@@ -20,8 +20,9 @@ describes what it contains. Songs and Tuner also have direct buttons at the top.
 Cards use fewer columns on narrow screens or with larger text; scroll to reach
 the remaining choices.
 
-Use **Find an option** to search for a setting, such as “count-in,” “dark” or
-“microphone sensitivity.” Select a result, or press Enter to open the first one.
+Use **Find an option** to search for a setting or instrument, such as “count in,”
+“ukulele,” “MIDI channel” or “text size.” Spaces and punctuation are interchangeable.
+Results name their category. Select a result, or press Enter to open the first one.
 **Back** keeps your search and position. **Close** returns to practice; reopening
 Menu shows the categories again.
 
@@ -308,15 +309,19 @@ when playback starts; **Show controls** or **F10** brings them back. In
 **Fullscreen** is a separate button; press it again or Escape to leave fullscreen.
 Theater does not connect to a TV itself; use your device's screen-mirroring controls.
 
-**Menu → Screen & interface → Appearance & text** includes lettering, text size, Device setting, Light,
-Dark and Midnight appearance. Device setting follows the device's light or dark
+**Menu → Screen & interface → Appearance & text** groups **Text & readability**,
+**Theme & background**, **Control placement**, and **Motion**. Text size comes first.
+Fields share a row on wider screens and stack on phones or with enlarged text.
+Theme choices include Device setting, Light, Dark and Midnight. Device setting follows the device's light or dark
 preference. Midnight uses black around and behind the music for OLED screens.
 Choose a backdrop for the space around the music in Light and Dark. Solid color,
-Warm cream and Cool slate are plain; Ribbon pattern, Soft gradient, Horizon wash
+Warm cream and Cool slate are plain; Woven texture, Soft shade, Soft horizon
 and Quiet dots add subtle decoration. Midnight always remains black. The menu also includes
 reduced motion, optional shape cues, control location and preferred hand. Text size
 changes controls; use score layout or music zoom to improve music readability.
 For a stationary reading view, choose Manual pages as well as reduced motion.
+App information, license notices and offline readiness are in
+**Menu → Help & app → About LibreTabs**.
 
 ## Print, capture and play reference notes
 

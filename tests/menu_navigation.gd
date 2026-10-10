@@ -44,6 +44,10 @@ func run() -> void:
 		for key: String in group.entries:
 			check(key == "FULLSCREEN" or app.get("drawers").has(key), "existing destination remains available " + key)
 			check(menu.entry_buttons[key].heading.text != key and menu.entry_buttons[key].description.text != "MENU_HINT_" + key, "entry and search summary are translated " + key)
+	for keys: Array in OptionsMenu.SEARCH_KEYS.values():
+		for key: String in keys: check(TranslationServer.translate(key) != key, "search indexes a translated setting: " + key)
+	for key: String in menu.result_buttons:
+		check(menu.result_buttons[key].category.text == TranslationServer.translate(menu.category_for[key]), "search result names its parent category")
 	for config: Array in [[1280,800,1.0,3], [360,640,1.0,2], [320,568,1.0,1], [360,640,2.0,1], [844,320,2.0,1]]:
 		root.size = Vector2i(config[0], config[1])
 		app.call("apply_scale", config[2])
@@ -74,6 +78,41 @@ func run() -> void:
 				var font: Font = caption.get_theme_font("font")
 				for word: String in caption.text.split(" ", false):
 					check(font.get_string_size(word, HORIZONTAL_ALIGNMENT_LEFT, -1, caption.get_theme_font_size("font_size")).x <= caption.size.x + 1, "submenu words fit without fragments: " + word)
+	app.call("toggle_drawer", "MENU")
+	menu.search.text = "input"
+	menu.filter_results()
+	await settle()
+	check(menu.results.columns == 1, "phone search results use whole-width cards")
+	for item: MenuTile in menu.result_buttons.values():
+		if not item.visible: continue
+		check(item.size.y + 1 >= item.content.get_combined_minimum_size().y, "result category, heading and description stay inside its hit target")
+		for caption: Label in [item.category, item.heading, item.description]:
+			for word: String in caption.text.split(" ", false):
+				check(caption.get_theme_font("font").get_string_size(word, HORIZONTAL_ALIGNMENT_LEFT, -1, caption.get_theme_font_size("font_size")).x <= caption.size.x + 1, "search result words fit without fragments: " + word)
+	menu.reset_search()
+	for config: Array in [[1280,800,1.0,2], [360,640,1.0,1], [320,568,2.0,1], [844,320,2.0,1]]:
+		root.size = Vector2i(config[0], config[1])
+		app.call("apply_scale", config[2])
+		app.call("toggle_drawer", "DISPLAY")
+		await settle()
+		var display: VBoxContainer = app.get("drawers")["DISPLAY"]
+		check(display.get_child_count() == 4, "appearance has four labeled groups without unrelated app links")
+		for group: SettingsGroup in display.get_children():
+			if group.fields.visible: check(group.fields.columns == config[3], "appearance fields adapt to viewport and text size")
+		for key: String in ["scale_picker", "font_picker", "appearance_picker", "background_picker", "control_position_picker", "handedness_picker", "motion_check"]:
+			var control: Control = app.get(key)
+			app.get("menu_scroll").ensure_control_visible(control)
+			await process_frame
+			check(control.size.y >= 44 and control.get_global_rect().end.x <= root.size.x + 1, "appearance control stays reachable: " + key)
+			check(app.get("menu_scroll").get_global_rect().encloses(control.get_global_rect()), "appearance control can scroll fully into view: " + key)
+		check(app.get("scale_picker").get_parent().get_parent() == display.get_child(0).fields, "text size is in the first appearance group")
+		var controls: Array[Control] = []
+		app.call("menu_focusable", display, controls)
+		var text_proxy: Control = app.get("scale_picker").get_child(0).touch_target
+		var font_proxy: Control = app.get("font_picker").get_child(0).touch_target
+		check(controls.find(text_proxy) >= 0 and controls.find(text_proxy) < controls.find(font_proxy) and controls.find(font_proxy) < controls.find(app.get("shape_cue_check")), "appearance keyboard order follows the grouped fields")
+	app.call("apply_scale", 1.0)
+	check(app.get("offline").get_parent() == app.get("drawers")["ABOUT"], "app readiness appears beside About and licenses")
 	app.call("close_menu")
 	root.size = Vector2i(1280,800)
 	app.call("toggle_drawer", "MENU")
@@ -99,6 +138,13 @@ func run() -> void:
 		menu.filter_results()
 		var expected: String = "TEMPO" if query in ["count-in", "metronome"] else ("DISPLAY" if query == "dark" else ("TUNER" if query == "microphone sensitivity" else ("INPUTS" if query == "on-screen keyboard" else "LEARNING_PROGRESS")))
 		check(menu.result_buttons[expected].visible and not menu.categories.visible, "search finds the setting by its contents: " + query)
+	for pair: Array in [["COUNT IN", "TEMPO"], ["count\tin", "TEMPO"], ["on screen keyboard", "INPUTS"], ["electric piano", "TUNER"], ["ukulele", "TUNER"], ["pitch reference", "TUNER"], ["MIDI channel", "INPUTS"], ["room amount", "SOUND_EFFECTS"], ["left handed", "DISPLAY"], ["warm cream", "DISPLAY"], ["lettering", "DISPLAY"], ["staff height", "SCORE_VIEW"], ["report issue", "ABOUT"]]:
+		menu.search.text = pair[0]
+		menu.filter_results()
+		check(menu.result_buttons[pair[1]].visible, "search finds detail labels despite capitalization or punctuation: " + pair[0])
+	menu.search.text = "  / --  "
+	menu.filter_results()
+	check(menu.categories.visible and not menu.results.visible, "punctuation-only searches return to browsing")
 	menu.search.text = "not an option xyz"
 	menu.filter_results()
 	check(menu.empty.visible, "an unmatched search has an actionable empty state")
@@ -111,8 +157,12 @@ func run() -> void:
 	await settle()
 	check(app.get("opened_drawer") == "TEMPO", "Enter opens the first matching setting")
 	app.call("go_back")
+	check(root.gui_get_focus_owner() == menu.search, "Back restores typing before waiting for layout")
+	menu.search.text = "ukulele"
+	menu.filter_results()
+	menu.result_buttons["TUNER"].grab_focus()
 	await settle()
-	check(menu.search.text == "count-in" and root.gui_get_focus_owner() == menu.search, "Back keeps the search and keyboard focus")
+	check(menu.search.text == "ukulele" and root.gui_get_focus_owner() == menu.result_buttons["TUNER"], "settling Back preserves newly typed text and subsequent keyboard navigation")
 	app.call("close_menu")
 	app.call("toggle_drawer", "SETTINGS")
 	await settle()

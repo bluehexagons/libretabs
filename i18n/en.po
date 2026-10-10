@@ -1193,10 +1193,10 @@ msgid "REDUCED_MOTION"
 msgstr "Reduce motion"
 
 msgid "MOTION_SYSTEM"
-msgstr "Following your device setting. Decorative effects are off when motion is reduced. Choose pages in Score view for a stationary score."
+msgstr "Follows your device setting for decorative animation."
 
 msgid "MOTION_OVERRIDE"
-msgstr "Saved on this device. Reduced motion disables decorative effects. Choose pages in Score view for a stationary score."
+msgstr "Uses your saved choice for decorative animation."
 
 msgid "MOTION_FOLLOW"
 msgstr "Follow device setting"
@@ -2487,7 +2487,7 @@ msgid "MENU_FIND_OPTION"
 msgstr "Find an option…"
 
 msgid "MENU_NO_RESULTS"
-msgstr "No matching options."
+msgstr "No matching options. Try a shorter search or clear it to browse categories."
 
 msgid "MENU_HINT_TEMPO"
 msgstr "Speed, count-in and beat clicks (metronome)."
@@ -2557,3 +2557,25 @@ msgstr "Version, licenses and app information."
 
 msgid "MENU_HINT_RESET_SETTINGS"
 msgstr "Restore defaults while keeping learned marks."
+
+#. Section headings in Appearance & text.
+msgid "DISPLAY_READABILITY"
+msgstr "Text & readability"
+
+msgid "DISPLAY_COLORS"
+msgstr "Theme & background"
+
+msgid "DISPLAY_PLACEMENT"
+msgstr "Control placement"
+
+msgid "DISPLAY_MOTION"
+msgstr "Motion"
+
+msgid "MOTION_HELP"
+msgstr "Reduced motion turns off decorative animation. For a stationary score, choose Pages in Score view."
+
+msgid "NOTE_SHAPE_CUES_SUMMARY"
+msgstr "Shapes distinguish note groups without relying on color."
+
+msgid "CONTROL_LAYOUT_SUMMARY"
+msgstr "Choose the control edge and your preferred hand. Small screens adapt the placement."

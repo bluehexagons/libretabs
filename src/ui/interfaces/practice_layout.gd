@@ -140,7 +140,7 @@ static func fit(app: Control) -> void:
 	app.interface_navigation.visible = app.presentation.rail
 	var automatic_edge: bool = app.presentation.minimal or app.presentation.touch or app.presentation.rail
 	OptionMenuFit.set_disabled(app.control_position_picker, automatic_edge)
-	app.control_layout_note.text = app.tr("INTERFACE_EDGE_AUTO" if automatic_edge else "CONTROL_LAYOUT_HELP")
+	app.control_layout_note.text = app.tr("INTERFACE_EDGE_AUTO" if automatic_edge else "CONTROL_LAYOUT_SUMMARY")
 	if app.presentation.minimal or app.presentation.touch or app.presentation.rail:
 		app.import_button.hide()
 		app.tv_button.hide()
