@@ -53,6 +53,8 @@ For a web-facing slice, also export and validate through the managed workflow de
 
 ## Working safely on the managed VM
 
-Do not run concurrent editing agents in the primary checkout. Create one managed worktree per independent task with `infra-tools agent workspace create`, and inspect status before integration or cleanup. Do not commit generated `.godot`, export artifacts, credentials, user MIDI files, or research downloads.
+Basaltwater on Debian is the reference development environment. Follow the [shared project standards](https://github.com/bluehexagons/basaltwater/blob/main/docs/agents/project-standards.md) and installed skills for environment support; native Godot and Python workflows remain usable with manually installed prerequisites. Record actual CachyOS/Windows checks separately from exports.
+
+Do not run concurrent editing agents in the primary checkout. Create one managed worktree per independent task with `basaltw agent workspace create` (or native Git worktrees elsewhere), and inspect status before integration or cleanup. Do not commit generated `.godot`, export artifacts, credentials, user MIDI files, or research downloads. Follow [artifact retention](docs/artifact-retention.md) before cleanup: existing build/export roots mix generated output and historical evidence.
 
 Keep diffs narrowly scoped. Preserve user changes. Record a decision in documentation when a task changes a public data contract, dependency, platform target, or MVP boundary.

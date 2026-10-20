@@ -33,3 +33,9 @@ __pycache__/
 *.jks
 *.p12
 *.pfx
+
+# Share the cleanup adapter, not local Basaltwater control state.
+/.basaltwater/*
+!/.basaltwater/cleanup.json
+/artifacts/*
+!/artifacts/.gdignore
