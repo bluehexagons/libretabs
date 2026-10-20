@@ -88,8 +88,9 @@
           if(generation!==micGeneration)return;
           this.micStop();micState='INPUT_MIC_ENDED';micRevision++;
         };
-        micDevices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='audioinput').slice(0,32).map(d=>({id:d.deviceId,name:String(d.label||'').slice(0,120)}));
+        const devices=await navigator.mediaDevices.enumerateDevices();
         if(generation!==micGeneration)return;
+        micDevices=devices.filter(d=>d.kind==='audioinput').slice(0,32).map(d=>({id:d.deviceId,name:String(d.label||'').slice(0,120)}));
         micState='INPUT_MIC_READY';micRevision++;
       } catch(error) {
         if(generation!==micGeneration)return;
@@ -120,7 +121,10 @@
         const access = await navigator.requestMIDIAccess({sysex:false});
         if (generation !== midiGeneration) return;
         midi = access;
-        midi.onstatechange = () => { this.midiFlush(); attachMidi(); };
+        midi.onstatechange = () => {
+          if (generation !== midiGeneration || midi !== access) return;
+          this.midiFlush(); attachMidi();
+        };
         attachMidi();
       } catch (error) {
         if (generation !== midiGeneration) return;

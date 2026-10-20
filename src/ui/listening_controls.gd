@@ -112,8 +112,10 @@ func _ready() -> void:
 		quick_controls_changed.emit())
 	playback_mute.tooltip_text = tr("INPUT_PLAYBACK_MUTE_HELP")
 	practice_button = action(self, "INPUT_PRACTICE_START", func() -> void:
-		practice_pending = true
 		if not listener.capture.enabled or listener.paused: tuner_check.button_pressed = true
+		# Starting capture first emits OFF while releasing the previous stream.
+		# Arm the request afterward so that internal reset cannot cancel it.
+		practice_pending = true
 		update_microphone())
 	settings_toggle = action(self, "INPUT_SETTINGS", func() -> void: pass)
 	settings_toggle.toggle_mode = true

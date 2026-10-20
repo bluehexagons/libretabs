@@ -5,6 +5,11 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      extended:
+        description: 'Also run optional broad UI and editor audits'
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -21,7 +26,10 @@ jobs:
       - name: Install pinned Godot (no export templates)
         run: python3 scripts/install_toolchain.py --directory "$RUNNER_TEMP/godot"
       - name: Verify
-        run: python3 scripts/verify.py
+        run: python3 scripts/verify.py --full
+      - name: Optional UI and editor audits
+        if: github.event_name == 'workflow_dispatch' && inputs.extended
+        run: python3 scripts/verify.py --suite ui-audit --suite editor
       - name: Generated inputs reproduce exactly
         run: |
           python3 scripts/generate_fixtures.py

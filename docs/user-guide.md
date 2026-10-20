@@ -51,7 +51,7 @@ layouts; a final redesign has not been selected.
 
 1. Open the player. An exercise is already loaded. Choose **Start practicing**
    in **Quick start**. This does not start the sound. To change how the music is
-   shown, choose **Practice layouts** in Quick start or Menu.
+   shown, choose **Practice layouts** in Quick start or **Menu → Practice**.
 2. Press **Play** and listen once without playing your guitar. The clicks before
    the music are a **count-in**: time to get ready. A number and a row of beat dots
    appear in Play and beside the starting music; the filled dot moves each beat.
@@ -242,7 +242,7 @@ values may return next time.
 
 ## Understand the arrangement choices
 
-Open **Menu → Songs → About this arrangement → How do you want to play?**
+Open **Menu → Score & print → About this arrangement → How do you want to play?**
 
 | Choice | How to read it | What to check |
 | --- | --- | --- |

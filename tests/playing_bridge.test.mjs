@@ -78,7 +78,24 @@ test('saved MIDI callbacks cannot enqueue notes after disconnection or a new ses
   port.onmidimessage({data:[0x90,64,100],timeStamp:80});
   assert.equal(JSON.parse(api.midiPull())[0].a,64);
 });
-function microphoneHost(getUserMedia, sampleRate=48000) {
+test('saved MIDI device-change callbacks cannot revive or interrupt a later session',async()=>{
+  const port={id:'one',state:'connected',close:async()=>{}};
+  const access={inputs:new Map([['one',port]])};
+  const api=host({requestMIDIAccess:async()=>access});await api.midiStart();
+  const staleChange=access.onstatechange;
+  api.midiStop();
+  const stopped=api.midiStatus();
+  assert.doesNotThrow(()=>staleChange());
+  assert.equal(api.midiStatus(),stopped);
+  await api.midiStart();
+  const current=api.midiStatus();
+  port.onmidimessage({data:[0x90,64,100],timeStamp:80});
+  staleChange();
+  assert.equal(api.midiStatus(),current);
+  assert.equal(JSON.parse(api.midiPull())[0].a,64);
+  api.midiStop();
+});
+function microphoneHost(getUserMedia, sampleRate=48000, enumerateDevices=async()=>[{kind:'audioinput',deviceId:'mic',label:'Microphone'}]) {
   let node, stopped=0, closed=0;
   const track={stop(){stopped++;}};
   const stream={getTracks:()=>[track]};
@@ -92,7 +109,7 @@ function microphoneHost(getUserMedia, sampleRate=48000) {
     constructor(){node=this;this.port={close(){}};}
     connect(){} disconnect(){}
   }
-  const sandbox={window:{AudioContext:Context,AudioWorkletNode:Worklet},navigator:{mediaDevices:{getUserMedia:getUserMedia|| (async()=>stream),enumerateDevices:async()=>[{kind:'audioinput',deviceId:'mic',label:'Microphone'}]}},performance:{now:()=>100},Blob,URL,console};
+  const sandbox={window:{AudioContext:Context,AudioWorkletNode:Worklet},navigator:{mediaDevices:{getUserMedia:getUserMedia|| (async()=>stream),enumerateDevices}},performance:{now:()=>100},Blob,URL,console};
   vm.runInNewContext(code,sandbox);
   return {api:sandbox.window.libretabsInput,get node(){return node;},get stopped(){return stopped;},get closed(){return closed;},stream};
 }
@@ -131,4 +148,26 @@ test('canceling pending microphone permission stops the late stream',async()=>{
   const pending=env.api.micStart('');await started;
   env.api.micStop();resolve(env.stream);await pending;
   assert.equal(env.stopped,1);assert.equal(JSON.parse(env.api.micStatus()).status,'INPUT_MIC_OFF');
+});
+test('late microphone device enumeration cannot change a stopped or replacement session',async()=>{
+  for(const restart of [false,true]) {
+    let resolve, requested;
+    const enumerating=new Promise(r=>requested=r);
+    let calls=0;
+    const env=microphoneHost(undefined,48000,()=>{
+      if(calls++===0)return new Promise(r=>{resolve=r;requested();});
+      return Promise.resolve([{kind:'audioinput',deviceId:'new',label:'Current microphone'}]);
+    });
+    const pending=env.api.micStart('old');await enumerating;
+    env.api.micStop();
+    if(restart)await env.api.micStart('new');
+    const current=env.api.micStatus();
+    resolve([{kind:'audioinput',deviceId:'old',label:'Old microphone'}]);await pending;
+    assert.equal(env.api.micStatus(),current);
+    if(restart) {
+      env.node.port.onmessage({data:{samples:new Float32Array(1024).buffer,at:1.98}});
+      assert.equal(env.api.micPull().samples.byteLength,4096);
+    }
+    env.api.micStop();
+  }
 });

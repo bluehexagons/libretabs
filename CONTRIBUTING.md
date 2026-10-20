@@ -36,13 +36,32 @@ recording or tab just because it is easy to access. Third-party material needs
 an exact license, attribution, modification record and a row in
 `third_party/README.md`; it may not belong in the default CC0 library.
 
-Run the checks applicable to the change. Documentation-only work uses `git diff --check` and link/consistency review. The local and CI baseline for implementation is:
+Run the checks applicable to the change. Documentation-only work uses
+`git diff --check` and link/consistency review. The quick development baseline is:
 
 ```bash
 python3 scripts/verify.py
 ```
 
-This verifies the pinned engine, imports the project, checks the editor, runs the headless algorithm suite and deliberate-failure check, boots the app, and checks whitespace. See [M0 evidence](docs/evidence/m0-prototype.md) for the current limitations.
+This runs Python and JavaScript unit tests, verifies the pinned engine, imports
+the project, runs the core algorithm suite and deliberate-failure check, boots
+the app, and checks whitespace. Add the relevant suite while iterating, for
+example `python3 scripts/verify.py --suite quick --suite ui-smoke`. Use `--list` to
+preview the commands and see [suite selection](docs/agentic-development.md#baseline-verification)
+for the code areas covered by each category.
+
+`python3 scripts/verify.py --full` is the standard CI/release gate: core,
+input/audio, representative UI and state persistence/recovery checks. CI runs it
+on pull requests and `main`; releases also require it. Run it locally for runner,
+toolchain or cross-cutting changes. An isolated edit only needs the quick
+baseline and its affected suites locally.
+
+Intensive practice/layout/interface/Theater/menu matrices and the extended editor
+audit are completely optional. Select an audit with `--suite ui-audit` or run
+every headless check with `--extended`. The manual Prototype checks workflow has
+an **extended** checkbox, off by default. These audits are available for focused
+investigation and occasional deeper checking, outside the standard CI/release gate.
+See [M0 evidence](docs/evidence/m0-prototype.md) for the current limitations.
 
 Web-visible work must also use the managed export and browser workflow in `docs/agentic-development.md`.
 

@@ -33,7 +33,7 @@ def inspect(engine: str, data_home: Path, require_music_tools: bool = False, *,
     except (OSError, subprocess.SubprocessError) as exc:
         error = str(exc)
     template_dir = data_home / "godot/export_templates" / lock["template_directory"]
-    template_files = ("web_debug.zip", "web_release.zip", "web_nothreads_release.zip")
+    template_files = json.loads((ROOT / "release/targets.json").read_text())["web"]["templates"]
     missing_templates = [name for name in template_files if not (template_dir / name).is_file()]
     tools = {name: shutil.which(name) for name in MUSIC_TOOLS}
     tools["musescore"] = find_musescore()

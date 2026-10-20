@@ -189,7 +189,12 @@ func run() -> void:
 	check(app.get("appearance_mode") == "system" and app.get("interface_id") == "classic" and app.get("theme").default_font_size == 20 and app.get("score").mode == "scroll", "reset restores display, interface and reading defaults")
 	check(app.call("preference_values") == PracticeSettings.DEFAULTS and not listening.listener.capture.enabled, "reset restores all device defaults without microphone capture")
 	check(FileAccess.get_file_as_string(app.get("host").progress_path) == progress_raw and not FileAccess.file_exists(app.get("host").display_path), "settings reset preserves progress bytes and clears saved display choices")
-	for dimensions: Vector2i in [Vector2i(320, 568), Vector2i(390, 844), Vector2i(844, 320), Vector2i(1280, 800)]:
+	# Persistence and recovery above run in the standard gate. This cross-product
+	# is an explicit optional UI audit, independent of the storage behavior.
+	var audit_dimensions: Array[Vector2i] = []
+	if "--extended" in OS.get_cmdline_user_args():
+		audit_dimensions = [Vector2i(320, 568), Vector2i(390, 844), Vector2i(844, 320), Vector2i(1280, 800)]
+	for dimensions: Vector2i in audit_dimensions:
 		root.size = dimensions
 		for factor: float in [1.0, 2.0]:
 			app.call("apply_scale", factor)

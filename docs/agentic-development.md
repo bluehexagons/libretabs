@@ -153,20 +153,76 @@ For a small team, one agent may take several roles sequentially. A feature autho
 2. **State assumptions:** list only assumptions that affect behavior. Escalate decisions that would change product scope, public data, dependencies, or platform targets.
 3. **Write/adjust fixtures:** express expected behavior before or alongside code. Generated binary MIDI fixtures need a readable source recipe/manifest.
 4. **Implement narrowly:** keep pure core logic away from scenes and global state; add platform adapters rather than feature checks throughout the app.
-5. **Verify locally:** run the smallest relevant tests, then baseline headless/import checks and `git diff --check`.
+5. **Verify locally:** run the quick baseline plus affected suites below. Use the standard full gate for cross-cutting or runner/toolchain changes. Intensive UI audits are opt-in and stay outside ordinary CI/releases.
 6. **Verify the slice:** export/browser-test when platform-visible; test keyboard/narrow/pseudolocale when UI-visible; profile when timing/import-visible.
 7. **Review diff and claims:** compare against issue acceptance and non-goals; update decisions/notices only when genuinely affected.
 8. **Handoff evidence:** concise results, exact failures, screenshots/traces only where they demonstrate a requirement.
 
 ## Baseline verification
 
-The local and CI baseline is:
+The default is a quick development baseline:
 
 ```bash
 python3 scripts/verify.py
 ```
 
-It requires the pinned Godot 4.7.2 engine and includes import, editor, algorithm tests, a deliberate assertion failure, runtime boot, and whitespace checks.
+It runs all Python and JavaScript unit tests, checks the pinned Godot 4.7.2
+engine, imports the project, runs the core algorithms and deliberate assertion
+failure, boots the app, and checks whitespace. Each command prints its name and
+elapsed time; the final result identifies the suites that ran.
+
+```bash
+# Add the affected suite to the quick baseline; repeat --suite to combine:
+python3 scripts/verify.py --suite quick --suite ui-smoke
+# Run only a focused category and its prerequisites:
+python3 scripts/verify.py --suite input
+# Inspect available categories and selected commands without launching tools:
+python3 scripts/verify.py --suite layout --list
+# Standard CI/release gate:
+python3 scripts/verify.py --full
+# Optional intensive audits, or every headless check including those audits:
+python3 scripts/verify.py --suite ui-audit
+python3 scripts/verify.py --extended
+```
+
+| Changed area | Additional suite(s) beyond `quick` |
+| --- | --- |
+| MIDI parsing, song model, notation/print geometry, guitar placement, library recipes | Core and library algorithm checks are already in `quick`; add `practice`/`ui-smoke` when their displayed behavior changes. |
+| Synth voices, mixing, effects, audio scheduling | `audio`; also `input` for live-note/command behavior and `ui-smoke` for playback controls. |
+| Keyboard/MIDI/microphone adapters, pitch detector/listener, tuner, sound commands | `input`; also `ui-smoke` for the learner controls. |
+| Practice actions, playback navigation, scrolling/page following | `practice` and `ui-smoke` |
+| Score drawing, responsive layout, interface modes, Theater, shared UI sizing | `ui-smoke`; optional `layout` for the larger layout/interface/Theater matrices. |
+| Menu/search, appearance, translated labels | `ui-smoke`; optional `menu` or `practice-audit` for deeper presentation coverage. |
+| Settings, learning progress, native host persistence | `state`; optional `state-audit` adds the interface/viewport/text-size matrix. Web storage also needs the browser smoke below. |
+| Python build/release/site/music tools or JavaScript host/cache bridges | Their unit tests are already in `quick`; `--suite python` or `--suite web` can run alone without Godot. |
+| Godot pin/project configuration, test runner, broad app/core contracts | `--full`; the additional `editor` audit is opt-in. |
+
+`ui` combines `ui-smoke`, `practice` and `state`. The compact UI smoke checks
+wide and narrow/200% text layouts, Quick start, menu navigation, looping/speed,
+pause, Theater and first-use/canceled microphone practice using simulated input.
+State tests retain actual persistence, restart, corruption/future-schema
+protection and recovery without traversing the large UI matrix.
+
+`ui-audit` combines the optional `practice-audit`, `layout`, `menu` and
+`state-audit` categories. The additional `editor` startup check is also optional;
+`--import` already starts/scans the editor in every Godot category. `--extended`
+runs the standard gate and all these audits, preserving the original assertion
+inventory. A combined state/state-audit request runs the extended state test once.
+The `smoke` category selects application boot alone.
+
+All Godot categories automatically check the pin and import once. `input`
+generates its WAV fixtures before replay; unrelated categories skip that work.
+Combining suites never repeats their commands. Selection is explicit: the runner
+does not infer dependencies from changed filenames. Widen the selected suites
+when a change crosses the boundaries above.
+
+CI on pull requests and `main`, and the release workflow, use the standard
+`--full` gate. Run it locally for cross-cutting/runner/toolchain changes; isolated
+edits need the quick baseline and affected categories. Intensive audits are
+completely opt-in, including for releases. The manual **Prototype checks** workflow
+offers an **extended** checkbox (off by default) to add UI/editor audits. Use
+them for a specific investigation or occasional deeper checking. Native draw,
+browser, physical-device and musical acceptance checks remain separate.
 
 After editing `src/platform/bridge.js` or `src/platform/playing_bridge.js`, run
 `python3 scripts/prepare_export.py` before verification. Both Web presets embed
@@ -181,7 +237,9 @@ For a focused algorithm run after import:
 godot --headless --path . --script res://tests/run_all.gd
 ```
 
-Documentation-only changes use `git diff --check` and link/consistency review. The original one-frame editor check aborts the asynchronous scan on this build; the verifier waits for import and allows 60 editor frames.
+Documentation-only changes use `git diff --check` and link/consistency review.
+The original one-frame editor check aborts the asynchronous scan on this build;
+the `editor` suite waits for import and allows 60 editor frames.
 
 Do not hide engine warnings to obtain a green result. Treat new parser errors, orphan nodes/resources, leaked objects, and type warnings as failures unless a documented upstream issue makes that impossible.
 
@@ -205,7 +263,10 @@ Algorithm changes should report fixture counts and property iterations. Timing c
 
 ## Web export and shared preview
 
-The September 2026 planning inventory reported desktop and web templates; recheck rather than assuming that historical result still applies. Before publishing a web-facing slice:
+The September 2026 planning inventory reported desktop and web templates;
+recheck rather than assuming that historical result still applies. Before
+publishing a web-facing slice, run the quick baseline and the affected suites
+from the table above, then use the managed export:
 
 ```bash
 basaltw agent doctor --capability development --json
@@ -226,6 +287,11 @@ basaltwater-web doctor GAME
 ```
 
 The returned HTTPS URL is authoritative. Do not start a public plain-HTTP server, edit Nginx/UFW, invent a local public URL, or bypass certificate checks. The evaluation `Web` preset is threaded following the measured mitigation in [decision 0002](decisions/0002-m0-evaluation-build.md). It remains static; the deployment must supply compatible cross-origin-isolation headers. The non-threaded comparison preset remains available.
+
+A browser with an existing offline cache can initially load the previous release
+while the update installs. After the updated worker activates, reload and confirm
+the loaded page contains the intended change before collecting browser evidence.
+An open document remains pinned to its release to avoid mixing engine/pack files.
 
 Browser verification must at minimum check:
 

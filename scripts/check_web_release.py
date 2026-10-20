@@ -3,10 +3,10 @@
 """Check a deployed HTTPS web package's headers, MIME and offline asset hashes."""
 import argparse
 import hashlib
-import json
-import re
 import urllib.parse
 import urllib.request
+
+from web_manifest import parse_assets
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -25,10 +25,11 @@ def main():
                 raise SystemExit(f'Incorrect JavaScript MIME: {name}')
             return response.read()
     worker = fetch('index.service.worker.js').decode()
-    assets = json.loads(re.search(r'const ASSETS = (.*);', worker)[1])
+    try:
+        assets = parse_assets(worker)
+    except ValueError as error:
+        raise SystemExit(str(error)) from error
     for name, expected in assets.items():
-        if '/' in name or name in ['.', '..']:
-            raise SystemExit('Invalid manifest asset name')
         if hashlib.sha256(fetch(name)).hexdigest() != expected:
             raise SystemExit(f'Deployment mismatch: {name}')
     print(f'PASS: HTTPS, isolation headers, MIME and {len(assets)} offline asset hashes. Browser/audio checks still required.')

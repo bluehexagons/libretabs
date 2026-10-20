@@ -2,7 +2,7 @@
 
 To use the current player, start with the [user guide](user-guide.md).
 
-Snapshot date: 2026-10-09. Current phase: evaluating public **prototype releases**.
+Snapshot date: 2026-10-20. Current phase: evaluating public **prototype releases**.
 
 The [evidence records](evidence/README.md) are dated snapshots. This handoff is
 the current summary; older measurements remain useful for their stated scope.
@@ -74,8 +74,9 @@ requires an Electron/Tauri comparison. Keyboard access, readable text, touch
 targets and non-color cues remain requirements. Platform and timing evidence
 must still be gathered; the stack decision is not a technical pass.
 
-The [managed preview](https://192.168.0.44:8443/games/agent/libretabs-prototype/)
-is available on the managed network. It is not a public launch URL.
+Discover the managed preview with `basaltwater-web url libretabs-prototype`;
+see the [development workflow](agentic-development.md). It is available on the
+managed network and is not a public launch URL.
 
 ## Distribution readiness
 
@@ -150,8 +151,11 @@ manual checklist for navigation, printing, piano/microphone tuning and phones.
 The [prototype.12 release audit](evidence/release-audit-2026-10-07.md) retains
 earlier focus, wrapping and release-version evidence.
 
-The [October maintenance review](evidence/maintenance-2026-10-05.md) records
-release-input and file-picker fixes, dependency checks and verification coverage.
+The [latest maintenance review](evidence/maintenance-2026-10-20.md) fixes first-use
+microphone practice, aligns development readiness with installed templates,
+rejects incomplete web release inventories, and refreshes current menu directions.
+The [earlier review](evidence/maintenance-2026-10-05.md) retains release-input and
+file-picker fixes, dependency checks and verification coverage.
 
 The [whole-library song review](evidence/song-review-2026-10-05.md) records
 Greensleeves/Aura Lee melody corrections, Canon bass timing, explicit octave

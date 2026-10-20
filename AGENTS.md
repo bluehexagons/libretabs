@@ -36,11 +36,22 @@ Product priority is: a first-time learner can understand the next action, musica
 - Timing tests use an injected clock where possible and tolerate only documented audio-device jitter.
 - Any third-party fixture or asset must be listed with source, version, license, and required attribution.
 
-The planned baseline gates are:
+During development, run the quick baseline and the suites affected by the change:
 
 ```bash
 python3 scripts/verify.py
+# Example for UI changes:
+python3 scripts/verify.py --suite quick --suite ui-smoke
 ```
+
+Use `python3 scripts/verify.py --list` to inspect categories. The standard
+CI/release gate is `python3 scripts/verify.py --full`; it includes representative
+UI regressions and persistence/recovery without the intensive UI matrices.
+Run it locally for runner/toolchain or cross-cutting changes. Broad UI audits
+are completely opt-in through `--suite ui-audit` or `--extended` (every headless
+check). Do not routinely run them or make them a prerequisite for ordinary
+changes/releases. Choose a targeted audit when its deeper coverage is useful.
+See the suite-selection table in `docs/agentic-development.md`.
 
 For a web-facing slice, also export and validate through the managed workflow described in `docs/agentic-development.md`.
 

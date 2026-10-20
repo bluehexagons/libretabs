@@ -14,6 +14,8 @@ import subprocess
 import tempfile
 import zipfile
 
+from web_manifest import parse_assets
+
 ROOT = Path(__file__).resolve().parents[1]
 TARGETS = json.loads((ROOT / 'release/targets.json').read_text())
 LOCK = json.loads((ROOT / 'release/toolchain.json').read_text())
@@ -65,7 +67,7 @@ def validate_payload(folder, target):
             raise ValueError(f'Missing export: {name}')
     if target['entry'] == 'index.html':
         worker = (folder / 'index.service.worker.js').read_text()
-        assets = json.loads(re.search(r'const ASSETS = (.*);', worker)[1])
+        assets = parse_assets(worker)
         for name, expected in assets.items():
             if digest(folder / name) != expected:
                 raise ValueError(f'Offline manifest mismatch: {name}')

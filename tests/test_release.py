@@ -10,6 +10,7 @@ import zipfile
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / 'scripts'))
 def module(name):
     spec = importlib.util.spec_from_file_location(name, ROOT / 'scripts' / (name + '.py'))
     loaded = importlib.util.module_from_spec(spec)
@@ -20,6 +21,7 @@ release = module('release')
 publish = module('publish_release')
 installer = module('install_toolchain')
 prepare_export = module('prepare_export')
+development_ready = module('development_ready')
 sys.modules['release'] = release
 release_request = module('validate_release_request')
 
@@ -280,6 +282,11 @@ class ReleaseTests(unittest.TestCase):
                 installer.main()
             installed = folder / 'data/godot/export_templates' / installer.LOCK['template_directory']
             self.assertEqual({path.name for path in installed.iterdir()}, set(release.TARGETS['web']['templates']))
+            with patch.object(development_ready.subprocess, 'run', return_value=subprocess.CompletedProcess(
+                    [], 0, installer.LOCK['version'], '')):
+                report = development_ready.inspect('godot', folder / 'data')
+            self.assertTrue(report['ok'], report)
+            self.assertEqual(report['templates']['missing'], [])
 
 if __name__ == '__main__':
     unittest.main()

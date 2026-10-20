@@ -33,7 +33,9 @@ For the current state and next work, see the [project handoff](../project-status
 When a later record supersedes an earlier one, keep the earlier record for
 history and identify the newer record or current handoff.
 
-Latest maintenance review: [2026-10-05](maintenance-2026-10-05.md).
+Latest maintenance review: [microphone startup, validation and current guides,
+2026-10-20](maintenance-2026-10-20.md). The [2026-10-05 review](maintenance-2026-10-05.md)
+retains earlier release-input and file-picker evidence.
 
 Release audit: [prototype.12, 2026-10-07](release-audit-2026-10-07.md).
 

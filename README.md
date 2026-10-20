@@ -19,15 +19,15 @@ six lessons and musical, timing, accessibility and device checks remain open.
 2. Press **Play** and listen once. On the six tab lines, the top line is the
    thinnest guitar string. Numbers tell you which fret to press; **0** means
    pluck the string without pressing it.
-3. Open **Menu → Playback → Speed presets** and try **50%** for half speed.
+3. Open **Menu → Practice → Playback → Speed presets** and try **50%** for half speed.
    The notes keep the same pitch. Choose **Restart**, then **Play** to start again.
-4. Open **Menu → Loop**, set **From 1** and **Through 2**, and choose
-   **Turn loop on** to repeat the first two measures (groups of beats).
+4. Open **Menu → Practice → Loop**, set **From 1** and **Through 2**, and choose
+   **Play selected section** to repeat the first two measures (groups of beats).
 5. Open **Menu → Songs** for another tune. Try Twinkle, Twinkle Little Star.
 
 The [user guide](docs/user-guide.md) explains reading tabs, choosing music,
 practicing with loops, changing the view, printing and troubleshooting. You can
-also open **Menu → Help** or **Menu → Quick start** inside the player.
+also open **Menu → Help & app → Help** or **Quick start** inside the player.
 
 The project is maintained by **bluehexagons**. It is operated without paid
 editions, subscriptions, advertising or data monetization. That describes the
@@ -68,6 +68,11 @@ python3 scripts/verify.py
 godot --path .
 ```
 
+Verification defaults to quick unit/core/boot checks. Add affected categories
+with `--suite`, inspect them with `--list`, or run the standard CI/release gate
+with `--full`. Intensive UI audits are opt-in through `--extended`; see
+[suite selection](docs/agentic-development.md#baseline-verification).
+
 For release packages, use the [release guide](docs/releases.md). For agent
 workflows and managed web exports, see [agentic development](docs/agentic-development.md).
 
@@ -93,8 +98,8 @@ includes:
   arrangement, or has authority to dedicate it to CC0;
 - a provenance note in [the library record](content/library/README.md), with
   source and license details for anything not entirely project-authored; and
-- the applicable import, guitar-placement and UI checks from
-  `python3 scripts/verify.py`.
+- the applicable core and UI suites from the
+  [verification guide](docs/agentic-development.md#baseline-verification).
 
 Public-domain source music may be arranged for LibreTabs, but a downloaded MIDI,
 modern arrangement, recording, tab or score is not automatically CC0. Keep

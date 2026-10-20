@@ -109,7 +109,7 @@ class DevelopmentReadiness(unittest.TestCase):
             data = Path(root)
             templates = data / "godot/export_templates" / lock["template_directory"]
             templates.mkdir(parents=True)
-            for name in ("web_debug.zip", "web_release.zip", "web_nothreads_release.zip"):
+            for name in json.loads((ROOT / "release/targets.json").read_text())["web"]["templates"]:
                 (templates / name).write_bytes(b"presence only")
             with patch.object(development_ready.subprocess, "run", return_value=subprocess.CompletedProcess(
                 [], 0, lock["version"] + "\n", "",
@@ -145,7 +145,7 @@ class DevelopmentReadiness(unittest.TestCase):
             data = Path(root)
             templates = data / "godot/export_templates" / lock["template_directory"]
             templates.mkdir(parents=True)
-            for name in ("web_debug.zip", "web_release.zip", "web_nothreads_release.zip"):
+            for name in json.loads((ROOT / "release/targets.json").read_text())["web"]["templates"]:
                 (templates / name).touch()
             with patch.object(development_ready.subprocess, "run", return_value=subprocess.CompletedProcess(
                 [], 0, lock["version"], "",

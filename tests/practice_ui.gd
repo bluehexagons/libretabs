@@ -1,6 +1,19 @@
 # SPDX-License-Identifier: Apache-2.0
 extends SceneTree
 
+class StartingMicrophone extends MicrophoneInput:
+	func start() -> void:
+		stop()
+		enabled = true
+		status = "INPUT_MIC_CONNECTING"
+		changed.emit()
+
+	func stop() -> void:
+		enabled = false
+		status = "INPUT_MIC_OFF"
+		interrupted.emit()
+		changed.emit()
+
 var failures: int = 0
 var checks: int = 0
 
@@ -1376,6 +1389,34 @@ func run() -> void:
 	app.get("input_show").button_pressed = false
 	var practice_requests: Array[int] = [0]
 	listening.practice_requested.connect(func() -> void: practice_requests[0] += 1)
+	# Keep the real form/listener consumers, replacing only device access with
+	# a capture that reproduces the synchronous OFF during first startup.
+	var previous_capture: MicrophoneInput = listening.listener.capture
+	var starting_capture: StartingMicrophone = StartingMicrophone.new()
+	listening.listener.add_child(starting_capture)
+	for signal_name: String in ["changed", "interrupted", "samples_ready"]:
+		for connection: Dictionary in previous_capture.get_signal_connection_list(signal_name):
+			starting_capture.connect(signal_name, connection.callable)
+			previous_capture.disconnect(signal_name, connection.callable)
+	listening.listener.capture = starting_capture
+	previous_capture.queue_free()
+	listening.practice_button.pressed.emit()
+	check(listening.practice_pending and practice_requests[0] == 0 and not listening.listen_check.button_pressed, "first microphone startup retains the practice request through its internal OFF status")
+	starting_capture.status = "INPUT_MIC_READY"
+	starting_capture.changed.emit()
+	starting_capture.changed.emit()
+	check(not listening.practice_pending and practice_requests[0] == 1 and listening.listen_check.button_pressed and not app.get("menu_overlay").visible, "first successful microphone connection enables feedback and returns to practice exactly once")
+	listening.listen_check.button_pressed = false
+	app.get("input_show").button_pressed = false
+	starting_capture.stop()
+	listening.practice_button.pressed.emit()
+	starting_capture.stop()
+	starting_capture.enabled = true
+	starting_capture.status = "INPUT_MIC_READY"
+	starting_capture.changed.emit()
+	check(not listening.practice_pending and practice_requests[0] == 1 and not listening.listen_check.button_pressed, "canceling microphone startup prevents a late ready status from entering practice")
+	starting_capture.stop()
+	practice_requests[0] = 0
 	listening.listener.capture.enabled = true
 	listening.listener.capture.status = "INPUT_MIC_CONNECTING"
 	listening.listener.capture.changed.emit()

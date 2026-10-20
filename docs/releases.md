@@ -19,7 +19,7 @@ and updates the GitHub Pages guide and both browser players.
    Its Pages job then exports the threaded and compatibility players and deploys
    the guide that names and links to that same version.
    Both hosted players and downloadable packages show that version in
-   **Menu → About LibreTabs**. Versioned web exports use a temporary tracked
+   **Menu → Help & app → About LibreTabs**. Versioned web exports use a temporary tracked
    HEAD snapshot, leaving the working project's development version unchanged.
 5. Open the published release and the [guide](https://bluehexagons.github.io/libretabs/)
    in a fresh browser profile. Check `/play/`, `/play-compatible/`, audio, reload,
@@ -81,7 +81,7 @@ Use a clean checkout and the locked toolchain for a local package build:
 ```sh
 python3 scripts/install_toolchain.py --directory "$PWD/.tools/godot" --templates
 export GODOT="$PWD/.tools/godot/Godot_v4.7.2-stable_linux.x86_64"
-python3 scripts/verify.py
+python3 scripts/verify.py --full
 python3 scripts/generate_fixtures.py
 python3 scripts/prepare_export.py
 git diff --exit-code
