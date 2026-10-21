@@ -37,7 +37,9 @@ Latest maintenance review: [microphone startup, validation and current guides,
 2026-10-20](maintenance-2026-10-20.md). The [2026-10-05 review](maintenance-2026-10-05.md)
 retains earlier release-input and file-picker evidence.
 
-Release audit: [prototype.12, 2026-10-07](release-audit-2026-10-07.md).
+Latest release verification: [prototype.19, 2026-10-21](release-2026-10-21.md).
+The [prototype.12 audit, 2026-10-07](release-audit-2026-10-07.md) retains earlier
+focus, wrapping and version-stamping checks.
 
 Player feedback follow-up: [navigation, printing, tuner and cards, 2026-10-07](player-feedback-2026-10-07.md).
 

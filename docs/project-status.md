@@ -2,7 +2,7 @@
 
 To use the current player, start with the [user guide](user-guide.md).
 
-Snapshot date: 2026-10-20. Current phase: evaluating public **prototype releases**.
+Snapshot date: 2026-10-21. Current phase: evaluating public **prototype releases**.
 
 The [evidence records](evidence/README.md) are dated snapshots. This handoff is
 the current summary; older measurements remain useful for their stated scope.
@@ -85,16 +85,20 @@ managed network and is not a public launch URL.
   Pages. Desktop packages use official release templates, not the editor.
   Checksums, notices, and curated or generated release notes accompany releases.
 - The latest public evaluation prerelease,
-  [`0.0.1-prototype.18`](https://github.com/bluehexagons/libretabs/releases/tag/v0.0.1-prototype.18),
-  was published on 2026-10-08 by that workflow. Its web, Windows, Linux, manifest
+  [`0.0.1-prototype.19`](https://github.com/bluehexagons/libretabs/releases/tag/v0.0.1-prototype.19),
+  was published on 2026-10-21 by that workflow. Its web, Windows, Linux, manifest
   and checksum assets pass downloaded-package review. The exact Linux binary
-  renders welcome and practice without Godot on PATH; Windows runtime remains
-  open. Managed and public web assets pass hash/MIME checks, and the public guide
-  names prototype.18. Automated and native checks cover restrained hover,
-  bounded seeking, count-in dots and reachable phone timelines. That release's
-  T3 snapshots failed; browser interaction, physical phones and audible response remain
-  manual checks. See the [navigation evidence](evidence/practice-navigation-2026-10-08.md)
-  for source/workflows, artifacts and limits. Earlier records retain
+  renders welcome and practice, advances playback and pauses without Godot on
+  PATH; Windows runtime remains open. Public web assets pass hash/MIME checks,
+  and the guide and both players name prototype.19. Both players render, advance
+  playback, pause and reload with complete caches. The compatibility player
+  remains slow in managed preview, and the threaded sample reports two startup
+  underruns. Physical phones, normal foreground performance and audible timing
+  remain manual checks. The standard release suite passed locally in 65 seconds;
+  intensive UI audits remain optional. See the
+  [release verification](evidence/release-2026-10-21.md) for exact source,
+  workflows, artifacts and limits. Earlier records retain
+  [prototype.18's navigation checks](evidence/practice-navigation-2026-10-08.md),
   [prototype.17's tuner/capture checks](evidence/player-feedback-2026-10-08.md),
   [prototype.16's saved-state checks](evidence/local-state-2026-10-08.md) and
   [prototype.15's public rendering evidence](evidence/interface-comparison-2026-10-08.md).
