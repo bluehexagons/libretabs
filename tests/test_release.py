@@ -233,7 +233,7 @@ class ReleaseTests(unittest.TestCase):
         package, publish = workflow.split('  publish:', 1)
         self.assertIn('contents: read', package)
         self.assertIn('contents: write', publish)
-        self.assertIn('actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c', publish)
+        self.assertIn('actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333', publish)
 
     def test_promotion_rejects_inconsistent_inventory_and_symlinks(self):
         for case in ('extra', 'missing', 'duplicate', 'malformed', 'symlink', 'boolean_size', 'unknown_target'):

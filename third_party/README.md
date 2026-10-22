@@ -24,13 +24,14 @@ font resource. Browser portability and glyph rendering are tested in M0;
 this font selection does not choose a general multilingual UI font for M1.
 
 CI uses unmodified MIT-licensed actions only as development tools, never bundled
-in app packages. Pins checked against upstream latest stable releases on 2026-10-05:
+in app packages. Pins checked against upstream latest stable releases on 2026-10-22:
 
 | Action | Version | Commit | Use |
 | --- | --- | --- | --- |
 | [checkout](https://github.com/actions/checkout/releases/tag/v7.0.1) | 7.0.1 | `3d3c42e5aac5ba805825da76410c181273ba90b1` | Verify and manual release source checkout; Node 24 |
-| [upload-artifact](https://github.com/actions/upload-artifact/releases/tag/v7.0.1) | 7.0.1 | `043fb46d1a93c77aae656e7c1c64a875d1fc6a0a` | Manual release artifact retention; Node 24 |
-| [download-artifact](https://github.com/actions/download-artifact/releases/tag/v8.0.1) | 8.0.1 | `3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c` | Manual release artifact retrieval; development tool only |
+| [setup-node](https://github.com/actions/setup-node/releases/tag/v7.1.0) | 7.1.0 | `949feb2413d6458794dcd2491c4babbbce0c15c1` | Select Node 24.22.1 for browser adapter tests; development tool only |
+| [upload-artifact](https://github.com/actions/upload-artifact/releases/tag/v7.0.2) | 7.0.2 | `cf430e030ddbb5b0abf93d22962f4752f3646cd9` | Manual release artifact retention; Node 24 |
+| [download-artifact](https://github.com/actions/download-artifact/releases/tag/v8.0.2) | 8.0.2 | `9000827ccba6bdab643e8b6fd33ac0654aef8333` | Manual release artifact retrieval; development tool only |
 | [upload-pages-artifact](https://github.com/actions/upload-pages-artifact/releases/tag/v5.0.0) | 5.0.0 | `fc324d3547104276b827a68afc52ff2a11cc49c9` | GitHub Pages site deployment; development tool only |
 | [configure-pages](https://github.com/actions/configure-pages/releases/tag/v6.0.0) | 6.0.0 | `45bfe0192ca1faeb007ade9deae92b16b8254a0d` | GitHub Pages site deployment; development tool only |
 | [deploy-pages](https://github.com/actions/deploy-pages/releases/tag/v5.0.1) | 5.0.1 | `368f82528645a54fb793d4d04e342629a3f51346` | GitHub Pages site deployment; development tool only |
