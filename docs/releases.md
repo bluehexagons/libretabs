@@ -78,6 +78,14 @@ consistent performance or audio timing.
 
 Use a clean checkout and the locked toolchain for a local package build:
 
+On a managed VM, first run `python3 scripts/development_ready.py --json`.
+When the installed engine matches the exact pin and the required target templates
+are present, reuse it with `export GODOT="$(command -v godot)"` and start at the
+verification command below. Other environments can install once into
+`.tools/godot` and reuse that directory across tasks. Follow
+[artifact retention](artifact-retention.md) for downloaded archives and disposable
+extraction directories.
+
 ```sh
 python3 scripts/install_toolchain.py --directory "$PWD/.tools/godot" --templates
 export GODOT="$PWD/.tools/godot/Godot_v4.7.2-stable_linux.x86_64"

@@ -4,6 +4,9 @@ Follow [artifact retention](../artifact-retention.md) when curating local build,
 export and review files. Keep dated records here even when newer work supersedes
 them; local media archives remain separate from published evidence.
 
+Development-system cleanup: [one managed preview, verified package extraction
+cleanup and bounded scratch retention, 2026-10-26](development-cleanup-2026-10-26.md).
+
 Options detail audit: [grouped appearance controls, broader search and prompt
 Back focus, 2026-10-09](options-polish-2026-10-09.md).
 

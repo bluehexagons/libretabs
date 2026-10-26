@@ -2,9 +2,12 @@
 .godot/
 
 # Build artifacts
-build/
-dist/
-exports/
+/build/*
+!/build/.gdignore
+/dist/*
+!/dist/.gdignore
+/exports/*
+!/exports/.gdignore
 
 # Local editor and operating-system files
 .DS_Store

@@ -73,6 +73,15 @@ links to the public GitHub Pages player; keep LAN preview addresses out of the
 guide and avoid bundling a separate local player export. See the
 [shared preview workflow](docs/agentic-development.md#web-export-and-shared-preview).
 
+Use a bounded task directory under ignored `artifacts/generated/` for new
+disposable builds, extraction and test profiles. Keep selected review evidence
+in the existing dated evidence system. Preserve the tracked `.gdignore` files
+in `build/`, `exports/`, `dist/` and `artifacts/` so Godot does not import local
+outputs. Reuse the matching installed toolchain and templates. At handoff,
+remove task-owned scratch and integrated worktrees after checking activity,
+Git status and retention; leave a concise record of anything retained. See
+[artifact retention](docs/artifact-retention.md) for the guarded cleanup command.
+
 Do not run concurrent editing agents in the primary checkout. Create one managed worktree per independent task with `basaltw agent workspace create` (or native Git worktrees elsewhere), and inspect status before integration or cleanup. Do not commit generated `.godot`, export artifacts, credentials, user MIDI files, or research downloads. Follow [artifact retention](docs/artifact-retention.md) before cleanup: existing build/export roots mix generated output and historical evidence.
 
 Keep diffs narrowly scoped. Preserve user changes. Record a decision in documentation when a task changes a public data contract, dependency, platform target, or MVP boundary.

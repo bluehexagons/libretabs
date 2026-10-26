@@ -1,8 +1,14 @@
 {
   "version": 1,
   "instructions": "Read AGENTS.md, docs/artifact-retention.md and docs/evidence/README.md. Preserve this project's existing evidence system. These rules authorize no deletion.",
-  "preserve": ["docs/evidence", "artifacts/.gdignore", "artifacts/archive", "content", "third_party", "user-midi", "research-downloads"],
+  "preserve": ["docs/evidence", "artifacts/.gdignore", "artifacts/archive", "build/.gdignore", "exports/.gdignore", "dist/.gdignore", "content", "third_party", "user-midi", "research-downloads"],
   "rules": [
+    {
+      "name": "generated-scratch",
+      "strategy": "generated",
+      "paths": ["artifacts/generated"],
+      "instructions": "Only reproducible task scratch, export staging and disposable test profiles belong here. Review ownership of every child and preserve staging needed by other tasks. Stop project jobs, preserve selected captures/logs in the existing evidence system, and review the guarded preview before authorized removal. Retained releases, imported MIDI, source and unique evidence must never be stored here."
+    },
     {
       "name": "mixed-development-output",
       "strategy": "agent",
