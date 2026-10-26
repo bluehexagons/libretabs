@@ -263,6 +263,19 @@ Algorithm changes should report fixture counts and property iterations. Timing c
 
 ## Web export and shared preview
 
+The managed VM keeps one published LibreTabs player, `libretabs-prototype`.
+Authorized preview updates replace that publication at its existing URL. Keep
+branch experiments, release candidates and compatibility comparisons as local
+exports unless the owner explicitly requests another publication. Versioned
+release packages and public distribution follow the existing release workflow.
+
+The local `libretabs-guide` is documentation only. When refreshing it, build with
+`PLAYER_URL=https://bluehexagons.github.io/libretabs/play/` and omit
+`--threaded-player` and `--compatibility-player`. Publish that guide output with
+the existing `libretabs-guide` site name. The guide uses the public GitHub Pages
+player; LAN preview addresses belong in local development notes. Public Pages
+builds continue bundling their players through the release workflow.
+
 The September 2026 planning inventory reported desktop and web templates;
 recheck rather than assuming that historical result still applies. Before
 publishing a web-facing slice, run the quick baseline and the affected suites
@@ -272,7 +285,7 @@ from the table above, then use the managed export:
 basaltw agent doctor --capability development --json
 python3 scripts/verify.py
 python3 scripts/prepare_export.py
-basaltwater-web publish godot --json
+basaltwater-web publish godot libretabs-prototype --json
 ```
 
 The managed Godot exporter reads the preset's embedded HTML head. Run

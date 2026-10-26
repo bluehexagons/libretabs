@@ -66,6 +66,13 @@ For a web-facing slice, also export and validate through the managed workflow de
 
 Basaltwater on Debian is the reference development environment. Follow the [shared project standards](https://github.com/bluehexagons/basaltwater/blob/main/docs/agents/project-standards.md) and installed skills for environment support; native Godot and Python workflows remain usable with manually installed prerequisites. Record actual CachyOS/Windows checks separately from exports.
 
+Keep one published player on the managed VM: `libretabs-prototype`. Refresh that
+publication for authorized preview updates. Keep comparison builds local unless
+the owner explicitly requests another publication. The local `libretabs-guide`
+links to the public GitHub Pages player; keep LAN preview addresses out of the
+guide and avoid bundling a separate local player export. See the
+[shared preview workflow](docs/agentic-development.md#web-export-and-shared-preview).
+
 Do not run concurrent editing agents in the primary checkout. Create one managed worktree per independent task with `basaltw agent workspace create` (or native Git worktrees elsewhere), and inspect status before integration or cleanup. Do not commit generated `.godot`, export artifacts, credentials, user MIDI files, or research downloads. Follow [artifact retention](docs/artifact-retention.md) before cleanup: existing build/export roots mix generated output and historical evidence.
 
 Keep diffs narrowly scoped. Preserve user changes. Record a decision in documentation when a task changes a public data contract, dependency, platform target, or MVP boundary.
