@@ -830,15 +830,19 @@ func add_song_button(grid: GridContainer, index: int) -> void:
 	marking.add_theme_constant_override("h_separation", 8)
 	var level_key: String = ["SONG_LEVEL_FIRST", "SONG_LEVEL_GROWING_SHORT", "SONG_LEVEL_CHALLENGE"][int(entry.level)]
 	var level: Label = label(level_key, 15)
+	level.autowrap_mode = TextServer.AUTOWRAP_OFF
 	level.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	marking.add_child(level)
 	var marker: Label = label("SONG_CURRENT_BADGE", 14)
+	marker.autowrap_mode = TextServer.AUTOWRAP_OFF
 	marker.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	marking.add_child(marker)
 	library_current_marks[index] = marker
 	var actions: HFlowContainer = flow(content)
+	actions.set_meta("input_actions", true)
 	actions.add_theme_constant_override("h_separation", 4)
 	var learned: CheckBox = learned_check("LEARNING_LEARNED", 16)
+	learned.autowrap_mode = TextServer.AUTOWRAP_OFF
 	learned.toggled.connect(func(enabled: bool) -> void: mark_learned("song:" + str(BUILT_IN_LIBRARY[index].file), enabled))
 	actions.add_child(learned)
 	library_learned_checks[index] = learned
@@ -846,6 +850,7 @@ func add_song_button(grid: GridContainer, index: int) -> void:
 	about.add_theme_font_size_override("font_size", 16)
 	about.set_meta("base_font_size", 16)
 	about.custom_minimum_size.y = 48
+	about.autowrap_mode = TextServer.AUTOWRAP_OFF
 	actions.add_child(about)
 	var preview: Button = button("SONG_PREVIEW", func() -> void: toggle_song_preview(index))
 	preview.custom_minimum_size = Vector2(48, 48)

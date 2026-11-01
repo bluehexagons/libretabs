@@ -161,6 +161,10 @@ func run() -> void:
 		await settle(app)
 		app.call("toggle_drawer", "SONG_MENU")
 		await settle(app)
+		for card: Control in app.get("more_song_grid").get_children():
+			var content: VBoxContainer = card.get_child(0)
+			var level: Label = content.get_child(1).get_child(0)
+			check(level.size.x >= level.get_theme_font("font").get_string_size(level.text, HORIZONTAL_ALIGNMENT_LEFT, -1, level.get_theme_font_size("font_size")).x, "compact level label retains natural text width")
 		app.call("show_song_details", 11)
 		await settle(app)
 		var about: SongDetails = app.get("song_details")
