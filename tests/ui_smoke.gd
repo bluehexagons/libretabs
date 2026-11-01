@@ -53,7 +53,7 @@ func run() -> void:
 	var source: PackedByteArray = app.get("song").source.bytes_copy()
 	var audio: PracticeAudio = app.get("audio")
 	var menu: OptionsMenu = app.get("options_menu")
-	for config: Array in [[1280, 800, 1.0], [360, 740, 2.0]]:
+	for config: Array in [[1280, 800, 1.0], [360, 740, 2.0], [480, 320, 2.0]]:
 		root.size = Vector2i(config[0], config[1])
 		app.call("apply_scale", config[2])
 		await settle(app)
@@ -62,6 +62,14 @@ func run() -> void:
 		for key: String in ["play_button", "menu_button"]:
 			var control: Control = app.get(key)
 			check(control.is_visible_in_tree() and viewport.encloses(control.get_global_rect()) and control.size.y >= 44, key + " remains reachable")
+		app.call("set_speed", 0.0625)
+		await settle(app)
+		check(app.get("tempo_button").text == "6.25%" and viewport.encloses(app.get("speed_control").get_global_rect()), "fractional speed caption fits representative viewport %s" % [config])
+		for percent: float in [99.25, 998.75]:
+			app.call("set_speed", percent / 100.0)
+			await settle(app)
+			check(app.get("root_box").size.x <= viewport.size.x and viewport.encloses(app.get("speed_control").get_global_rect()), "long fractional percentage fits representative viewport %s" % [config])
+		app.call("set_speed", 1.0)
 		app.call("toggle_drawer", "MENU")
 		await settle(app)
 		menu.category_buttons["MENU_PRACTICE"].pressed.emit()
@@ -93,7 +101,7 @@ func run() -> void:
 	speed_slider.handle_pointer(tap)
 	check(is_equal_approx(app.get("speed"), 1.25), "middle-of-track tap uses the same cubic mapping as the thumb")
 	# Drawing and pointer input share the responsive set of visible marks.
-	for percent: int in speed_slider.visible_markers():
+	for percent: float in speed_slider.visible_markers():
 		var inset: float = speed_slider.get_theme_icon("grabber").get_width() / 2.0
 		var offset: float = -1.5 if percent == 999 else 1.5
 		tap.position = Vector2(speed_slider.global_position.x + inset + RelativeSpeedSlider.position_for_percent(percent) * speed_slider.track_width() + offset, speed_slider.get_global_rect().get_center().y)
@@ -101,31 +109,56 @@ func run() -> void:
 		speed_slider.handle_pointer(tap)
 		tap.pressed = false
 		speed_slider.handle_pointer(tap)
-		check(is_equal_approx(app.get("speed"), percent / 100.0), "pointer snaps to marked division %d" % percent)
+		check(is_equal_approx(app.get("speed"), percent / 100.0), "pointer snaps to marked division %s" % percent)
+	var speed_presets: Array = app.get_script().get_script_constant_map()["SPEEDS"]
+	var fraction_labels: Dictionary = {2: "50%", 4: "25%", 8: "12.5%", 16: "6.25%"}
+	for divisor: int in [2, 4, 8, 16]:
+		var percent: float = 100.0 / divisor
+		check(speed_slider.visible_markers().has(percent), "wide practice slider retains the 1/%d speed mark" % divisor)
+		var inset: float = speed_slider.get_theme_icon("grabber").get_width() / 2.0
+		tap.position = Vector2(speed_slider.global_position.x + inset + RelativeSpeedSlider.position_for_percent(percent) * speed_slider.track_width(), speed_slider.get_global_rect().get_center().y)
+		tap.pressed = true
+		speed_slider.handle_pointer(tap)
+		tap.pressed = false
+		speed_slider.handle_pointer(tap)
+		check(is_equal_approx(app.get("speed"), 1.0 / divisor) and is_equal_approx(app.call("playback_speed"), 1.0 / divisor), "1/%d pointer mark commits the exact playback fraction" % divisor)
+		check(app.get("tempo_button").text == fraction_labels[divisor], "fractional pointer caption remains exact")
+		app.call("change_speed", speed_presets.find(1.0 / divisor))
+		check(is_equal_approx(app.get("speed"), 1.0 / divisor) and app.get("speed_picker").get_item_text(app.get("speed_picker").selected) == fraction_labels[divisor] + " speed", "practice preset retains its exact fraction and label")
+	app.call("step_speed", 1)
+	check(is_equal_approx(app.get("speed"), 0.1125), "faster adds five points without rounding sixteenth speed")
+	app.call("step_speed", -1)
+	check(is_equal_approx(app.get("speed"), 0.0625), "slower restores exact sixteenth speed")
+	speed_key.keycode = KEY_RIGHT
+	speed_slider.handle_pointer(speed_key)
+	check(is_equal_approx(app.get("speed"), 0.0725), "arrow key adds one point without losing the fractional part")
+	speed_key.keycode = KEY_LEFT
+	speed_slider.handle_pointer(speed_key)
+	check(is_equal_approx(app.get("speed"), 0.0625), "arrow key returns to the exact fraction")
 	# Check screen-distance behavior at slow and fast values on multiple widths,
-	# independently of the integer percentage committed by the app on release.
+	# independently of the quarter-percentage resolution committed on release.
 	var probe: RelativeSpeedSlider = RelativeSpeedSlider.new()
 	probe.theme_type_variation = "TempoSlider"
 	app.add_child(probe)
 	for width: int in [64, 180, 480]:
 		probe.size = Vector2(width, 48)
-		var marks: Array[int] = probe.visible_markers()
+		var marks: Array[float] = probe.visible_markers()
 		for index: int in range(1, marks.size()):
 			check((RelativeSpeedSlider.position_for_percent(marks[index]) - RelativeSpeedSlider.position_for_percent(marks[index - 1])) * probe.track_width() >= RelativeSpeedSlider.MARKER_GAP - 0.001, "visible tempo marks remain distinct at width %d" % width)
-		for percent: int in marks:
+		for percent: float in marks:
 			var at: float = RelativeSpeedSlider.position_for_percent(percent)
 			var direction: float = -1 if percent == 999 else 1
 			var near: float = at + direction * 2 / probe.track_width()
 			var away: float = at + direction * 4 / probe.track_width()
-			check(is_equal_approx(probe.snapped_position(near), at), "two pixels snap at %d percent, width %d" % [percent, width])
-			check(is_equal_approx(probe.snapped_position(away), away), "four pixels remain free at %d percent, width %d" % [percent, width])
+			check(is_equal_approx(probe.snapped_position(near), at), "two pixels snap at %s percent, width %d" % [percent, width])
+			check(is_equal_approx(probe.snapped_position(away), away), "four pixels remain free at %s percent, width %d" % [percent, width])
 	probe.size = Vector2(180, 48)
-	check(not probe.visible_markers().has(30), "short track omits the crowded 30 percent mark")
-	var unmarked: float = RelativeSpeedSlider.position_for_percent(30) + 1 / probe.track_width()
+	check(not probe.visible_markers().has(75.0), "short track omits the crowded 75 percent mark")
+	var unmarked: float = RelativeSpeedSlider.position_for_percent(75) + 1 / probe.track_width()
 	check(is_equal_approx(probe.snapped_position(unmarked), unmarked), "pointer near an omitted mark remains free")
 	probe.size = Vector2(480, 48)
-	var shown: Array[int] = probe.visible_markers()
-	check(shown.filter(func(percent: int) -> bool: return percent <= 100).size() > shown.filter(func(percent: int) -> bool: return percent > 100).size(), "slow speeds have more notches than fast speeds")
+	var shown: Array[float] = probe.visible_markers()
+	check(shown.filter(func(percent: float) -> bool: return percent <= 100).size() > shown.filter(func(percent: float) -> bool: return percent > 100).size(), "slow speeds have more notches than fast speeds")
 	probe.free()
 	app.call("set_speed", 1.0)
 	speed_key.keycode = KEY_LEFT

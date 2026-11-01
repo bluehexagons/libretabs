@@ -34,6 +34,9 @@ map remain intact. See decision 0030.
 The [slider correction](evidence/slider-distance-2026-11-01.md) adds more slow-speed
 marks, removes crowded marks on narrow tracks and replaces percentage thresholds
 with a small screen-distance snap radius shared by slow and fast settings.
+The [fraction follow-up](evidence/practice-fractions-2026-11-01.md) prioritizes
+half/quarter/eighth/sixteenth-speed marks and presets, preserving exact fractional
+percentages in playback, captions and adjustments.
 
 The [CI follow-up](evidence/ci-followup-2026-11-01.md) repairs the compact-card
 layout assertion, restores pinned browsing on Back from details, and adds

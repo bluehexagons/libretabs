@@ -90,7 +90,7 @@ static func fit(app: Control) -> void:
 	app.speed_unit_layout.add_theme_constant_override("separation", 0 if side_dock else 6)
 	app.speed_control.custom_minimum_size.x = (144 if expanded_controls else 152) if side_dock else (320 if app.size.x >= 760 else minf(240, app.size.x - 80))
 	app.speed_control.custom_minimum_size.y = 72 if side_dock else 56
-	app.main_speed.custom_minimum_size = Vector2(112 if side_dock else (176 if app.size.x >= 760 else minf(100, maxf(64, app.size.x - 220))), 24 if side_dock else 48)
+	app.main_speed.custom_minimum_size = Vector2(112 if side_dock else (200 if app.size.x >= 760 else minf(112, maxf(64, app.size.x - 220))), 24 if side_dock else 48)
 	if app.tight_controls:
 		app.speed_control.custom_minimum_size.x = 0
 		app.main_speed.custom_minimum_size.x = 64
@@ -103,6 +103,12 @@ static func fit(app: Control) -> void:
 		app.tempo_button.custom_minimum_size.y = 40
 		app.main_speed.custom_minimum_size = Vector2(48 if expanded_controls else 32, 40)
 		app.speed_control.custom_minimum_size = Vector2(app.dock.custom_minimum_size.x, 44)
+		# Long fractional percentages need their own row at enlarged text sizes.
+		# Preserve the exact caption and font size rather than widening the shell.
+		var speed_padding: float = app.speed_control.get_theme_stylebox("panel").get_minimum_size().x
+		if app.tempo_button.get_combined_minimum_size().x + app.main_speed.custom_minimum_size.x > app.dock.custom_minimum_size.x - speed_padding:
+			app.speed_unit_layout.vertical = true
+			for edge: String in ["left", "right"]: app.dock_margin.add_theme_constant_override("margin_" + edge, 4)
 		for edge: String in ["top", "bottom"]: app.dock_margin.add_theme_constant_override("margin_" + edge, 0)
 
 	if not side_dock and not expanded_controls and app.size.x < 760: app.main_speed.custom_minimum_size.x = 64

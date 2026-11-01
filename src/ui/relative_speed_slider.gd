@@ -3,7 +3,8 @@ class_name RelativeSpeedSlider
 extends CaptionSlider
 
 signal tap_control
-const MARKERS: Array[int] = [0, 1, 5, 10, 20, 30, 50, 75, 100, 150, 250, 400, 650, 999]
+const PRACTICE_MARKERS: Array[float] = [100, 50, 25, 12.5, 6.25]
+const MARKERS: Array[float] = [0, 1, 6.25, 12.5, 25, 50, 75, 100, 200, 400, 800, 999]
 const MARKER_GAP: float = 8.0
 const SNAP_DISTANCE: float = 3.0
 
@@ -21,24 +22,25 @@ static func position_for_percent(percent: float) -> float:
 	return pow(clampf(percent / 999.0, 0, 1), 1.0 / 3.0)
 
 static func percent_for_position(position_ratio: float) -> float:
-	return roundf(999.0 * pow(clampf(position_ratio, 0, 1), 3))
+	# Quarter-percentage resolution preserves exact eighth/sixteenth speeds.
+	return snappedf(999.0 * pow(clampf(position_ratio, 0, 1), 3), 0.25)
+
+static func percentage_text(percent: float) -> String:
+	return String.num(percent, 2).trim_suffix(".0")
 
 func track_width() -> float:
 	return maxf(1, size.x - get_theme_icon("grabber").get_width())
 
-# Retain the endpoints and normal speed, then fill available space, favoring
-# slow settings. Hidden marks must not create invisible snap targets.
-func visible_markers() -> Array[int]:
-	var visible_values: Array[int] = [0, 999]
+# Prioritize normal speed and common practice fractions before filling space.
+# Hidden marks must not create invisible snap targets.
+func visible_markers() -> Array[float]:
+	var visible_values: Array[float] = [0, 999]
 	var span: float = track_width()
-	var normal: float = position_for_percent(100) * span
-	if normal >= MARKER_GAP and span - normal >= MARKER_GAP:
-		visible_values.append(100)
-	for marker: int in MARKERS:
+	for marker: float in PRACTICE_MARKERS + MARKERS:
 		if visible_values.has(marker): continue
 		var at: float = position_for_percent(marker)
 		var room: bool = true
-		for shown: int in visible_values:
+		for shown: float in visible_values:
 			if absf(at - position_for_percent(shown)) * span < MARKER_GAP:
 				room = false
 				break
@@ -53,7 +55,7 @@ func snapped_position(position_ratio: float) -> float:
 	var position: float = clampf(position_ratio, 0, 1)
 	var nearest: float = position
 	var distance: float = SNAP_DISTANCE
-	for marker: int in visible_markers():
+	for marker: float in visible_markers():
 		var at: float = position_for_percent(marker)
 		var difference: float = absf(position - at) * track_width()
 		if difference <= distance:
@@ -64,7 +66,7 @@ func snapped_position(position_ratio: float) -> float:
 func _draw() -> void:
 	var inset: float = get_theme_icon("grabber").get_width() / 2.0
 	var ink: Color = get_theme_color("font_color", "Label")
-	for marker: int in visible_markers():
+	for marker: float in visible_markers():
 		var x: float = inset + position_for_percent(marker) * track_width()
 		var major: bool = marker in [0, 100, 999]
 		var y: float = size.y / 2.0 + 5

@@ -44,6 +44,14 @@ Keyboard input still changes
 exactly one percentage point (five for Page Up/Down), allowing values between
 marks. The marks share the cubic mapping used by input and the thumb.
 
+The owner's fraction follow-up prioritizes 50%, 25%, 12.5% and 6.25% marks
+(half, quarter, eighth and sixteenth speed). Normal desktop controls have room
+for all four; narrow controls omit marks using the same spacing rule. Playback
+presets always offer those four exact values. Slider values use quarter-point
+percentage resolution, and captions retain up to two decimal places, so 12.5%
+and 6.25% are not rounded to whole percentages. Arrow keys and five-point buttons
+preserve the fractional part. Faster marks favor 200%, 400% and 800%.
+
 ## Validation
 
 Bundled metadata/translation/citation coverage, disputed-attribution regressions,

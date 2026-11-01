@@ -250,9 +250,15 @@ func run() -> void:
 	check(app.theme.default_font is FontVariation, "rounded lettering uses bundled font variation")
 	app.set("motion_mode", "full")
 	app.call("apply_motion")
-	app.call("change_speed", 0)
+	var speed_presets: Array = app.get_script().get_script_constant_map()["SPEEDS"]
+	var fraction_labels: Dictionary = {2: "50% speed", 4: "25% speed", 8: "12.5% speed", 16: "6.25% speed"}
+	for divisor: int in [2, 4, 8, 16]:
+		app.call("change_speed", speed_presets.find(1.0 / divisor))
+		check(is_equal_approx(app.get("speed"), 1.0 / divisor), "practice fraction preset 1/%d" % divisor)
+		check(app.get("speed_picker").get_item_text(app.get("speed_picker").selected) == fraction_labels[divisor], "fraction preset label matches playback")
+	app.call("change_speed", speed_presets.find(0.25))
 	check(is_equal_approx(app.get("speed"), 0.25), "25 percent preset")
-	app.call("change_speed", 12)
+	app.call("change_speed", speed_presets.find(2.0))
 	check(is_equal_approx(app.get("speed"), 2.0), "200 percent preset")
 	app.call("change_bpm", 72)
 	check(is_equal_approx(app.get("speed"), 1.0) and app.call("reference_bpm") == 72, "custom BPM becomes the new 100 percent reference")
@@ -261,7 +267,7 @@ func run() -> void:
 	app.call("step_speed", -1)
 	check(is_equal_approx(app.get("speed"), 1.0) and app.call("reference_bpm") == 72, "slower restores 100 percent of custom BPM")
 	app.call("set_speed", 1.0)
-	check(app.get("speed_picker").selected == 7, "original speed synchronizes preset picker")
+	check(app.get("speed_picker").selected == speed_presets.find(1.0), "original speed synchronizes preset picker")
 	app.call("set_speed", 0.25)
 	app.call("step_speed", -1)
 	check(app.get("speed") == 0.2 and not app.get("slower_button").disabled, "slower goes below the preset range")

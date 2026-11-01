@@ -401,7 +401,7 @@ msgid "SPEED"
 msgstr "Tap the track to set speed, or drag horizontally to adjust from the current value (0–999%). Slower speeds have more space on the slider. At 0%, playback is paused; pitch stays the same."
 
 msgid "SPEED_VALUE"
-msgstr "%d%% speed"
+msgstr "%s%% speed"
 
 msgid "COUNT_IN"
 msgstr "Count in before playing"
@@ -728,10 +728,10 @@ msgid "CUSTOM_BPM"
 msgstr "Custom BPM"
 
 msgid "TEMPO_CURRENT"
-msgstr "Starts at %.1f BPM · base %.1f · %d%%. Later tempo changes keep their proportions."
+msgstr "Starts at %.1f BPM · base %.1f · %s%%. Later tempo changes keep their proportions."
 
 msgid "TEMPO_BUTTON"
-msgstr "%d%%"
+msgstr "%s%%"
 
 msgid "INSTRUMENT_VOLUME"
 msgstr "Instrument · %d%%"
@@ -2636,10 +2636,10 @@ msgid "BPM_USE_SONG"
 msgstr "Use song BPM · %.1f"
 
 msgid "BPM_PLAYBACK"
-msgstr "Playback starts at %.1f BPM · %d%% of %.1f BPM"
+msgstr "Playback starts at %.1f BPM · %s%% of %.1f BPM"
 
 msgid "SPEED_MARKERS_HELP"
-msgstr "Playback speed relative to base BPM. Slower speeds have more marks; faster speeds have fewer. The thumb snaps only when close to a visible mark. Arrow keys adjust by 1%; Page Up or Down by 5%. Tap the percentage for BPM settings."
+msgstr "Playback speed relative to base BPM. Marks favor half (50%), quarter (25%), eighth (12.5%) and sixteenth (6.25%) speed when space allows; all four are available in Playback presets. The thumb snaps only when close to a visible mark. Arrow keys adjust by 1%; Page Up or Down by 5%. Tap the percentage for BPM settings."
 
 msgid "SONG_ABOUT"
 msgstr "About"

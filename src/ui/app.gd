@@ -205,7 +205,7 @@ var import_name: String = ""
 var max_import_usec: int = 0
 var started_msec: int = 0
 var paused_in_count: bool = false
-const SPEEDS: Array[float] = [0.25, 0.4, 0.5, 0.6, 0.75, 0.8, 0.9, 1.0, 1.1, 1.25, 1.5, 1.75, 2.0]
+const SPEEDS: Array[float] = [0.0625, 0.125, 0.25, 0.4, 0.5, 0.6, 0.75, 0.8, 0.9, 1.0, 1.1, 1.25, 1.5, 1.75, 2.0]
 var bpm_input: SpinBox
 var tempo_caption: Label
 var song_title: Label
@@ -1379,7 +1379,7 @@ func build_drawers() -> void:
 	speed_picker.fit_to_longest_item = false
 	speed_picker.clip_text = true
 	speed_picker.custom_minimum_size.y = 56
-	for multiplier: float in SPEEDS: speed_picker.add_item(tr("SPEED_VALUE") % roundi(multiplier * 100))
+	for multiplier: float in SPEEDS: speed_picker.add_item(tr("SPEED_VALUE") % RelativeSpeedSlider.percentage_text(multiplier * 100))
 	speed_picker.add_item(tr("CUSTOM_BPM"))
 	speed_picker.select(SPEEDS.find(1.0))
 	speed_picker.item_selected.connect(change_speed)
@@ -2544,7 +2544,7 @@ func update_metronome() -> void:
 	adapt_flow(dock)
 
 func step_speed(direction: int) -> void:
-	set_speed(clampf(roundf(speed * 100.0 + direction * 5.0) / 100.0, 0.0, 9.99))
+	set_speed(clampf(snappedf(speed * 100.0 + direction * 5.0, 0.25) / 100.0, 0.0, 9.99))
 
 func change_speed(index: int) -> void:
 	if index == SPEEDS.size():
@@ -2567,6 +2567,12 @@ func set_speed(value: float) -> void:
 	if speed == 0: set_status("SPEED_ZERO")
 	elif was_playing: start(paused_in_count)
 
+func update_speed_caption(percent: float) -> void:
+	var caption: String = tr("TEMPO_BUTTON") % RelativeSpeedSlider.percentage_text(percent)
+	if tempo_button.text == caption: return
+	tempo_button.text = caption
+	if controls_on_side: responsive()
+
 func update_tempo() -> void:
 	updating = true
 	# Wider bounds support unusual source tempi without silently clamping presets.
@@ -2578,9 +2584,10 @@ func update_tempo() -> void:
 	source_bpm_button.tooltip_text = source_bpm_button.text
 	source_bpm_button.set_meta("hover_caption", source_bpm_button.text)
 	updating = false
-	tempo_caption.text = tr("BPM_PLAYBACK") % [reference_bpm() * speed, roundi(speed * 100), reference_bpm()]
-	tempo_caption.tooltip_text = tr("TEMPO_CURRENT") % [reference_bpm() * speed, reference_bpm(), roundi(speed * 100)]
-	tempo_button.text = tr("TEMPO_BUTTON") % roundi(speed * 100)
+	var percent_text: String = RelativeSpeedSlider.percentage_text(speed * 100)
+	tempo_caption.text = tr("BPM_PLAYBACK") % [reference_bpm() * speed, percent_text, reference_bpm()]
+	tempo_caption.tooltip_text = tr("TEMPO_CURRENT") % [reference_bpm() * speed, reference_bpm(), percent_text]
+	update_speed_caption(speed * 100)
 	main_speed.set_percentage(speed * 100)
 	main_speed.tooltip_text = tr("SPEED_MARKERS_HELP")
 	main_speed.set_meta("hover_caption", main_speed.tooltip_text)

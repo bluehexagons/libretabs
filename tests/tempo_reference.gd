@@ -51,6 +51,12 @@ func run() -> void:
 	var tempos: Array[Dictionary] = song.tempos.duplicate(true)
 	var notes: Array[Dictionary] = song.notes.duplicate(true)
 	check(is_equal_approx(app.call("base_bpm"), 100), "fixture starts at 100 BPM")
+	for divisor: int in [2, 4, 8, 16]:
+		app.call("set_speed", 1.0 / divisor)
+		app.call("start", true)
+		check(player.transport.speed == 1.0 / divisor, "transport preserves exact practice fraction 1/%d" % divisor)
+		check(player.transport.count_frames == roundi(2.4 * divisor * PracticeTransport.RATE), "count-in duration follows practice fraction 1/%d" % divisor)
+		app.call("pause")
 	app.call("change_bpm", 50)
 	app.call("start", false)
 	check(player.transport.speed == 0.5 and app.get("speed") == 1.0, "manual BPM becomes the transport's 100 percent reference")

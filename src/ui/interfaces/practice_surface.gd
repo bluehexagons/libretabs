@@ -334,7 +334,7 @@ static func build(app: Control) -> void:
 		else: app.update_tempo())
 	app.main_speed.value_changed.connect(func(_value: float) -> void:
 		var percent: float = app.main_speed.percentage()
-		if app.speed_dragging: app.tempo_button.text = app.tr("TEMPO_BUTTON") % roundi(percent)
+		if app.speed_dragging: app.update_speed_caption(percent)
 		else: app.set_speed(percent / 100.0))
 	app.speed_unit_layout.add_child(app.main_speed)
 	app.main_speed.press_control = app.tempo_button
