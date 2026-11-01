@@ -10,6 +10,9 @@ Song details and tempo: [expanded history, source links, speed detents and BPM o
 CI follow-up: [theme-aware layout assertion, pinned-details Back and standard
 tempo scheduling coverage, 2026-11-01](ci-followup-2026-11-01.md).
 
+Local previews: [locally hosted guide/player pair and direct manual-testing
+links, 2026-11-01](local-hosting-2026-11-01.md).
+
 Practice feedback: [paused navigation, pinned browsing, tempo, zoom and note
 styles, 2026-11-01](practice-feedback-2026-11-01.md).
 

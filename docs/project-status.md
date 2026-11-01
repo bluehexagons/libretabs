@@ -97,7 +97,8 @@ links open the local player. Discover their URLs with
 `basaltwater-web url libretabs-prototype`; see the
 [development workflow](agentic-development.md#web-export-and-shared-preview).
 Agent testing handoffs include clickable links to both pages. They are available
-on the managed network and are not public launch URLs.
+on the managed network and are not public launch URLs. See the
+[local hosting verification](evidence/local-hosting-2026-11-01.md).
 
 ## Distribution readiness
 

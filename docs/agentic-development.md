@@ -310,6 +310,8 @@ mkdir -p artifacts/generated
 libretabs_preview_dir="$(mktemp -d artifacts/generated/local-preview.XXXXXX)"
 libretabs_player_url="$(basaltwater-web url libretabs-prototype)"
 PLAYER_URL="$libretabs_player_url" python3 scripts/build_site.py --output "$libretabs_preview_dir/guide"
+# Pages needs this marker; the local gateway denies dotfiles.
+rm "$libretabs_preview_dir/guide/.nojekyll"
 basaltwater-web publish site libretabs-guide --output "$libretabs_preview_dir/guide" --no-build --json
 basaltwater-web site doctor libretabs-guide
 basaltwater-web site verify libretabs-guide --project . --output "$libretabs_preview_dir/guide" --json
