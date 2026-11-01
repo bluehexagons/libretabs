@@ -7,6 +7,9 @@ them; local media archives remain separate from published evidence.
 Song details and tempo: [expanded history, source links, speed detents and BPM override,
 2026-11-01](song-details-and-tempo-2026-11-01.md).
 
+CI follow-up: [theme-aware layout assertion, pinned-details Back and standard
+tempo scheduling coverage, 2026-11-01](ci-followup-2026-11-01.md).
+
 Practice feedback: [paused navigation, pinned browsing, tempo, zoom and note
 styles, 2026-11-01](practice-feedback-2026-11-01.md).
 

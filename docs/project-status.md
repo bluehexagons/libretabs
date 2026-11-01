@@ -31,6 +31,11 @@ catalog titles, marked speed detents and a session-only manual BPM reference.
 Relative speed scales that reference; the shared transport and original tempo
 map remain intact. See decision 0030.
 
+The [CI follow-up](evidence/ci-followup-2026-11-01.md) repairs the compact-card
+layout assertion, restores pinned browsing on Back from details, and adds
+deterministic BPM/count-in/loop scheduling and canceled-slider regressions to
+the standard gate. Local full verification and GitHub CI pass.
+
 Menu → Screen & interface → Interface compares Classic, Focus, Touch and Workspace over the same
 session. Classic remains the default; selection is saved on the device. Shared
 widget construction and geometry are separate from application coordination.
