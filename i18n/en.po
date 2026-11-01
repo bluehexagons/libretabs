@@ -2639,7 +2639,7 @@ msgid "BPM_PLAYBACK"
 msgstr "Playback starts at %.1f BPM · %d%% of %.1f BPM"
 
 msgid "SPEED_MARKERS_HELP"
-msgstr "Playback speed relative to base BPM. Marks snap to 25% steps up to 200%, then wider round steps. Arrow keys adjust by 1%; Page Up or Down by 5%. Tap the percentage for BPM settings."
+msgstr "Playback speed relative to base BPM. Slower speeds have more marks; faster speeds have fewer. The thumb snaps only when close to a visible mark. Arrow keys adjust by 1%; Page Up or Down by 5%. Tap the percentage for BPM settings."
 
 msgid "SONG_ABOUT"
 msgstr "About"

@@ -4,6 +4,9 @@ Follow [artifact retention](../artifact-retention.md) when curating local build,
 export and review files. Keep dated records here even when newer work supersedes
 them; local media archives remain separate from published evidence.
 
+Speed-slider correction: [slow-speed marks and screen-distance snapping,
+2026-11-01](slider-distance-2026-11-01.md).
+
 Song details and tempo: [expanded history, source links, speed detents and BPM override,
 2026-11-01](song-details-and-tempo-2026-11-01.md).
 

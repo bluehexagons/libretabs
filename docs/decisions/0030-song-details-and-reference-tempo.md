@@ -34,9 +34,13 @@ Count-in, metronome, score effects and live-input timing follow this same factor
 Later source tempo changes retain their proportions; imported bytes, events and
 tempo map remain unchanged. No preference schema change or additional clock.
 
-The cubic speed slider gains drawn detents at 25 percentage-point intervals to
-200%, then wider round intervals through 999%. Pointer input snaps within three
-percentage points through 200%, eight above it. Keyboard input still changes
+Owner correction, 2026-11-01: the cubic speed slider uses more drawn marks at
+slow settings and fewer at fast settings. Pointer input snaps within three
+logical screen pixels of a visible mark, using unrounded slider positions.
+Marks closer than eight pixels are omitted on narrow tracks; omitted marks
+do not attract the thumb. Endpoints and 100% take priority. This replaces the
+initial percentage-distance threshold and crowded high-speed marks.
+Keyboard input still changes
 exactly one percentage point (five for Page Up/Down), allowing values between
 marks. The marks share the cubic mapping used by input and the thumb.
 

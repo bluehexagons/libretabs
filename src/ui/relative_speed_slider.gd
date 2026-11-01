@@ -3,7 +3,9 @@ class_name RelativeSpeedSlider
 extends CaptionSlider
 
 signal tap_control
-const MARKERS: Array[int] = [0, 25, 50, 75, 100, 125, 150, 175, 200, 250, 300, 400, 500, 600, 700, 800, 900, 999]
+const MARKERS: Array[int] = [0, 1, 5, 10, 20, 30, 50, 75, 100, 150, 250, 400, 650, 999]
+const MARKER_GAP: float = 8.0
+const SNAP_DISTANCE: float = 3.0
 
 var press_control: Control
 var pointer_active: bool = false
@@ -21,26 +23,50 @@ static func position_for_percent(percent: float) -> float:
 static func percent_for_position(position_ratio: float) -> float:
 	return roundf(999.0 * pow(clampf(position_ratio, 0, 1), 3))
 
-# Snap only pointer input. Keys and exact BPM entry retain fine adjustment.
-static func snapped_percent(percent: float) -> float:
-	var nearest: float = percent
-	var distance: float = INF
-	for marker: int in MARKERS:
-		var difference: float = absf(percent - marker)
-		if difference < distance:
-			distance = difference
-			nearest = marker
-	return nearest if distance <= (3 if nearest <= 200 else 8) else percent
+func track_width() -> float:
+	return maxf(1, size.x - get_theme_icon("grabber").get_width())
 
+# Retain the endpoints and normal speed, then fill available space, favoring
+# slow settings. Hidden marks must not create invisible snap targets.
+func visible_markers() -> Array[int]:
+	var visible_values: Array[int] = [0, 999]
+	var span: float = track_width()
+	var normal: float = position_for_percent(100) * span
+	if normal >= MARKER_GAP and span - normal >= MARKER_GAP:
+		visible_values.append(100)
+	for marker: int in MARKERS:
+		if visible_values.has(marker): continue
+		var at: float = position_for_percent(marker)
+		var room: bool = true
+		for shown: int in visible_values:
+			if absf(at - position_for_percent(shown)) * span < MARKER_GAP:
+				room = false
+				break
+		if room: visible_values.append(marker)
+	visible_values.sort()
+	return visible_values
+
+# Compare unrounded thumb positions in logical screen pixels. Converting to
+# rounded percentages here would itself pull low values toward distant marks.
+# Keyboard input bypasses snapping and retains exact percentage-point steps.
 func snapped_position(position_ratio: float) -> float:
-	return position_for_percent(snapped_percent(percent_for_position(position_ratio)))
+	var position: float = clampf(position_ratio, 0, 1)
+	var nearest: float = position
+	var distance: float = SNAP_DISTANCE
+	for marker: int in visible_markers():
+		var at: float = position_for_percent(marker)
+		var difference: float = absf(position - at) * track_width()
+		if difference <= distance:
+			distance = difference
+			nearest = at
+	return nearest
 
 func _draw() -> void:
 	var inset: float = get_theme_icon("grabber").get_width() / 2.0
 	var ink: Color = get_theme_color("font_color", "Label")
-	for marker: int in MARKERS:
-		var x: float = inset + position_for_percent(marker) * maxf(1, size.x - 2 * inset)
-		var major: bool = marker in [0, 100, 200, 999]
+	for marker: int in visible_markers():
+		var x: float = inset + position_for_percent(marker) * track_width()
+		var major: bool = marker in [0, 100, 999]
 		var y: float = size.y / 2.0 + 5
 		draw_line(Vector2(x, y), Vector2(x, minf(size.y - 1, y + (6 if major else 3))), ink, 2 if major else 1)
 
@@ -52,7 +78,7 @@ func set_percentage(percent: float) -> void:
 
 func pointer_ratio(x: float) -> float:
 	var inset: float = get_theme_icon("grabber").get_width() / 2.0
-	return clampf((x - global_position.x - inset) / maxf(1, size.x - 2 * inset), 0, 1)
+	return clampf((x - global_position.x - inset) / track_width(), 0, 1)
 
 func handle_pointer(event: InputEvent) -> bool:
 	if not is_visible_in_tree(): return false
@@ -102,7 +128,7 @@ func handle_pointer(event: InputEvent) -> bool:
 			return true
 		if absf(delta.x) > 8: dragged = true
 		if dragged:
-			value = snapped_position(clampf(origin_value + delta.x / maxf(1, size.x - get_theme_icon("grabber").get_width()), 0, 1))
+			value = snapped_position(origin_value + delta.x / track_width())
 		return true
 	if button_event and not event.pressed:
 		pointer_active = false

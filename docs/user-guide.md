@@ -213,7 +213,10 @@ height, so choose fewer Music lines if you need taller notes.
   and **Faster +5%** make small changes. **100% of base tempo** restores 100%. At 0%,
   playback pauses; raise the speed and press Play to continue. The slider gives
   slower speeds more room for fine adjustment and compresses faster speeds,
-  with the full 0–999% range always on the track. Visible marks snap to 25% steps through 200%, then wider round steps. Arrow keys adjust one percentage
+  with the full 0–999% range always on the track. Slower speeds have more marks;
+  faster speeds have fewer. Snapping depends on screen distance to a visible
+  mark, so low values do not have a larger capture area. Narrow tracks show
+  fewer marks to keep them distinct. Arrow keys adjust one percentage
   point; Page Up/Down adjust five; Home/End select 0/999%.
 - **Base tempo:** BPM means beats per minute; here a beat is a quarter note. Tap the percentage beside the speed slider, or open **Menu → Practice → Playback**. Enter a base BPM to make it the new 100%. For example, 80 BPM at 50% starts at 40 BPM. **Use song BPM** restores the song’s tempo and 100% speed. Later tempo changes keep their proportions. The override lasts until you open another song and is not saved. Changing speed changes how quickly notes arrive, not their pitch.
 - **Beat clicks (metronome):** adds a click on each beat to help you keep time.
