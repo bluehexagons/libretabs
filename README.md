@@ -46,7 +46,9 @@ launch URL.
 The Songs drawer includes 29 project-authored MIDI teaching arrangements of
 public-domain works and traditional melodies, plus an original two-hand piano
 study. Try Amazing Grace, Silent Night, Aura Lee or London Bridge for another
-familiar melody. Start with Hot Cross Buns, Twinkle, Twinkle Little Star or Mary
+familiar melody. Open **About** for historical credits, source links and details
+of each teaching arrangement. Pin Songs for one-tap switching during practice.
+Start with Hot Cross Buns, Twinkle, Twinkle Little Star or Mary
 Had a Little Lamb, then try Simple Gifts or Sakura Sakura when you feel ready.
 It also includes technical examples and
 opens local Standard MIDI File format 0 or 1 files. Imported files are read on

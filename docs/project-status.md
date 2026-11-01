@@ -25,6 +25,12 @@ catalog cards, a slow-tempo-friendly slider, 20–400% Theater zoom and independ
 current/next-note styles with a plain-score action. It preserves the shared
 transport, import bytes and explicit Play after song switching. See decision 0029.
 
+The [song details and tempo follow-up](evidence/song-details-and-tempo-2026-11-01.md)
+adds expanded details with sourced history for the 29 historical tunes, short
+catalog titles, marked speed detents and a session-only manual BPM reference.
+Relative speed scales that reference; the shared transport and original tempo
+map remain intact. See decision 0030.
+
 Menu → Screen & interface → Interface compares Classic, Focus, Touch and Workspace over the same
 session. Classic remains the default; selection is saved on the device. Shared
 widget construction and geometry are separate from application coordination.

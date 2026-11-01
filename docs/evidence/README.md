@@ -4,6 +4,9 @@ Follow [artifact retention](../artifact-retention.md) when curating local build,
 export and review files. Keep dated records here even when newer work supersedes
 them; local media archives remain separate from published evidence.
 
+Song details and tempo: [expanded history, source links, speed detents and BPM override,
+2026-11-01](song-details-and-tempo-2026-11-01.md).
+
 Practice feedback: [paused navigation, pinned browsing, tempo, zoom and note
 styles, 2026-11-01](practice-feedback-2026-11-01.md).
 
