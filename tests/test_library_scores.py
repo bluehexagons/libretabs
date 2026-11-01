@@ -12,7 +12,7 @@ from generate_fixtures import authored_melody
 
 class LibraryScores(unittest.TestCase):
     def test_all_phrases_and_artifacts(self):
-        self.assertEqual(len(SONGS), 29)
+        self.assertEqual(len(SONGS), 32)
         for key, song in SONGS.items():
             with self.subTest(song=key):
                 pitches, durations = zip(*song['notes'])
@@ -112,11 +112,47 @@ class LibraryScores(unittest.TestCase):
                          [(None, 1440), (60, 240), (62, 240)])
 
     def test_compound_meter_midi_click_metadata(self):
-        for key, numerator in [('fur_elise', 3), ('silent_night', 6), ('pop_goes_the_weasel', 6)]:
+        for key, numerator in [('fur_elise', 3), ('silent_night', 6), ('pop_goes_the_weasel', 6),
+                               ('row_your_boat_compound', 6), ('skye_boat_song', 6)]:
             with self.subTest(song=key):
                 data = (ROOT / 'content/library' / f'{key}.mid').read_bytes()
                 self.assertIn(bytes([0xff, 0x58, 4, numerator, 3, 36, 8]), data)
                 self.assertNotIn(bytes([0xff, 0x58, 4, numerator, 3, 24, 8]), data)
+
+    def test_historical_additions_keep_source_variants_and_phrases(self):
+        # Franklin Square (1881), p. 69: lilting rhythm, repeated third-bar
+        # note and twelve even eighths on 'merrily', unlike the straight study.
+        row = SONGS['row_your_boat_compound']
+        self.assertEqual(row['meter'], (6, 8))
+        self.assertEqual(row['notes'][:5],
+                         [(60, 720), (60, 720), (60, 480), (62, 240), (64, 720)])
+        self.assertEqual(notes(row['bars'].split('|')[2], (6, 8)),
+                         [(64, 480), (64, 240), (64, 480), (65, 240)])
+        self.assertEqual(row['notes'][10:22],
+                         [(72, 240)] * 3 + [(67, 240)] * 3 + [(64, 240)] * 3 + [(60, 240)] * 3)
+        self.assertEqual(row['notes'][:27], row['notes'][27:])
+        self.assertEqual(SONGS['row_your_boat']['meter'], (4, 4))
+        # Smith (1888), p. 91: chorus returns intact; historical solo bar 5
+        # rises to D5 and the chorus closes on D4, without an invented G ending.
+        skye = SONGS['skye_boat_song']
+        skye_bars = skye['bars'].split('|')
+        self.assertEqual(skye['meter'], (6, 8))
+        self.assertEqual([notes(bar, (6, 8)) for bar in skye_bars[:8]],
+                         [notes(bar, (6, 8)) for bar in skye_bars[16:]])
+        self.assertEqual(skye['notes'][:6],
+                         [(62, 360), (64, 120), (62, 240), (67, 480), (67, 120), (67, 120)])
+        self.assertEqual(notes(skye_bars[12], (6, 8)),
+                         [(71, 240), (67, 240), (74, 240), (74, 720)])
+        self.assertEqual(skye['notes'][-1], (62, 1440))
+        self.assertEqual(skye['bass_roots'], [43] * 8 + [40] * 8 + [43] * 8)
+        # Firth & Hall, catalogued 1845: upper vocal line lowered F→C,
+        # including the falling bridge, low repeated G and phrase-ending rests.
+        long_ago = SONGS['long_long_ago']
+        self.assertEqual(long_ago['notes'][:6],
+                         [(60, 480), (60, 240), (62, 240), (64, 480), (64, 240), (65, 240)])
+        self.assertEqual(notes(long_ago['bars'].split('|')[8], (4, 4)),
+                         [(67, 240), (65, 240), (65, 240), (64, 240), (62, 480), (55, 240), (55, 240)])
+        self.assertEqual(long_ago['notes'][-2:], [(60, 960), (None, 960)])
 
     def test_bad_bars_and_ties_are_rejected(self):
         for bars in ['C4 C4 C4', '~:16', 'R:8 ~:8', 'C4:0 C4:16',

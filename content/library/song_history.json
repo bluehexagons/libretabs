@@ -21,7 +21,7 @@
         {
           "title_key": "SONG_SOURCE_FUR_ELISE_1",
           "url": "https://www.beethoven.de/en/media/view/5010945952710656",
-          "supports": "1810 dating, Nohl’s 1867 publication, surviving sketches, missing autograph and unresolved dedication."
+          "supports": "Surviving 1810 sketches, 1822 revision, Nohl’s 1867 publication, missing finished autograph and unresolved dedication."
         }
       ],
       "research_notes": "Do not identify Elise as Therese Malfatti or another proposed recipient as established fact."
@@ -199,6 +199,11 @@
           "title_key": "SONG_SOURCE_ROW_YOUR_BOAT_2",
           "url": "https://www.berklee.edu/berklee-today/spring-2018/writing-a-canon",
           "supports": "Round structure and overlapping melodic entries."
+        },
+        {
+          "title_key": "SONG_SOURCE_ROW_YOUR_BOAT_3",
+          "url": "https://archive.org/details/franklinsquares04mccagoog/page/n73/mode/1up",
+          "supports": "1881 title/copyright leaves and printed page 69: 6/8 melody, repeated third-bar note, Lyte credit and numbered round entrances."
         }
       ],
       "research_notes": "Lyte’s exact role is uncertain. The 1852 title The Old Log Hut / Row, Row Your Boat must not be treated as proof that its melody was today’s tune."
@@ -444,6 +449,72 @@
       "history_key": "SONG_HISTORY_PIANO_STUDY",
       "arrangement_key": "SONG_ARRANGEMENT_PIANO_STUDY",
       "sources": []
+    },
+    "row_your_boat_compound": {
+      "history_key": "SONG_HISTORY_ROW_YOUR_BOAT",
+      "arrangement_key": "SONG_ARRANGEMENT_ROW_YOUR_BOAT_COMPOUND",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_ROW_YOUR_BOAT_1",
+          "url": "https://balladindex.org/Ballads/FSWB412C.html",
+          "supports": "1852 text with different music, 1881 familiar tune, Lyte credit and authorship caveat; cites Fuld and LOC sheet-music records."
+        },
+        {
+          "title_key": "SONG_SOURCE_ROW_YOUR_BOAT_2",
+          "url": "https://www.berklee.edu/berklee-today/spring-2018/writing-a-canon",
+          "supports": "Round structure and overlapping melodic entries."
+        },
+        {
+          "title_key": "SONG_SOURCE_ROW_YOUR_BOAT_3",
+          "url": "https://archive.org/details/franklinsquares04mccagoog/page/n73/mode/1up",
+          "supports": "1881 title/copyright leaves and printed page 69: 6/8 melody, repeated third-bar note, Lyte credit and numbered round entrances."
+        }
+      ],
+      "research_notes": "The 1881 third bar repeats the same pitch three times; do not silently replace it with the later familiar descending middle note. Historical Lyte credit does not settle authorship. Source is printed page 69, not the Archive volume metadata."
+    },
+    "skye_boat_song": {
+      "history_key": "SONG_HISTORY_SKYE_BOAT_SONG",
+      "arrangement_key": "SONG_ARRANGEMENT_SKYE_BOAT_SONG",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_SKYE_BOAT_SONG_1",
+          "url": "https://www.nms.ac.uk/discover-catalogue/flora-macdonald-an-unlikely-jacobite-heroine",
+          "supports": "1884 publication and Flora MacDonald’s help taking Charles Edward Stuart to Skye after Culloden in 1746."
+        },
+        {
+          "title_key": "SONG_SOURCE_SKYE_BOAT_SONG_2",
+          "url": "https://archive.org/details/cu31924022400059/page/n126/mode/1up",
+          "supports": "Smith, The Music of the Waters (1888), pp. 90–91: chorus and solo melody, historical collection and Lawson arrangement credit. Melody only used; editorial practice bass is new."
+        },
+        {
+          "title_key": "SONG_SOURCE_SKYE_BOAT_SONG_3",
+          "url": "https://archive.org/details/31761034118778",
+          "supports": "Songs of the North historical score: collected melody with added music by A. C. MacLeod and words by Harold Boulton."
+        }
+      ],
+      "research_notes": "Do not call the entire tune an anonymous eighteenth-century song. Preserve the 1888 solo variants and D chorus ending; do not attribute a later television or recording arrangement to the historical source. Smithsonian identifies its 1888 copy as public domain: https://library.si.edu/digital-library/book/musicwaters00smit ."
+    },
+    "long_long_ago": {
+      "history_key": "SONG_HISTORY_LONG_LONG_AGO",
+      "arrangement_key": "SONG_ARRANGEMENT_LONG_LONG_AGO",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_LONG_LONG_AGO_1",
+          "url": "https://www.themorgan.org/music-manuscripts-and-printed-music/137814",
+          "supports": "Bayly credit and Boston C. Bradlee copy probably published between 1835 and 1837; approximate catalog dating, not a definitive first publication."
+        },
+        {
+          "title_key": "SONG_SOURCE_LONG_LONG_AGO_2",
+          "url": "https://digitalcommons.conncoll.edu/sheetmusic/314/",
+          "supports": "New York Firth & Hall score catalogued 1845, Bayly credit; upper vocal melody checked on the two music pages, scan leaves 3–4 at https://archive.org/details/sm_longlongago ."
+        },
+        {
+          "title_key": "SONG_SOURCE_LONG_LONG_AGO_3",
+          "url": "https://www.loc.gov/item/jukebox-133022/",
+          "supports": "Elsie Baker contralto, Victor 17343, matrix B-13066 take 3, recorded 11 April 1913. Recording is reference-only."
+        }
+      ],
+      "research_notes": "Avoid claiming 1833 composition or 1843/1844 first publication as established fact: historical edition dating is inconsistent. Early printed scores credit Bayly; no later pedagogical arrangement or recording is used."
     }
   },
   "license": "CC0-1.0"

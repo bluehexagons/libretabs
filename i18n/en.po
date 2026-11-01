@@ -77,7 +77,7 @@ msgid "LIBRARY_MINUET_IN_G"
 msgstr "Minuet in G · Christian Petzold"
 
 msgid "LIBRARY_ROW_YOUR_BOAT"
-msgstr "Row, Row, Row Your Boat · twice · traditional"
+msgstr "Row, Row, Row Your Boat · straight rhythm · traditional"
 
 msgid "LIBRARY_JINGLE_BELLS"
 msgstr "Jingle Bells · simplified refrain · James Lord Pierpont"
@@ -2186,7 +2186,7 @@ msgid "LIBRARY_MINUET_IN_G_CREDIT"
 msgstr "Christian Petzold"
 
 msgid "LIBRARY_ROW_YOUR_BOAT_NAME"
-msgstr "Row, Row, Row Your Boat"
+msgstr "Row Your Boat · straight rhythm"
 
 msgid "LIBRARY_ROW_YOUR_BOAT_CREDIT"
 msgstr "traditional"
@@ -2678,7 +2678,7 @@ msgid "SONG_ARRANGEMENT_FUR_ELISE"
 msgstr "The opening theme is played twice. Short opening notes lead into the main phrase; fast notes, rests and held A endings are retained."
 
 msgid "SONG_HISTORY_FUR_ELISE"
-msgstr "Beethoven wrote this short piano piece in 1810, but Ludwig Nohl first published it in 1867, decades after the composer’s death. Surviving sketches show that Beethoven revisited it in 1822. The identity of “Elise” remains uncertain because the finished manuscript that Nohl described has disappeared."
+msgstr "Beethoven’s surviving sketches for this short piano piece date from 1810 and show that he revisited it in 1822. Ludwig Nohl first published it in 1867, decades after the composer’s death. The finished manuscript that Nohl described is lost, and the identity of “Elise” remains uncertain."
 
 msgid "SONG_ARRANGEMENT_SPRING"
 msgstr "A longer opening theme in E retains fast notes and uneven long–short rhythms. The final held E is a new ending for this exercise."
@@ -2741,7 +2741,7 @@ msgid "SONG_HISTORY_MINUET_IN_G"
 msgstr "Christian Petzold, an organist in Dresden, wrote this minuet for a keyboard suite. Anna Magdalena Bach copied it, together with a companion minuet in G minor, into her musical notebook. Long attributed to Johann Sebastian Bach, the piece is now credited to Petzold while retaining its familiar BWV appendix number."
 
 msgid "SONG_ARRANGEMENT_ROW_YOUR_BOAT"
-msgstr "A common eight-bar teaching version in C is played twice. Rhythm is simplified to quarter and half notes, lasting one and two main beats. The overlapping voices of a sung round are not included."
+msgstr "An eight-bar teaching version in C is played twice. Rhythm is simplified to quarter and half notes, lasting one and two main beats. Try the separate lilting 1881 version for groups of three short notes. Both versions play one melody with a new practice bass, without overlapping round entrances."
 
 msgid "SONG_HISTORY_ROW_YOUR_BOAT"
 msgstr "Versions of these words appeared in American sheet music in 1852 with a different melody. The familiar tune appeared in 1881 with a credit to E. O. Lyte, although that credit does not establish whether he composed or adapted it. As a round, the melody can overlap with itself when singers enter in turn."
@@ -2756,7 +2756,7 @@ msgid "SONG_ARRANGEMENT_GREENSLEEVES"
 msgstr "The familiar melody includes both sections and is lowered one octave. Long–short rhythms and held phrase endings are retained; decorative extra notes are omitted."
 
 msgid "SONG_HISTORY_GREENSLEEVES"
-msgstr "“Greensleeves” is an anonymous tune from England’s Renaissance song tradition. Its recurring chord pattern gave early musicians a foundation for variations and improvisation. That practice continues: Jordi Savall and Hespèrion XXI included “Greensleeves to a Ground” in their 2024 Library of Congress concert exploring early instrumental music."
+msgstr "“Greensleeves” is an anonymous tune from England’s Renaissance song tradition. A ground, or repeating bass pattern, gave musicians a foundation for variations and improvisation. Jordi Savall and Hespèrion XXI included “Greensleeves to a Ground” in their 2024 Library of Congress concert exploring early instrumental music."
 
 msgid "SONG_ARRANGEMENT_AMAZING_GRACE"
 msgstr "The familiar single-line melody is in C. Long–short rhythms are retained, with opening rests aligning the short lead-in before the first full measure."
@@ -2991,3 +2991,66 @@ msgstr "Oh! Susanna — American Music at Pitt"
 
 msgid "SONG_DETAILS_PRACTICE"
 msgstr "Practice this song"
+
+msgid "LIBRARY_ROW_YOUR_BOAT_COMPOUND"
+msgstr "Row, Row, Row Your Boat · lilting 1881 · traditional"
+
+msgid "LIBRARY_ROW_YOUR_BOAT_COMPOUND_NAME"
+msgstr "Row Your Boat · lilting 1881"
+
+msgid "LIBRARY_ROW_YOUR_BOAT_COMPOUND_CREDIT"
+msgstr "traditional"
+
+msgid "SONG_ARRANGEMENT_ROW_YOUR_BOAT_COMPOUND"
+msgstr "The eight-bar melody from an 1881 songbook is lowered to C and played twice. Each bar has two groups of three eighth notes, making a lilting rhythm. The printed repeated-note variant in the third bar is retained. The straight-rhythm study has a different note there. One melody and a new practice bass play without overlapping round entrances."
+
+msgid "SONG_SOURCE_ROW_YOUR_BOAT_3"
+msgstr "Franklin Square Song Collection — 1881, page 69"
+
+msgid "LIBRARY_SKYE_BOAT_SONG"
+msgstr "The Skye Boat Song · 1888 melody · Scottish traditional / A. C. MacLeod"
+
+msgid "LIBRARY_SKYE_BOAT_SONG_NAME"
+msgstr "The Skye Boat Song"
+
+msgid "LIBRARY_SKYE_BOAT_SONG_CREDIT"
+msgstr "Scottish traditional / A. C. MacLeod"
+
+msgid "SONG_HISTORY_SKYE_BOAT_SONG"
+msgstr "Published in Songs of the North in 1884, this Scottish song remembers Flora MacDonald helping Charles Edward Stuart reach Skye after the 1746 Battle of Culloden. The published melody credits collected material and added music by Annie Campbell MacLeod; Harold Boulton wrote the words."
+
+msgid "SONG_ARRANGEMENT_SKYE_BOAT_SONG"
+msgstr "Chorus, solo melody and returning chorus follow an 1888 printed version in G. Six eighth notes fill each bar, with some long–short pairs. This edition’s solo differs from some later versions. Expressive accents and the final pause are omitted for steady practice. The new practice bass alternates G/D under the chorus and E/B under the solo."
+
+msgid "SONG_SOURCE_SKYE_BOAT_SONG_1"
+msgstr "Flora MacDonald: An unlikely Jacobite heroine — National Museums Scotland"
+
+msgid "SONG_SOURCE_SKYE_BOAT_SONG_2"
+msgstr "The Music of the Waters — Laura Alexandrine Smith, 1888, pages 90–91"
+
+msgid "SONG_SOURCE_SKYE_BOAT_SONG_3"
+msgstr "Songs of the North — historical melody and author credits"
+
+msgid "LIBRARY_LONG_LONG_AGO"
+msgstr "Long, Long Ago · 1845 melody · Thomas Haynes Bayly"
+
+msgid "LIBRARY_LONG_LONG_AGO_NAME"
+msgstr "Long, Long Ago"
+
+msgid "LIBRARY_LONG_LONG_AGO_CREDIT"
+msgstr "Thomas Haynes Bayly"
+
+msgid "SONG_HISTORY_LONG_LONG_AGO"
+msgstr "Early printed editions credit this ballad to Thomas Haynes Bayly. The Morgan Library dates its Boston copy probably between 1835 and 1837; Connecticut College preserves a New York edition catalogued as 1845. These records do not establish a single certain first-publication year. Singer Elsie Baker recorded the song for Victor on 11 April 1913."
+
+msgid "SONG_ARRANGEMENT_LONG_LONG_AGO"
+msgstr "The upper vocal melody from the edition catalogued as 1845 is lowered from F to C. Repeated phrases, short notes and phrase-ending rests are retained. Piano introduction, postlude and lower vocal harmony are omitted. A new low bass part replaces the printed piano accompaniment."
+
+msgid "SONG_SOURCE_LONG_LONG_AGO_1"
+msgstr "Long, long ago — early Boston edition, Morgan Library"
+
+msgid "SONG_SOURCE_LONG_LONG_AGO_2"
+msgstr "Long Long Ago! — Firth & Hall edition, Connecticut College"
+
+msgid "SONG_SOURCE_LONG_LONG_AGO_3"
+msgstr "Long, long ago — Elsie Baker, Victor recording, 1913, Library of Congress"

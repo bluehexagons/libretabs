@@ -57,6 +57,9 @@ gaps are deliberate; no swing or human timing is added.
 | pop_goes_the_weasel | Eight-bar familiar nursery-song melody in C, played twice; six eighth notes per measure, including the high-note surprise and rests | 6/8 · 90 |
 | home_on_the_range | Thirty-three-bar verse and chorus in C, with padded pickup, dotted rhythm and tied phrase endings | 3/4 · 84 |
 | oh_susanna | Seventeen-bar instrumental melody study in C, including verse, refrain and padded pickup; dotted rhythms retained, without lyrics | 4/4 · 100 |
+| row_your_boat_compound | Eight-bar 1881 melody lowered from D to C, twice; lilting rhythm, tied phrase endings and the historical repeated-note third bar | 6/8 · 80 |
+| skye_boat_song | Chorus, solo and returning chorus from an 1888 melody-only score in G; edition-specific solo notes and dotted-eighth/sixteenth pairs retained; original alternating G/D and E/B practice bass | 6/8 · 80 |
+| long_long_ago | Sixteen-bar upper vocal melody from the Firth & Hall edition catalogued 1845, lowered from F to C; introduction, postlude and lower harmony omitted | 4/4 · 88 |
 
 ## Score references checked 2026-09-11
 
@@ -210,7 +213,7 @@ rhythm while giving every note a staff symbol alongside its tab placement.
 The player’s About view separates historical context from these teaching recipes.
 [song_history.json](song_history.json) maps every library ID to localized original
 prose in `i18n/en.po`, source links, supported claims and editorial caveats. The
-29 historical entries credit verifiable writers, cultural traditions and selected
+32 historical entries credit verifiable writers, cultural traditions and selected
 performers; the piano study has a project provenance note. Uncertain tune origins
 and disputed attributions remain qualified. The version 1 format and BPM behavior
 are recorded in [decision 0030](../../docs/decisions/0030-song-details-and-reference-tempo.md).
@@ -221,3 +224,35 @@ reference use only. No source text, recording, illustration or new music file wa
 imported. Links are opened only by the user; all summaries are bundled for offline
 reading. Historical performances mentioned in the blurbs are not the source of
 this app’s synthesized sound or its teaching arrangements.
+
+## Further research and variants checked 2026-11-01
+
+The three additions use independently encoded melodies from nineteenth-century
+public-domain prints, with new CC0-1.0 MIDI realizations and practice basses.
+No score image, text, downloaded MIDI, recording or later arrangement is bundled.
+Practice tempos, bass articulation and omission of expressive pauses are editorial.
+Edition labels distinguish historical variants from an authoritative or universal
+version. The original straight-rhythm Row ID and notes remain available; its
+title now identifies the simplification. The companion has a separate ID, so
+learned marks and imported material are not repurposed.
+
+| File | Exact source and rights | Used scope and adaptation |
+| --- | --- | --- |
+| row_your_boat_compound | J. P. McCaskey, *Franklin Square Song Collection*, Harper & Brothers, 1881, p. 69; [title-page/copyright-verified scan, leaf n73](https://archive.org/details/franklinsquares04mccagoog/page/n73/mode/1up). Historical public-domain print, Archive marked `NOT_IN_COPYRIGHT`; Lyte credit does not establish his exact role. | Melody only, lowered D→C, twice. Third bar repeats E rather than the familiar E–D–E of the straight study. Tied dotted quarters retain one attack. Twelve “merrily” eighth notes are even. New C/G and G/D practice bass; no overlapping sung-round entrances. |
+| skye_boat_song | Laura Alexandrine Smith, *The Music of the Waters*, London: Kegan Paul, Trench & Co., 1888, pp. 90–91; [Cornell scan p. 91](https://archive.org/details/cu31924022400059/page/n126/mode/1up), [Smithsonian public-domain record](https://library.si.edu/digital-library/book/musicwaters00smit). Historical [*Songs of the North* score](https://archive.org/details/31761034118778) credits collected material, added melody by A. C. MacLeod, words by Harold Boulton and arrangement by Malcolm Lawson. | Melody-only chorus/solo/chorus in G. Preserve the solo’s fifth-bar D5 notes, third-bar A4 and seventh-bar E4, and the chorus’s D4 close. Accents and fermata omitted; alternating G/D chorus and E/B solo bass is newly authored, not Lawson’s accompaniment. No later recording or television adaptation is used. |
+| long_long_ago | Thomas Haynes Bayly credit, *Long, Long Ago!*, New York: Firth & Hall, plate 2, catalogued 1845 by [Connecticut College, item 314](https://digitalcommons.conncoll.edu/sheetmusic/314/); [same two music pages, scan leaves 3–4](https://archive.org/details/sm_longlongago). Historical nineteenth-century composition/print, public domain; no modern harmonization is used. | Upper vocal line lowered F→C, sixteen bars. Short falling bridge notes, repeated low G and phrase-ending rests retained. Lower vocal harmony, four-bar piano introduction and postlude omitted; bass is new. |
+
+Historical summaries distinguish publication evidence from exact origin claims:
+[Morgan’s early Boston Bayly edition](https://www.themorgan.org/music-manuscripts-and-printed-music/137814)
+is dated *probably* 1835–1837, so the blurb does not assert an exact composition or
+first-publication year. [Elsie Baker’s 11 April 1913 Victor recording](https://www.loc.gov/item/jukebox-133022/)
+is credited as a performance, not an arrangement source. [National Museums Scotland](https://www.nms.ac.uk/discover-catalogue/flora-macdonald-an-unlikely-jacobite-heroine)
+supports Skye’s 1884 publication and the 1746 escape context; the song is not
+presented as an unchanged eighteenth-century composition.
+
+Existing melody checks found Greensleeves and Sakura consistent with their
+declared reference editions. Neither check proves a unique original folk form.
+Für Elise’s blurb now dates the surviving sketches rather than claiming a final
+1810 text; Greensleeves defines a ground as a repeating bass pattern. See the
+[research and verification record](../../docs/evidence/repertoire-research-2026-11-01.md)
+for coverage and remaining limits.

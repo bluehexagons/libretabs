@@ -219,7 +219,7 @@ func _initialize() -> void:
 		var library_projection: TabProjection = TabProjection.new()
 		library_projection.build(library_import.document, 0)
 		check(library_projection.placed == library_projection.eligible, "%s stays within the default guitar range" % name)
-	check(library_count == 30, "every bundled library song receives import and guitar-placement checks")
+	check(library_count == 33, "every bundled library song receives import and guitar-placement checks")
 	var canon: SongDocument = parse(library_file("canon_in_d")).document
 	var ground_pitches: Array[int] = [50, 45, 47, 42, 43, 50, 43, 45]
 	var ground_index: int = 0

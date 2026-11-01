@@ -139,7 +139,7 @@ View the image before judging layout; only page 1 is rendered, and successful
 text extraction does not certify musical correctness. The optional flag leaves
 ordinary MuseScore-only review available without Poppler.
 
-`compare_library_review.py` checks the 29 arranged melody recipes against their
+`compare_library_review.py` checks the arranged melody recipes against their
 derived MusicXML using exact quarter-note fractions and rejoined ties. It
 requires current MIDI bytes to match both the authored recipe and the review
 hash, reports pitches/onsets, meter, tempo and individual interval differences,

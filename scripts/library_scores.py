@@ -120,7 +120,7 @@ add('minuet_in_g', 'Minuet in G - both sections', 'Christian Petzold',
 
 row = ('C4 C4 C4 D4 | E4:8 E4 D4 | E4 F4 G4:8 | C5 C5 C5 G4 | '
        'G4 G4 E4 E4 | E4 C4 C4 C4 | G4 F4 E4 D4 | C4:16')
-add('row_your_boat', 'Row, Row, Row Your Boat - twice', 'Traditional', f'{row} | {row}', tempo=96)
+add('row_your_boat', 'Row, Row, Row Your Boat - straight rhythm, twice', 'Traditional', f'{row} | {row}', tempo=96)
 
 jingle = ('E4 E4 E4:8 | E4 E4 E4:8 | E4 G4 C4 D4 | E4:16 | '
           'F4 F4 F4 F4 | F4 E4 E4:8 | E4 D4 D4 E4 | D4:8 G4:8')
@@ -239,6 +239,37 @@ add('oh_susanna', 'Oh! Susanna - melody study', 'Stephen Foster',
     'F4:8 F4:8 | A4 C5:8 A4 | G4 G4 E4 C4 | D4:12 C4:2 D4:2 | '
     f'{susanna_open} | E4 E4 D4 D4 | C4:12 R:4', tempo=100)
 
+# Franklin Square Song Collection (1881), p. 69, lowered from D to C.
+# Its third bar repeats E; this differs from the familiar E-D-E variant.
+row_compound = ('C4:6 C4:6 | C4:4 D4:2 E4:6 | E4:4 E4:2 E4:4 F4:2 | G4:6 ~:6 | '
+                'C5:2 C5:2 C5:2 G4:2 G4:2 G4:2 | E4:2 E4:2 E4:2 C4:2 C4:2 C4:2 | '
+                'G4:4 F4:2 E4:4 D4:2 | C4:6 ~:6')
+add('row_your_boat_compound', 'Row Your Boat - lilting 1881 version, twice', 'Traditional',
+    f'{row_compound} | {row_compound}', (6, 8), 80)
+
+# Smith, The Music of the Waters (1888), p. 91: melody only, chorus/solo/chorus.
+# Retain this edition's solo variants and D chorus ending; no added tonic cadence.
+skye_chorus = ('D4:3 E4:1 D4:2 G4:4 G4:1 G4:1 | A4:3 B4:1 A4:2 D5:6 | '
+               'B4:3 A4:1 B4:2 E4:4 E4:2 | D4:12 | '
+               'D4:3 E4:1 D4:2 G4:4 G4:2 | A4:3 B4:1 A4:2 D5:6 | '
+               'B4:3 A4:1 B4:2 E4:4 E4:2 | D4:12')
+skye_solo = ('B4:2 G4:2 B4:2 B4:6 | A4:2 E4:2 A4:2 A4:6 | '
+             'G4:2 E4:2 G4:2 G4:4 A4:2 | E4:12 | '
+             'B4:2 G4:2 D5:2 D5:6 | A4:2 E4:2 A4:2 A4:6 | '
+             'B4:3 E4:1 B4:2 G4:4 G4:2 | E4:12')
+add('skye_boat_song', 'The Skye Boat Song - 1888 melody study', 'Scottish traditional / A. C. MacLeod',
+    f'{skye_chorus} | {skye_solo} | {skye_chorus}', (6, 8), 80)
+
+# Bayly, Firth & Hall edition catalogued 1845, two music pages, upper vocal line.
+# Lowered from F to C; piano introduction/postlude and lower harmony omitted.
+long_ago_a = 'C4 C4:2 D4:2 E4 E4:2 F4:2 | G4 A4:2 G4:2 E4 R:4'
+long_ago_end = 'G4 F4:2 E4:2 D4 F4:2 E4:2 | C4:8 R:8'
+long_ago_bridge = 'G4:2 F4:2 F4:2 E4:2 D4 G3:2 G3:2 | F4:2 E4:2 E4:2 D4:2 C4 R:4'
+add('long_long_ago', 'Long, Long Ago - 1845 melody study', 'Thomas Haynes Bayly',
+    f'{long_ago_a} | G4 F4:2 E4:2 D4 R:4 | E4 D4:2 C4:2 C4 R:4 | '
+    f'{long_ago_a} | {long_ago_end} | {long_ago_bridge} | {long_ago_bridge} | '
+    f'{long_ago_a} | {long_ago_end}', tempo=88)
+
 # Deliberately simple practice basses. Except for the Canon ground bass, these
 # are editorial additions, not the composers' accompaniment. Each root lasts one bar;
 # the MIDI recipe plays it, then its fifth, as two separate low notes.
@@ -280,6 +311,9 @@ BASS_ROOTS = {
     'home_on_the_range': [43, 48, 48, 41, 41, 48, 48, 43, 43, 48, 48, 41, 41, 48, 43, 48, 48,
                           48, 43, 48, 48, 48, 48, 43, 43, 48, 48, 41, 41, 48, 43, 48, 48],
     'oh_susanna': [48, 48, 48, 48, 43, 48, 48, 43, 48, 41, 41, 48, 43, 48, 48, 43, 48],
+    'row_your_boat_compound': [48, 48, 48, 43, 48, 48, 43, 48] * 2,
+    'skye_boat_song': [43] * 8 + [40] * 8 + [43] * 8,
+    'long_long_ago': [48, 48, 43, 48, 48, 48, 43, 48, 43, 48, 43, 48, 48, 48, 43, 48],
 }
 for key, song in SONGS.items():
     roots = BASS_ROOTS[key]

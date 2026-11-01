@@ -35,9 +35,9 @@ func run() -> void:
 	for _frame: int in range(30): await process_frame
 	check(app.get("song") != null, "initial sample is ready")
 	var song_buttons: Dictionary = app.get("library_song_buttons")
-	check(song_buttons.size() == 30 and app.get("more_song_grid").get_child_count() == 30, "every built-in song has a browsable catalog choice")
+	check(song_buttons.size() == app.BUILT_IN_LIBRARY.size() and app.get("more_song_grid").get_child_count() == app.BUILT_IN_LIBRARY.size(), "every built-in song has a browsable catalog choice")
 	check(app.get("library_current_marks")[0].text == TranslationServer.translate("SONG_CURRENT_BADGE"), "the active song has a text marker")
-	check(app.call("catalog_indices").size() == 30, "unfiltered catalog includes all songs")
+	check(app.call("catalog_indices").size() == app.BUILT_IN_LIBRARY.size(), "unfiltered catalog includes all songs")
 	check(not app.get("catalog_filter_panel").visible and app.get("catalog_filter_toggle").is_visible_in_tree() == false, "filters start folded until Songs opens")
 	app.get("catalog_search").text = "Greensleeves"
 	check(app.call("catalog_indices") == [14], "title search finds a new traditional song")
@@ -49,6 +49,12 @@ func run() -> void:
 	for index: int in range(added_titles.size()):
 		app.get("catalog_search").text = added_titles[index]
 		check(app.call("catalog_indices") == [23 + index], "%s finds its own catalog entry" % added_titles[index])
+	for title: String in ["lilting 1881", "Skye Boat Song", "Long, Long Ago"]:
+		app.get("catalog_search").text = title
+		var matches: Array = app.call("catalog_indices")
+		check(matches.size() == 1 and app.BUILT_IN_LIBRARY[matches[0]].file in ["row_your_boat_compound", "skye_boat_song", "long_long_ago"], "%s finds a researched addition" % title)
+	app.get("catalog_search").text = "Row Your Boat"
+	check(app.call("catalog_indices").size() == 2, "shared title search exposes both explicitly named Row variants")
 	app.get("catalog_search").text = "Fur Elise"
 	check(app.call("catalog_indices") == [1], "search also accepts unaccented song names")
 	app.get("catalog_search").text = ""
@@ -62,7 +68,7 @@ func run() -> void:
 	check(app.call("catalog_indices") == [13], "fast starting-BPM filter finds the new refrain")
 	app.get("catalog_tempo").select(0)
 	app.get("catalog_instrument").select(1)
-	check(not app.call("catalog_indices").has(29), "guitar filter excludes the two-hand piano-only study")
+	check(not app.call("catalog_indices").has(app.BUILT_IN_LIBRARY.size() - 1), "guitar filter excludes the two-hand piano-only study")
 	app.get("catalog_instrument").select(0)
 	app.get("catalog_sort").select(2)
 	check(app.call("catalog_indices")[0] == 1, "duration sort puts the shortest song first")
@@ -108,7 +114,7 @@ func run() -> void:
 	check(not app.get("catalog_filter_panel").visible, "filters can be folded after sorting")
 	check(song_buttons[4].is_visible_in_tree() and app.get("more_song_grid").columns == 2, "wide catalog exposes beginner melodies directly")
 	var preview_buttons: Dictionary = app.get("library_preview_buttons")
-	check(preview_buttons.size() == 30 and preview_buttons[4].icon == UIIcons.get_icon("SONG_PREVIEW") and preview_buttons[4].tooltip_text == TranslationServer.translate("SONG_PREVIEW_HELP") % TranslationServer.translate("LIBRARY_TWINKLE"), "every song offers a compact listen action with song-specific help")
+	check(preview_buttons.size() == app.BUILT_IN_LIBRARY.size() and preview_buttons[4].icon == UIIcons.get_icon("SONG_PREVIEW") and preview_buttons[4].tooltip_text == TranslationServer.translate("SONG_PREVIEW_HELP") % TranslationServer.translate("LIBRARY_TWINKLE"), "every song offers a compact listen action with song-specific help")
 	var pending_import: MidiImport = MidiImport.new(FileAccess.get_file_as_bytes("res://content/library/twinkle.mid"))
 	app.set("importer", pending_import)
 	preview_buttons[4].pressed.emit()
@@ -176,7 +182,7 @@ func run() -> void:
 	for note: Dictionary in piano_song.notes:
 		if int(note.pitch) < 60: low_notes += 1
 		else: high_notes += 1
-	check(app.get("active_library") == 29 and low_notes >= 16 and high_notes >= 32 and piano_song.parts.size() == 2 and piano_song.staff_pair() == [0, 1], "original two-hand example loads separate source-linked treble and bass parts")
+	check(app.BUILT_IN_LIBRARY[app.get("active_library")].file == "piano_study" and low_notes >= 16 and high_notes >= 32 and piano_song.parts.size() == 2 and piano_song.staff_pair() == [0, 1], "original two-hand example loads separate source-linked treble and bass parts")
 	check(app.get("score").tiles[0].canvases.size() == 2 and app.get("cue").text.contains("Sounding notes"), "piano practice shows both staffs and pitch cues instead of guitar frets")
 	check(app.get("score").tiles[0].canvases[0].part == 0 and app.get("score").tiles[0].canvases[1].part == 1, "grand staff shows both source parts at their shared transport tick")
 	app.set("source_tick", 480.0)

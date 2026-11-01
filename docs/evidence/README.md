@@ -7,6 +7,9 @@ them; local media archives remain separate from published evidence.
 Practice-fraction follow-up: [half, quarter, eighth and sixteenth speed marks,
 2026-11-01](practice-fractions-2026-11-01.md).
 
+Repertoire research: [historical Row variant, Skye Boat Song, Long Long Ago and
+source/attribution review, 2026-11-01](repertoire-research-2026-11-01.md).
+
 Speed-slider correction: [slow-speed marks and screen-distance snapping,
 2026-11-01](slider-distance-2026-11-01.md).
 

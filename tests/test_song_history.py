@@ -46,3 +46,22 @@ class SongHistoryTests(unittest.TestCase):
         self.assertIn('not securely identified', history('SAKURA_SAKURA'))
         for name in ['JINGLE_BELLS', 'CAMPTOWN_RACES', 'OH_SUSANNA']:
             self.assertIn('blackface minstrelsy', history(name))
+
+    def test_historical_variants_identify_the_edition_and_authorship_limits(self):
+        data = json.loads((ROOT / 'content/library/song_history.json').read_text())['entries']
+        po = (ROOT / 'i18n/en.po').read_text()
+        translations = dict((key, ast.literal_eval(value)) for key, value in re.findall(
+            r'msgid "([A-Z0-9_]+)"\nmsgstr ("[^\n]*")', po))
+        straight, compound = data['row_your_boat'], data['row_your_boat_compound']
+        self.assertEqual(straight['history_key'], compound['history_key'])
+        self.assertNotEqual(straight['arrangement_key'], compound['arrangement_key'])
+        self.assertIn('repeated-note', translations[compound['arrangement_key']])
+        self.assertTrue(any('/page/n73/' in item['url'] for item in compound['sources']))
+        skye = translations[data['skye_boat_song']['history_key']]
+        self.assertIn('Annie Campbell MacLeod', skye)
+        self.assertIn('Harold Boulton', skye)
+        self.assertIn('1884', skye)
+        long_ago = translations[data['long_long_ago']['history_key']]
+        self.assertIn('probably between 1835 and 1837', long_ago)
+        self.assertIn('Elsie Baker', long_ago)
+        self.assertIn('do not establish', long_ago)

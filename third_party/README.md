@@ -128,3 +128,22 @@ only the MIDI realization and practice arrangement; third-party source code,
 lyrics, scans, performances, ornamentation and accompaniment are not bundled
 or dedicated under the project license. Silent Night's uniform octave lowering
 uses its previously recorded melody reference. No new dependency is introduced.
+
+## Historical editions and variants (2026-11-01)
+
+The added paths `content/library/{row_your_boat_compound,skye_boat_song,long_long_ago}.mid`
+and their recipes in `scripts/library_scores.py` encode public-domain melodies
+from McCaskey/Harper (1881, p. 69), Smith/Kegan Paul, Trench & Co. (1888,
+pp. 90–91) and Bayly/Firth & Hall (plate 2, catalogued 1845). Exact source URLs,
+edition/author credits, rights records and used note scope appear in
+[the library provenance](../content/library/README.md#further-research-and-variants-checked-2026-11-01).
+Only the project’s new MIDI realization and original practice bass are CC0-1.0;
+that dedication does not claim the historical compositions or referenced pages.
+The existing straight Row MIDI’s title metadata identifies its simplification;
+its pitches and timing are unchanged.
+
+Original historical prose and reference annotations in `i18n/en.po` and
+`content/library/song_history.json` are CC0-1.0. Museum/library descriptions,
+score images, lyrics and cited recordings retain their own rights and are not
+bundled. No modern edition source code, harmonization, audio asset or new
+dependency is included. Research downloads were disposable review scratch.

@@ -78,6 +78,13 @@ practice arrangement; they do not claim every song has been checked on a
 physical instrument. Some tunes begin with silence.
 Wait for the moving line to reach the first note.
 
+Use a song’s **About** action for its history, sources and arrangement details.
+Some entries identify a particular historical version: **Row Your Boat** offers
+a straight-rhythm study and a lilting 1881 version, whose bars group short notes
+in threes. **The Skye Boat Song** follows an 1888 melody, while **Long, Long Ago**
+uses an edition catalogued as 1845. Their descriptions explain the differences
+and the newly written practice basses.
+
 ## Read the guitar tabs
 
 **Tablature**, usually called **tabs**, is a map of the guitar strings. Read it
