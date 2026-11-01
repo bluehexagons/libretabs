@@ -147,6 +147,11 @@ static func build(app: Control) -> void:
 	# Keep the section name visible while its long help/settings content scrolls.
 	menu_column.add_child(app.drawer_title)
 	menu_column.move_child(app.drawer_title, 1)
+	app.song_shelf = SongShelf.new()
+	app.panel.add_child(app.song_shelf)
+	app.panel.move_child(app.song_shelf, 0)
+	app.song_shelf.configure(app)
+	app.song_shelf.hide()
 	app.build_drawers()
 	app.build_color_legend(app.drawers["HELP"] as VBoxContainer)
 	app.drawers["MENU_HELP_APP"].add_child(app.button("LAST_STATUS", func() -> void:
@@ -315,21 +320,22 @@ static func build(app: Control) -> void:
 	app.main_speed.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	app.main_speed.theme_type_variation = "TempoSlider"
 	app.main_speed.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	app.main_speed.min_value = 25
-	app.main_speed.max_value = 200
-	app.main_speed.step = 1
-	app.main_speed.value = 100
+	app.main_speed.min_value = 0
+	app.main_speed.max_value = 1
+	app.main_speed.step = 0.000001
+	app.main_speed.set_percentage(100)
 	app.main_speed.custom_minimum_size = Vector2(120, 48)
 	app.main_speed.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	app.main_speed.tooltip_text = app.tr("SPEED")
 	app.main_speed.drag_started.connect(func() -> void: app.speed_dragging = true)
 	app.main_speed.drag_ended.connect(func(changed: bool) -> void:
 		app.speed_dragging = false
-		if changed: app.set_speed(app.main_speed.value / 100.0)
+		if changed: app.set_speed(app.main_speed.percentage() / 100.0)
 		else: app.update_tempo())
-	app.main_speed.value_changed.connect(func(value: float) -> void:
-		if app.speed_dragging: app.tempo_button.text = app.tr("TEMPO_BUTTON") % roundi(value)
-		else: app.set_speed(value / 100.0))
+	app.main_speed.value_changed.connect(func(_value: float) -> void:
+		var percent: float = app.main_speed.percentage()
+		if app.speed_dragging: app.tempo_button.text = app.tr("TEMPO_BUTTON") % roundi(percent)
+		else: app.set_speed(percent / 100.0))
 	app.speed_unit_layout.add_child(app.main_speed)
 	app.main_speed.press_control = app.tempo_button
 	app.main_speed.tap_control.connect(func() -> void: app.toggle_drawer("TEMPO"))

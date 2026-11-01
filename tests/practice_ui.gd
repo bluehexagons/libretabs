@@ -108,7 +108,7 @@ func run() -> void:
 	check(not app.get("catalog_filter_panel").visible, "filters can be folded after sorting")
 	check(song_buttons[4].is_visible_in_tree() and app.get("more_song_grid").columns == 2, "wide catalog exposes beginner melodies directly")
 	var preview_buttons: Dictionary = app.get("library_preview_buttons")
-	check(preview_buttons.size() == 30 and preview_buttons[4].text == TranslationServer.translate("SONG_PREVIEW"), "every song offers a labeled listen action")
+	check(preview_buttons.size() == 30 and preview_buttons[4].icon == UIIcons.get_icon("SONG_PREVIEW") and preview_buttons[4].tooltip_text == TranslationServer.translate("SONG_PREVIEW_HELP") % TranslationServer.translate("LIBRARY_TWINKLE"), "every song offers a compact listen action with song-specific help")
 	var pending_import: MidiImport = MidiImport.new(FileAccess.get_file_as_bytes("res://content/library/twinkle.mid"))
 	app.set("importer", pending_import)
 	preview_buttons[4].pressed.emit()
@@ -121,9 +121,9 @@ func run() -> void:
 	for _frame: int in range(30): await process_frame
 	check(app.get("preview_audio").playing_practice and app.get("active_library") == 0 and app.get("title") == TranslationServer.translate("LIBRARY_ODE_TO_JOY"), "preview plays without replacing the current song")
 	check(app.get("preview_audio").synth.instrument == "pure_tone" and app.get("preview_audio").instrument_level == 0.0 and not app.get("preview_audio").effects.reverb_enabled and app.get("preview_audio").effects.chorus_enabled, "preview follows the selected sound, volume, and effects")
-	check(preview_buttons[4].text == TranslationServer.translate("SONG_PREVIEW_STOP"), "playing preview exposes a stop action")
+	check(preview_buttons[4].icon == UIIcons.get_icon("SONG_PREVIEW_STOP") and preview_buttons[4].tooltip_text == TranslationServer.translate("SONG_PREVIEW_STOP_HELP") % TranslationServer.translate("LIBRARY_TWINKLE"), "playing preview exposes a stop action")
 	preview_buttons[4].pressed.emit()
-	check(not app.get("preview_audio").playing_practice and preview_buttons[4].text == TranslationServer.translate("SONG_PREVIEW"), "preview stops on request")
+	check(not app.get("preview_audio").playing_practice and preview_buttons[4].icon == UIIcons.get_icon("SONG_PREVIEW") and preview_buttons[4].tooltip_text == TranslationServer.translate("SONG_PREVIEW_HELP") % TranslationServer.translate("LIBRARY_TWINKLE"), "preview stops on request")
 	app.get("audio").set_instrument(PracticeSynth.DEFAULT)
 	app.get("audio").set_level(true, 0.85)
 	app.get("audio").set_effects(true, PracticeEffects.DEFAULT_AMOUNT, false)
@@ -275,11 +275,11 @@ func run() -> void:
 	speed_press.pressed = true
 	speed_press.position = speed_slider.global_position + Vector2(speed_slider.size.x - 5, 20)
 	speed_slider.handle_pointer(speed_press)
-	check(speed_slider.value == 100, "speed press does not jump before a drag is recognized")
+	check(speed_slider.percentage() == 100, "speed press does not jump before a drag is recognized")
 	var speed_move: InputEventMouseMotion = InputEventMouseMotion.new()
 	speed_move.position = speed_press.position + Vector2(1000, 0)
 	speed_slider.handle_pointer(speed_move)
-	check(speed_slider.value == 999 and app.get("speed") == 1.0, "speed pans to 999 percent with a deferred transport commit")
+	check(speed_slider.percentage() == 999 and app.get("speed") == 1.0, "speed pans to 999 percent with a deferred transport commit")
 	speed_press.pressed = false
 	speed_press.position = speed_move.position
 	speed_slider.handle_pointer(speed_press)
@@ -395,7 +395,12 @@ func run() -> void:
 	app.call("play_section")
 	check(player.transport.count_frames == 0, "play section also respects a disabled count-in")
 	app.call("repeat_song")
-	check(player.playing_practice and player.transport.repeat and player.transport.start_seconds == 0 and is_equal_approx(player.transport.end_seconds, song.seconds_at(song.measures.back().end)), "whole-song repeat reconfigures active playback through the same transport")
+	check(not player.playing_practice and app.get("source_tick") == 0 and app.get("loop_check").button_pressed, "whole-song repeat seeks to the start and pauses by default")
+	app.get("pause_navigation_check").button_pressed = false
+	app.call("start", false)
+	app.call("repeat_song")
+	check(player.playing_practice and player.transport.repeat and player.transport.start_seconds == 0 and is_equal_approx(player.transport.end_seconds, song.seconds_at(song.measures.back().end)), "whole-song repeat can reconfigure active playback with automatic resume")
+	app.get("pause_navigation_check").button_pressed = true
 	app.call("pause")
 	app.get("loop_check").button_pressed = false
 	app.get("count_check").button_pressed = true
@@ -480,7 +485,11 @@ func run() -> void:
 	check(not player.playing_practice, "Space pauses from any non-menu focus")
 	app.call("start", false)
 	app.call("restart_song")
-	check(player.playing_practice and app.get("source_tick") == 0.0, "Restart returns a playing song to its start and keeps playback active")
+	check(not player.playing_practice and app.get("source_tick") == 0.0, "Restart pauses by default")
+	app.get("pause_navigation_check").button_pressed = false
+	app.call("start", false)
+	app.call("restart_song")
+	check(player.playing_practice and app.get("source_tick") == 0.0, "Restart can retain playback when navigation pause is disabled")
 	app.call("seek_input", seek_press)
 	check(app.get("seek_dragging") and not player.playing_practice, "pointer press pauses an active transport once")
 	app.call("begin_seek_drag")
@@ -491,6 +500,7 @@ func run() -> void:
 	app.call("_suspended")
 	app.call("seek_input", seek_release)
 	check(not player.playing_practice and not app.get("seek_dragging"), "focus loss cancels a drag without resuming on a late release")
+	app.get("pause_navigation_check").button_pressed = true
 	check(not seek_bar.scrollable and not app.get("main_speed").scrollable and not app.get("instrument_slider").scrollable, "wheel scrolling cannot accidentally alter timeline, tempo, or volume")
 	var action_button: FriendlyButton = app.get("play_button")
 	action_button.button_down.emit()

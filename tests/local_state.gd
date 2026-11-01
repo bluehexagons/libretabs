@@ -147,6 +147,14 @@ func run() -> void:
 	app.get("input_feedback").button_pressed = false
 	app.get("catalog_sort").select(1)
 	app.get("catalog_sort").item_selected.emit(1)
+	app.get("pause_navigation_check").button_pressed = false
+	app.call("set_songs_pinned", true)
+	app.get("note_style_controls").current.select(1)
+	app.get("note_style_controls").next.select(2)
+	app.get("note_ripples_check").button_pressed = false
+	app.get("score_playhead_check").button_pressed = false
+	app.call("update_note_styles")
+	app.call("save_preferences")
 	app.get("host").save_display_choice("startup_help", "hide")
 	app.get("host").save_display_choice("interface", "touch")
 	app.get("host").save_appearance("dark")
@@ -162,6 +170,8 @@ func run() -> void:
 	check(not listening.listener.capture.enabled and not listening.playback_mute.button_pressed and not listening.timing_check.button_pressed, "restoring preferences never starts capture, mutes music or restores calibration")
 	check(app.get("input_show").button_pressed and not app.get("live").feedback_enabled and app.get("catalog_sort").selected == 1, "keyboard visibility, feedback and sorting survive restart")
 	check(app.get("interface_id") == "touch" and app.get("appearance_mode") == "dark" and app.get("theme").default_font_size == 30, "existing display preferences still survive restart")
+	check(not app.get("pause_navigation_check").button_pressed and app.get("song_shelf").visible and not app.get("audio").playing_practice, "pinned songs and navigation choice survive restart without playing")
+	check(app.get("score").current_note_style == "outline" and app.get("score").next_note_style == "off" and not app.get("score").note_ripples and not app.get("score").score_playhead, "independent note styles survive restart")
 	# Simulate the host callback after choosing a file rather than a bundled item.
 	app.set("pending_library", -1)
 	app.set("pending_demo", -1)

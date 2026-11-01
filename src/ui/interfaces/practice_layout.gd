@@ -118,6 +118,7 @@ static func fit(app: Control) -> void:
 	app.reading_tools.visible = app.presentation.inspector or ((not app.presentation.mobile_rail and app.presentation.context_tools or app.tv_active) and not app.landscape and (app.tv_active or not app.compact))
 	for picker: OptionButton in app.quick_music_layout: picker.visible = app.presentation.inspector or (app.size.x >= (600 if picker == app.quick_music_layout[0] else (1700 if app.theater_context.visible else 1200)) and app.theme.default_font_size < 30)
 	app.place_status()
+	app.song_shelf.arrange()
 	for side: String in ["left", "right", "top", "bottom"]:
 		app.content_margin.add_theme_constant_override("margin_" + side, 8 if side_dock else ((16 if app.tv_active else maxi(16, int((app.size.x - 1280) / 2))) if side in ["left", "right"] else (4 if app.compact else 10)))
 	if app.tv_active:

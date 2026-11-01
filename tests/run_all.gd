@@ -81,6 +81,14 @@ func _initialize() -> void:
 	var migrated: Dictionary = PracticeSettings.decode(JSON.stringify({"version": 1, "values": legacy}))
 	check(migrated.status == "ok" and migrated.values.instrument == "synth_piano" and migrated.values.instrument_volume == 23 and migrated.values.keyboard_layout == "home", "legacy preferences gain piano without losing existing choices")
 	check(migrated.values.reverb and migrated.values.reverb_amount == 18 and not migrated.values.chorus, "older preferences gain gentle room and no chorus")
+	check(migrated.values.pause_navigation and not migrated.values.songs_pinned and migrated.values.current_note_style == "emphasis", "old settings gain paused navigation and existing highlight defaults")
+	for field: String in ["pause_navigation", "songs_pinned", "current_note_style", "next_note_style", "note_ripples", "score_playhead"]:
+		var invalid_style: Dictionary = PracticeSettings.DEFAULTS.duplicate()
+		invalid_style[field] = "invalid"
+		check(PracticeSettings.encode(invalid_style).is_empty(), "invalid navigation or highlight preference is rejected")
+	check(RelativeSpeedSlider.position_for_percent(100) - RelativeSpeedSlider.position_for_percent(25) > RelativeSpeedSlider.position_for_percent(999) - RelativeSpeedSlider.position_for_percent(924), "equal slow intervals occupy more slider room than fast intervals")
+	for percent: int in [0, 1, 25, 50, 100, 200, 500, 998, 999]:
+		check(RelativeSpeedSlider.percent_for_position(RelativeSpeedSlider.position_for_percent(percent)) == percent, "tempo mapping round-trips exact percent")
 	var effect_settings: Dictionary = defaults.duplicate()
 	effect_settings.reverb = false
 	effect_settings.reverb_amount = 35

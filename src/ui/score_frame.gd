@@ -58,7 +58,9 @@ func arrange() -> void:
 	score.fit_rows(maxf(score.content_height(), row_count * 160.0) if dense else allocated, staff_height)
 	var height: float = score.drawing_height()
 	var factor: float = minf(zoom if dense else 1.0, allocated / height)
-	score.set_note_spacing(note_spacing)
+	# Keep zoom useful beyond the vertical fit limit: enlarge horizontal space
+	# while retaining complete, uniformly scaled notation rows on short screens.
+	score.set_note_spacing(note_spacing * maxf(1, zoom / maxf(0.01, factor)) if dense else note_spacing)
 	if factor <= 0:
 		arranging = false
 		return
@@ -135,10 +137,11 @@ func configure_line(view: ScoreView, page: int, preview: bool) -> void:
 	if view.mode != "pages" or view.notation != score.notation:
 		view.set_view("pages", score.notation)
 	view.page_preview = preview
-	view.set_note_spacing(note_spacing)
+	view.set_note_spacing(score.note_spacing)
 	view.set_fitted_rows(score.fitted_rows)
 	view.reduced_motion = score.reduced_motion
 	view.effects_speed = score.effects_speed
+	view.copy_note_styles(score)
 	view.set_shape_cues(score.shape_cues)
 	view.effects_playing = score.effects_playing
 	view.page_index = page

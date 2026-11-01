@@ -391,6 +391,13 @@ the SHA-256 of exact imported bytes; no music, titles, paths or played notes ent
 the store. UI checkboxes make manual changes without touching the transport or
 canonical model. Layout waits cancel when their composition root is removed.
 
+[Decision 0029](decisions/0029-practice-navigation-and-note-styles.md) adds optional
+navigation/pinned-browser and independent note-style fields to the same validated
+settings document. SongShelf owns only bounded browser layout/search; it delegates
+song switches to the composition root and never owns playback. ScoreView projects
+saved note styles using the shared source tick; ScoreFrame/capture copy them to
+every visible score. The fixed cubic tempo-slider mapping stays at the UI boundary.
+
 ## Platform adapters
 
 Define interfaces around capabilities rather than checking feature tags throughout UI code:

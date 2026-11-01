@@ -32,7 +32,8 @@ Play and the tempo unit while secondary controls remain available in menus.
 
 Menu and Settings share a directory with six categories: Practice, Score &
 print, Sound & input, Screen & interface, Songs & progress, and Help & app. Songs
-and Tuner stay directly reachable. Cards show short summaries and use more
+and Tuner stay directly reachable. Songs can be pinned as a compact, independently
+scrolling browser above practice; title taps switch pieces without starting audio. Cards show short summaries and use more
 columns when the viewport and text size allow. Find an option searches the
 translated titles, summaries, categories and setting labels, with spaces and
 punctuation treated alike; Enter opens the first result. Results name their
@@ -153,7 +154,10 @@ No owner decision currently blocks M0. The provisional name still needs a final 
 3. The learner can pause, seek by measure, choose 0–999% tempo or a custom starting BPM, enable the metronome, and define a measure loop.
 4. A compact fretboard guide shows the current string and fret and repeats the convention that string 1 is the thinnest/highest string.
 5. Menu → Help & app → Help summarizes how tab lines/fret numbers align with staff pitch/rhythm. Close returns directly to practice.
-6. Music scrolls smoothly by default, with upcoming notes visible ahead of the playhead. Menu → Score & print → Score view also offers manually turned screen pages with tabs, sheet music, or both. Pages share scrolling notation and spacing, with a next-page preview. Enable Follow playback for automatic page turns; manually turning a page suspends following without seeking audio. Reduced motion disables decorative effects while preserving the chosen scroll/page behavior. Curved underlines mark upcoming notes. Rounded outlines mark sounding tab numbers; sounding staff noteheads become slightly larger and bolder while retaining their filled or hollow shape.
+6. Music scrolls smoothly by default, with upcoming notes visible ahead of the playhead. Menu → Score & print → Score view also offers manually turned screen pages with tabs, sheet music, or both. Pages share scrolling notation and spacing, with a next-page preview. Enable Follow playback for automatic page turns; manually turning a page suspends following without seeking audio. Reduced motion disables decorative effects while preserving the chosen scroll/page behavior. Curved underlines mark upcoming notes. Saved current/next-note style choices can replace these cues with outlines,
+underlines or no highlights. Ripples and the playback line have separate switches;
+Plain score disables all four. Seeking and restarting pause by default, with an
+optional automatic resume preference. Rounded outlines mark sounding tab numbers; sounding staff noteheads become slightly larger and bolder while retaining their filled or hollow shape.
 
 ## MVP functional requirements
 

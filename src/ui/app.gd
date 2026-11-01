@@ -139,6 +139,12 @@ var pending_demo: int = -1
 var active_library: int = -1
 var pending_library: int = -1
 var library_title: Label
+var song_shelf: SongShelf
+var songs_pin_check: CheckButton
+var pause_navigation_check: CheckButton
+var note_style_controls: Dictionary = {}
+var note_ripples_check: CheckButton
+var score_playhead_check: CheckButton
 var songs_button: Button
 var import_button: Button
 var speed_picker: OptionButton
@@ -376,7 +382,7 @@ func _ready() -> void:
 			var storage_key: String = prefix + key
 			if persist_preferences: profile[key] = int(host.load_display_choice(storage_key, allowed, str(profile[key])))
 	var zoom_choices: Array[String] = []
-	for zoom: int in range(40, 201, 5): zoom_choices.append(str(zoom))
+	for zoom: int in range(20, 401, 5): zoom_choices.append(str(zoom))
 	if persist_preferences: tv_zoom = float(host.load_display_choice("tv_zoom", zoom_choices, "65")) / 100.0
 	if persist_preferences: theater_keep_controls = host.load_display_choice("theater_controls", ["auto", "keep"], "auto") == "keep"
 	build_ui()
@@ -647,8 +653,8 @@ func build_tv_zoom(parent: Control) -> void:
 	parent.add_child(caption)
 	tv_zoom_captions.append(caption)
 	var slider: HSlider = CaptionSlider.new()
-	slider.min_value = 40
-	slider.max_value = 200
+	slider.min_value = 20
+	slider.max_value = 400
 	slider.step = 5
 	slider.value = tv_zoom * 100
 	slider.custom_minimum_size = Vector2(160, 48)
@@ -662,7 +668,7 @@ func build_tv_zoom(parent: Control) -> void:
 
 func change_tv_zoom(value: float) -> void:
 	if tv_active and not theater_keep_controls and audio.playing_practice: tv_tuck_timer.start(8)
-	tv_zoom = clampf(value, 40, 200) / 100.0
+	tv_zoom = clampf(value, 20, 400) / 100.0
 	for slider: HSlider in tv_zoom_controls: slider.set_value_no_signal(tv_zoom * 100)
 	for caption: Label in tv_zoom_captions: caption.text = tr("TV_ZOOM") % roundi(tv_zoom * 100)
 	if score_frame != null:
@@ -728,6 +734,54 @@ func flow(parent: Node) -> HFlowContainer:
 	parent.add_child(row)
 	return row
 
+func set_songs_pinned(enabled: bool) -> void:
+	songs_pin_check.set_pressed_no_signal(enabled)
+	song_shelf.visible = enabled
+	if enabled:
+		song_shelf.arrange()
+		close_menu()
+	update_main_scroll()
+	save_preferences()
+
+func build_note_styles(parent: VBoxContainer) -> void:
+	parent.add_child(label("NOTE_STYLES", 22))
+	parent.add_child(label("NOTE_STYLES_HELP", 18))
+	for key: String in ["current", "next"]:
+		parent.add_child(label("NOTE_STYLE_CURRENT" if key == "current" else "NOTE_STYLE_NEXT", 18))
+		var picker: OptionButton = CaptionOption.new()
+		picker.fit_to_longest_item = false
+		picker.custom_minimum_size.y = 48
+		var choices: Array = ["emphasis", "outline", "underline", "off"] if key == "current" else ["underline", "outline", "off"]
+		for style: String in choices:
+			picker.add_item(tr("NOTE_STYLE_" + style.to_upper()))
+			picker.set_item_metadata(picker.item_count - 1, style)
+		picker.item_selected.connect(func(_index: int) -> void: update_note_styles(); save_preferences())
+		note_style_controls[key] = picker
+		parent.add_child(picker)
+	note_ripples_check = check("NOTE_RIPPLES", true)
+	score_playhead_check = check("SCORE_PLAYHEAD", true)
+	for toggle: CheckButton in [note_ripples_check, score_playhead_check]:
+		parent.add_child(toggle)
+		toggle.toggled.connect(func(_value: bool) -> void: update_note_styles(); save_preferences())
+	parent.add_child(button("NOTE_STYLES_PLAIN", func() -> void:
+		for key: String in note_style_controls:
+			var picker: OptionButton = note_style_controls[key]
+			picker.select(picker.item_count - 1)
+		note_ripples_check.set_pressed_no_signal(false)
+		score_playhead_check.set_pressed_no_signal(false)
+		update_note_styles()
+		save_preferences()))
+
+func update_note_styles() -> void:
+	if score == null: return
+	score.current_note_style = note_style_controls.current.get_item_metadata(note_style_controls.current.selected)
+	score.next_note_style = note_style_controls.next.get_item_metadata(note_style_controls.next.selected)
+	score.note_ripples = note_ripples_check.button_pressed
+	score.score_playhead = score_playhead_check.button_pressed
+	score.cursor.queue_redraw()
+	score_frame.update_overview()
+	if capture_view != null: capture_view.score.copy_note_styles(score)
+
 func build_song_grid(parent: VBoxContainer) -> GridContainer:
 	var grid: GridContainer = GridContainer.new()
 	grid.columns = 2
@@ -755,7 +809,7 @@ func add_song_button(grid: GridContainer, index: int) -> void:
 	card.add_to_group("catalog_card")
 	grid.add_child(card)
 	var content: VBoxContainer = VBoxContainer.new()
-	content.add_theme_constant_override("separation", 8)
+	content.add_theme_constant_override("separation", 4)
 	card.add_child(content)
 	var marking: HFlowContainer = flow(content)
 	var marker: Label = label("SONG_CURRENT_BADGE", 14)
@@ -769,15 +823,16 @@ func add_song_button(grid: GridContainer, index: int) -> void:
 	learned.toggled.connect(func(enabled: bool) -> void: mark_learned("song:" + str(BUILT_IN_LIBRARY[index].file), enabled))
 	marking.add_child(learned)
 	library_learned_checks[index] = learned
-	var title_label: Label = label(key + "_NAME", 23)
+	var title_label: Button = button(key + "_NAME", func() -> void: load_library_item(index))
+	title_label.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	title_label.add_theme_font_size_override("font_size", 20)
+	title_label.set_meta("base_font_size", 20)
 	title_label.add_theme_font_override("font", UIAppearance.ui_font(font_style, true))
 	title_label.add_to_group("catalog_heading")
+	title_label.tooltip_text = tr("SONG_TRY_HELP") % tr(key)
 	content.add_child(title_label)
-	var credit: Label = label(key + "_CREDIT", 15)
-	credit.add_to_group("catalog_credit")
-	credit.add_theme_color_override("font_color", UIAppearance.color("muted", dark_mode, appearance_mode == "midnight"))
-	content.add_child(credit)
 	library_song_titles[index] = title_label
+	library_song_buttons[index] = title_label
 	var details: HFlowContainer = flow(content)
 	var entry: Dictionary = BUILT_IN_LIBRARY[index]
 	var level_key: String = ["SONG_LEVEL_FIRST", "SONG_LEVEL_GROWING", "SONG_LEVEL_CHALLENGE"][int(entry.level)]
@@ -803,17 +858,11 @@ func add_song_button(grid: GridContainer, index: int) -> void:
 		value.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 		chip.add_child(value)
 		details.add_child(chip)
-	var actions: HFlowContainer = flow(content)
 	var preview: Button = button("SONG_PREVIEW", func() -> void: toggle_song_preview(index))
-	preview.icon = UIIcons.get_icon("SONG_PREVIEW")
-	preview.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	actions.add_child(preview)
+	preview.custom_minimum_size = Vector2(48, 48)
+	preview.set_meta("compact_preview", true)
+	marking.add_child(preview)
 	library_preview_buttons[index] = preview
-	var item: Button = button("SONG_TRY", func() -> void: load_library_item(index))
-	item.icon = UIIcons.get_icon("SONG_TRY")
-	item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	actions.add_child(item)
-	library_song_buttons[index] = item
 	UIAppearance.apply_roles(card, dark_mode, appearance_mode == "midnight")
 	update_song_button(index)
 
@@ -890,7 +939,8 @@ func update_song_button(index: int) -> void:
 	item.tooltip_text = tr("SONG_TRY_HELP") % title_text
 	var preview: Button = library_preview_buttons[index]
 	var playing: bool = index == preview_index and preview_audio != null and preview_audio.playing_practice
-	preview.text = tr("SONG_PREVIEW_STOP" if playing else "SONG_PREVIEW")
+	preview.text = "" if preview.get_meta("compact_preview", false) else tr("SONG_PREVIEW_STOP" if playing else "SONG_PREVIEW")
+	preview.set_meta("hover_caption", tr("SONG_PREVIEW_STOP_HELP" if playing else "SONG_PREVIEW_HELP") % title_text)
 	preview.icon = UIIcons.get_icon("SONG_PREVIEW_STOP" if playing else "SONG_PREVIEW")
 	preview.tooltip_text = tr("SONG_PREVIEW_STOP_HELP" if playing else "SONG_PREVIEW_HELP") % title_text
 
@@ -1163,7 +1213,12 @@ func build_drawers() -> void:
 	views.add_child(notation_rows_notice)
 	rebuild_notation_rows_editor()
 	views.add_child(button("PRINT", func() -> void: toggle_drawer("PRINT")))
+	build_note_styles(views)
 	var library: VBoxContainer = section("SONG_MENU")
+	songs_pin_check = check("SONGS_PIN", false)
+	songs_pin_check.tooltip_text = tr("SONGS_PIN_HELP")
+	songs_pin_check.toggled.connect(set_songs_pinned)
+	library.add_child(songs_pin_check)
 	library_title = label("SONG_CURRENT_ITEM", 18)
 	library_title.max_lines_visible = 1
 	library_title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
@@ -1173,11 +1228,16 @@ func build_drawers() -> void:
 	current_learning_check.toggled.connect(func(enabled: bool) -> void: mark_learned(current_learning_id, enabled))
 	library.add_child(current_learning_check)
 	catalog_search = LineEdit.new()
+	catalog_search.clear_button_enabled = true
+	catalog_search.max_length = 128
 	catalog_search.right_icon = UIIcons.get_tinted_icon("SONG_SEARCH", UIAppearance.color("ink", dark_mode, appearance_mode == "midnight"))
 	catalog_search.add_theme_color_override("font_placeholder_color", UIAppearance.color("muted", dark_mode, appearance_mode == "midnight"))
 	catalog_search.placeholder_text = tr("SONG_CATALOG_SEARCH_PLACEHOLDER")
 	catalog_search.custom_minimum_size.y = 56
 	catalog_search.text_changed.connect(func(_value: String) -> void: refresh_song_catalog())
+	catalog_search.text_submitted.connect(func(_query: String) -> void:
+		var matches: Array[int] = catalog_indices()
+		if not matches.is_empty(): load_library_item(matches[0]))
 	library.add_child(catalog_search)
 	var catalog_actions: HFlowContainer = flow(library)
 	var import_short: Button = button("SONG_IMPORT_SHORT", open_midi)
@@ -1280,6 +1340,11 @@ func build_drawers() -> void:
 	count_check.tooltip_text = tr("COUNT_HELP")
 	tempo.add_child(count_check)
 	count_check.toggled.connect(func(_enabled: bool) -> void: save_preferences())
+	pause_navigation_check = check("PAUSE_NAVIGATION", true)
+	pause_navigation_check.tooltip_text = tr("PAUSE_NAVIGATION_HELP")
+	pause_navigation_check.toggled.connect(func(_enabled: bool) -> void: save_preferences())
+	tempo.add_child(pause_navigation_check)
+	tempo.add_child(label("PAUSE_NAVIGATION_HELP", 18))
 	tempo.add_child(label("COUNT_LENGTH", 18))
 	count_length = SpinBox.new()
 	count_length.min_value = 1
@@ -2273,7 +2338,7 @@ func apply_appearance() -> void:
 	for caption: Node in get_tree().get_nodes_in_group("catalog_credit"):
 		if caption is Label: caption.add_theme_color_override("font_color", UIAppearance.color("muted", dark_mode, midnight))
 	for heading: Node in get_tree().get_nodes_in_group("catalog_heading"):
-		if heading is Label: heading.add_theme_font_override("font", UIAppearance.ui_font(font_style, true))
+		if heading is Control: heading.add_theme_font_override("font", UIAppearance.ui_font(font_style, true))
 	for card: Node in get_tree().get_nodes_in_group("catalog_card"):
 		if card is PanelContainer: card.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 8, midnight))
 	if catalog_search != null:
@@ -2487,8 +2552,7 @@ func update_tempo() -> void:
 	tempo_caption.text = tr("PLAYBACK_RATE") % roundi(speed * 100)
 	tempo_caption.tooltip_text = tr("TEMPO_CURRENT") % [base_bpm() * speed, base_bpm(), roundi(speed * 100)]
 	tempo_button.text = tr("TEMPO_BUTTON") % roundi(speed * 100)
-	main_speed.pan_to(speed * 100)
-	main_speed.set_value_no_signal(speed * 100)
+	main_speed.set_percentage(speed * 100)
 	main_speed.tooltip_text = tr("SPEED")
 	var preset: int = -1
 	for index: int in range(SPEEDS.size()):
@@ -2604,6 +2668,7 @@ func update_song_picker() -> void:
 		demo_picker.select(-1)
 		demo_picker.text = tr("CHOOSE_EXERCISE")
 	for index: int in library_song_buttons: update_song_button(index)
+	if song_shelf != null: song_shelf.update_current()
 	update_learning_controls()
 
 func _file_picked(name_value: String, bytes: PackedByteArray, error: String) -> void:
@@ -2621,10 +2686,11 @@ func finish_import() -> void:
 	set_activity(false)
 	cancel_button.hide()
 	if not importer.error.is_empty():
+		var import_error: String = importer.error
+		importer = null
 		update_song_picker()
 		if drawer.visible: close_menu()
-		set_status(importer.error)
-		importer = null
+		set_status(import_error)
 		return
 	var result: SongDocument = importer.document
 	importer = null
@@ -2678,7 +2744,8 @@ func finish_import() -> void:
 	update_play_control()
 	set_status("START_HINT")
 	if drawer.visible: close_menu()
-	play_button.grab_focus()
+	if not song_shelf.visible or get_viewport().gui_get_focus_owner() == null or not song_shelf.is_ancestor_of(get_viewport().gui_get_focus_owner()): play_button.grab_focus()
+	song_shelf.update_current()
 	adapt_flow(panel)
 	if startup_help_pending:
 		startup_help_pending = false
@@ -2848,7 +2915,7 @@ func restart_song() -> void:
 	if song == null or importer != null: return
 	var was_playing: bool = audio.playing_practice
 	stop_practice()
-	if was_playing: start(false)
+	if was_playing and not pause_navigation_check.button_pressed: start(false)
 
 func restart_if_playing() -> void:
 	var was_playing: bool = audio.playing_practice
@@ -3025,9 +3092,9 @@ func end_seek_drag(_changed: bool) -> void:
 	if not seek_dragging:
 		return
 	seek_dragging = false
-	if seek_resume_playback:
-		seek_resume_playback = false
-		start(false)
+	var resume: bool = seek_resume_playback and not pause_navigation_check.button_pressed
+	seek_resume_playback = false
+	if resume: start(false)
 	update_position()
 
 func seek_tick(value: float) -> void:
@@ -3056,7 +3123,7 @@ func seek_tick(value: float) -> void:
 	if next_tick >= song.end_tick and not loop_check.button_pressed:
 		state = "STATE_COMPLETE"
 		update_play_control()
-	elif was_playing:
+	elif was_playing and not pause_navigation_check.button_pressed:
 		start(false)
 	update_position()
 	score.animate_seek(previous_offset, previous_page)
@@ -3220,7 +3287,7 @@ func update_effects() -> void:
 	save_preferences()
 
 func preference_values() -> Dictionary:
-	var values: Dictionary = {"audio_commands": audio_commands.enabled, "reverb": reverb_check.button_pressed, "reverb_amount": roundi(reverb_amount.value), "chorus": chorus_check.button_pressed, "instrument": PracticeSynth.INSTRUMENTS[instrument_picker.selected], "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "count_measures": int(count_length.value), "instrument_volume": roundi(instrument_slider.value), "click_volume": roundi(click_slider.value), "keyboard_octave": keyboard.octave, "keyboard_layout": keyboard.layout, "reading_view": reading_view, "input_show": input_show.button_pressed, "input_feedback": input_feedback.button_pressed, "catalog_sort": PracticeSettings.CATALOG_SORT_IDS[catalog_sort.selected]}
+	var values: Dictionary = {"audio_commands": audio_commands.enabled, "reverb": reverb_check.button_pressed, "reverb_amount": roundi(reverb_amount.value), "chorus": chorus_check.button_pressed, "instrument": PracticeSynth.INSTRUMENTS[instrument_picker.selected], "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "count_measures": int(count_length.value), "instrument_volume": roundi(instrument_slider.value), "click_volume": roundi(click_slider.value), "keyboard_octave": keyboard.octave, "keyboard_layout": keyboard.layout, "reading_view": reading_view, "input_show": input_show.button_pressed, "input_feedback": input_feedback.button_pressed, "catalog_sort": PracticeSettings.CATALOG_SORT_IDS[catalog_sort.selected], "pause_navigation": pause_navigation_check.button_pressed, "songs_pinned": songs_pin_check.button_pressed, "current_note_style": note_style_controls.current.get_item_metadata(note_style_controls.current.selected), "next_note_style": note_style_controls.next.get_item_metadata(note_style_controls.next.selected), "note_ripples": note_ripples_check.button_pressed, "score_playhead": score_playhead_check.button_pressed}
 	values.merge(listening.preference_values())
 	return values
 
@@ -3236,6 +3303,15 @@ func apply_preferences(values: Dictionary) -> void:
 	metro_check.set_pressed_no_signal(values.metronome)
 	audio.set_metronome(values.metronome)
 	update_metronome()
+	pause_navigation_check.set_pressed_no_signal(values.pause_navigation)
+	set_songs_pinned(values.songs_pinned)
+	for key: String in note_style_controls:
+		var picker: OptionButton = note_style_controls[key]
+		for index: int in range(picker.item_count):
+			if picker.get_item_metadata(index) == values[key + "_note_style"]: picker.select(index)
+	note_ripples_check.set_pressed_no_signal(values.note_ripples)
+	score_playhead_check.set_pressed_no_signal(values.score_playhead)
+	update_note_styles()
 	count_check.set_pressed_no_signal(values.count_in)
 	count_length.set_value_no_signal(values.count_measures)
 	instrument_slider.value = values.instrument_volume
@@ -3357,6 +3433,7 @@ func update_learning_controls() -> void:
 	for entry: Dictionary in BUILT_IN_LIBRARY:
 		if learning.has("song:" + str(entry.file)): songs_learned += 1
 	for index: int in library_song_buttons: update_song_button(index)
+	if song_shelf != null: song_shelf.update_current()
 	for index: int in range(fixtures.size()):
 		var learned: bool = learning.has("exercise:" + fixtures[index])
 		demo_picker.set_item_text(index, tr("LEARNING_EXERCISE_LABEL") % tr("DEMO_%d" % index) if learned else tr("DEMO_%d" % index))

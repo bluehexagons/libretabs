@@ -395,10 +395,10 @@ msgid "RESTART"
 msgstr "Restart"
 
 msgid "TIP_RESTART"
-msgstr "Return to the start of the song, or to the first measure of an active loop. If playing, playback continues from there."
+msgstr "Return to the start of the song, or to the first measure of an active loop. Playback stays paused by default; change this in Playback settings."
 
 msgid "SPEED"
-msgstr "Tap the track to set speed, or drag horizontally to adjust from the current value (0–999%). Dragging pans the range. At 0%, playback is paused; pitch stays the same."
+msgstr "Tap the track to set speed, or drag horizontally to adjust from the current value (0–999%). Slower speeds have more space on the slider. At 0%, playback is paused; pitch stays the same."
 
 msgid "SPEED_VALUE"
 msgstr "%d%% speed"
@@ -2579,3 +2579,54 @@ msgstr "Shapes distinguish note groups without relying on color."
 
 msgid "CONTROL_LAYOUT_SUMMARY"
 msgstr "Choose the control edge and your preferred hand. Small screens adapt the placement."
+
+msgid "PAUSE_NAVIGATION"
+msgstr "Pause after seeking or restarting"
+
+msgid "PAUSE_NAVIGATION_HELP"
+msgstr "Leave playback paused after moving to another position or restarting. Turn this off to resume automatically when the song was playing."
+
+msgid "SONGS_PIN"
+msgstr "Pin songs to practice"
+
+msgid "SONGS_PIN_HELP"
+msgstr "Keep a compact, scrolling song browser above the music. Tap a title to switch songs; playback stays stopped."
+
+msgid "SONGS_UNPIN"
+msgstr "Unpin"
+
+msgid "SONG_PINNED_CURRENT"
+msgstr "%s · Current"
+
+msgid "NOTE_STYLES"
+msgstr "Note highlights"
+
+msgid "NOTE_STYLES_HELP"
+msgstr "Choose how sounding notes and the next notes are marked. These cues follow the original song timing. Plain score removes these marks, ripples and the playback line."
+
+msgid "NOTE_STYLE_CURRENT"
+msgstr "Current notes — sounding now"
+
+msgid "NOTE_STYLE_NEXT"
+msgstr "Next notes — play these next"
+
+msgid "NOTE_STYLE_EMPHASIS"
+msgstr "Bold noteheads and outlined tab numbers"
+
+msgid "NOTE_STYLE_OUTLINE"
+msgstr "Rounded outline"
+
+msgid "NOTE_STYLE_UNDERLINE"
+msgstr "Curved underline"
+
+msgid "NOTE_STYLE_OFF"
+msgstr "Off"
+
+msgid "NOTE_RIPPLES"
+msgstr "Animate note-start ripples"
+
+msgid "SCORE_PLAYHEAD"
+msgstr "Show playback line"
+
+msgid "NOTE_STYLES_PLAIN"
+msgstr "Plain score — turn off highlights"

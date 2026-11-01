@@ -19,6 +19,10 @@ var last_follow_page: int = -1
 var oldest_sounding_tick: float = -1
 var effects_playing: bool = false
 var effects_speed: float = 1.0
+var current_note_style: String = "emphasis"
+var next_note_style: String = "underline"
+var note_ripples: bool = true
+var score_playhead: bool = true
 var page_starts: Array[int] = [0]
 var geometry_width: float = -1
 var upcoming_tick: float = -1
@@ -70,6 +74,13 @@ var seek_shift: float = 0.0
 var seek_tween: Tween
 var count_state: Dictionary = {}
 var count_pulse: CountPulse
+
+func copy_note_styles(source: ScoreView) -> void:
+	current_note_style = source.current_note_style
+	next_note_style = source.next_note_style
+	note_ripples = source.note_ripples
+	score_playhead = source.score_playhead
+	if cursor != null: cursor.queue_redraw()
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(240, 320)
@@ -498,7 +509,7 @@ func draw_cursor(surface: Control) -> void:
 		# A drag pans the score; only a stationary tap previews a seek.
 		if not pointer_pressed or not pointer_moved:
 			draw_timeline_indicator(surface, preview_x, preview_color, 3 if pointer_pressed else 2, wash, 30 if pointer_pressed else 20)
-	if tiles.has(measure_index):
+	if score_playhead and tiles.has(measure_index):
 		var tile: NotationMeasureStack = tiles[measure_index]
 		var origin: Vector2 = tile.position + strip.position
 		var x: float = layout.timeline_x(current_tick) - view_offset
@@ -509,8 +520,8 @@ func draw_cursor(surface: Control) -> void:
 		onset_start_tick = song.tick_at(song.seconds_at(current_tick) - ONSET_SECONDS * effects_speed)
 	for note: Dictionary in song.notes:
 		if int(note.part) != part and not staff_pair.has(int(note.part)): continue
-		var upcoming: bool = int(note.part) == part and float(note.start) == upcoming_tick
-		var sounding: bool = current_tick >= float(note.start) and current_tick < float(note.end)
+		var upcoming: bool = next_note_style != "off" and int(note.part) == part and float(note.start) == upcoming_tick
+		var sounding: bool = current_note_style != "off" and current_tick >= float(note.start) and current_tick < float(note.end)
 		var onset_phase: float = -1.0
 		if float(note.start) >= onset_start_tick and float(note.start) <= current_tick:
 			onset_phase = ripple_phase(note)
@@ -540,7 +551,8 @@ func draw_cursor(surface: Control) -> void:
 					if y >= top and y <= bottom:
 						if upcoming: draw_note_mark(surface, Vector2(x, y), maxf(10, mapped_row_distance(row_index, 8)), true, note, minf(9, mapped_row_distance(row_index, 9)))
 						elif sounding:
-							draw_staff_emphasis(surface, Vector2(x, y), note, row_index, index, clef)
+							if current_note_style == "emphasis": draw_staff_emphasis(surface, Vector2(x, y), note, row_index, index, clef)
+							else: draw_note_mark(surface, Vector2(x, y), maxf(10, mapped_row_distance(row_index, 8)), false, note, minf(9, mapped_row_distance(row_index, 9)))
 
 	draw_live(surface)
 	draw_piano_rows(surface)
@@ -729,7 +741,9 @@ func draw_staff_emphasis(surface: Control, center: Vector2, note: Dictionary, ro
 # Tab numbers use a rounded halo; staff emphasis retains the actual notehead.
 func draw_note_mark(surface: Control, center: Vector2, half: float, upcoming: bool, note: Dictionary, half_height: float = 14) -> void:
 	var color: Color = get_theme_color("accent", "LibreTabs") if upcoming else get_theme_color(ScoreLayout.placement_color_token(projection, note), "LibreTabs")
-	if upcoming:
+	var style: String = next_note_style if upcoming else current_note_style
+	if style == "off": return
+	if style == "underline":
 		var curve: PackedVector2Array = PackedVector2Array()
 		for step: int in range(17):
 			var u: float = step / 8.0 - 1.0
@@ -751,7 +765,7 @@ func draw_ripple(surface: Control, center: Vector2, note: Dictionary, phase: flo
 	surface.draw_arc(center, 13 + eased * 8, 0, TAU, 32, color, 1.5, true)
 
 func ripple_phase(note: Dictionary) -> float:
-	if song == null or reduced_motion or not effects_playing or effects_speed <= 0: return -1
+	if song == null or not note_ripples or reduced_motion or not effects_playing or effects_speed <= 0: return -1
 	var age: float = song.seconds_at(current_tick) - song.seconds_at(float(note.start))
 	var duration: float = ONSET_SECONDS * effects_speed
 	return age / duration if age >= 0 and age < duration else -1

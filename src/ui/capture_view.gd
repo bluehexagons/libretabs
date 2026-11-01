@@ -54,6 +54,7 @@ func configure(source: ScoreView, song_title: String, dark: bool, midnight: bool
 	card.add_theme_stylebox_override("panel", UIAppearance.box(UIAppearance.color("paper", dark, midnight), 8))
 	score.reduced_motion = source.reduced_motion
 	score.effects_speed = source.effects_speed
+	score.copy_note_styles(source)
 	score.set_shape_cues(source.shape_cues)
 	score.set_view("scroll", symbols)
 	score.set_document(source.song, source.part, source.projection)

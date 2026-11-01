@@ -71,6 +71,105 @@ func run() -> void:
 		check(app.get("opened_drawer") == "MENU_PRACTICE", "Back restores the menu category")
 		app.call("close_menu")
 		check(not app.get("menu_overlay").visible, "Close returns to practice")
+	# Navigation defaults, compact browsing and custom cues are part of the
+	# representative gate, including enlarged text and short landscape.
+	app.call("apply_scale", 1.0)
+	root.size = Vector2i(1280, 800)
+	await settle(app)
+	var speed_slider: RelativeSpeedSlider = app.get("main_speed")
+	var speed_key: InputEventKey = InputEventKey.new()
+	speed_key.pressed = true
+	speed_key.keycode = KEY_RIGHT
+	speed_slider.grab_focus()
+	speed_slider.handle_pointer(speed_key)
+	check(is_equal_approx(app.get("speed"), 1.01), "nonlinear slider keyboard changes exact percentage points")
+	app.call("set_speed", 1.0)
+	var tap: InputEventMouseButton = InputEventMouseButton.new()
+	tap.button_index = MOUSE_BUTTON_LEFT
+	tap.position = speed_slider.get_global_rect().get_center()
+	tap.pressed = true
+	speed_slider.handle_pointer(tap)
+	tap.pressed = false
+	speed_slider.handle_pointer(tap)
+	check(is_equal_approx(app.get("speed"), 1.25), "middle-of-track tap uses the same cubic mapping as the thumb")
+	app.call("set_speed", 1.0)
+	app.call("start", false)
+	app.call("seek_tick", 120)
+	check(not audio.playing_practice and app.get("source_tick") == 120, "seeking pauses at the exact chosen tick by default")
+	app.call("start", false)
+	app.call("restart_song")
+	check(not audio.playing_practice and app.get("source_tick") == 0, "restart pauses at the beginning by default")
+	app.call("start", false)
+	app.call("begin_seek_drag")
+	app.call("seek_tick", 240)
+	app.call("end_seek_drag", true)
+	check(not audio.playing_practice and app.get("source_tick") == 240, "scrub release stays paused by default")
+	app.get("pause_navigation_check").button_pressed = false
+	app.call("start", false)
+	app.call("seek_tick", 480)
+	check(audio.playing_practice, "navigation can resume automatically")
+	app.call("restart_song")
+	check(audio.playing_practice, "restart can resume automatically")
+	app.call("pause")
+	app.get("pause_navigation_check").button_pressed = true
+	var shelf: SongShelf = app.get("song_shelf")
+	app.call("set_songs_pinned", true)
+	for config: Array in [[1280, 800, 1.0], [360, 740, 2.0], [844, 390, 1.0]]:
+		root.size = Vector2i(config[0], config[1])
+		app.call("apply_scale", config[2])
+		await settle(app)
+		var viewport: Rect2 = Rect2(Vector2.ZERO, root.size)
+		check(viewport.encloses(shelf.get_global_rect()) and viewport.encloses(app.get("score_frame").get_global_rect()), "pinned browser and music fit %s shelf=%s score=%s root=%s" % [config, shelf.get_global_rect(), app.get("score_frame").get_global_rect(), app.get("root_box").get_global_rect()])
+		check(shelf.songs[0].size.y >= 44 and app.get("play_button").is_visible_in_tree(), "compact songs retain touch targets and playback")
+	root.size = Vector2i(1280, 800)
+	app.call("apply_scale", 1.0)
+	await settle(app)
+	shelf.scroller.scroll_vertical = 100
+	var scroll_before: int = shelf.scroller.scroll_vertical
+	shelf.songs[1].grab_focus()
+	shelf.songs[1].pressed.emit()
+	await settle(app)
+	check(shelf.visible and app.get("active_library") == 1 and not audio.playing_practice and not app.get("menu_overlay").visible, "pinned title switches songs in one tap without playing or closing the browser")
+	check(shelf.scroller.scroll_vertical == scroll_before and root.gui_get_focus_owner() == shelf.songs[1], "pinned song switch preserves scroll and keyboard focus")
+	shelf.search.text = "no such song"
+	shelf.search.text_changed.emit(shelf.search.text)
+	check(shelf.empty.visible, "empty pinned search explains how to recover")
+	shelf.search.clear()
+	shelf.search.text_changed.emit("")
+	var selected_song: SongDocument = app.get("song")
+	app.call("_file_picked", "invalid.mid", PackedByteArray([0]), "")
+	await settle(app)
+	check(app.get("song") == selected_song and not shelf.songs[0].disabled, "malformed import retains the song and leaves pinned browsing usable")
+	app.call("set_songs_pinned", false)
+	for key: String in app.get("note_style_controls"):
+		var picker: OptionButton = app.get("note_style_controls")[key]
+		picker.select(picker.item_count - 1)
+	app.get("note_ripples_check").set_pressed_no_signal(false)
+	app.get("score_playhead_check").set_pressed_no_signal(false)
+	app.call("update_note_styles")
+	var score: ScoreView = app.get("score")
+	app.call("enter_tv")
+	await settle(app)
+	app.call("change_tv_zoom", 20)
+	await settle(app)
+	var small_measures: int = score.tiles.size()
+	app.call("change_tv_zoom", 200)
+	await settle(app)
+	var spacing_at_200: float = score.note_spacing
+	app.call("change_tv_zoom", 400)
+	await settle(app)
+	check(score.note_spacing > spacing_at_200, "upper zoom range continues enlarging horizontal note spacing after height fit")
+	check(app.get("tv_zoom") == 4.0 and score.tiles.size() < small_measures, "expanded zoom extremes change the amount of visible music")
+	check(score.current_note_style == "off" and score.next_note_style == "off" and not score.note_ripples and not score.score_playhead, "plain score disables all playback note decoration")
+	for line: ScoreView in app.get("score_frame").continuations:
+		check(line.current_note_style == "off" and not line.note_ripples, "continuation lines inherit plain score")
+	app.get("capture_view").configure(score, "Test", false)
+	check(app.get("capture_view").score.current_note_style == "off" and not app.get("capture_view").score.score_playhead, "capture projection inherits plain score")
+	app.call("change_tv_zoom", 65)
+	app.call("enter_tv")
+	# Restore the original source for the invariant checked at the end.
+	app.call("load_library_item", 0)
+	await settle(app)
 	app.call("set_speed", 0.5)
 	app.get("count_check").button_pressed = false
 	app.get("loop_from").value = 1

@@ -2,7 +2,7 @@
 
 To use the current player, start with the [user guide](user-guide.md).
 
-Snapshot date: 2026-10-21. Current phase: evaluating public **prototype releases**.
+Snapshot date: 2026-11-01. Current phase: evaluating public **prototype releases**.
 
 The [evidence records](evidence/README.md) are dated snapshots. This handoff is
 the current summary; older measurements remain useful for their stated scope.
@@ -18,6 +18,12 @@ input and an on-screen piano provide local live-playing feedback; microphone
 pitch estimates are limited to one note at a time. The default library contains
 29 public-domain teaching arrangements and an original two-hand piano study. The
 six-lesson course and musical/platform acceptance gates remain incomplete.
+
+The [practice feedback follow-up](evidence/practice-feedback-2026-11-01.md)
+adds saved pause-on-seek/restart defaults, a pinned compact song browser, smaller
+catalog cards, a slow-tempo-friendly slider, 20–400% Theater zoom and independent
+current/next-note styles with a plain-score action. It preserves the shared
+transport, import bytes and explicit Play after song switching. See decision 0029.
 
 Menu → Screen & interface → Interface compares Classic, Focus, Touch and Workspace over the same
 session. Classic remains the default; selection is saved on the device. Shared

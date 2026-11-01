@@ -8,27 +8,31 @@ var pointer_active: bool = false
 var pointer_index: int = -1
 var origin: Vector2
 var origin_value: float
-var origin_min: float
-var origin_max: float
 var dragged: bool = false
 var control_tap: bool = false
 
-func pan_to(percent: float) -> void:
-	var lower: float = min_value
-	if percent < lower: lower = percent
-	if percent > lower + 175: lower = percent - 175
-	lower = clampf(roundf(lower), 0, 824)
-	# Range changes must not commit intermediate clamped values.
-	set_block_signals(true)
-	max_value = 999
-	min_value = lower
-	max_value = lower + 175
-	set_block_signals(false)
+# Cubic mapping gives the lower tempos most of the track. Range.value is
+# the thumb position; percentage is the only value passed to the transport.
+static func position_for_percent(percent: float) -> float:
+	return pow(clampf(percent / 999.0, 0, 1), 1.0 / 3.0)
+
+static func percent_for_position(position_ratio: float) -> float:
+	return roundf(999.0 * pow(clampf(position_ratio, 0, 1), 3))
+
+func percentage() -> float:
+	return percent_for_position(value)
+
+func set_percentage(percent: float) -> void:
+	set_value_no_signal(position_for_percent(percent))
+
+func pointer_ratio(x: float) -> float:
+	var inset: float = get_theme_icon("grabber").get_width() / 2.0
+	return clampf((x - global_position.x - inset) / maxf(1, size.x - 2 * inset), 0, 1)
 
 func handle_pointer(event: InputEvent) -> bool:
 	if not is_visible_in_tree(): return false
 	if event is InputEventKey and has_focus() and event.pressed:
-		var next: float = value
+		var next: float = percentage()
 		match event.keycode:
 			KEY_LEFT, KEY_DOWN: next -= 1
 			KEY_RIGHT, KEY_UP: next += 1
@@ -38,8 +42,7 @@ func handle_pointer(event: InputEvent) -> bool:
 			KEY_END: next = 999
 			_: return false
 		next = clampf(next, 0, 999)
-		pan_to(next)
-		value = next
+		value = position_for_percent(next)
 		return true
 	if not (event is InputEventMouseButton or event is InputEventMouseMotion or event is InputEventScreenTouch or event is InputEventScreenDrag): return false
 	var position: Vector2 = event.position
@@ -58,8 +61,6 @@ func handle_pointer(event: InputEvent) -> bool:
 		pointer_index = index
 		origin = position
 		origin_value = value
-		origin_min = min_value
-		origin_max = max_value
 		dragged = false
 		control_tap = over_control
 		grab_focus()
@@ -76,14 +77,12 @@ func handle_pointer(event: InputEvent) -> bool:
 			return true
 		if absf(delta.x) > 8: dragged = true
 		if dragged:
-			var percent: float = clampf(roundf(origin_value + delta.x * 175 / maxf(100, size.x)), 0, 999)
-			pan_to(percent)
-			value = percent
+			value = clampf(origin_value + delta.x / maxf(1, size.x - get_theme_icon("grabber").get_width()), 0, 1)
 		return true
 	if button_event and not event.pressed:
 		pointer_active = false
 		if not dragged and not control_tap:
-			value = lerpf(origin_min, origin_max, clampf((position.x - global_position.x) / size.x, 0, 1))
+			value = pointer_ratio(position.x)
 		drag_ended.emit(not is_equal_approx(value, origin_value))
 		if not dragged and control_tap and over_control: tap_control.emit()
 		return true
@@ -92,7 +91,6 @@ func handle_pointer(event: InputEvent) -> bool:
 func cancel_pointer() -> void:
 	if not pointer_active: return
 	pointer_active = false
-	pan_to(origin_value)
 	set_value_no_signal(origin_value)
 	drag_ended.emit(false)
 

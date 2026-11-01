@@ -50,7 +50,11 @@ func begin_pointer(position: Vector2, touch: bool = false) -> void:
 func _get_tooltip(_at_position: Vector2) -> String:
 	# A visible label already names the action. Keep captions for unlabeled icons
 	# and keep tooltip_text available to explicit F1/touch help.
-	if not HoverHelp.allowed() or not text.is_empty(): return ""
+	if not HoverHelp.allowed(): return ""
+	if not text.is_empty():
+		if not clip_text: return ""
+		var text_width: float = get_theme_font("font").get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, get_theme_font_size("font_size")).x
+		if text_width <= size.x - 24: return ""
 	return str(get_meta("hover_caption", tooltip_text))
 
 func _make_custom_tooltip(for_text: String) -> Object:

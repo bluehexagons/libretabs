@@ -59,8 +59,8 @@ layouts; a final redesign has not been selected.
    staff noteheads mark sounding notes without changing their shape.
 3. Open **Menu → Practice → Playback** and choose a slower speed, such as **50%** under
    **Speed presets**. That means half the original speed, with the same pitches.
-   Choose **Restart** beside Play to return to the beginning. If sound is
-   playing, it continues from the start.
+   Choose **Restart** beside Play to return to the beginning and pause.
+   Press Play when you are ready.
 4. Follow just a few numbers on the guitar tabs, using the reading guide below.
    It is fine to listen again before joining in.
 5. To repeat a short section, open **Menu → Practice → Loop**, set **From** to **1** and
@@ -132,9 +132,16 @@ so unusually detailed rhythms may not line up exactly with the simplified symbol
 
 In **Songs** (also in the Theater header), use **Listen** to hear up to 12 seconds
 from the first note of a built-in song. Listen keeps your current song open and
-pauses any playing practice audio. Use **Try** to open the song for practice.
+pauses any playing practice audio. Tap the song title to open it for practice.
 Search by title or composer, or expand the filters to browse by suggested level,
 length, starting speed, and instrument. **Open MIDI file** loads your own music.
+Enable **Pin songs to practice** to keep a compact scrolling browser above the
+music. Tap a title to switch in one action; playback waits for Play. The browser
+keeps its scroll position and keyboard focus. Search narrows this list, **Songs**
+opens the full catalog, and **Unpin** removes the browser. Pinning is remembered;
+imported songs are never added to a saved list. Both search fields have a clear
+button and Enter opens the first matching song.
+
 A **MIDI file** contains note and timing instructions; it is not
 a recording such as an MP3, a photograph of sheet music, or a guitar-tab
 document. Use a `.mid` or `.midi` file.
@@ -175,7 +182,8 @@ notice explains that new marks may last only for this session.
 ## Saved settings and defaults
 
 LibreTabs remembers sound, effects, count-in, beat clicks, volumes, keyboard
-layout/octave/visibility/feedback, regular reading mode, song sorting and tuner
+layout/octave/visibility/feedback, regular reading mode, pinned songs, song sorting,
+seek/restart pausing, note highlights and tuner
 instrument/sensitivity/reference. It also keeps the existing appearance, text,
 interface, notation rows, handedness, control edge and regular/Theater layout
 preferences. Microphone/controller connections, calibration and temporary musical
@@ -187,11 +195,26 @@ marks, and brings back Quick start on the next launch. If saved settings could n
 be cleared, a notice explains that the defaults apply for this session and older
 values may return next time.
 
+In **Menu → Score & print → Score view → Note highlights**, choose the current
+and next note styles separately: outlines, curved underlines or Off. Current
+notes can also use bold noteheads with outlined tab numbers. Note-start ripples
+and the playback line have separate switches. **Plain score — turn off highlights**
+turns all four off; navigation, music and input feedback keep working. Choices
+apply to regular practice, Theater, continuation lines and capture. Reduced
+motion always suppresses ripples. Printed music remains undecorated.
+
+Theater **Music zoom** now runs from **20% to 400%**. Smaller zoom fits more
+music horizontally; larger zoom shows less. Music still fits the available
+height, so choose fewer Music lines if you need taller notes.
+
 ## Adjust playback and repeat a passage
 
 - **Playback speed:** 100% is the original speed; 50% is half speed. **Slower −5%**
   and **Faster +5%** make small changes. **Original speed** restores 100%. At 0%,
-  playback pauses; raise the speed and press Play to continue.
+  playback pauses; raise the speed and press Play to continue. The slider gives
+  slower speeds more room for fine adjustment and compresses faster speeds,
+  with the full 0–999% range always on the track. Arrow keys adjust one percentage
+  point; Page Up/Down adjust five; Home/End select 0/999%.
 - **Custom starting BPM:** BPM means beats per minute. A starting value of 60 is
   one beat per second. Later tempo changes keep their proportions. Changing speed
   changes how quickly notes arrive, not their pitch.
@@ -205,12 +228,15 @@ values may return next time.
   landscape and manual pages. Its compact label shows measure number and elapsed
   time. Small score jumps ease into place; Reduced Motion makes them immediate.
   **Restart** returns to the beginning of the song, or the beginning of an enabled loop.
+  Seeking and restarting leave playback paused by default. Turn off **Pause after
+  seeking or restarting** in Playback to resume automatically if already playing.
+  Changing speed or other playback settings keeps its existing playback behavior.
 - **Loop:** From and Through include the first and last measures you choose.
   **Repeat this measure** sets and enables a one-measure loop. **Start at current
   measure** and **End at current measure** set the range from the current position.
   **Play selected section** starts at the first selected measure and repeats,
   using your count-in setting. **Repeat whole song** selects all measures and
-  returns to the beginning; paused playback waits for Play. Turning looping off
+  returns to the beginning and pauses by default. Turning looping off
   keeps the selected range for later.
 - **When a song finishes:** the music stays visible and Play becomes **Replay**.
   The final notes and their room echo fade out briefly.
