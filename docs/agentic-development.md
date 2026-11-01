@@ -271,12 +271,14 @@ branch experiments, release candidates and compatibility comparisons as local
 exports unless the owner explicitly requests another publication. Versioned
 release packages and public distribution follow the existing release workflow.
 
-The local `libretabs-guide` is documentation only. When refreshing it, build with
-`PLAYER_URL=https://bluehexagons.github.io/libretabs/play/` and omit
-`--threaded-player` and `--compatibility-player`. Publish that guide output with
-the existing `libretabs-guide` site name. The guide uses the public GitHub Pages
-player; LAN preview addresses belong in local development notes. Public Pages
-builds continue bundling their players through the release workflow.
+Host both the guide (`libretabs-guide`) and player (`libretabs-prototype`) on
+the managed VM. The local guide's Play/Open player links must open that local
+player. Discover its current URL with the gateway and supply it through
+`PLAYER_URL` when building the guide. Keep private addresses out of tracked
+source; the generated local guide may contain the discovered URL. Omit
+`--threaded-player` and `--compatibility-player` for this guide so it reuses the
+single player publication. Public Pages builds continue bundling their players
+through the release workflow.
 
 The September 2026 planning inventory reported desktop and web templates;
 recheck rather than assuming that historical result still applies. Before
@@ -300,6 +302,30 @@ Use the `game` value returned by publication:
 basaltwater-web url GAME
 basaltwater-web doctor GAME
 ```
+
+Then rebuild and publish the local guide from a fresh task directory:
+
+```bash
+mkdir -p artifacts/generated
+libretabs_preview_dir="$(mktemp -d artifacts/generated/local-preview.XXXXXX)"
+libretabs_player_url="$(basaltwater-web url libretabs-prototype)"
+PLAYER_URL="$libretabs_player_url" python3 scripts/build_site.py --output "$libretabs_preview_dir/guide"
+basaltwater-web publish site libretabs-guide --output "$libretabs_preview_dir/guide" --no-build --json
+basaltwater-web site doctor libretabs-guide
+basaltwater-web site verify libretabs-guide --project . --output "$libretabs_preview_dir/guide" --json
+basaltwater-web site url libretabs-guide
+```
+
+Open the guide and follow **Open player** to verify it stays on the local
+managed origin and loads the current game. A healthy route alone does not
+verify the link target or cached player version. Preserve selected evidence and
+remove task staging under the [artifact-retention rules](artifact-retention.md).
+
+Include direct clickable Markdown links to **both** pages in progress updates
+after publication and in the final handoff. Repeat them when requesting manual
+testing or reporting UI changes, with a short description of what is ready to
+try and what was checked. Use the URLs returned by the two gateway commands;
+shell discovery commands alone are not a testing handoff.
 
 The returned HTTPS URL is authoritative. Do not start a public plain-HTTP server, edit Nginx/UFW, invent a local public URL, or bypass certificate checks. The evaluation `Web` preset is threaded following the measured mitigation in [decision 0002](decisions/0002-m0-evaluation-build.md). It remains static; the deployment must supply compatible cross-origin-isolation headers. The non-threaded comparison preset remains available.
 

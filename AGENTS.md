@@ -68,9 +68,20 @@ Basaltwater on Debian is the reference development environment. Follow the [shar
 
 Keep one published player on the managed VM: `libretabs-prototype`. Refresh that
 publication for authorized preview updates. Keep comparison builds local unless
-the owner explicitly requests another publication. The local `libretabs-guide`
-links to the public GitHub Pages player; keep LAN preview addresses out of the
-guide and avoid bundling a separate local player export. See the
+the owner explicitly requests another publication. Host the guide locally as
+`libretabs-guide` and point its Play/Open player links at the local
+`libretabs-prototype` URL returned by `basaltwater-web url`; both pages must be
+usable on the managed network. Build that URL into the local guide via
+`PLAYER_URL`, without hardcoding private addresses in tracked files or bundling
+a duplicate player. Public GitHub Pages builds keep their release workflow.
+
+After preview updates, include clickable Markdown links to **both the local guide
+and local player** in progress updates and the final handoff so the owner can
+test them directly. Repeat the links when asking for manual testing or reporting
+UI changes; do not make the owner discover URLs from shell commands. Resolve
+current URLs with `basaltwater-web site url libretabs-guide` and
+`basaltwater-web url libretabs-prototype`, and say which changes were published
+and checked. See the
 [shared preview workflow](docs/agentic-development.md#web-export-and-shared-preview).
 
 Use a bounded task directory under ignored `artifacts/generated/` for new

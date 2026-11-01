@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0
-"""Stage the Pages guide and optional player exports as one complete site."""
+"""Stage the guide and optional player exports as one complete site."""
 from pathlib import Path
 import argparse
 import html
@@ -21,7 +21,7 @@ def player_link(url, label):
     parsed = urlsplit(url)
     if (parsed.scheme != 'https' or not parsed.hostname or parsed.username or parsed.password
             or any(char.isspace() or ord(char) < 32 for char in url) or '\\' in url):
-        raise ValueError('Player links must be public HTTPS URLs without credentials or whitespace')
+        raise ValueError('Player links must be HTTPS URLs without credentials or whitespace')
     return f'<a class="button" href="{html.escape(url, quote=True)}">{html.escape(label)}</a>'
 
 
@@ -69,17 +69,22 @@ def build(output, player_url='', itch_url='', threaded_player=None, compatibilit
     page = page.replace('{{RELEASE_VERSION}}', html.escape(version_label))
     page = page.replace('{{RELEASE_DOWNLOAD_URL}}', release_download_url(release_version))
     bundled = threaded_player is not None
-    page = page.replace('{{PAGES_NAV}}', '<a href="play/">Play</a>' if bundled else '')
-    page = page.replace('{{PAGES_PLAYER_LINK}}', '<a class="button" href="play/"><svg class="icon" aria-hidden="true"><use href="#play"/></svg>Open player</a>' if bundled else '')
+    # A separately published player is the primary entry point when this guide
+    # has no bundled export, including the managed local guide/player pair.
+    standalone_link = player_link(player_url, 'Open player')
+    player_nav = '<a href="play/">Play</a>' if bundled else (
+        f'<a href="{html.escape(player_url, quote=True)}">Play</a>' if player_url else '')
+    page = page.replace('{{PAGES_NAV}}', player_nav)
+    page = page.replace('{{PAGES_PLAYER_LINK}}', '<a class="button" href="play/"><svg class="icon" aria-hidden="true"><use href="#play"/></svg>Open player</a>' if bundled else standalone_link)
     compatibility = ''
     if compatibility_player is not None:
         compatibility = '<p class="compatibility">If the main player does not start in your browser, <a class="text-action" href="play-compatible/">try the compatibility player</a>. It supports more browser configurations, but timing and audio response may be less consistent.</p>'
     page = page.replace('{{COMPATIBILITY_NOTE}}', compatibility)
-    page = page.replace('{{PLAYER_LINK}}', player_link(player_url, 'Alternate browser host'))
+    page = page.replace('{{PLAYER_LINK}}', player_link(player_url, 'Alternate browser host') if bundled else '')
     page = page.replace('{{ITCH_LINK}}', player_link(itch_url, 'LibreTabs on itch.io'))
-    if bundled:
+    if bundled or player_url:
         note = 'The player may reload once on its first visit while it prepares secure browser features and offline files.'
-    elif player_url or itch_url:
+    elif itch_url:
         note = 'Browser play opens on a separate host.'
     else:
         note = 'Browser-play links will appear here when the hosted versions are ready.'

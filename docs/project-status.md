@@ -91,9 +91,13 @@ requires an Electron/Tauri comparison. Keyboard access, readable text, touch
 targets and non-color cues remain requirements. Platform and timing evidence
 must still be gathered; the stack decision is not a technical pass.
 
-Discover the managed preview with `basaltwater-web url libretabs-prototype`;
-see the [development workflow](agentic-development.md). It is available on the
-managed network and is not a public launch URL.
+Both the guide and player are hosted on the managed VM. The local guide's Play
+links open the local player. Discover their URLs with
+`basaltwater-web site url libretabs-guide` and
+`basaltwater-web url libretabs-prototype`; see the
+[development workflow](agentic-development.md#web-export-and-shared-preview).
+Agent testing handoffs include clickable links to both pages. They are available
+on the managed network and are not public launch URLs.
 
 ## Distribution readiness
 

@@ -42,6 +42,18 @@ class SiteTests(unittest.TestCase):
         self.assertIn('&amp;', player_link('https://example.com/?a=1&b=2', 'Play'))
         self.assertIn('&quot;', player_link('https://example.com/?a="hi"', 'Play'))
 
+    def test_separately_hosted_player_is_the_primary_entry_point(self):
+        with tempfile.TemporaryDirectory() as temp:
+            output = Path(temp) / 'guide'
+            url = 'https://preview.example.test/games/test/libretabs-prototype/'
+            build(output, player_url=url)
+            page = (output / 'index.html').read_text()
+            self.assertIn(f'href="{url}">Play</a>', page)
+            self.assertIn(f'href="{url}">Open player</a>', page)
+            self.assertNotIn('Alternate browser host', page)
+            self.assertNotIn('https://bluehexagons.github.io/libretabs/play/', page)
+            self.assertFalse((output / 'play').exists())
+
     def test_bundles_two_isolated_player_scopes(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -51,10 +63,12 @@ class SiteTests(unittest.TestCase):
                 for name in ('index.html', 'index.js', 'index.wasm', 'index.pck', 'index.service.worker.js'):
                     (source / name).write_bytes((folder + name).encode())
             output = root / 'site'
-            build(output, threaded_player=root / 'threaded', compatibility_player=root / 'compatible')
+            build(output, player_url='https://alternate.example.test/',
+                  threaded_player=root / 'threaded', compatibility_player=root / 'compatible')
             page = (output / 'index.html').read_text()
             self.assertIn('href="play/"', page)
             self.assertIn('href="play-compatible/"', page)
+            self.assertIn('href="https://alternate.example.test/">Alternate browser host</a>', page)
             self.assertTrue((output / 'play/index.service.worker.js').is_file())
             self.assertTrue((output / 'play-compatible/index.service.worker.js').is_file())
 
