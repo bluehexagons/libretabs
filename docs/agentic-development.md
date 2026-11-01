@@ -193,7 +193,7 @@ python3 scripts/verify.py --extended
 | Practice actions, playback navigation, scrolling/page following | `practice` and `ui-smoke` |
 | Score drawing, responsive layout, interface modes, Theater, shared UI sizing | `ui-smoke`; optional `layout` for the larger layout/interface/Theater matrices. |
 | Menu/search, appearance, translated labels | `ui-smoke`; optional `menu` or `practice-audit` for deeper presentation coverage. |
-| Settings, learning progress, native host persistence | `state`; optional `state-audit` adds the interface/viewport/text-size matrix. Web storage also needs the browser smoke below. |
+| Settings, learning progress, native host persistence, catalog learned-mark layout | `state` (and `ui-smoke` for catalog layout); optional `state-audit` adds the interface/viewport/text-size matrix. Web storage also needs the browser smoke below. |
 | Python build/release/site/music tools or JavaScript host/cache bridges | Their unit tests are already in `quick`; `--suite python` or `--suite web` can run alone without Godot. |
 | Godot pin/project configuration, test runner, broad app/core contracts | `--full`; the additional `editor` audit is opt-in. |
 

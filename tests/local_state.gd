@@ -44,6 +44,11 @@ func visible_in_menu(app: Control, control: Control, message: String) -> void:
 	for _frame: int in range(3): await process_frame
 	check(control.is_visible_in_tree() and Rect2(Vector2.ZERO, Vector2(root.size)).encloses(control.get_global_rect()), message)
 
+func learned_label_fits(control: CheckBox) -> bool:
+	var text_width: float = control.get_theme_font("font").get_string_size(control.text, HORIZONTAL_ALIGNMENT_LEFT, -1, control.get_theme_font_size("font_size")).x
+	var decoration_width: float = control.get_theme_icon("checked").get_width() + control.get_theme_constant("h_separation") + control.get_theme_stylebox("normal").get_minimum_size().x
+	return control.size.x >= text_width + decoration_width
+
 func _initialize() -> void: call_deferred("run")
 
 func run() -> void:
@@ -112,8 +117,7 @@ func run() -> void:
 	app.call("refresh_song_catalog")
 	for _frame: int in range(8): await process_frame
 	var filtered_check: CheckBox = app.get("library_learned_checks")[0]
-	var filtered_text: float = filtered_check.get_theme_font("font").get_string_size(filtered_check.text, HORIZONTAL_ALIGNMENT_LEFT, -1, filtered_check.get_theme_font_size("font_size")).x
-	check(filtered_check.size.x >= filtered_text + 64 and filtered_check.size.y <= 64, "filtered cards fit their learned labels without resizing the window")
+	check(learned_label_fits(filtered_check) and filtered_check.size.y >= 44 and filtered_check.size.y <= filtered_check.get_combined_minimum_size().y, "filtered cards fit their learned labels and touch targets without resizing the window")
 	app.get("library_learned_checks")[0].button_pressed = false
 	for _frame: int in range(4): await process_frame
 	check(app.get("library_song_buttons").is_empty() and app.get("catalog_learning").is_ancestor_of(root.gui_get_focus_owner()), "unchecking the last filtered card returns keyboard focus to the filter target")
@@ -214,9 +218,7 @@ func run() -> void:
 				await visible_in_menu(app, app.get("current_learning_check"), "current mark remains reachable across interface/size/text choices")
 				var card_mark: CheckBox = app.get("library_learned_checks")[0]
 				await visible_in_menu(app, card_mark, "song card mark remains reachable across interface/size/text choices")
-				var text_width: float = card_mark.get_theme_font("font").get_string_size(card_mark.text, HORIZONTAL_ALIGNMENT_LEFT, -1, card_mark.get_theme_font_size("font_size")).x
-				var checkbox_width: float = card_mark.get_theme_icon("checked").get_width() + card_mark.get_theme_constant("h_separation") + card_mark.get_theme_stylebox("normal").get_minimum_size().x
-				check(card_mark.size.x >= text_width + checkbox_width, "short learned label does not break across lines")
+				check(learned_label_fits(card_mark), "short learned label does not break across lines")
 				app.call("toggle_drawer", "RESET_SETTINGS")
 				await visible_in_menu(app, action(app.get("drawers")["RESET_SETTINGS"], "RESET_SETTINGS_DO"), "reset confirmation remains reachable across interface/size/text choices")
 	app.call("clear_learning_progress")
