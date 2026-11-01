@@ -2120,19 +2120,19 @@ msgid "LIBRARY_ODE_TO_JOY_CREDIT"
 msgstr "Beethoven"
 
 msgid "LIBRARY_FUR_ELISE_NAME"
-msgstr "Für Elise · opening theme"
+msgstr "Für Elise"
 
 msgid "LIBRARY_FUR_ELISE_CREDIT"
 msgstr "Beethoven"
 
 msgid "LIBRARY_SPRING_NAME"
-msgstr "Spring · opening theme"
+msgstr "Spring"
 
 msgid "LIBRARY_SPRING_CREDIT"
 msgstr "Vivaldi"
 
 msgid "LIBRARY_CANON_IN_D_NAME"
-msgstr "Canon in D · opening, twice"
+msgstr "Canon in D"
 
 msgid "LIBRARY_CANON_IN_D_CREDIT"
 msgstr "Pachelbel"
@@ -2144,19 +2144,19 @@ msgid "LIBRARY_TWINKLE_CREDIT"
 msgstr "traditional"
 
 msgid "LIBRARY_THE_ENTERTAINER_NAME"
-msgstr "The Entertainer · first strain"
+msgstr "The Entertainer"
 
 msgid "LIBRARY_THE_ENTERTAINER_CREDIT"
 msgstr "Scott Joplin"
 
 msgid "LIBRARY_MARY_HAD_A_LITTLE_LAMB_NAME"
-msgstr "Mary Had a Little Lamb · twice"
+msgstr "Mary Had a Little Lamb"
 
 msgid "LIBRARY_MARY_HAD_A_LITTLE_LAMB_CREDIT"
 msgstr "American traditional"
 
 msgid "LIBRARY_FRERE_JACQUES_NAME"
-msgstr "Frère Jacques · twice"
+msgstr "Frère Jacques"
 
 msgid "LIBRARY_FRERE_JACQUES_CREDIT"
 msgstr "French traditional"
@@ -2168,7 +2168,7 @@ msgid "LIBRARY_AULD_LANG_SYNE_CREDIT"
 msgstr "Scottish traditional"
 
 msgid "LIBRARY_YANKEE_DOODLE_NAME"
-msgstr "Yankee Doodle · twice"
+msgstr "Yankee Doodle"
 
 msgid "LIBRARY_YANKEE_DOODLE_CREDIT"
 msgstr "American traditional"
@@ -2186,43 +2186,43 @@ msgid "LIBRARY_MINUET_IN_G_CREDIT"
 msgstr "Christian Petzold"
 
 msgid "LIBRARY_ROW_YOUR_BOAT_NAME"
-msgstr "Row, Row, Row Your Boat · twice"
+msgstr "Row, Row, Row Your Boat"
 
 msgid "LIBRARY_ROW_YOUR_BOAT_CREDIT"
 msgstr "traditional"
 
 msgid "LIBRARY_JINGLE_BELLS_NAME"
-msgstr "Jingle Bells · simplified refrain"
+msgstr "Jingle Bells"
 
 msgid "LIBRARY_JINGLE_BELLS_CREDIT"
 msgstr "James Lord Pierpont"
 
 msgid "LIBRARY_GREENSLEEVES_NAME"
-msgstr "Greensleeves · melody study"
+msgstr "Greensleeves"
 
 msgid "LIBRARY_GREENSLEEVES_CREDIT"
 msgstr "traditional"
 
 msgid "LIBRARY_AMAZING_GRACE_NAME"
-msgstr "Amazing Grace · New Britain melody"
+msgstr "Amazing Grace"
 
 msgid "LIBRARY_AMAZING_GRACE_CREDIT"
 msgstr "traditional"
 
 msgid "LIBRARY_LONDON_BRIDGE_NAME"
-msgstr "London Bridge · twice"
+msgstr "London Bridge"
 
 msgid "LIBRARY_LONDON_BRIDGE_CREDIT"
 msgstr "English traditional"
 
 msgid "LIBRARY_OLD_MACDONALD_NAME"
-msgstr "Old MacDonald Had a Farm · melody study"
+msgstr "Old MacDonald Had a Farm"
 
 msgid "LIBRARY_OLD_MACDONALD_CREDIT"
 msgstr "traditional"
 
 msgid "LIBRARY_WHEN_THE_SAINTS_NAME"
-msgstr "When the Saints Go Marching In · melody study"
+msgstr "When the Saints Go Marching In"
 
 msgid "LIBRARY_WHEN_THE_SAINTS_CREDIT"
 msgstr "traditional"
@@ -2240,7 +2240,7 @@ msgid "LIBRARY_SILENT_NIGHT_CREDIT"
 msgstr "Franz Xaver Gruber"
 
 msgid "LIBRARY_CAMPTOWN_RACES_NAME"
-msgstr "Camptown Races · twice"
+msgstr "Camptown Races"
 
 msgid "LIBRARY_CAMPTOWN_RACES_CREDIT"
 msgstr "Stephen Foster"
@@ -2252,37 +2252,37 @@ msgid "LIBRARY_AU_CLAIR_DE_LA_LUNE_CREDIT"
 msgstr "French traditional"
 
 msgid "LIBRARY_HOT_CROSS_BUNS_NAME"
-msgstr "Hot Cross Buns · three times"
+msgstr "Hot Cross Buns"
 
 msgid "LIBRARY_HOT_CROSS_BUNS_CREDIT"
 msgstr "English traditional"
 
 msgid "LIBRARY_SIMPLE_GIFTS_NAME"
-msgstr "Simple Gifts · Shaker melody study"
+msgstr "Simple Gifts"
 
 msgid "LIBRARY_SIMPLE_GIFTS_CREDIT"
 msgstr "Joseph Brackett"
 
 msgid "LIBRARY_SAKURA_SAKURA_NAME"
-msgstr "Sakura Sakura · melody study"
+msgstr "Sakura Sakura"
 
 msgid "LIBRARY_SAKURA_SAKURA_CREDIT"
 msgstr "Japanese traditional"
 
 msgid "LIBRARY_POP_GOES_THE_WEASEL_NAME"
-msgstr "Pop Goes the Weasel · twice"
+msgstr "Pop Goes the Weasel"
 
 msgid "LIBRARY_POP_GOES_THE_WEASEL_CREDIT"
 msgstr "English traditional"
 
 msgid "LIBRARY_HOME_ON_THE_RANGE_NAME"
-msgstr "Home on the Range · verse and chorus"
+msgstr "Home on the Range"
 
 msgid "LIBRARY_HOME_ON_THE_RANGE_CREDIT"
 msgstr "Daniel E. Kelley"
 
 msgid "LIBRARY_OH_SUSANNA_NAME"
-msgstr "Oh! Susanna · melody study"
+msgstr "Oh! Susanna"
 
 msgid "LIBRARY_OH_SUSANNA_CREDIT"
 msgstr "Stephen Foster"
