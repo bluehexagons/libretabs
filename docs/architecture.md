@@ -398,6 +398,13 @@ song switches to the composition root and never owns playback. ScoreView project
 saved note styles using the shared source tick; ScoreFrame/capture copy them to
 every visible score. The fixed cubic tempo-slider mapping stays at the UI boundary.
 
+[Decision 0030](decisions/0030-song-details-and-reference-tempo.md) adds bundled,
+localized song histories and explicit reference links in a separate details view.
+SongDetails presents trusted catalog metadata and delegates source links to the
+host adapter. A session BPM override supplies a reference for relative speed;
+`playback_speed()` is the single conversion to the source tempo multiplier used
+by transport, effects and input timing. The canonical tempo map is unchanged.
+
 ## Platform adapters
 
 Define interfaces around capabilities rather than checking feature tags throughout UI code:

@@ -33,7 +33,7 @@ Play and the tempo unit while secondary controls remain available in menus.
 Menu and Settings share a directory with six categories: Practice, Score &
 print, Sound & input, Screen & interface, Songs & progress, and Help & app. Songs
 and Tuner stay directly reachable. Songs can be pinned as a compact, independently
-scrolling browser above practice; title taps switch pieces without starting audio. Cards show short summaries and use more
+scrolling browser above practice; title taps switch pieces without starting audio. Compact cards open expanded song details with historical credits, source links and honest arrangement notes. The pinned browser also offers those details. Cards use more
 columns when the viewport and text size allow. Find an option searches the
 translated titles, summaries, categories and setting labels, with spaces and
 punctuation treated alike; Enter opens the first result. Results name their
@@ -221,7 +221,7 @@ Import is cancellable and transactional: a failed or cancelled replacement leave
 ### Playback and practice controls
 
 - Play/pause/stop, direct click/tap seeking on the music, a continuous timeline scrub with readable measure/time feedback, count-in, metronome, independent instrument/metronome volume, 0–999% tempo and custom starting BPM, and contiguous measure loop.
-- Keep speed and the metronome near Play. Present the direct speed control as one unit containing its icon, percentage and slider at all supported text sizes. Normal text also shows an explicit click on/off toggle; enlarged layouts reach it through the percentage control. Menu → Practice → Playback groups speed steps, original speed, metronome, count-in, presets and custom BPM; Volume & parts holds the mixer.
+- Keep speed and the metronome near Play. Present the direct speed control as one unit containing its icon, percentage and slider at all supported text sizes. Normal text also shows an explicit click on/off toggle; enlarged layouts reach it through the percentage control. Menu → Practice → Playback offers a manual base BPM override and reset to song BPM; percentages scale from that reference, with marked pointer snap divisions. It also groups speed steps, metronome, count-in and presets; Volume & parts holds the mixer.
 - Dragging the speed control adjusts relative to the press position and pans its range; tapping the track selects a position and tapping the percentage opens Playback. Zero pauses at the current position.
 - Slower/faster steps change speed by five percentage points within 0–999%; Original speed restores 100%. Repeat this measure initializes the existing loop range from the current playback measure.
 - Metronome toggling leaves the active stream and position intact; count-in remains independent. Changing the count-in option affects the next start, not an ongoing phrase.

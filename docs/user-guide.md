@@ -58,7 +58,7 @@ layouts; a final redesign has not been selected.
    The moving line follows the music. Rounded outlines mark sounding tab numbers; slightly larger, bolder
    staff noteheads mark sounding notes without changing their shape.
 3. Open **Menu → Practice → Playback** and choose a slower speed, such as **50%** under
-   **Speed presets**. That means half the original speed, with the same pitches.
+   **Speed presets**. That means half the base tempo, with the same pitches. The base initially follows the song.
    Choose **Restart** beside Play to return to the beginning and pause.
    Press Play when you are ready.
 4. Follow just a few numbers on the guitar tabs, using the reading guide below.
@@ -134,10 +134,10 @@ In **Songs** (also in the Theater header), use **Listen** to hear up to 12 secon
 from the first note of a built-in song. Listen keeps your current song open and
 pauses any playing practice audio. Tap the song title to open it for practice.
 Search by title or composer, or expand the filters to browse by suggested level,
-length, starting speed, and instrument. **Open MIDI file** loads your own music.
+length, starting speed, and instrument. **About** opens the full song details: duration, practice tempo, instruments, what the teaching arrangement changes, and a sourced historical note. Source buttons open references in your browser; the notes themselves work offline. **Practice this song** selects it. **Back** returns to browsing. **Open MIDI file** loads your own music.
 Enable **Pin songs to practice** to keep a compact scrolling browser above the
 music. Tap a title to switch in one action; playback waits for Play. The browser
-keeps its scroll position and keyboard focus. Search narrows this list, **Songs**
+keeps its scroll position and keyboard focus. The information button beside each title opens its details without switching songs. Search narrows this list, **Songs**
 opens the full catalog, and **Unpin** removes the browser. Pinning is remembered;
 imported songs are never added to a saved list. Both search fields have a clear
 button and Enter opens the first matching song.
@@ -209,15 +209,13 @@ height, so choose fewer Music lines if you need taller notes.
 
 ## Adjust playback and repeat a passage
 
-- **Playback speed:** 100% is the original speed; 50% is half speed. **Slower −5%**
-  and **Faster +5%** make small changes. **Original speed** restores 100%. At 0%,
+- **Playback speed:** 100% is the base tempo; 50% is half that tempo. **Slower −5%**
+  and **Faster +5%** make small changes. **100% of base tempo** restores 100%. At 0%,
   playback pauses; raise the speed and press Play to continue. The slider gives
   slower speeds more room for fine adjustment and compresses faster speeds,
-  with the full 0–999% range always on the track. Arrow keys adjust one percentage
+  with the full 0–999% range always on the track. Visible marks snap to 25% steps through 200%, then wider round steps. Arrow keys adjust one percentage
   point; Page Up/Down adjust five; Home/End select 0/999%.
-- **Custom starting BPM:** BPM means beats per minute. A starting value of 60 is
-  one beat per second. Later tempo changes keep their proportions. Changing speed
-  changes how quickly notes arrive, not their pitch.
+- **Base tempo:** BPM means beats per minute; here a beat is a quarter note. Tap the percentage beside the speed slider, or open **Menu → Practice → Playback**. Enter a base BPM to make it the new 100%. For example, 80 BPM at 50% starts at 40 BPM. **Use song BPM** restores the song’s tempo and 100% speed. Later tempo changes keep their proportions. The override lasts until you open another song and is not saved. Changing speed changes how quickly notes arrive, not their pitch.
 - **Beat clicks (metronome):** adds a click on each beat to help you keep time.
   **Count in before playing** adds preparation clicks on a fresh start; resuming
   after Pause continues immediately. Use **Menu → Practice → Playback → Stop**, then Play,

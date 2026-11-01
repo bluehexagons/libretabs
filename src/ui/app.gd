@@ -194,6 +194,10 @@ var part: int = 0
 var source_tick: float = 0.0
 var state: String = "STATE_READY"
 var speed: float = 1.0
+# Session reference tempo; zero follows the unmodified song tempo map.
+var bpm_override: float = 0.0
+var source_bpm_button: Button
+var song_details: SongDetails
 var muted: Array[int] = []
 var updating: bool = false
 var title: String = ""
@@ -811,18 +815,6 @@ func add_song_button(grid: GridContainer, index: int) -> void:
 	var content: VBoxContainer = VBoxContainer.new()
 	content.add_theme_constant_override("separation", 4)
 	card.add_child(content)
-	var marking: HFlowContainer = flow(content)
-	var marker: Label = label("SONG_CURRENT_BADGE", 14)
-	marker.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	marker.autowrap_mode = TextServer.AUTOWRAP_OFF
-	marker.text = " "
-	marking.add_child(marker)
-	library_current_marks[index] = marker
-	var learned: CheckBox = learned_check("LEARNING_LEARNED", 16)
-	learned.custom_minimum_size.y = 48
-	learned.toggled.connect(func(enabled: bool) -> void: mark_learned("song:" + str(BUILT_IN_LIBRARY[index].file), enabled))
-	marking.add_child(learned)
-	library_learned_checks[index] = learned
 	var title_label: Button = button(key + "_NAME", func() -> void: load_library_item(index))
 	title_label.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	title_label.add_theme_font_size_override("font_size", 20)
@@ -833,35 +825,32 @@ func add_song_button(grid: GridContainer, index: int) -> void:
 	content.add_child(title_label)
 	library_song_titles[index] = title_label
 	library_song_buttons[index] = title_label
-	var details: HFlowContainer = flow(content)
 	var entry: Dictionary = BUILT_IN_LIBRARY[index]
-	var level_key: String = ["SONG_LEVEL_FIRST", "SONG_LEVEL_GROWING", "SONG_LEVEL_CHALLENGE"][int(entry.level)]
-	var view_key: String = "SONG_VIEW_BOTH" if entry.views.size() > 1 else "SONG_VIEW_PIANO"
-	for spec: Array in [["SONG_LEVEL", tr("SONG_LEVEL_GROWING_SHORT") if int(entry.level) == 1 else tr(level_key)], ["SONG_TIME", "%d:%02d" % [int(entry.seconds) / 60, int(entry.seconds) % 60]], ["TEMPO", tr("SONG_CARD_BPM") % int(entry.bpm)], ["SONG_INSTRUMENT", tr("SONG_VIEW_BOTH_SHORT") if entry.views.size() > 1 else tr(view_key)]]:
-		var chip: HBoxContainer = HBoxContainer.new()
-		chip.add_theme_constant_override("separation", 3)
-		# Only expand abbreviated information; duration, BPM and full labels
-		# already say everything a repeated hover hint would say.
-		var full: String = tr(view_key) if str(spec[0]) == "SONG_INSTRUMENT" else (tr(level_key) if str(spec[0]) == "SONG_LEVEL" else str(spec[1]))
-		if full != str(spec[1]): chip.tooltip_text = full
-		var glyph: TextureRect = TextureRect.new()
-		glyph.texture = UIIcons.get_icon(str(spec[0]))
-		glyph.modulate = UIAppearance.color("ink", dark_mode, appearance_mode == "midnight")
-		glyph.add_to_group("catalog_meta_icon")
-		glyph.custom_minimum_size = Vector2(18, 18)
-		glyph.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		chip.add_child(glyph)
-		var value: Label = Label.new()
-		value.text = str(spec[1])
-		value.add_theme_font_size_override("font_size", 15)
-		value.set_meta("base_font_size", 15)
-		value.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
-		chip.add_child(value)
-		details.add_child(chip)
+	var marking: HFlowContainer = flow(content)
+	marking.add_theme_constant_override("h_separation", 8)
+	var level_key: String = ["SONG_LEVEL_FIRST", "SONG_LEVEL_GROWING_SHORT", "SONG_LEVEL_CHALLENGE"][int(entry.level)]
+	var level: Label = label(level_key, 15)
+	level.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	marking.add_child(level)
+	var marker: Label = label("SONG_CURRENT_BADGE", 14)
+	marker.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	marking.add_child(marker)
+	library_current_marks[index] = marker
+	var actions: HFlowContainer = flow(content)
+	actions.add_theme_constant_override("h_separation", 4)
+	var learned: CheckBox = learned_check("LEARNING_LEARNED", 16)
+	learned.toggled.connect(func(enabled: bool) -> void: mark_learned("song:" + str(BUILT_IN_LIBRARY[index].file), enabled))
+	actions.add_child(learned)
+	library_learned_checks[index] = learned
+	var about: Button = button("SONG_ABOUT", func() -> void: show_song_details(index))
+	about.add_theme_font_size_override("font_size", 16)
+	about.set_meta("base_font_size", 16)
+	about.custom_minimum_size.y = 48
+	actions.add_child(about)
 	var preview: Button = button("SONG_PREVIEW", func() -> void: toggle_song_preview(index))
 	preview.custom_minimum_size = Vector2(48, 48)
 	preview.set_meta("compact_preview", true)
-	marking.add_child(preview)
+	actions.add_child(preview)
 	library_preview_buttons[index] = preview
 	UIAppearance.apply_roles(card, dark_mode, appearance_mode == "midnight")
 	update_song_button(index)
@@ -934,6 +923,7 @@ func update_song_button(index: int) -> void:
 	var title_text: String = tr(str(entry.title_key))
 	library_song_titles[index].text = tr(str(entry.title_key) + "_NAME")
 	library_current_marks[index].text = tr("SONG_CURRENT_BADGE") if index == active_library else " "
+	library_current_marks[index].visible = index == active_library
 	library_learned_checks[index].set_pressed_no_signal(learning.has("song:" + str(entry.file)))
 	library_learned_checks[index].tooltip_text = tr("LEARNING_MARK_HELP") % title_text
 	item.tooltip_text = tr("SONG_TRY_HELP") % title_text
@@ -1155,7 +1145,18 @@ func set_startup_help(enabled: bool) -> void:
 	if persist_preferences:
 		welcome_storage.visible = not host.save_display_choice("startup_help", "show" if enabled else "hide")
 
+func show_song_details(index: int) -> void:
+	if index < 0 or index >= BUILT_IN_LIBRARY.size(): return
+	song_details.show_song(index)
+	UIAppearance.apply_roles(song_details, dark_mode, appearance_mode == "midnight")
+	scale_labels(song_details, theme.default_font_size / 20.0)
+	toggle_drawer("SONG_DETAILS")
+
 func build_drawers() -> void:
+	var song_about: VBoxContainer = section("SONG_DETAILS")
+	song_details = SongDetails.new()
+	song_about.add_child(song_details)
+	song_details.configure(self)
 	var menu_index: VBoxContainer = section("MENU")
 	drawers["SETTINGS"] = menu_index
 	options_menu = OptionsMenu.new()
@@ -1323,6 +1324,18 @@ func build_drawers() -> void:
 	library.add_child(button("DETAILS", func() -> void: toggle_drawer("DETAILS")))
 
 	var tempo: VBoxContainer = section("TEMPO")
+	tempo.add_child(label("BPM_LABEL", 18))
+	bpm_input = SpinBox.new()
+	bpm_input.min_value = 10
+	bpm_input.max_value = 400
+	bpm_input.step = 1
+	bpm_input.custom_minimum_size.y = 56
+	bpm_input.value_changed.connect(change_bpm)
+	number_field(tempo, bpm_input, "BPM_LABEL")
+	source_bpm_button = button("BPM_USE_SONG", restore_song_bpm)
+	tempo.add_child(source_bpm_button)
+	tempo_caption = label("PLAYBACK_RATE", 18)
+	tempo.add_child(tempo_caption)
 	var speed_steps: HFlowContainer = flow(tempo)
 	slower_button = button("SLOWER", func() -> void: step_speed(-1))
 	faster_button = button("FASTER", func() -> void: step_speed(1))
@@ -1330,8 +1343,6 @@ func build_drawers() -> void:
 	for item: Button in [slower_button, faster_button, original_button]: speed_steps.add_child(item)
 	speed_steps.add_child(button("STOP", func() -> void: stop_practice(); close_menu()))
 	tempo.add_child(label("TEMPO_HELP", 18))
-	tempo_caption = label("PLAYBACK_RATE", 18)
-	tempo.add_child(tempo_caption)
 	metro_check = check("METRONOME", true)
 	metro_check.tooltip_text = tr("CLICK_HELP")
 	metro_check.toggled.connect(set_metronome)
@@ -1364,14 +1375,6 @@ func build_drawers() -> void:
 	speed_picker.select(SPEEDS.find(1.0))
 	speed_picker.item_selected.connect(change_speed)
 	tempo.add_child(speed_picker)
-	tempo.add_child(label("BPM_LABEL", 18))
-	bpm_input = SpinBox.new()
-	bpm_input.min_value = 10
-	bpm_input.max_value = 400
-	bpm_input.step = 1
-	bpm_input.custom_minimum_size.y = 56
-	bpm_input.value_changed.connect(change_bpm)
-	number_field(tempo, bpm_input, "BPM_LABEL")
 
 	var sound: VBoxContainer = section("SOUND")
 	sound.add_child(label("SOUND_HELP", 18))
@@ -2503,6 +2506,16 @@ func base_bpm() -> float:
 	if song == null: return 100.0
 	return 60.0 / (song.seconds_at(1) * song.division)
 
+func reference_bpm() -> float:
+	return bpm_override if bpm_override > 0 else base_bpm()
+
+func playback_speed() -> float:
+	return speed * reference_bpm() / base_bpm()
+
+func restore_song_bpm() -> void:
+	bpm_override = 0.0
+	set_speed(1.0)
+
 func set_metronome(enabled: bool) -> void:
 	metro_check.set_pressed_no_signal(enabled)
 	audio.set_metronome(enabled)
@@ -2529,9 +2542,9 @@ func change_speed(index: int) -> void:
 	set_speed(SPEEDS[index])
 
 func change_bpm(value: float) -> void:
-	if updating: return
-	speed_picker.select(SPEEDS.size())
-	set_speed(value / base_bpm())
+	if updating or not is_finite(value) or value <= 0: return
+	bpm_override = clampf(value, bpm_input.min_value, bpm_input.max_value)
+	set_speed(1.0)
 
 func set_speed(value: float) -> void:
 	if not is_finite(value): return
@@ -2545,15 +2558,20 @@ func set_speed(value: float) -> void:
 func update_tempo() -> void:
 	updating = true
 	# Wider bounds support unusual source tempi without silently clamping presets.
-	bpm_input.min_value = 0
-	bpm_input.max_value = base_bpm() * 9.99
-	bpm_input.set_value_no_signal(base_bpm() * speed)
+	bpm_input.min_value = minf(10, base_bpm())
+	bpm_input.max_value = maxf(400, base_bpm())
+	bpm_input.set_value_no_signal(reference_bpm())
+	source_bpm_button.disabled = bpm_override <= 0
+	source_bpm_button.text = tr("BPM_USE_SONG") % base_bpm()
+	source_bpm_button.tooltip_text = source_bpm_button.text
+	source_bpm_button.set_meta("hover_caption", source_bpm_button.text)
 	updating = false
-	tempo_caption.text = tr("PLAYBACK_RATE") % roundi(speed * 100)
-	tempo_caption.tooltip_text = tr("TEMPO_CURRENT") % [base_bpm() * speed, base_bpm(), roundi(speed * 100)]
+	tempo_caption.text = tr("BPM_PLAYBACK") % [reference_bpm() * speed, roundi(speed * 100), reference_bpm()]
+	tempo_caption.tooltip_text = tr("TEMPO_CURRENT") % [reference_bpm() * speed, reference_bpm(), roundi(speed * 100)]
 	tempo_button.text = tr("TEMPO_BUTTON") % roundi(speed * 100)
 	main_speed.set_percentage(speed * 100)
-	main_speed.tooltip_text = tr("SPEED")
+	main_speed.tooltip_text = tr("SPEED_MARKERS_HELP")
+	main_speed.set_meta("hover_caption", main_speed.tooltip_text)
 	var preset: int = -1
 	for index: int in range(SPEEDS.size()):
 		if is_equal_approx(speed, SPEEDS[index]): preset = index
@@ -2719,6 +2737,7 @@ func finish_import() -> void:
 	else: current_learning_id = LearningProgress.midi_id(song.source.bytes_copy())
 	update_song_picker()
 	speed = 1.0
+	bpm_override = 0.0
 	speed_picker.select(SPEEDS.find(1.0))
 	update_tempo()
 	muted.clear()
@@ -2881,7 +2900,7 @@ func start(count_in: bool) -> void:
 		update_play_control()
 		return
 	source_tick = start_tick
-	audio.transport.configure(song, start_tick, end_tick, speed, loop_check.button_pressed, count_in, true, muted.duplicate(), loop_start_tick, int(count_length.value))
+	audio.transport.configure(song, start_tick, end_tick, playback_speed(), loop_check.button_pressed, count_in, true, muted.duplicate(), loop_start_tick, int(count_length.value))
 	audio.begin()
 	set_activity(true)
 	started_msec = Time.get_ticks_msec()
@@ -3176,7 +3195,7 @@ func report_state() -> void:
 	if host.trace_enabled():
 		var evidence: Dictionary = audio.metrics()
 		evidence.merge({"muted_parts": muted.duplicate(), "focused_part": part})
-		evidence.merge({"tv_active": tv_active, "tv_tucked": tv_tucked, "tv_zoom": tv_zoom, "status_visible": status_toast.visible, "tv_systems": score_frame.visible_systems(), "page_slide_count": score_frame.follow_slide_count, "page_slide_offset": score_frame.follow_offset, "music_lines": score_frame.music_lines, "note_spacing": score_frame.note_spacing, "staff_height": score_frame.staff_height, "score_height": score.drawing_height(), "fitted_rows": score.fitted_rows, "fullscreen": host.is_fullscreen(), "follow_pages": score.follow_pages, "upcoming_tick": score.upcoming_tick, "count_beat": int(count_badge.text) if count_badge.visible else 0, "capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "shape_cues": shape_cues, "font_style": font_style, "control_position": control_position, "handedness": handedness, "controls_on_side": controls_on_side, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "input_visible": live.visible, "piano_held": live.piano.pointers.size(), "input_result": {"kind": live.latest.get("kind", ""), "timing": live.latest.get("timing", "")}, "midi_status": playing_devices.midi.status, "microphone_status": listening.listener.capture.status, "tuner_enabled": listening.listener.capture.enabled and not listening.listener.paused, "playback_muted": listening.playback_mute.button_pressed, "pitch_analysis_ms": listening.listener.max_analysis_ms, "microphone_dropped": listening.listener.capture.dropped, "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "interface": interface_id, "interface_rail": presentation.rail, "background_style": background_style, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "controls_scroll_y": header_scroll.scroll_vertical, "tuner_profile": listening.listener.profile, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "notation_rows": notation_rows, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": base_bpm() * speed, "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "arrangement_style": projection.style, "placed": projection.placed, "eligible": projection.eligible, "omitted": projection.omitted.size(), "mute_marks": projection.mute_marks, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
+		evidence.merge({"tv_active": tv_active, "tv_tucked": tv_tucked, "tv_zoom": tv_zoom, "status_visible": status_toast.visible, "tv_systems": score_frame.visible_systems(), "page_slide_count": score_frame.follow_slide_count, "page_slide_offset": score_frame.follow_offset, "music_lines": score_frame.music_lines, "note_spacing": score_frame.note_spacing, "staff_height": score_frame.staff_height, "score_height": score.drawing_height(), "fitted_rows": score.fitted_rows, "fullscreen": host.is_fullscreen(), "follow_pages": score.follow_pages, "upcoming_tick": score.upcoming_tick, "count_beat": int(count_badge.text) if count_badge.visible else 0, "capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "shape_cues": shape_cues, "font_style": font_style, "control_position": control_position, "handedness": handedness, "controls_on_side": controls_on_side, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "input_visible": live.visible, "piano_held": live.piano.pointers.size(), "input_result": {"kind": live.latest.get("kind", ""), "timing": live.latest.get("timing", "")}, "midi_status": playing_devices.midi.status, "microphone_status": listening.listener.capture.status, "tuner_enabled": listening.listener.capture.enabled and not listening.listener.paused, "playback_muted": listening.playback_mute.button_pressed, "pitch_analysis_ms": listening.listener.max_analysis_ms, "microphone_dropped": listening.listener.capture.dropped, "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "interface": interface_id, "interface_rail": presentation.rail, "background_style": background_style, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "controls_scroll_y": header_scroll.scroll_vertical, "tuner_profile": listening.listener.profile, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "notation_rows": notation_rows, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": reference_bpm() * speed, "reference_bpm": reference_bpm(), "bpm_override": bpm_override, "playback_speed": playback_speed(), "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "arrangement_style": projection.style, "placed": projection.placed, "eligible": projection.eligible, "omitted": projection.omitted.size(), "mute_marks": projection.mute_marks, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
 		host.report(evidence)
 	offline.text = tr("OFFLINE_READY") if host.offline_ready() else tr("OFFLINE_PENDING")
 	if host.offline_ready() and not host.trace_enabled(): idle_timer.stop()
@@ -3201,12 +3220,12 @@ func update_position(animate_follow: bool = false) -> void:
 	if song == null:
 		return
 	score.effects_playing = audio.playing_practice and audio.audible_frame() >= audio.transport.count_frames
-	score.effects_speed = speed
+	score.effects_speed = playback_speed()
 	score.update_tick(source_tick)
 	if live != null: live.set_expected(score.active_pitches())
 	if capture_active:
 		capture_view.score.effects_playing = score.effects_playing
-		capture_view.score.effects_speed = speed
+		capture_view.score.effects_speed = playback_speed()
 		capture_view.score.update_tick(source_tick)
 	score_frame.update_overview(animate_follow)
 	update_page_controls()
@@ -3265,7 +3284,7 @@ func input_context(delay_ms: float = 0) -> Dictionary:
 	var audible_cycle: int = 0
 	if audio.transport.repeat and frame >= audio.transport.count_frames + audio.transport.initial_frames:
 		audible_cycle = 1 + (frame - audio.transport.count_frames - audio.transport.initial_frames) / audio.transport.cycle_frames
-	return {"playing": audio.playing_practice and cycle == audible_cycle and observation >= audio.transport.count_frames and not audio.transport.complete(observation), "seconds": audio.transport.seconds_at_frame(observation), "speed": speed, "epoch": "%d:%d" % [input_epoch, cycle]}
+	return {"playing": audio.playing_practice and cycle == audible_cycle and observation >= audio.transport.count_frames and not audio.transport.complete(observation), "seconds": audio.transport.seconds_at_frame(observation), "speed": playback_speed(), "epoch": "%d:%d" % [input_epoch, cycle]}
 
 func release_playing_inputs() -> void:
 	input_epoch += 1

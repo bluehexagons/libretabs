@@ -9,6 +9,8 @@ var empty: Label
 var grid: GridContainer
 var scroller: TouchScrollContainer
 var songs: Dictionary = {}
+var song_rows: Dictionary = {}
+var details: Dictionary = {}
 var app: Control
 
 func configure(application: Control) -> void:
@@ -51,7 +53,21 @@ func configure(application: Control) -> void:
 		item.clip_text = true
 		item.autowrap_mode = TextServer.AUTOWRAP_OFF
 		item.tooltip_text = tr("SONG_TRY_HELP") % tr(str(entry.title_key))
-		grid.add_child(item)
+		var row: HBoxContainer = HBoxContainer.new()
+		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.set_meta("input_actions", true)
+		row.add_theme_constant_override("separation", 2)
+		grid.add_child(row)
+		row.add_child(item)
+		var about: Button = app.button("SONG_ABOUT", func() -> void: app.show_song_details(index))
+		about.text = ""
+		about.icon = UIIcons.get_icon("ABOUT")
+		about.custom_minimum_size = Vector2(48, 48)
+		about.tooltip_text = tr("SONG_DETAILS_HELP") % tr(str(entry.title_key))
+		about.set_meta("hover_caption", about.tooltip_text)
+		row.add_child(about)
+		details[index] = about
+		song_rows[index] = row
 		songs[index] = item
 	search.text_changed.connect(func(_text: String) -> void: filter_songs())
 	search.text_submitted.connect(func(_text: String) -> void:
@@ -67,7 +83,7 @@ func configure(application: Control) -> void:
 func arrange() -> void:
 	if app == null: return
 	var factor: float = app.theme.default_font_size / 20.0
-	grid.columns = maxi(1, floori(size.x / (240 * factor)))
+	grid.columns = maxi(1, floori(minf(size.x, app.size.x - 32) / (240 * factor)))
 	# On short screens retain one complete touch row and the music below it.
 	scroller.custom_minimum_size.y = 52 if app.size.y < 600 else 104
 	search.add_theme_color_override("font_placeholder_color", UIAppearance.color("muted", app.dark_mode, app.appearance_mode == "midnight"))
@@ -78,6 +94,7 @@ func filter_songs() -> void:
 	for index: int in songs:
 		var entry: Dictionary = app.BUILT_IN_LIBRARY[index]
 		songs[index].visible = query.is_empty() or (tr(str(entry.title_key)) + " " + str(entry.file).replace("_", " ")).to_lower().contains(query)
+		song_rows[index].visible = songs[index].visible
 	empty.visible = not songs.values().any(func(item: Button) -> bool: return item.visible)
 	update_current()
 
@@ -87,4 +104,5 @@ func update_current() -> void:
 		var name_text: String = tr(str(app.BUILT_IN_LIBRARY[index].title_key) + "_NAME")
 		item.text = tr("SONG_PINNED_CURRENT") % name_text if index == app.active_library else name_text
 		item.disabled = app.importer != null
+		details[index].disabled = app.importer != null
 		item.set_meta("hover_caption", tr("SONG_TRY_HELP") % name_text)

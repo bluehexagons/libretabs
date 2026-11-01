@@ -1,0 +1,450 @@
+{
+  "version": 1,
+  "reviewed": "2026-11-01",
+  "entries": {
+    "ode_to_joy": {
+      "history_key": "SONG_HISTORY_ODE_TO_JOY",
+      "arrangement_key": "SONG_ARRANGEMENT_ODE_TO_JOY",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_ODE_TO_JOY_1",
+          "url": "https://www.beethoven.de/en/work/view/5556714292117504/",
+          "supports": "Composer, completion, Vienna premiere, Schiller text and choral finale."
+        }
+      ],
+      "research_notes": "None material to this blurb."
+    },
+    "fur_elise": {
+      "history_key": "SONG_HISTORY_FUR_ELISE",
+      "arrangement_key": "SONG_ARRANGEMENT_FUR_ELISE",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_FUR_ELISE_1",
+          "url": "https://www.beethoven.de/en/media/view/5010945952710656",
+          "supports": "1810 dating, Nohl’s 1867 publication, surviving sketches, missing autograph and unresolved dedication."
+        }
+      ],
+      "research_notes": "Do not identify Elise as Therese Malfatti or another proposed recipient as established fact."
+    },
+    "spring": {
+      "history_key": "SONG_HISTORY_SPRING",
+      "arrangement_key": "SONG_ARRANGEMENT_SPRING",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_SPRING_1",
+          "url": "https://www.laphil.com/works/the-four-seasons",
+          "supports": "Composer, 1725 publication, Opus 8 context, violin instrumentation and descriptive poems and score directions."
+        }
+      ],
+      "research_notes": "Composition dates differ between program notes. Use the secure publication date; do not credit Vivaldi as the poems’ author without qualification."
+    },
+    "canon_in_d": {
+      "history_key": "SONG_HISTORY_CANON_IN_D",
+      "arrangement_key": "SONG_ARRANGEMENT_CANON_IN_D",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_CANON_IN_D_1",
+          "url": "https://www.chambermusicsociety.org/about-the-music/compositions/pachelbel-canon",
+          "supports": "Composer, original parts, companion gigue, musical construction, uncertain origins and Paillard recording."
+        }
+      ],
+      "research_notes": "Avoid stating an exact composition year or a wedding origin. The surviving manuscript is a nineteenth-century copy."
+    },
+    "twinkle": {
+      "history_key": "SONG_HISTORY_TWINKLE",
+      "arrangement_key": "SONG_ARRANGEMENT_TWINKLE",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_TWINKLE_1",
+          "url": "https://www.themorgan.org/music-manuscripts-and-printed-music/85839",
+          "supports": "Jane Taylor, poem title and first printing in 1806."
+        },
+        {
+          "title_key": "SONG_SOURCE_TWINKLE_2",
+          "url": "https://dme.mozarteum.at/DME/nma/nma_toc.php?l=2&vsep=199",
+          "supports": "Mozart’s twelve variations are explicitly described as based on the French song."
+        },
+        {
+          "title_key": "SONG_SOURCE_TWINKLE_3",
+          "url": "https://www.themorgan.org/exhibitions/online/mozart/418",
+          "supports": "Museum display of Mozart’s autograph identifies the French song, its unknown composer and later Twinkle use."
+        }
+      ],
+      "research_notes": "The original tune’s composer is not established here. Avoid the obsolete 1778 dating of Mozart’s variations; the current Köchel catalogue dates them 1781–1782."
+    },
+    "the_entertainer": {
+      "history_key": "SONG_HISTORY_THE_ENTERTAINER",
+      "arrangement_key": "SONG_ARRANGEMENT_THE_ENTERTAINER",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_THE_ENTERTAINER_1",
+          "url": "https://www.loc.gov/item/n50039880/scott-joplin-1868-1917/",
+          "supports": "1902 work, African American musical heritage, syncopated ragtime and the 1973 film revival."
+        },
+        {
+          "title_key": "SONG_SOURCE_THE_ENTERTAINER_2",
+          "url": "https://findingaids.loc.gov/repositories/15/resources/1051",
+          "supports": "Hamlisch’s Grammy for Best Pop Instrumental Performance for The Entertainer."
+        }
+      ],
+      "research_notes": "Do not imply that the song originated in The Sting or that Joplin made the soundtrack recording."
+    },
+    "mary_had_a_little_lamb": {
+      "history_key": "SONG_HISTORY_MARY_HAD_A_LITTLE_LAMB",
+      "arrangement_key": "SONG_ARRANGEMENT_MARY_HAD_A_LITTLE_LAMB",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_MARY_HAD_A_LITTLE_LAMB_1",
+          "url": "https://www.themorgan.org/exhibitions/collections-spotlight-spring-2023",
+          "supports": "Hale’s authorship, 1830 appearance and circulation through print and Sunday schools."
+        },
+        {
+          "title_key": "SONG_SOURCE_MARY_HAD_A_LITTLE_LAMB_2",
+          "url": "https://www.nps.gov/edis/learn/historyculture/origins-of-sound-recording-edisons-path-to-the-phonograph.htm",
+          "supports": "Edison’s 1877 phonograph demonstration using the rhyme."
+        }
+      ],
+      "research_notes": "Do not credit Lowell Mason with the familiar melody: his early setting differs. Stories identifying a particular schoolgirl and lamb are disputed. Edison’s original recording does not survive."
+    },
+    "frere_jacques": {
+      "history_key": "SONG_HISTORY_FRERE_JACQUES",
+      "arrangement_key": "SONG_ARRANGEMENT_FRERE_JACQUES",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_FRERE_JACQUES_1",
+          "url": "https://www.berklee.edu/berklee-today/spring-2018/writing-a-canon",
+          "supports": "French tradition, four-voice round and explanation of overlapping entries."
+        },
+        {
+          "title_key": "SONG_SOURCE_FRERE_JACQUES_2",
+          "url": "https://academic.oup.com/em/article-abstract/44/4/553/3068009",
+          "supports": "Published scholarly argument attributing Frère Jacques to Rameau using manuscript evidence."
+        }
+      ],
+      "research_notes": "Present Rameau as an attribution by named research, rather than an uncontested original credit. The accessible abstract supports the argument; the full article was inaccessible."
+    },
+    "auld_lang_syne": {
+      "history_key": "SONG_HISTORY_AULD_LANG_SYNE",
+      "arrangement_key": "SONG_ARRANGEMENT_AULD_LANG_SYNE",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_AULD_LANG_SYNE_1",
+          "url": "https://www.nts.org.uk/sco-gb/collections/object/object-110004712",
+          "supports": "Older traditional material, Burns’s 1788 letter, different earlier melody and Thomson’s 1799 publication."
+        },
+        {
+          "title_key": "SONG_SOURCE_AULD_LANG_SYNE_2",
+          "url": "https://blogs.loc.gov/music/2018/12/auld-lang-syne-sharing-a-cup-of-kindness-with-old-friends/",
+          "supports": "Scots language, title meaning and the song’s treatment of friendship and memory."
+        }
+      ],
+      "research_notes": "Avoid crediting Burns with composing the familiar tune. Its precise earlier source is uncertain."
+    },
+    "yankee_doodle": {
+      "history_key": "SONG_HISTORY_YANKEE_DOODLE",
+      "arrangement_key": "SONG_ARRANGEMENT_YANKEE_DOODLE",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_YANKEE_DOODLE_1",
+          "url": "https://www.loc.gov/collections/patriotic-melodies/articles-and-essays/yankee-doodle/",
+          "supports": "Pre-Revolution circulation, uncertain origins, British mockery and American adoption."
+        },
+        {
+          "title_key": "SONG_SOURCE_YANKEE_DOODLE_2",
+          "url": "https://www.loc.gov/collections/songs-of-america/articles-and-essays/musical-styles/ethnic/english-american-song/",
+          "supports": "British use during the French and Indian War and American answering verses during the Revolution."
+        }
+      ],
+      "research_notes": "Do not state Richard Schackburg/Shuckburgh’s authorship or a particular European tune ancestry as proven."
+    },
+    "brahms_lullaby": {
+      "history_key": "SONG_HISTORY_BRAHMS_LULLABY",
+      "arrangement_key": "SONG_ARRANGEMENT_BRAHMS_LULLABY",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_BRAHMS_LULLABY_1",
+          "url": "https://brahmsinstitut.de/Archiv/web/bihl_digital/jb_werkekatalog/op_049.html",
+          "supports": "1868 composition and publication, original medium, catalogue number and documented premiere with Dustmann and Schumann."
+        },
+        {
+          "title_key": "SONG_SOURCE_BRAHMS_LULLABY_2",
+          "url": "https://festspiele-mv.de/fileadmin/user_upload/Programmhefte/2024_Festspielsommer/24-07-13_Landsdorf_WEB.pdf",
+          "supports": "Gift for the Fabers’ newborn Hans and Brahms’s dated accompanying letter."
+        }
+      ],
+      "research_notes": "The institute spells the singer Louise Dustmann; some English references use Luise. Avoid speculative claims about Brahms’s romantic intentions."
+    },
+    "minuet_in_g": {
+      "history_key": "SONG_HISTORY_MINUET_IN_G",
+      "arrangement_key": "SONG_ARRANGEMENT_MINUET_IN_G",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_MINUET_IN_G_1",
+          "url": "https://www.bachvereniging.nl/en/bwv/bwv-114-115-anhang",
+          "supports": "Petzold’s authorship and Dresden work, suite origin, Anna Magdalena’s copies, earlier Bach attribution and BWV identifiers."
+        }
+      ],
+      "research_notes": "Do not use the older Mutopia catalogue page as historical authority: it still labels this piece as Bach. Do not assign a precise composition year."
+    },
+    "row_your_boat": {
+      "history_key": "SONG_HISTORY_ROW_YOUR_BOAT",
+      "arrangement_key": "SONG_ARRANGEMENT_ROW_YOUR_BOAT",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_ROW_YOUR_BOAT_1",
+          "url": "https://balladindex.org/Ballads/FSWB412C.html",
+          "supports": "1852 text with different music, 1881 familiar tune, Lyte credit and authorship caveat; cites Fuld and LOC sheet-music records."
+        },
+        {
+          "title_key": "SONG_SOURCE_ROW_YOUR_BOAT_2",
+          "url": "https://www.berklee.edu/berklee-today/spring-2018/writing-a-canon",
+          "supports": "Round structure and overlapping melodic entries."
+        }
+      ],
+      "research_notes": "Lyte’s exact role is uncertain. The 1852 title The Old Log Hut / Row, Row Your Boat must not be treated as proof that its melody was today’s tune."
+    },
+    "jingle_bells": {
+      "history_key": "SONG_HISTORY_JINGLE_BELLS",
+      "arrangement_key": "SONG_ARRANGEMENT_JINGLE_BELLS",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_JINGLE_BELLS_1",
+          "url": "https://www.bu.edu/articles/2016/jingle-bells-history",
+          "supports": "Pierpont, titles and dates, Johnny Pell, September 1857 playbill from Harvard’s theatre archive and minstrel context."
+        },
+        {
+          "title_key": "SONG_SOURCE_JINGLE_BELLS_2",
+          "url": "https://www.cambridge.org/core/services/aop-cambridge-core/content/view/D42C78950A58BDB88290954F73B195B2/S0040557417000291a.pdf/div-class-title-the-story-i-must-tell-span-class-italic-span-jingle-bells-span-class-italic-span-in-the-minstrel-repertoire-div.pdf",
+          "supports": "Peer-reviewed archival research into publication, earliest documented performances and minstrel history."
+        }
+      ],
+      "research_notes": "Use earliest documented performance, not an absolute first performance. The place where Pierpont composed it remains uncertain; avoid the Medford tavern and Thanksgiving origin stories."
+    },
+    "greensleeves": {
+      "history_key": "SONG_HISTORY_GREENSLEEVES",
+      "arrangement_key": "SONG_ARRANGEMENT_GREENSLEEVES",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_GREENSLEEVES_1",
+          "url": "https://www.loc.gov/static/events/concerts-from-the-library-of-congress/documents/programs/2324-Jordi-Savall-Hesperion-Apr2-program.pdf",
+          "supports": "Anonymous Renaissance tune, English ground-bass practice, variations and improvisation, and the named performers’ concert."
+        }
+      ],
+      "research_notes": "No verified composer. Do not credit Henry VIII or connect its creation to Anne Boleyn. Avoid conflating the 1580 ballad registration with surviving printed music."
+    },
+    "amazing_grace": {
+      "history_key": "SONG_HISTORY_AMAZING_GRACE",
+      "arrangement_key": "SONG_ARRANGEMENT_AMAZING_GRACE",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_AMAZING_GRACE_1",
+          "url": "https://cowperandnewtonmuseum.org.uk/bulletin/amazing-grace/",
+          "supports": "Newton, sermon, 1779 publication, Walker's 1835 pairing, uncertain tune origins, Collins recording."
+        }
+      ],
+      "research_notes": "Do not credit Walker with composing New Britain or claim a proven Scottish, African, or slave-ship origin."
+    },
+    "london_bridge": {
+      "history_key": "SONG_HISTORY_LONDON_BRIDGE",
+      "arrangement_key": "SONG_ARRANGEMENT_LONDON_BRIDGE",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_LONDON_BRIDGE_1",
+          "url": "https://www.gutenberg.org/files/45762/45762-h/45762-h.htm",
+          "supports": "English and American versions; documented game movements and local variations."
+        }
+      ],
+      "research_notes": "The digitized edition is dated 1884, copyright 1883. Newell's mythological explanations are historical speculation, not established origins. Avoid Viking destruction or human-sacrifice stories."
+    },
+    "old_macdonald": {
+      "history_key": "SONG_HISTORY_OLD_MACDONALD",
+      "arrangement_key": "SONG_ARRANGEMENT_OLD_MACDONALD",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_OLD_MACDONALD_1",
+          "url": "https://www.themorgan.org/music-manuscripts-and-printed-music/310723",
+          "supports": "1917 publication, compiler and arranger credit, identification of the familiar song on page 84."
+        },
+        {
+          "title_key": "SONG_SOURCE_OLD_MACDONALD_2",
+          "url": "https://urresearch.rochester.edu/institutionalPublicationPublicView.action?institutionalItemId=19340",
+          "supports": "Primary score scan, title Ohio and Old Macdougal wording on printed page 84; soldiers' song collection context."
+        }
+      ],
+      "research_notes": "This is an early printed relative, not proof of the exact modern version's first appearance or sole authorship. The Morgan page sometimes returns 403 but its complete catalog record is searchable."
+    },
+    "when_the_saints": {
+      "history_key": "SONG_HISTORY_WHEN_THE_SAINTS",
+      "arrangement_key": "SONG_ARRANGEMENT_WHEN_THE_SAINTS",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_WHEN_THE_SAINTS_1",
+          "url": "https://www.loc.gov/static/programs/national-recording-preservation-board/documents/When-the-Saint-Go-Marching-In_Riccardi.pdf",
+          "supports": "Traditional spiritual origins, New Orleans context, 1923 recording, Armstrong and Russell's 1938 recording."
+        }
+      ],
+      "research_notes": "Exact composition date and authorship are unknown. Armstrong recorded it in May 1938; the record was released in February 1939. The similarly titled 1896 hymn uses a different melody."
+    },
+    "aura_lee": {
+      "history_key": "SONG_HISTORY_AURA_LEE",
+      "arrangement_key": "SONG_ARRANGEMENT_AURA_LEE",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_AURA_LEE_1",
+          "url": "https://levysheetmusic.mse.jhu.edu/collection/024/002",
+          "supports": "Writers, 1861 Cincinnati publication, voice and piano, dedication."
+        },
+        {
+          "title_key": "SONG_SOURCE_AURA_LEE_2",
+          "url": "https://www.themorgan.org/music-manuscripts-and-printed-music/222259",
+          "supports": "Writers and publication; Love Me Tender uses its melody."
+        }
+      ],
+      "research_notes": "Dedication does not establish a premiere performer. Aura Lea is the original publication spelling. The Morgan catalog is searchable but sometimes blocks direct opening."
+    },
+    "silent_night": {
+      "history_key": "SONG_HISTORY_SILENT_NIGHT",
+      "arrangement_key": "SONG_ARRANGEMENT_SILENT_NIGHT",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_SILENT_NIGHT_1",
+          "url": "https://www.stillenacht.at/en/history-of-the-song",
+          "supports": "Poem and melody dates, creators, premiere location, original performers and accompaniment."
+        }
+      ],
+      "research_notes": "The familiar broken-organ explanation is explicitly identified by this source as supposition; omit it."
+    },
+    "camptown_races": {
+      "history_key": "SONG_HISTORY_CAMPTOWN_RACES",
+      "arrangement_key": "SONG_ARRANGEMENT_CAMPTOWN_RACES",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_CAMPTOWN_RACES_1",
+          "url": "https://www.loc.gov/item/2011564470/",
+          "supports": "Foster authorship, original title, 1850 edition, advertised performers."
+        },
+        {
+          "title_key": "SONG_SOURCE_CAMPTOWN_RACES_2",
+          "url": "https://americanmusic.library.pitt.edu/content/de-camptown-races",
+          "supports": "1850 copyright deposit, early performer credits, blackface and racist-caricature context."
+        }
+      ],
+      "research_notes": "No particular real racecourse or town is securely established as its inspiration."
+    },
+    "au_clair_de_la_lune": {
+      "history_key": "SONG_HISTORY_AU_CLAIR_DE_LA_LUNE",
+      "arrangement_key": "SONG_ARRANGEMENT_AU_CLAIR_DE_LA_LUNE",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_AU_CLAIR_DE_LA_LUNE_1",
+          "url": "https://eduscol.education.gouv.fr/chansonsquifontlhistoire/Au-clair-de-la-lune.html",
+          "supports": "French traditional attribution and Scott's dated performance."
+        },
+        {
+          "title_key": "SONG_SOURCE_AU_CLAIR_DE_LA_LUNE_2",
+          "url": "https://blogs.loc.gov/now-see-hear/2021/08/from-the-recording-registry-phonautograms-c-1853-61/",
+          "supports": "Phonautograph purpose, 9 April 1860 recording and 2008 sound recovery."
+        }
+      ],
+      "research_notes": "Avoid attributing the melody to Lully. Authorities disagree on its precise early date. Avoid an absolute earliest-recording claim because earlier phonautograms also survive."
+    },
+    "hot_cross_buns": {
+      "history_key": "SONG_HISTORY_HOT_CROSS_BUNS",
+      "arrangement_key": "SONG_ARRANGEMENT_HOT_CROSS_BUNS",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_HOT_CROSS_BUNS_1",
+          "url": "https://wordsforlife.org.uk/activities/hot-cross-buns/",
+          "supports": "English nursery context, street sellers' cries and familiar rhyme."
+        },
+        {
+          "title_key": "SONG_SOURCE_HOT_CROSS_BUNS_2",
+          "url": "https://www.gutenberg.org/cache/epub/25432/pg25432-images.html",
+          "supports": "Primary printed setting, illustration and arrangement credits, longer words."
+        }
+      ],
+      "research_notes": "Avoid a definitive first-publication date: sources variously distinguish earlier street cries from later song printings. The Cranes collected and arranged existing material; they did not originate the song."
+    },
+    "simple_gifts": {
+      "history_key": "SONG_HISTORY_SIMPLE_GIFTS",
+      "arrangement_key": "SONG_ARRANGEMENT_SIMPLE_GIFTS",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_SIMPLE_GIFTS_1",
+          "url": "https://www.americanmusicpreservation.com/JosephBrackettSimpleGifts.htm",
+          "supports": "Brackett attribution, Shaker dance-song classification, movement words and Copland adaptations."
+        },
+        {
+          "title_key": "SONG_SOURCE_SIMPLE_GIFTS_2",
+          "url": "https://www.loc.gov/collections/songs-of-america/articles-and-essays/articles-about-songs/boatmens-dance-simple-gifts/",
+          "supports": "Shaker origin, Appalachian Spring in 1944 and later vocal setting."
+        }
+      ],
+      "research_notes": "1848 and Alfred, Maine are common attributions, but historical sources differ on dating and community. Conservative wording avoids asserting them as certain. LOC direct access sometimes returns 403; the article text is search indexed."
+    },
+    "sakura_sakura": {
+      "history_key": "SONG_HISTORY_SAKURA_SAKURA",
+      "arrangement_key": "SONG_ARRANGEMENT_SAKURA_SAKURA",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_SAKURA_SAKURA_1",
+          "url": "https://htq-fs.minpaku.ac.jp/trackInfo/P01708B01",
+          "supports": "Japanese cultural context, beginner koto-uta setting, cherry blossoms and unidentified creators."
+        },
+        {
+          "title_key": "SONG_SOURCE_SAKURA_SAKURA_2",
+          "url": "https://www.jstage.jst.go.jp/article/jjomer/32/2/32_1/_article/-char/en",
+          "supports": "Research challenging ancient origins; 1888 koto publication and later text/melody changes in school use."
+        }
+      ],
+      "research_notes": "Shimada argues for creation for the 1888 education collection; other accounts call it traditional. Do not assert an established Edo-period origin. This app's arrangement is traced to Dittrich's 1894 Nippon Gakufu; avoid implying it reproduces every later school version."
+    },
+    "pop_goes_the_weasel": {
+      "history_key": "SONG_HISTORY_POP_GOES_THE_WEASEL",
+      "arrangement_key": "SONG_ARRANGEMENT_POP_GOES_THE_WEASEL",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_POP_GOES_THE_WEASEL_1",
+          "url": "https://blogs.loc.gov/music/2016/07/sheet-music-spotlight-pop-goes-the-weasel/",
+          "supports": "Country-dance history, 1853 and 1856 editions, later lyrics/variations and Henry Reed recording."
+        }
+      ],
+      "research_notes": "The source does not establish an original composer. Do not turn the various proposed slang meanings of weasel into historical fact; named sheet-music arrangers are not necessarily composers."
+    },
+    "home_on_the_range": {
+      "history_key": "SONG_HISTORY_HOME_ON_THE_RANGE",
+      "arrangement_key": "SONG_ARRANGEMENT_HOME_ON_THE_RANGE",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_HOME_ON_THE_RANGE_1",
+          "url": "https://kslegislature.gov/li_2012/b2011_12/year2/measures/documents/sr1822_enrolled.pdf",
+          "supports": "Poem title and 1873 publication; Kelley and Harlan credits; 1947 state-song adoption."
+        },
+        {
+          "title_key": "SONG_SOURCE_HOME_ON_THE_RANGE_2",
+          "url": "https://blogs.loc.gov/folklife/2021/07/we-are-americans-songs/",
+          "supports": "Western repertoire context and Dom Flemons's 2020 complete-verse performance."
+        }
+      ],
+      "research_notes": "Sources disagree between 1871 and 1872 for the poem's writing; publication in 1873 is the safer date. Kelley also appears as Kelly in some sources. This wording credits the Harlan family without claiming every familiar melodic detail is unchanged."
+    },
+    "oh_susanna": {
+      "history_key": "SONG_HISTORY_OH_SUSANNA",
+      "arrangement_key": "SONG_ARRANGEMENT_OH_SUSANNA",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_OH_SUSANNA_1",
+          "url": "https://americanmusic.library.pitt.edu/content/oh-susanna",
+          "supports": "Foster authorship, original title, 1848 publication, Peters edition/manuscript relationship and blackface context."
+        }
+      ],
+      "research_notes": "Do not call the Peters printing the first edition. Direct access was inconsistent, but the complete university article was available in indexed search results."
+    },
+    "piano_study": {
+      "history_key": "SONG_HISTORY_PIANO_STUDY",
+      "arrangement_key": "SONG_ARRANGEMENT_PIANO_STUDY",
+      "sources": []
+    }
+  },
+  "license": "CC0-1.0"
+}

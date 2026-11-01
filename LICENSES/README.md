@@ -5,7 +5,7 @@ LibreTabs intentionally separates software from reusable educational and creativ
 | Material | Default license |
 | --- | --- |
 | Application and library source code, test code, build scripts, project/export configuration, and standalone source-code examples | [Apache License 2.0](../LICENSE) |
-| Project-authored documentation, lesson text, illustrations, original music, and MIDI test/lesson fixtures | [CC0 1.0 Universal](CC0-1.0.txt) |
+| Project-authored documentation, lesson text (including bundled song histories and reference annotations), illustrations, original music, and MIDI test/lesson fixtures | [CC0 1.0 Universal](CC0-1.0.txt) |
 | Third-party code, fonts, binaries, media, and fixture data | The work's own declared license; see its notice and [`third_party/README.md`](../third_party/README.md) |
 
 A file-specific SPDX identifier or license notice overrides these defaults. The standard license texts and notices are themselves governed by their stated terms.

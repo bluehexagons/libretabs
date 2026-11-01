@@ -92,6 +92,19 @@ func run() -> void:
 	tap.pressed = false
 	speed_slider.handle_pointer(tap)
 	check(is_equal_approx(app.get("speed"), 1.25), "middle-of-track tap uses the same cubic mapping as the thumb")
+	# Pointer detents follow the nonlinear curve, while keys retain exact steps.
+	for percent: int in [25, 50, 75, 100, 125, 150, 175, 200, 300, 500, 900]:
+		var inset: float = speed_slider.get_theme_icon("grabber").get_width() / 2.0
+		tap.position = Vector2(speed_slider.global_position.x + inset + RelativeSpeedSlider.position_for_percent(percent + 2) * (speed_slider.size.x - 2 * inset), speed_slider.get_global_rect().get_center().y)
+		tap.pressed = true
+		speed_slider.handle_pointer(tap)
+		tap.pressed = false
+		speed_slider.handle_pointer(tap)
+		check(is_equal_approx(app.get("speed"), percent / 100.0), "pointer snaps to marked division %d" % percent)
+	app.call("set_speed", 1.0)
+	speed_key.keycode = KEY_LEFT
+	speed_slider.handle_pointer(speed_key)
+	check(is_equal_approx(app.get("speed"), 0.99), "keyboard can leave a snapped marker by exactly one percent")
 	app.call("set_speed", 1.0)
 	app.call("start", false)
 	app.call("seek_tick", 120)
@@ -140,6 +153,31 @@ func run() -> void:
 	app.call("_file_picked", "invalid.mid", PackedByteArray([0]), "")
 	await settle(app)
 	check(app.get("song") == selected_song and not shelf.songs[0].disabled, "malformed import retains the song and leaves pinned browsing usable")
+	# Opening reference information never switches songs or starts playback.
+	var details_song: SongDocument = app.get("song")
+	for config: Array in [[1280, 800, 1.0], [360, 740, 2.0]]:
+		root.size = Vector2i(config[0], config[1])
+		app.call("apply_scale", config[2])
+		await settle(app)
+		app.call("toggle_drawer", "SONG_MENU")
+		await settle(app)
+		app.call("show_song_details", 11)
+		await settle(app)
+		var about: SongDetails = app.get("song_details")
+		check(app.get("opened_drawer") == "SONG_DETAILS" and about.song_index == 11 and about.source_buttons.size() == 1, "expanded song details include bundled history and source links")
+		check(app.get("song") == details_song and not audio.playing_practice, "reading song details preserves practice selection and silence")
+		check(about.size.x <= root.size.x and app.get("drawer").size.x <= root.size.x, "detail text wraps at representative viewport and scale")
+		for source_button: Button in about.source_buttons:
+			check(source_button.focus_mode == Control.FOCUS_ALL and source_button.size.y >= 44, "source link remains keyboard and touch accessible")
+		app.call("go_back")
+		check(app.get("opened_drawer") == "SONG_MENU", "Back returns to the browsed catalog")
+		app.call("close_menu")
+	root.size = Vector2i(1280, 800)
+	app.call("apply_scale", 1.0)
+	await settle(app)
+	shelf.details[0].pressed.emit()
+	check(app.get("opened_drawer") == "SONG_DETAILS" and app.get("song_details").song_index == 0, "pinned information button opens details without switching songs")
+	app.call("close_menu")
 	app.call("set_songs_pinned", false)
 	for key: String in app.get("note_style_controls"):
 		var picker: OptionButton = app.get("note_style_controls")[key]

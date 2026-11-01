@@ -204,3 +204,20 @@ Silent Night's complete melody is also lowered one octave from its readable
 source bars: the full-library display-range check found its high F exceeded
 the default guitar staff range. This preserves the melodic intervals and 6/8
 rhythm while giving every note a staff symbol alongside its tab placement.
+
+## In-player history reviewed 2026-11-01
+
+The player’s About view separates historical context from these teaching recipes.
+[song_history.json](song_history.json) maps every library ID to localized original
+prose in `i18n/en.po`, source links, supported claims and editorial caveats. The
+29 historical entries credit verifiable writers, cultural traditions and selected
+performers; the piano study has a project provenance note. Uncertain tune origins
+and disputed attributions remain qualified. The version 1 format and BPM behavior
+are recorded in [decision 0030](../../docs/decisions/0030-song-details-and-reference-tempo.md).
+
+The new summaries and reference annotations are project-authored CC0-1.0
+educational material. Source pages retain their own rights; links identify
+reference use only. No source text, recording, illustration or new music file was
+imported. Links are opened only by the user; all summaries are bundled for offline
+reading. Historical performances mentioned in the blurbs are not the source of
+this app’s synthesized sound or its teaching arrangements.

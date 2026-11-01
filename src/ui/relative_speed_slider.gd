@@ -3,6 +3,8 @@ class_name RelativeSpeedSlider
 extends CaptionSlider
 
 signal tap_control
+const MARKERS: Array[int] = [0, 25, 50, 75, 100, 125, 150, 175, 200, 250, 300, 400, 500, 600, 700, 800, 900, 999]
+
 var press_control: Control
 var pointer_active: bool = false
 var pointer_index: int = -1
@@ -18,6 +20,29 @@ static func position_for_percent(percent: float) -> float:
 
 static func percent_for_position(position_ratio: float) -> float:
 	return roundf(999.0 * pow(clampf(position_ratio, 0, 1), 3))
+
+# Snap only pointer input. Keys and exact BPM entry retain fine adjustment.
+static func snapped_percent(percent: float) -> float:
+	var nearest: float = percent
+	var distance: float = INF
+	for marker: int in MARKERS:
+		var difference: float = absf(percent - marker)
+		if difference < distance:
+			distance = difference
+			nearest = marker
+	return nearest if distance <= (3 if nearest <= 200 else 8) else percent
+
+func snapped_position(position_ratio: float) -> float:
+	return position_for_percent(snapped_percent(percent_for_position(position_ratio)))
+
+func _draw() -> void:
+	var inset: float = get_theme_icon("grabber").get_width() / 2.0
+	var ink: Color = get_theme_color("font_color", "Label")
+	for marker: int in MARKERS:
+		var x: float = inset + position_for_percent(marker) * maxf(1, size.x - 2 * inset)
+		var major: bool = marker in [0, 100, 200, 999]
+		var y: float = size.y / 2.0 + 5
+		draw_line(Vector2(x, y), Vector2(x, minf(size.y - 1, y + (6 if major else 3))), ink, 2 if major else 1)
 
 func percentage() -> float:
 	return percent_for_position(value)
@@ -77,12 +102,12 @@ func handle_pointer(event: InputEvent) -> bool:
 			return true
 		if absf(delta.x) > 8: dragged = true
 		if dragged:
-			value = clampf(origin_value + delta.x / maxf(1, size.x - get_theme_icon("grabber").get_width()), 0, 1)
+			value = snapped_position(clampf(origin_value + delta.x / maxf(1, size.x - get_theme_icon("grabber").get_width()), 0, 1))
 		return true
 	if button_event and not event.pressed:
 		pointer_active = false
 		if not dragged and not control_tap:
-			value = pointer_ratio(position.x)
+			value = snapped_position(pointer_ratio(position.x))
 		drag_ended.emit(not is_equal_approx(value, origin_value))
 		if not dragged and control_tap and over_control: tap_control.emit()
 		return true

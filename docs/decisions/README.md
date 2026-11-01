@@ -65,3 +65,5 @@ and the linked Pages deployment.
 [0025 — Optional hands-free note commands](0025-hands-free-note-commands.md) adds an opt-in activation phrase and confirmed practice controls using the already-active microphone.
 
 [0029 — Practice navigation and note styles](0029-practice-navigation-and-note-styles.md) records paused navigation, pinned browsing, nonlinear speed and saved note decorations.
+
+[0030 — Song details and reference tempo](0030-song-details-and-reference-tempo.md) records sourced history, expanded details, speed detents and a session BPM override.
