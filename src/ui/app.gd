@@ -1152,6 +1152,10 @@ func set_startup_help(enabled: bool) -> void:
 
 func show_song_details(index: int) -> void:
 	if index < 0 or index >= BUILT_IN_LIBRARY.size(): return
+	# The pinned browser lives outside the drawer. Remember that origin so
+	# Back closes details and restores the existing shelf's focus and scroll.
+	if not menu_overlay.visible and song_shelf.visible:
+		drawer_history.append({"key": ""})
 	song_details.show_song(index)
 	UIAppearance.apply_roles(song_details, dark_mode, appearance_mode == "midnight")
 	scale_labels(song_details, theme.default_font_size / 20.0)
@@ -1914,6 +1918,9 @@ func go_back() -> void:
 		toggle_drawer("MENU", false)
 		return
 	var destination: Dictionary = drawer_history.pop_back()
+	if str(destination.key).is_empty():
+		close_menu()
+		return
 	toggle_drawer(destination.key, false)
 	# Restore typing immediately. Waiting for layout here loses keys entered
 	# soon after Back, and could steal focus after the user has already Tabbed.

@@ -106,6 +106,32 @@ func run() -> void:
 	speed_slider.handle_pointer(speed_key)
 	check(is_equal_approx(app.get("speed"), 0.99), "keyboard can leave a snapped marker by exactly one percent")
 	app.call("set_speed", 1.0)
+	var speed_caption: String = app.get("tempo_caption").text
+	var thumb: float = speed_slider.value
+	for cancellation: String in ["touch", "focus", "vertical"]:
+		var touch: InputEventScreenTouch = InputEventScreenTouch.new()
+		touch.index = 4
+		touch.position = speed_slider.get_global_rect().get_center()
+		touch.pressed = true
+		speed_slider.handle_pointer(touch)
+		var drag: InputEventScreenDrag = InputEventScreenDrag.new()
+		drag.index = touch.index
+		drag.position = touch.position + (Vector2(0, 30) if cancellation == "vertical" else Vector2(50, 0))
+		speed_slider.handle_pointer(drag)
+		if cancellation != "vertical":
+			check(app.get("speed_dragging") and speed_slider.value != thumb and app.get("speed") == 1.0, "slider previews without committing before %s cancellation" % cancellation)
+		if cancellation == "touch":
+			touch.pressed = false
+			touch.canceled = true
+			speed_slider.handle_pointer(touch)
+		elif cancellation == "focus":
+			speed_slider.notification(MainLoop.NOTIFICATION_APPLICATION_FOCUS_OUT)
+		check(not speed_slider.pointer_active and not app.get("speed_dragging") and is_equal_approx(speed_slider.value, thumb), "%s cancellation restores the thumb and clears the gesture" % cancellation)
+		check(app.get("speed") == 1.0 and app.get("tempo_caption").text == speed_caption, "%s cancellation preserves committed speed and caption" % cancellation)
+		touch.pressed = false
+		touch.canceled = false
+		speed_slider.handle_pointer(touch)
+		check(app.get("speed") == 1.0, "late release cannot commit a canceled %s gesture" % cancellation)
 	app.call("start", false)
 	app.call("seek_tick", 120)
 	check(not audio.playing_practice and app.get("source_tick") == 120, "seeking pauses at the exact chosen tick by default")
@@ -182,9 +208,23 @@ func run() -> void:
 	root.size = Vector2i(1280, 800)
 	app.call("apply_scale", 1.0)
 	await settle(app)
-	shelf.details[0].pressed.emit()
-	check(app.get("opened_drawer") == "SONG_DETAILS" and app.get("song_details").song_index == 0, "pinned information button opens details without switching songs")
-	app.call("close_menu")
+	shelf.search.text = "e"
+	shelf.search.text_changed.emit(shelf.search.text)
+	var detail_index: int = 0
+	for index: int in shelf.songs:
+		if shelf.songs[index].visible: detail_index = index
+	shelf.details[detail_index].grab_focus()
+	await settle(app)
+	var details_scroll: int = shelf.scroller.scroll_vertical
+	check(details_scroll > 0, "pinned details regression starts in a scrolled, filtered browser")
+	shelf.details[detail_index].pressed.emit()
+	check(app.get("opened_drawer") == "SONG_DETAILS" and app.get("song_details").song_index == detail_index, "pinned information button opens details without switching songs")
+	app.call("go_back")
+	await settle(app)
+	check(not app.get("menu_overlay").visible and shelf.visible, "Back from pinned details returns directly to the pinned browser")
+	check(shelf.search.text == "e" and shelf.scroller.scroll_vertical == details_scroll and root.gui_get_focus_owner() == shelf.details[detail_index], "pinned details Back preserves filter, scroll and originating focus")
+	shelf.search.clear()
+	shelf.search.text_changed.emit("")
 	app.call("set_songs_pinned", false)
 	for key: String in app.get("note_style_controls"):
 		var picker: OptionButton = app.get("note_style_controls")[key]

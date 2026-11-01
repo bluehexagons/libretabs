@@ -58,7 +58,8 @@ class VerificationTests(unittest.TestCase):
         plan = self.plan('full')
         scripts = set(self.scripts(plan))
         self.assertTrue({'res://tests/ui_smoke.gd', 'res://tests/local_state.gd',
-                         'res://tests/practice_navigation.gd', 'res://tests/live_input.gd'} <= scripts)
+                         'res://tests/practice_navigation.gd', 'res://tests/tempo_reference.gd',
+                         'res://tests/live_input.gd'} <= scripts)
         for name in ('practice_ui', 'layout_ui', 'interface_ui', 'theater_ui', 'menu_navigation'):
             self.assertNotIn(f'res://tests/{name}.gd', scripts)
         self.assertNotIn('Editor startup', [check.name for check in plan])

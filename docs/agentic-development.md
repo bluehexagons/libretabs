@@ -200,6 +200,8 @@ python3 scripts/verify.py --extended
 `ui` combines `ui-smoke`, `practice` and `state`. The compact UI smoke checks
 wide and narrow/200% text layouts, Quick start, menu navigation, looping/speed,
 pause, Theater and first-use/canceled microphone practice using simulated input.
+The `practice` suite also injects a frame clock to check manual BPM overrides
+across source tempo changes, count-ins and loop wraps without audio-device jitter.
 State tests retain actual persistence, restart, corruption/future-schema
 protection and recovery without traversing the large UI matrix.
 
