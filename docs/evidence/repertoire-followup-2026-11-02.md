@@ -62,3 +62,9 @@ are retained separately under ignored
 browser playback do not establish audible quality, physical-instrument
 playability or musician approval. Broader device/timing/recovery gates remain
 open; this content addition does not claim to complete them.
+
+The first phone preview exposed a five-line practice heading when the edition,
+search alias and culture credit were repeated together. Its full title was
+shortened to “Londonderry Air · 1855 (Danny Boy tune)”; the separate credit
+and expanded history retain Irish traditional / Jane Ross attribution. This
+keeps the familiar-title search while returning more screen height to music.

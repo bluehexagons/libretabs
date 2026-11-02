@@ -3092,7 +3092,7 @@ msgid "SONG_SOURCE_DAISY_BELL_3"
 msgstr "1961: computer-sung Daisy Bell — Computer History Museum"
 
 msgid "LIBRARY_LONDONDERRY_AIR"
-msgstr "Londonderry Air · 1855 melody (Danny Boy tune) · Irish traditional"
+msgstr "Londonderry Air · 1855 (Danny Boy tune)"
 
 msgid "LIBRARY_LONDONDERRY_AIR_NAME"
 msgstr "Londonderry Air · 1855 melody"
