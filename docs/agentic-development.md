@@ -35,9 +35,9 @@ CC0 microphone WAV replay, exact project-pin diagnostics and isolated MuseScore
 comparisons. After rerunning upgraded Basaltwater setup with
 `--musescore --audio-tools --pdf-tools --av-tools`, use the optional `music_ready`,
 `pdf_ready`, `score_review` and `library_pdf_review` recipes.
-Fixture generation/replay works now without new host
-packages and is part of the baseline. These are development tools, with no new
-runtime dependency or bundled editor assets.
+Fixture generation/replay works without new host packages and is included in
+`--suite input` and the full gate, rather than the quick baseline. These are
+development tools, with no new runtime dependency or bundled editor assets.
 
 ## Operating model
 

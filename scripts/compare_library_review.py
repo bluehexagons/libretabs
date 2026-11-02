@@ -126,7 +126,7 @@ def inspect(batch: Path) -> dict:
                         "meter_match": meter == song["meter"],
                         "tempo_match": bpm is not None and abs(bpm - song["tempo"]) < 0.01,
                         "interval_differences": differences})
-    return {"scope": "29 authored melody recipes only; piano study and bass articulation need separate inspection. "
+    return {"scope": f"{len(results)} authored melody recipes only; piano study and bass articulation need separate inspection. "
                      "Differences describe the external importer, not a verdict on canonical MIDI or LibreTabs.",
             "songs": results}
 

@@ -63,9 +63,20 @@ class LibraryScores(unittest.TestCase):
         self.assertEqual(notes(aura_bars[14], (4, 4)),
                          [(62, 240), (60, 720), (64, 720), (62, 240)])
         ground = SONGS['canon_in_d']['bass_roots']
-        self.assertEqual(ground[:2], [(50, 45, 47, 42), (43, 50, 43, 45)])
+        self.assertEqual(ground[:2], [(50, 45, 47, 42), (43, 38, 43, 45)])
         self.assertEqual(ground[7], 50)  # authored tonic cadence
         self.assertEqual(ground[:8], ground[8:])
+
+    def test_reviewed_ending_and_accompaniment(self):
+        # North Atlantic's G8 closing note, transposed G→C, fills four beats.
+        self.assertEqual(SONGS['auld_lang_syne']['notes'][-1], (60, 1920))
+        # Petzold's second-section fourth bar uses C#, B, C#, A over A bass.
+        # The new practice root/fifth must not put C natural under C#.
+        minuet = SONGS['minuet_in_g']
+        bar = notes(minuet['bars'].split('|')[19], (3, 4))
+        self.assertEqual([(pitch + minuet['transpose'], duration) for pitch, duration in bar],
+                         [(61, 480), (59, 240), (61, 240), (57, 480)])
+        self.assertEqual(minuet['bass_roots'][19], 45)
 
     def test_added_melodies_keep_their_openings_and_meter(self):
         openings = {

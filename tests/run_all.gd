@@ -221,7 +221,7 @@ func _initialize() -> void:
 		check(library_projection.placed == library_projection.eligible, "%s stays within the default guitar range" % name)
 	check(library_count == 33, "every bundled library song receives import and guitar-placement checks")
 	var canon: SongDocument = parse(library_file("canon_in_d")).document
-	var ground_pitches: Array[int] = [50, 45, 47, 42, 43, 50, 43, 45]
+	var ground_pitches: Array[int] = [50, 45, 47, 42, 43, 38, 43, 45]
 	var ground_index: int = 0
 	for note: Dictionary in canon.notes:
 		if int(note.part) != 1 or int(note.start) >= 3840: continue
@@ -238,6 +238,15 @@ func _initialize() -> void:
 		check(not heard.is_empty() and not heard.has(muted_part) and heard.has(1 - muted_part), "separate melody and bass source parts mute independently")
 	var auld_lang_syne: SongDocument = parse(library_file("auld_lang_syne")).document
 	check(auld_lang_syne.measures[0].numerator == 4 and auld_lang_syne.measures[0].denominator == 4, "Auld Lang Syne keeps its 4/4 meter")
+	var final_auld_note: Dictionary = {}
+	for note: Dictionary in auld_lang_syne.notes:
+		if int(note.part) == 0 and int(note.end) == auld_lang_syne.end_tick: final_auld_note = note
+	check(not final_auld_note.is_empty() and int(final_auld_note.pitch) == 60 and int(final_auld_note.end) - int(final_auld_note.start) == 1920, "Auld Lang Syne holds its closing tonic for the source's four beats")
+	var minuet: SongDocument = parse(library_file("minuet_in_g")).document
+	var minuet_bass: Array[int] = []
+	for note: Dictionary in minuet.notes:
+		if int(note.part) == 1 and int(note.start) >= 19 * 1440 and int(note.start) < 20 * 1440: minuet_bass.append(int(note.pitch))
+	check(minuet_bass == [45, 52], "Minuet uses A and E bass under the C-sharp passage, avoiding a C-natural clash")
 	var brahms_lullaby: SongDocument = parse(library_file("brahms_lullaby")).document
 	check(brahms_lullaby.measures[0].numerator == 3 and brahms_lullaby.measures[0].denominator == 4, "Brahms Lullaby keeps its 3/4 meter")
 	var score_layout: ScoreLayout = ScoreLayout.new()

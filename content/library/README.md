@@ -29,13 +29,13 @@ gaps are deliberate; no swing or human timing is added.
 | --- | --- | --- |
 | ode_to_joy | Complete 16-bar familiar theme in C, including contrasting phrase and dotted cadences | 4/4 · 100 |
 | fur_elise | Opening theme twice, with pickup, sixteenths, rests and held A endings | 3/8 · 72 |
-| spring | Longer opening theme in E; eighths, sixteenths and dotted notes restored; final E half-note is an authored practice cadence | 4/4 · 100 |
+| spring | Longer opening theme in E, one octave below the violin source; eighths, sixteenths and dotted notes retained; final E half-note is an authored practice cadence | 4/4 · 100 |
 | canon_in_d | First violin's opening four bars and three bars of the eighth-note variation, down one octave over the quarter-note ground bass; authored whole-note D cadence; study played twice | 4/4 · 80 |
 | twinkle | Complete 12-bar melody, including the contrasting middle and returning opening | 4/4 · 100 |
 | the_entertainer | First 16-bar strain with pickup; syncopations tied across beats/bars; melody extracted from chords; final pickup replaced by rest | 2/4 · 80 |
 | mary_had_a_little_lamb | Complete eight bars twice, with full-length closing note | 4/4 · 100 |
 | frere_jacques | Complete eight bars twice; bell phrase uses eighths and lower G | 4/4 · 100 |
-| auld_lang_syne | Verse and chorus in C; pickup, dotted-quarter/eighth rhythm and held phrase endings | 4/4 · 88 |
+| auld_lang_syne | Verse and chorus in C; pickup, dotted-quarter/eighth rhythm and held phrase endings, including the final four-beat C | 4/4 · 88 |
 | yankee_doodle | Verse and chorus twice, with dotted chorus rhythm | 2/4 · 100 |
 | brahms_lullaby | Complete vocal melody in C, preserving pickup, rests and dotted rhythm; piano introduction omitted | 3/4 · 84 |
 | minuet_in_g | Both 16-bar sections, without repeats or ornaments, down one octave | 3/4 · 100 |
@@ -271,3 +271,33 @@ peak to 1971. The history now distinguishes those events. The Entertainer's
 award citation uses the [Recording Academy's own record](https://www.grammy.com/artists/marvin-hamlisch/2766/).
 See the [audit record](../../docs/evidence/song-collection-audit-2026-11-01.md)
 for findings, unchanged claims and verification limits.
+
+## Melody and accompaniment follow-up — 2026-11-01
+
+Fresh score comparisons covered twelve entries, respecting the declared editions,
+octave changes, omitted ornaments, padded pickups and classroom variants.
+
+- **Canon in D:** the sixth note of each complete ground-bass cycle is D2
+  (MIDI 38), as shown in the reference's
+  [cello part](https://www.mfiles.co.uk/scores/pachelbel-canon-in-d-cello.pdf).
+  The previous D3 repeated the right pitch class in the wrong register. Six
+  occurrences are corrected; the authored cadence bars remain separate. D2
+  is below an E-standard guitar's lowest open string, so this companion part
+  is accompaniment or piano reading rather than fully playable guitar tab.
+- **Auld Lang Syne:** the final C now lasts four quarter-note beats, matching
+  the source's whole-note G after transposition. The previous three-beat note
+  followed by one beat of rest was an undisclosed shortening. Total excerpt
+  duration and the pickup remain unchanged.
+- **Minuet in G:** the new practice bass in measure 20 now uses A2/E3 instead
+  of C3/G3, removing C natural under the melody's C sharp. The declared
+  [Mutopia edition](https://www.mutopiaproject.org/ftp/BachJS/BWVAnh114/anna-magdalena-04/anna-magdalena-04.ly)
+  confirms A harmony in this passage. This is a correction to the project's
+  authored accompaniment, not a reproduction of Petzold's complete bass line.
+- **Spring:** arrangement notes now identify the melody's uniform octave
+  lowering from the violin reference. Its pitches and rhythm are unchanged.
+
+Comparisons also checked Für Elise, The Entertainer, Brahms's Lullaby, Yankee
+Doodle, Simple Gifts, Home on the Range, Pop Goes the Weasel and Amazing Grace;
+no further supported correction was established. See the
+[follow-up evidence](../../docs/evidence/song-score-followup-2026-11-01.md)
+for coverage and limits.

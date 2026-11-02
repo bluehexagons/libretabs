@@ -2681,13 +2681,13 @@ msgid "SONG_HISTORY_FUR_ELISE"
 msgstr "Beethoven’s surviving sketches for this short piano piece date from 1810 and show that he revisited it in 1822. Ludwig Nohl first published it in 1867, decades after the composer’s death. The finished manuscript that Nohl described is lost, and the identity of “Elise” remains uncertain."
 
 msgid "SONG_ARRANGEMENT_SPRING"
-msgstr "A longer opening theme in E retains fast notes and uneven long–short rhythms. The final held E is a new ending for this exercise."
+msgstr "A longer opening theme in E is lowered one octave from the violin source. It retains fast notes and uneven long–short rhythms. The final held E is a new ending for this exercise."
 
 msgid "SONG_HISTORY_SPRING"
 msgstr "Antonio Vivaldi published “Spring” in 1725 as the first of four violin concertos depicting the seasons, within his larger Opus 8 collection. Each concerto accompanies a poem describing seasonal scenes; the instrumental parts also contain directions connecting particular musical passages with sounds and events in nature."
 
 msgid "SONG_ARRANGEMENT_CANON_IN_D"
-msgstr "Selected opening and faster-moving violin phrases are lowered one octave. The repeating eight-note bass pattern is retained; the final held D and its accompaniment form a new practice ending. The study is played twice."
+msgstr "Selected opening and faster-moving violin phrases are lowered one octave. The repeating eight-note bass pattern is retained; the final held D and its accompaniment form a new practice ending. The study is played twice. The bass includes a low D below a standard guitar's lowest open string; use it as accompaniment or for piano practice."
 
 msgid "SONG_HISTORY_CANON_IN_D"
 msgstr "Johann Pachelbel wrote this chamber work for three violins and a supporting bass part, pairing it with a lively dance called a gigue. The violins enter one after another with the same music over a repeating bass pattern. Its date and original occasion are unknown; Jean-François Paillard’s 1968 recording helped launch its modern popularity."
@@ -2717,7 +2717,7 @@ msgid "SONG_HISTORY_FRERE_JACQUES"
 msgstr "“Frère Jacques” is a French round: singers begin the same melody at different times, allowing its phrases to overlap. Long passed down as traditional children’s music, it has been attributed to Jean-Philippe Rameau by musicologist Sylvie Bouissou through her research into eighteenth-century French manuscripts of musical canons."
 
 msgid "SONG_ARRANGEMENT_AULD_LANG_SYNE"
-msgstr "Verse and chorus are in C, with the short lead-in before the main beat, long–short rhythms and held phrase endings retained."
+msgstr "Verse and chorus are in C, with the short lead-in before the main beat, long–short rhythms and held phrase endings retained. The final C lasts four main beats."
 
 msgid "SONG_HISTORY_AULD_LANG_SYNE"
 msgstr "Robert Burns shaped this Scots song from older material, sending an early version to a friend in 1788. George Thomson published Burns’s words with the familiar tune in 1799; an earlier publication used a different melody. Its title recalls old times, and its verses remember friendship across years and distance."

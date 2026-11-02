@@ -78,7 +78,8 @@ Positive fixtures include gaps to verify release after silence. The Godot test
 replays actual decoded WAV blocks through `PitchListener` with an injected
 clock and checks stable pitch/octave, rejected data and fixture checksums. It
 does not open a microphone, start audio playback or modify the user's routing.
-The baseline `python3 scripts/verify.py` generates and replays these fixtures.
+`python3 scripts/verify.py --suite input` generates and replays these fixtures;
+the quick baseline does not include the microphone replay suite.
 
 Identical generator reruns leave artifacts intact. Changed files or symlinks
 are refused; inspect and remove your disposable generated files before replacing

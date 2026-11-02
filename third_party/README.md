@@ -129,6 +129,19 @@ lyrics, scans, performances, ornamentation and accompaniment are not bundled
 or dedicated under the project license. Silent Night's uniform octave lowering
 uses its previously recorded melody reference. No new dependency is introduced.
 
+## Score follow-up (2026-11-01)
+
+The subsequent [score comparison](../content/library/README.md#melody-and-accompaniment-follow-up--2026-11-01)
+uses the previously declared mfiles Canon cello part, Mutopia-2017/01/19-75
+(Allen Garvin, Public Domain), and North Atlantic Tune List's 2018 Auld Lang
+Syne melody reference. Used paths are `scripts/library_scores.py` and
+`content/library/{canon_in_d,minuet_in_g,auld_lang_syne}.mid`. Changes restore
+the public-domain Canon ground's low D, select A/E for one bar of the original
+practice bass, and retain the familiar melody's full closing note. These are
+independently encoded note facts and project-authored MIDI realizations; no
+engraving, LilyPond/ABC source, modern accompaniment, recording or reference
+download is redistributed. Reference pages retain their own rights.
+
 ## Historical editions and variants (2026-11-01)
 
 The added paths `content/library/{row_your_boat_compound,skye_boat_song,long_long_ago}.mid`
