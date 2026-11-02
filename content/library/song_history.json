@@ -83,11 +83,11 @@
         },
         {
           "title_key": "SONG_SOURCE_THE_ENTERTAINER_2",
-          "url": "https://findingaids.loc.gov/repositories/15/resources/1051",
+          "url": "https://www.grammy.com/artists/marvin-hamlisch/2766/",
           "supports": "Hamlisch’s Grammy for Best Pop Instrumental Performance for The Entertainer."
         }
       ],
-      "research_notes": "Do not imply that the song originated in The Sting or that Joplin made the soundtrack recording."
+      "research_notes": "Do not imply that the song originated in The Sting or that Joplin made the soundtrack recording. The Recording Academy dates Hamlisch’s award for The Entertainer to its 1975 ceremony; do not infer 1974 from the Library of Congress finding aid’s grouped awards summary."
     },
     "mary_had_a_little_lamb": {
       "history_key": "SONG_HISTORY_MARY_HAD_A_LITTLE_LAMB",
@@ -244,10 +244,15 @@
         {
           "title_key": "SONG_SOURCE_AMAZING_GRACE_1",
           "url": "https://cowperandnewtonmuseum.org.uk/bulletin/amazing-grace/",
-          "supports": "Newton, sermon, 1779 publication, Walker's 1835 pairing, uncertain tune origins, Collins recording."
+          "supports": "Newton, sermon, 1779 publication, Walker's 1835 pairing and uncertain tune origins."
+        },
+        {
+          "title_key": "SONG_SOURCE_AMAZING_GRACE_2",
+          "url": "https://www.officialcharts.com/songs/judy-collins-amazing-grace/",
+          "supports": "Collins’s British singles-chart entry on 5 December 1970 and number-five peak in February 1971."
         }
       ],
-      "research_notes": "Do not credit Walker with composing New Britain or claim a proven Scottish, African, or slave-ship origin."
+      "research_notes": "Do not credit Walker with composing New Britain or claim a proven Scottish, African, or slave-ship origin. For Collins’s chart chronology, prefer the chart authority to the museum’s general 1971 summary: the British chart run began in December 1970."
     },
     "london_bridge": {
       "history_key": "SONG_HISTORY_LONDON_BRIDGE",

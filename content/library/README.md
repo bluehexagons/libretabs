@@ -40,8 +40,8 @@ gaps are deliberate; no swing or human timing is added.
 | brahms_lullaby | Complete vocal melody in C, preserving pickup, rests and dotted rhythm; piano introduction omitted | 3/4 · 84 |
 | minuet_in_g | Both 16-bar sections, without repeats or ornaments, down one octave | 3/4 · 100 |
 | piano_study | Original eight-bar two-hand C-major exercise with a quarter-note melody and alternating low half notes on separate treble and bass MIDI parts | 4/4 · 88 |
-| row_your_boat | Common eight-bar teaching round in C, played twice; rhythm simplified to quarters and halves | 4/4 · 96 |
-| jingle_bells | Familiar refrain twice in C, with an authored closing cadence and simplified quarter/half-note rhythm | 4/4 · 116 |
+| row_your_boat | Common eight-bar teaching round in C, played twice; rhythm simplified to quarter, half and whole notes | 4/4 · 96 |
+| jingle_bells | Familiar refrain twice in C, with an authored closing cadence and simplified quarter-, half- and whole-note rhythm | 4/4 · 116 |
 | greensleeves | Both sixteen-bar melody sections in A minor plus a padded pickup, down one octave; dotted-quarter/eighth pairs and chromatic notes retained; accompaniment replaced | 3/4 · 90 |
 | amazing_grace | Seventeen-bar New Britain melody in C, with a padded pickup, dotted-quarter/eighth pairs and tied phrase endings | 3/4 · 80 |
 | london_bridge | Eight-bar familiar melody in C, played twice; opening dotted-eighth/sixteenth pair simplified to even eighths | 2/4 · 80 |
@@ -256,3 +256,18 @@ Für Elise’s blurb now dates the surviving sketches rather than claiming a fin
 1810 text; Greensleeves defines a ground as a repeating bass pattern. See the
 [research and verification record](../../docs/evidence/repertoire-research-2026-11-01.md)
 for coverage and remaining limits.
+
+## Whole-collection description audit — 2026-11-01
+
+All 33 entries received a further history, credit, source and recipe-description
+review. The straight Row and Jingle Bells descriptions now include their whole
+notes; Aura Lee explains its doubled note values, omitted grace note and shortened
+phrase endings; Au Clair de la Lune identifies its added bass. The MIDI recipes
+and files are unchanged.
+
+[Official Charts](https://www.officialcharts.com/songs/judy-collins-amazing-grace/)
+dates Judy Collins's British chart entry to December 1970 and its number-five
+peak to 1971. The history now distinguishes those events. The Entertainer's
+award citation uses the [Recording Academy's own record](https://www.grammy.com/artists/marvin-hamlisch/2766/).
+See the [audit record](../../docs/evidence/song-collection-audit-2026-11-01.md)
+for findings, unchanged claims and verification limits.

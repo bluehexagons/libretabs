@@ -4,6 +4,9 @@ Follow [artifact retention](../artifact-retention.md) when curating local build,
 export and review files. Keep dated records here even when newer work supersedes
 them; local media archives remain separate from published evidence.
 
+Song collection audit: [all 33 descriptions, chart chronology and honest
+arrangement notes, 2026-11-01](song-collection-audit-2026-11-01.md).
+
 Practice-fraction follow-up: [half, quarter, eighth and sixteenth speed marks,
 2026-11-01](practice-fractions-2026-11-01.md).
 

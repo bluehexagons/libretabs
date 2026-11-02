@@ -2741,13 +2741,13 @@ msgid "SONG_HISTORY_MINUET_IN_G"
 msgstr "Christian Petzold, an organist in Dresden, wrote this minuet for a keyboard suite. Anna Magdalena Bach copied it, together with a companion minuet in G minor, into her musical notebook. Long attributed to Johann Sebastian Bach, the piece is now credited to Petzold while retaining its familiar BWV appendix number."
 
 msgid "SONG_ARRANGEMENT_ROW_YOUR_BOAT"
-msgstr "An eight-bar teaching version in C is played twice. Rhythm is simplified to quarter and half notes, lasting one and two main beats. Try the separate lilting 1881 version for groups of three short notes. Both versions play one melody with a new practice bass, without overlapping round entrances."
+msgstr "An eight-bar teaching version in C is played twice. Rhythm is simplified to quarter, half and whole notes, lasting one, two and four main beats. Try the separate lilting 1881 version for groups of three short notes. Both versions play one melody with a new practice bass, without overlapping round entrances."
 
 msgid "SONG_HISTORY_ROW_YOUR_BOAT"
 msgstr "Versions of these words appeared in American sheet music in 1852 with a different melody. The familiar tune appeared in 1881 with a credit to E. O. Lyte, although that credit does not establish whether he composed or adapted it. As a round, the melody can overlap with itself when singers enter in turn."
 
 msgid "SONG_ARRANGEMENT_JINGLE_BELLS"
-msgstr "The familiar refrain is played twice in C. Rhythm is simplified to quarter and half notes, lasting one and two main beats, with a newly written ending."
+msgstr "The familiar refrain is played twice in C. Rhythm is simplified to quarter, half and whole notes, lasting one, two and four main beats, with a newly written ending."
 
 msgid "SONG_HISTORY_JINGLE_BELLS"
 msgstr "James Lord Pierpont published this song in 1857 as “The One Horse Open Sleigh”, renaming it “Jingle Bells” in 1859. Its earliest documented performance was by Johnny Pell at Boston’s Ordway Hall in September 1857. That performance belonged to blackface minstrelsy, a popular entertainment built around racist caricatures of Black people."
@@ -2762,7 +2762,7 @@ msgid "SONG_ARRANGEMENT_AMAZING_GRACE"
 msgstr "The familiar single-line melody is in C. Long–short rhythms are retained, with opening rests aligning the short lead-in before the first full measure."
 
 msgid "SONG_HISTORY_AMAZING_GRACE"
-msgstr "John Newton prepared these words for a 1773 sermon in Olney, England; they appeared in Olney Hymns in 1779. William Walker paired them with the existing New Britain melody in his 1835 Southern Harmony. The melody's original composer remains uncertain; Judy Collins's recording reached American and British charts in 1971."
+msgstr "John Newton prepared these words for a 1773 sermon in Olney, England; they appeared in Olney Hymns in 1779. William Walker paired them with the existing New Britain melody in his 1835 Southern Harmony. The melody's original composer remains uncertain. Judy Collins's recording entered the British singles chart in December 1970 and reached number five in 1971."
 
 msgid "SONG_ARRANGEMENT_LONDON_BRIDGE"
 msgstr "The common classroom melody is in C and is played twice. The opening uses equal short notes."
@@ -2783,7 +2783,7 @@ msgid "SONG_HISTORY_WHEN_THE_SAINTS"
 msgstr "This traditional Christian spiritual became a fixture of New Orleans jazz and brass-band culture. The Paramount Jubilee Singers recorded it in 1923; Louis Armstrong's 1938 recording, arranged by pianist Luis Russell, helped make it internationally familiar. Armstrong popularized the song rather than composing it."
 
 msgid "SONG_ARRANGEMENT_AURA_LEE"
-msgstr "The verse and refrain melody are in C. No Love Me Tender lyrics or later recording arrangement is included."
+msgstr "The verse and refrain melody are in C. Note lengths are doubled from the 1861 score's two-beat bars into four-beat teaching bars. A small decorative lead-in note is omitted, and some closing notes are shortened to leave rests. The practice bass is new. No Love Me Tender lyrics or later recording arrangement is included."
 
 msgid "SONG_HISTORY_AURA_LEE"
 msgstr "George R. Poulton wrote the music and W. W. Fosdick the words for Aura Lea, published in Cincinnati in 1861. The original sheet music was for voice and piano and dedicated to S. C. Campbell of Hooley & Campbell's Minstrels. Its melody later became the basis of Love Me Tender."
@@ -2801,7 +2801,7 @@ msgid "SONG_HISTORY_CAMPTOWN_RACES"
 msgstr "Stephen Foster wrote the words and music for Camptown Races, published in 1850. Early editions advertised performances by the Christy and Campbell Minstrels and the New Orleans Serenaders. It originated in blackface minstrelsy, a form of stage entertainment built on racist caricatures of African Americans."
 
 msgid "SONG_ARRANGEMENT_AU_CLAIR_DE_LA_LUNE"
-msgstr "The common 16-bar classroom melody is in C. It is a single-line teaching arrangement, separate from any historical recording or Debussy composition."
+msgstr "The common 16-bar classroom melody is in C, with a new practice bass. This teaching version is separate from any historical recording or Debussy composition."
 
 msgid "SONG_HISTORY_AU_CLAIR_DE_LA_LUNE"
 msgstr "This traditional French song also holds a place in recording history. Édouard-Léon Scott de Martinville recorded it on 9 April 1860 with a phonautograph, which traced sound vibrations on paper. Researchers recovered audible sound from that recording in 2008, long after the device was built for visual study rather than playback."
@@ -2873,7 +2873,7 @@ msgid "SONG_SOURCE_THE_ENTERTAINER_1"
 msgstr "Library of Congress: Scott Joplin, 1868–1917"
 
 msgid "SONG_SOURCE_THE_ENTERTAINER_2"
-msgstr "Library of Congress: Marvin Hamlisch Papers"
+msgstr "Recording Academy: Marvin Hamlisch's Grammy awards"
 
 msgid "SONG_SOURCE_MARY_HAD_A_LITTLE_LAMB_1"
 msgstr "Morgan Library & Museum: Collections Spotlight, Spring 2023"
@@ -2925,6 +2925,9 @@ msgstr "Library of Congress: Jordi Savall and Hespèrion XXI concert programme, 
 
 msgid "SONG_SOURCE_AMAZING_GRACE_1"
 msgstr "Amazing Grace — Cowper & Newton Museum"
+
+msgid "SONG_SOURCE_AMAZING_GRACE_2"
+msgstr "Official Charts: Amazing Grace by Judy Collins"
 
 msgid "SONG_SOURCE_LONDON_BRIDGE_1"
 msgstr "Games and Songs of American Children — William Wells Newell, London Bridge, no. 150"
