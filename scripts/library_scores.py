@@ -155,8 +155,9 @@ london = ('G4:2 A4:2 G4:2 F4:2 | E4:2 F4:2 G4:4 | D4:2 E4:2 F4:4 | E4:2 F4:2 G4:
 add('london_bridge', 'London Bridge - twice', 'English traditional',
     f'{london} | {london}', (2, 4), 80)
 
+macdonald_line = 'C4 C4 C4 G3 | A3 A3 G3:8 | E4 E4 D4 D4'
 add('old_macdonald', 'Old MacDonald Had a Farm - melody study', 'Traditional',
-    'C4 C4 C4 G3 | A3 A3 G3:8 | E4 E4 D4 D4 | C4:12 R:4 | '
+    f'{macdonald_line} | C4:12 G3 | {macdonald_line} | C4:12 R:4 | '
     'G3:2 G3:2 C4 C4 C4 | G3:2 G3:2 C4 C4 C4 | '
     'C4:2 C4:2 C4 C4:2 C4:2 C4 | C4:2 C4:2 C4:2 C4:2 C4:8 | '
     'C4 C4 C4 G3 | A3 A3 G3:8 | E4 E4 D4 D4 | C4:12 R:4', tempo=96)
@@ -297,7 +298,7 @@ BASS_ROOTS = {
                       48, 48, 43, 43, 45, 41, 40, 40, 48, 48, 43, 43, 45, 40, 45, 45],
     'amazing_grace': [48, 48, 48, 45, 43, 48, 48, 43, 43, 48, 48, 45, 43, 48, 43, 48, 48],
     'london_bridge': [48, 48, 43, 48, 48, 48, 43, 48] * 2,
-    'old_macdonald': [48, 41, 43, 48, 48, 48, 48, 43, 48, 41, 43, 48],
+    'old_macdonald': [48, 41, 43, 48] * 2 + [48, 48, 48, 43, 48, 41, 43, 48],
     'when_the_saints': [48, 48, 48, 48, 48, 48, 48, 43, 43, 48, 48, 41, 41, 48, 43, 48],
     'aura_lee': [48, 50, 43, 48, 48, 50, 43, 48, 48, 48, 48, 48, 41, 50, 50, 48],
     'silent_night': [48, 48, 48, 48, 43, 43, 48, 48, 41, 41, 48, 48,

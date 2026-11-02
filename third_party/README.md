@@ -142,6 +142,27 @@ independently encoded note facts and project-authored MIDI realizations; no
 engraving, LilyPond/ABC source, modern accompaniment, recording or reference
 download is redistributed. Reference pages retain their own rights.
 
+## Classroom-form follow-up (2026-11-01)
+
+Old MacDonald's added phrase in `scripts/library_scores.py` and
+`content/library/old_macdonald.mid` repeats prior project-authored melody data
+with the traditional low-G lead-in and new practice bass. British Council's
+D150 teacher notes v4, p. 4, and Paul Hardy's Songs Tunebook (1 June 2026,
+edits to 6 August 2026, X:15902, CC BY-NC-SA 4.0) are reference-only
+corroboration of form and melody facts. No Hardy source code, harmonization,
+engraving, audio or MIDI is redistributed or used as a runtime dependency.
+
+The [classroom review](../content/library/README.md#classroom-form-review--2026-11-01)
+also consults the Benteen/Mayo 1850 Camptown print (Levy 071.014, scan mirrored
+by Wikisource) and C. Holt Jr.'s 1848 Oh! Susanna print (Internet Archive
+`OhSusannaOriginal1848SheetMusic`). These nineteenth-century prints are
+public-domain reference works; their images, lyrics, choir/piano parts and
+downloaded PDFs are not bundled. The uploader title is not an assertion that
+the Holt print is the first edition. Used project paths are the original
+arrangement prose and links in `i18n/en.po` and `content/library/song_history.json`;
+the Foster MIDI realizations are unchanged. Project-authored prose and the
+revised Old MacDonald realization remain CC0-1.0; references retain their rights.
+
 ## Historical editions and variants (2026-11-01)
 
 The added paths `content/library/{row_your_boat_compound,skye_boat_song,long_long_ago}.mid`

@@ -4,6 +4,9 @@ Follow [artifact retention](../artifact-retention.md) when curating local build,
 export and review files. Keep dated records here even when newer work supersedes
 them; local media archives remain separate from published evidence.
 
+Classroom music review: [Old MacDonald's full form and clearer Foster teaching
+adaptations, 2026-11-01](classroom-music-review-2026-11-01.md).
+
 Score follow-up: [Canon's bass register, Minuet harmony and Auld's ending,
 2026-11-01](song-score-followup-2026-11-01.md).
 

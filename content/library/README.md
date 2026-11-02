@@ -45,18 +45,18 @@ gaps are deliberate; no swing or human timing is added.
 | greensleeves | Both sixteen-bar melody sections in A minor plus a padded pickup, down one octave; dotted-quarter/eighth pairs and chromatic notes retained; accompaniment replaced | 3/4 · 90 |
 | amazing_grace | Seventeen-bar New Britain melody in C, with a padded pickup, dotted-quarter/eighth pairs and tied phrase endings | 3/4 · 80 |
 | london_bridge | Eight-bar familiar melody in C, played twice; opening dotted-eighth/sixteenth pair simplified to even eighths | 2/4 · 80 |
-| old_macdonald | Twelve-bar classroom melody in C, including the repeated animal-call phrase; one verse, without lyrics | 4/4 · 96 |
+| old_macdonald | Sixteen-bar classroom melody in C, with the second farm/animal line and its low-G lead-in restored before the repeated calls; one verse, without lyrics | 4/4 · 96 |
 | when_the_saints | Sixteen-bar straight-time melody study in C, with padded pickups and held notes; no jazz improvisation | 4/4 · 100 |
 | aura_lee | Sixteen-bar verse and refrain in C; historical 2/4 note values doubled into 4/4 teaching bars, with dotted refrain rhythm; closing notes shortened for phrase-ending rests; grace note omitted | 4/4 · 88 |
 | silent_night | Twenty-four-bar familiar melody in C, down one octave for guitar; six eighth notes per measure, dotted rhythm and a tied closing note | 6/8 · 72 |
-| camptown_races | Sixteen-bar melody and refrain in C, played twice; even eighths and simplified phrase endings, without lyrics | 2/4 · 96 |
+| camptown_races | Sixteen-bar shortened verse and refrain in C, played twice; starts on the main beat, evens some long–short pairs and extends some endings over source rests, without lyrics | 2/4 · 96 |
 | au_clair_de_la_lune | Complete sixteen-bar classroom melody in C, with the contrasting middle phrase and returning opening | 4/4 · 88 |
 | hot_cross_buns | Four-bar, three-note classroom melody in C, played three times; eighth-note middle phrase retained | 4/4 · 80 |
 | simple_gifts | Seventeen-bar Shaker melody study in C, with an eighth-note pickup padded to a full opening measure; two eight-bar sections without repeats | 4/4 · 88 |
 | sakura_sakura | Fourteen-bar melody from the 1894 source, transposed down a perfect fourth; original fixed E/B practice bass, without the historical piano accompaniment or expressive markings | 4/4 · 80 |
 | pop_goes_the_weasel | Eight-bar familiar nursery-song melody in C, played twice; six eighth notes per measure, including the high-note surprise and rests | 6/8 · 90 |
 | home_on_the_range | Thirty-three-bar verse and chorus in C, with padded pickup, dotted rhythm and tied phrase endings | 3/4 · 84 |
-| oh_susanna | Seventeen-bar instrumental melody study in C, including verse, refrain and padded pickup; dotted rhythms retained, without lyrics | 4/4 · 100 |
+| oh_susanna | Seventeen-bar instrumental classroom melody in C, with padded pickup; early two-beat vocal bars broadened into four-beat teaching bars, some even pairs made long–short and phrase endings adapted, without lyrics | 4/4 · 100 |
 | row_your_boat_compound | Eight-bar 1881 melody lowered from D to C, twice; lilting rhythm, tied phrase endings and the historical repeated-note third bar | 6/8 · 80 |
 | skye_boat_song | Chorus, solo and returning chorus from an 1888 melody-only score in G; edition-specific solo notes and dotted-eighth/sixteenth pairs retained; original alternating G/D and E/B practice bass | 6/8 · 80 |
 | long_long_ago | Sixteen-bar upper vocal melody from the Firth & Hall edition catalogued 1845, lowered from F to C; introduction, postlude and lower harmony omitted | 4/4 · 88 |
@@ -301,3 +301,37 @@ Doodle, Simple Gifts, Home on the Range, Pop Goes the Weasel and Amazing Grace;
 no further supported correction was established. See the
 [follow-up evidence](../../docs/evidence/song-score-followup-2026-11-01.md)
 for coverage and limits.
+
+## Classroom-form review — 2026-11-01
+
+Eleven further entries received melody/form comparisons. Old MacDonald's
+previous twelve bars skipped the second farm/animal line before the calls.
+The [British Council's D150 teacher notes, p. 4](https://www.teachingenglish.org.uk/sites/teacheng/files/D150%20Teacher%20Notes_Old%20MacDonald%20v4.pdf)
+corroborate the full sequence. The sixteen-bar teaching version now repeats
+the project's existing opening phrase before the calls, with a quarter-note
+G3 lead-in replacing the first phrase's final rest. The existing calls, final
+phrase and authored root/fifth bass pattern remain. Duration is 40 seconds at
+96 quarter-note BPM. [Paul Hardy's Songs Tunebook](https://pghardy.net/tunebooks/pgh_songs_tunebook.abc),
+1 June 2026 with edits to 6 August 2026, X:15902, independently confirms the
+form and low pickup. Its CC BY-NC-SA 4.0 source is reference-only: no ABC,
+harmonization, engraving or source MIDI is copied. This remains a classroom
+realization, with simplified call pickups and phrase-ending rests, rather than
+a transcription of Hardy or the 1917 *Ohio* relative.
+
+Two visually inspected historical Foster prints clarify the other teaching
+versions. The [Benteen/Mayo 1850 Camptown score, Levy 071.014 scan](https://en.wikisource.org/wiki/File:Camptown_Races_(1850).pdf),
+music pages 3–4, contains a longer verse, a lead-in before the main beat,
+separate choir parts and rests that some held teaching notes replace.
+[C. Holt Jr.'s 1848 Oh! Susanna print](https://archive.org/details/OhSusannaOriginal1848SheetMusic),
+music pages 2–3 and its dated cover, has two-beat bars with shorter values and
+some equal pairs where the common teaching recipe uses long–short notes.
+The uploader's word “Original” does not establish a first edition; this is not
+the Peters print discussed by the university history. Those two MIDI files
+are unchanged. Their expanded details now disclose these differences and link
+the consulted prints. Historical lyrics, choir harmonies, piano parts and scans
+remain outside the bundle.
+
+Ode to Joy, Twinkle, Mary Had a Little Lamb, Frère Jacques, Au Clair de la Lune,
+London Bridge, When the Saints and Silent Night had no further supported
+correction. See the [review evidence](../../docs/evidence/classroom-music-review-2026-11-01.md)
+for source editions, coverage and remaining limits.

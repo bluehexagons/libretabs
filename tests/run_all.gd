@@ -247,6 +247,11 @@ func _initialize() -> void:
 	for note: Dictionary in minuet.notes:
 		if int(note.part) == 1 and int(note.start) >= 19 * 1440 and int(note.start) < 20 * 1440: minuet_bass.append(int(note.pitch))
 	check(minuet_bass == [45, 52], "Minuet uses A and E bass under the C-sharp passage, avoiding a C-natural clash")
+	var macdonald: SongDocument = parse(library_file("old_macdonald")).document
+	var macdonald_second_line: Array[int] = []
+	for note: Dictionary in macdonald.notes:
+		if int(note.part) == 0 and int(note.start) >= 7200 and int(note.start) < 9600: macdonald_second_line.append(int(note.pitch))
+	check(macdonald.measures.size() == 16 and macdonald_second_line == [55, 60, 60, 60, 55], "Old MacDonald includes the low-G lead-in and second farm line in its complete 16-bar teaching form")
 	var brahms_lullaby: SongDocument = parse(library_file("brahms_lullaby")).document
 	check(brahms_lullaby.measures[0].numerator == 3 and brahms_lullaby.measures[0].denominator == 4, "Brahms Lullaby keeps its 3/4 meter")
 	var score_layout: ScoreLayout = ScoreLayout.new()

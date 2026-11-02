@@ -279,9 +279,14 @@
           "title_key": "SONG_SOURCE_OLD_MACDONALD_2",
           "url": "https://urresearch.rochester.edu/institutionalPublicationPublicView.action?institutionalItemId=19340",
           "supports": "Primary score scan, title Ohio and Old Macdougal wording on printed page 84; soldiers' song collection context."
+        },
+        {
+          "title_key": "SONG_SOURCE_OLD_MACDONALD_3",
+          "url": "https://www.teachingenglish.org.uk/teaching-resources/teaching-primary/teaching-tools/classroom-posters-old-macdonald-had-farm",
+          "supports": "Modern verse form: opening farm line, second farm/animal line, calls and returning opening; D150 teacher notes, page 4."
         }
       ],
-      "research_notes": "This is an early printed relative, not proof of the exact modern version's first appearance or sole authorship. The Morgan page sometimes returns 403 but its complete catalog record is searchable."
+      "research_notes": "This is an early printed relative, not proof of the exact modern version's first appearance or sole authorship. The Morgan page sometimes returns 403 but its complete catalog record is searchable. The teaching recipe now restores the missing second farm/animal line. Paul Hardy Songs Tunebook, 1 June 2026 with edits to 6 August 2026, X:15902, corroborates the 16-bar form and low-G pickup after transposition. Its CC BY-NC-SA 4.0 source is reference-only; the added phrase repeats existing project-authored data, and the simplified calls and phrase endings remain editorial. No code, harmonization or source asset is copied."
     },
     "when_the_saints": {
       "history_key": "SONG_HISTORY_WHEN_THE_SAINTS",
@@ -337,9 +342,14 @@
           "title_key": "SONG_SOURCE_CAMPTOWN_RACES_2",
           "url": "https://americanmusic.library.pitt.edu/content/de-camptown-races",
           "supports": "1850 copyright deposit, early performer credits, blackface and racist-caricature context."
+        },
+        {
+          "title_key": "SONG_SOURCE_CAMPTOWN_RACES_3",
+          "url": "https://en.wikisource.org/wiki/File:Camptown_Races_(1850).pdf",
+          "supports": "Levy 071.014 scan of Benteen/Mayo 1850 print, music pages 3-4: Foster credit, longer verse, separate choir voices, pickup and phrase-ending rests."
         }
       ],
-      "research_notes": "No particular real racecourse or town is securely established as its inspiration."
+      "research_notes": "No particular real racecourse or town is securely established as its inspiration. The 1850 Levy scan was visually compared with the teaching recipe. The project version shortens the verse, starts on the main beat, evens some long-short pairs and extends some phrase endings over source rests; it is not a complete transcription. No scan, source accompaniment or lyrics are bundled."
     },
     "au_clair_de_la_lune": {
       "history_key": "SONG_HISTORY_AU_CLAIR_DE_LA_LUNE",
@@ -446,9 +456,14 @@
           "title_key": "SONG_SOURCE_OH_SUSANNA_1",
           "url": "https://americanmusic.library.pitt.edu/content/oh-susanna",
           "supports": "Foster authorship, original title, 1848 publication, Peters edition/manuscript relationship and blackface context."
+        },
+        {
+          "title_key": "SONG_SOURCE_OH_SUSANNA_2",
+          "url": "https://archive.org/details/OhSusannaOriginal1848SheetMusic",
+          "supports": "Visually checked C. Holt Jr. print, copyright 1848 on cover, music pages 2-3: two-beat vocal bars and rhythmic differences from this teaching version."
         }
       ],
-      "research_notes": "Do not call the Peters printing the first edition. Direct access was inconsistent, but the complete university article was available in indexed search results."
+      "research_notes": "Do not call the Peters printing the first edition. Direct access was inconsistent, but the complete university article was available in indexed search results. The separately linked scan is the C. Holt Jr. 1848 print (publisher/year checked on its cover), not the Peters printing. The uploader title is not evidence that it is the first edition. Its two-beat vocal bars have shorter values and some equal note pairs where this common classroom recipe uses four-beat bars and long-short pairs. Choir harmony and piano accompaniment are not used."
     },
     "piano_study": {
       "history_key": "SONG_HISTORY_PIANO_STUDY",

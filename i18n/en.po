@@ -2660,7 +2660,7 @@ msgid "SONG_SOURCES_HEADING"
 msgstr "Sources"
 
 msgid "SONG_SOURCES_HELP"
-msgstr "These references support the history above. Open a source in your browser; internet access may be needed. The song history remains available offline."
+msgstr "These references support the history and arrangement notes above. Open a source in your browser; internet access may be needed. The song details remain available offline."
 
 msgid "SONG_DETAILS_META"
 msgstr "%s · %s · practice tempo %d BPM · %s"
@@ -2771,7 +2771,7 @@ msgid "SONG_HISTORY_LONDON_BRIDGE"
 msgstr "This English singing game was also played in the United States by the nineteenth century. Folklorist William Wells Newell described children forming a bridge with raised arms, then catching players as they passed underneath. His collection preserves several versions, showing how words and rules changed between communities."
 
 msgid "SONG_ARRANGEMENT_OLD_MACDONALD"
-msgstr "The familiar classroom melody is in C, including repeated notes for animal calls. It does not reproduce every phrase of the earlier Ohio variant."
+msgstr "The 16-bar classroom version in C includes the second farm-and-animal line before the repeated calls, then returns to the opening. A low G leads into the second line; some phrase endings leave a short rest. The practice bass is new. This is not a transcription of the earlier Ohio variant."
 
 msgid "SONG_HISTORY_OLD_MACDONALD"
 msgstr "An early printed relative of this familiar farm song appears in F. T. Nettleingham's Tommy's Tunes, a 1917 collection of soldiers' songs. That version is called Ohio and names the farmer Old Macdougal. Nettleingham collected and arranged the book; its publication does not establish him as the song's original author."
@@ -2795,7 +2795,7 @@ msgid "SONG_HISTORY_SILENT_NIGHT"
 msgstr "Joseph Mohr wrote the German poem in 1816, and Franz Xaver Gruber composed its melody on Christmas Eve in 1818. Mohr and Gruber first performed the song that evening at St. Nicholas Church in Oberndorf, near Salzburg. Mohr sang and played guitar, while Gruber supplied the bass voice."
 
 msgid "SONG_ARRANGEMENT_CAMPTOWN_RACES"
-msgstr "The single-line melody is in C and is played twice with equal short notes. Historical minstrel lyrics and piano accompaniment are omitted."
+msgstr "A shortened verse and refrain are played twice in C, starting directly on the main beat. Some long–short pairs become equal short notes, and held endings replace some rests. Historical minstrel lyrics, choir parts and piano accompaniment are omitted."
 
 msgid "SONG_HISTORY_CAMPTOWN_RACES"
 msgstr "Stephen Foster wrote the words and music for Camptown Races, published in 1850. Early editions advertised performances by the Christy and Campbell Minstrels and the New Orleans Serenaders. It originated in blackface minstrelsy, a form of stage entertainment built on racist caricatures of African Americans."
@@ -2837,7 +2837,7 @@ msgid "SONG_HISTORY_HOME_ON_THE_RANGE"
 msgstr "Brewster Higley's poem My Western Home was published in Kansas in 1873; Daniel Kelley and the Harlan brothers helped turn it into a song. It became Kansas's official state song in 1947. Dom Flemons performed all its verses for the Library of Congress in 2020, continuing its life in Western music."
 
 msgid "SONG_ARRANGEMENT_OH_SUSANNA"
-msgstr "The familiar single-line verse and refrain are in C, with long–short rhythms and opening rests aligning the lead-in notes. Historical minstrel lyrics and piano accompaniment are omitted."
+msgstr "This C-major teaching version uses four-beat bars and longer note values than the early two-beat vocal print. Some equal pairs in that print become long–short notes here. Opening rests align the lead-in, and phrase endings include rests. Historical minstrel lyrics, choir harmony and piano accompaniment are omitted."
 
 msgid "SONG_HISTORY_OH_SUSANNA"
 msgstr "Stephen Foster's song was originally titled Susanna and appeared in print in 1848. W. C. Peters's 1848 edition was prepared from Foster's own manuscript, although it was not the first printing. The song originated in blackface minstrelsy, a stage tradition built on racist caricatures of African Americans."
@@ -2938,6 +2938,9 @@ msgstr "Tommy's Tunes — The Morgan Library & Museum"
 msgid "SONG_SOURCE_OLD_MACDONALD_2"
 msgstr "Tommy's Tunes — Sibley Music Library, University of Rochester"
 
+msgid "SONG_SOURCE_OLD_MACDONALD_3"
+msgstr "Classroom song form — British Council TeachingEnglish"
+
 msgid "SONG_SOURCE_WHEN_THE_SAINTS_1"
 msgstr "When the Saints Go Marching In — Ricky Riccardi, National Recording Registry"
 
@@ -2955,6 +2958,9 @@ msgstr "Gwine to Run All Night, or, De Camptown Races — Library of Congress"
 
 msgid "SONG_SOURCE_CAMPTOWN_RACES_2"
 msgstr "De Camptown Races — American Music at Pitt"
+
+msgid "SONG_SOURCE_CAMPTOWN_RACES_3"
+msgstr "1850 vocal score — Levy scan via Wikisource"
 
 msgid "SONG_SOURCE_AU_CLAIR_DE_LA_LUNE_1"
 msgstr "Au clair de la lune — Ces chansons qui font l'histoire, French Ministry of Education"
@@ -2991,6 +2997,9 @@ msgstr "We Are Americans: A Sampler of Songs about Love of Country — Library o
 
 msgid "SONG_SOURCE_OH_SUSANNA_1"
 msgstr "Oh! Susanna — American Music at Pitt"
+
+msgid "SONG_SOURCE_OH_SUSANNA_2"
+msgstr "1848 C. Holt vocal print — Internet Archive"
 
 msgid "SONG_DETAILS_PRACTICE"
 msgstr "Practice this song"

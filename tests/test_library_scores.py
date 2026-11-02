@@ -98,6 +98,18 @@ class LibraryScores(unittest.TestCase):
         self.assertEqual(SONGS['camptown_races']['meter'], (2, 4))
         self.assertEqual(SONGS['silent_night']['notes'][-2:], [(48, 2400), (None, 480)])
 
+    def test_macdonald_includes_second_farm_line_before_calls(self):
+        song = SONGS['old_macdonald']
+        bars = [notes(bar, (4, 4)) for bar in song['bars'].split('|')]
+        self.assertEqual(len(bars), 16)
+        self.assertEqual(bars[3], [(60, 1440), (55, 480)])
+        self.assertEqual(bars[4:7], bars[:3])
+        self.assertEqual(bars[7], [(60, 1440), (None, 480)])
+        self.assertEqual(bars[8][:2], [(55, 240), (55, 240)])
+        self.assertEqual(bars[12:15], bars[:3])
+        self.assertEqual(sum(duration for _, duration in song['notes']), 30720)
+        self.assertEqual(song['bass_roots'][4:8], song['bass_roots'][:4])
+
     def test_second_batch_preserves_distinctive_melody_features(self):
         hot_cross = SONGS['hot_cross_buns']['notes']
         self.assertEqual({pitch for pitch, _ in hot_cross}, {60, 62, 64})

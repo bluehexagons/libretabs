@@ -315,7 +315,7 @@ const BUILT_IN_LIBRARY: Array[Dictionary] = [
 	{"file": "greensleeves", "title_key": "LIBRARY_GREENSLEEVES", "level": 2, "seconds": 66, "bpm": 90, "views": ["guitar", "piano"]},
 	{"file": "amazing_grace", "title_key": "LIBRARY_AMAZING_GRACE", "level": 1, "seconds": 38, "bpm": 80, "views": ["guitar", "piano"]},
 	{"file": "london_bridge", "title_key": "LIBRARY_LONDON_BRIDGE", "level": 0, "seconds": 24, "bpm": 80, "views": ["guitar", "piano"]},
-	{"file": "old_macdonald", "title_key": "LIBRARY_OLD_MACDONALD", "level": 0, "seconds": 30, "bpm": 96, "views": ["guitar", "piano"]},
+	{"file": "old_macdonald", "title_key": "LIBRARY_OLD_MACDONALD", "level": 0, "seconds": 40, "bpm": 96, "views": ["guitar", "piano"]},
 	{"file": "when_the_saints", "title_key": "LIBRARY_WHEN_THE_SAINTS", "level": 0, "seconds": 38, "bpm": 100, "views": ["guitar", "piano"]},
 	{"file": "aura_lee", "title_key": "LIBRARY_AURA_LEE", "level": 1, "seconds": 44, "bpm": 88, "views": ["guitar", "piano"]},
 	{"file": "silent_night", "title_key": "LIBRARY_SILENT_NIGHT", "level": 1, "seconds": 60, "bpm": 72, "views": ["guitar", "piano"]},
