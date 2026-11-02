@@ -330,6 +330,8 @@ const BUILT_IN_LIBRARY: Array[Dictionary] = [
 	{"file": "row_your_boat_compound", "title_key": "LIBRARY_ROW_YOUR_BOAT_COMPOUND", "level": 1, "seconds": 36, "bpm": 80, "views": ["guitar", "piano"]},
 	{"file": "skye_boat_song", "title_key": "LIBRARY_SKYE_BOAT_SONG", "level": 2, "seconds": 54, "bpm": 80, "views": ["guitar", "piano"]},
 	{"file": "long_long_ago", "title_key": "LIBRARY_LONG_LONG_AGO", "level": 1, "seconds": 44, "bpm": 88, "views": ["guitar", "piano"]},
+	{"file": "daisy_bell", "title_key": "LIBRARY_DAISY_BELL", "level": 1, "seconds": 60, "bpm": 96, "views": ["guitar", "piano"]},
+	{"file": "londonderry_air", "title_key": "LIBRARY_LONDONDERRY_AIR", "level": 2, "seconds": 57, "bpm": 72, "views": ["guitar", "piano"]},
 	{"file": "piano_study", "title_key": "LIBRARY_PIANO_STUDY", "level": 1, "seconds": 22, "bpm": 88, "views": ["piano"]},
 ]
 const PRACTICE_PRESETS: Array[Dictionary] = [

@@ -535,6 +535,55 @@
         }
       ],
       "research_notes": "Avoid claiming 1833 composition or 1843/1844 first publication as established fact: historical edition dating is inconsistent. Early printed scores credit Bayly; no later pedagogical arrangement or recording is used."
+    },
+    "daisy_bell": {
+      "history_key": "SONG_HISTORY_DAISY_BELL",
+      "arrangement_key": "SONG_ARRANGEMENT_DAISY_BELL",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_DAISY_BELL_1",
+          "url": "https://levysheetmusic.mse.jhu.edu/collection/140/090",
+          "supports": "T. B. Harms & Co., New York, 1892; Harry Dacre words/music credit. Cover and first music page confirm 1892 copyright. Chorus melody on printed page 5 (PDF page 4) in G, 3/4; lower G→C, omit small-note triplet decoration in chorus bar 19, preserve principal notes/rests/ties. No claim that this copy is a first printing."
+        },
+        {
+          "title_key": "SONG_SOURCE_DAISY_BELL_2",
+          "url": "https://blogs.loc.gov/now-see-hear/2014/05/singing-circuits/",
+          "supports": "British songwriter, 1892 song and bicycle-craze context, early Dan Quinn and Edward Favor recordings, Bell Laboratories team. The blog initially says Henry; the primary score explicitly credits Harry Dacre. No recording used."
+        },
+        {
+          "title_key": "SONG_SOURCE_DAISY_BELL_3",
+          "url": "https://www.computerhistory.org/timeline/1961/",
+          "supports": "1961 computer performance; John Kelly and Carol Lochbaum programmed vocals, Max Mathews accompaniment. Hardware and first-ever claims omitted."
+        }
+      ],
+      "research_notes": "Use the 1892 chorus only, not a complete song or the Bell Labs arrangement. Source bar 19 principal A4 quarter/G4 half becomes D4/C4 in C; enlarged primary-score inspection resolved an initial one-step pitch-reading disagreement. The small B4/A4 upper-neighbor decoration is omitted. Practice bass, articulation and tempo are editorial. No source engraving, code, lyrics, piano, recording or downloaded MIDI is bundled."
+    },
+    "londonderry_air": {
+      "history_key": "SONG_HISTORY_LONDONDERRY_AIR",
+      "arrangement_key": "SONG_ARRANGEMENT_LONDONDERRY_AIR",
+      "sources": [
+        {
+          "title_key": "SONG_SOURCE_LONDONDERRY_AIR_1",
+          "url": "https://archive.org/details/petriecollection01petr/page/57/mode/1up",
+          "supports": "Boston Public Library scan of George Petrie, The Ancient Music of Ireland vol. I, Dublin, University Press/M. H. Gill, 1855, printed p. 57, Name unknown. Title and full score visually checked. Upper melody in E-flat, explicit low B natural in main bar 6, high G in bar 13, final E-flat half tied to eighth; lowered three semitones to C."
+        },
+        {
+          "title_key": "SONG_SOURCE_LONDONDERRY_AIR_2",
+          "url": "https://www.tcd.ie/library/exhibitions/in-tune/irish_folk_music.php",
+          "supports": "Untitled air supplied by Jane Ross of Limavady; Petrie or daughter Maryanne supplied piano harmonization. Does not establish a named composer or an unchanged ancient original."
+        },
+        {
+          "title_key": "SONG_SOURCE_LONDONDERRY_AIR_3",
+          "url": "https://digitalcommons.conncoll.edu/sheetmusic/45/",
+          "supports": "Later Danny Boy setting catalogued 1913, adaptation credited to Fred. E. Weatherly and cover performance credits Schumann-Heink, Florence Hinkle and Dan Beddoe. Historical context only; no lyrics or arrangement used."
+        },
+        {
+          "title_key": "SONG_SOURCE_LONDONDERRY_AIR_4",
+          "url": "https://www.itma.ie/texts/petrie-2/",
+          "supports": "1855 volume and facsimile context. Earlier sections were issued from 1853, so the blurb identifies the 1855 collection rather than asserting the tune was first published that year."
+        }
+      ],
+      "research_notes": "Unknown origin: do not turn Jane Ross into the composer or repeat a definite fiddler/collection-year legend. This is the upper melody of the 1855 edition, not Weatherly’s lyric setting or modern harmonization. Leading 2.5 beats and closing 1.5 beats pad the source pickup and short last bar to 17 full MIDI bars. Original melody note values/rests retained, ending has one 2.5-beat attack; lower voices and expressive/articulation marks omitted. Only independently encoded melody and new practice bass are bundled."
     }
   },
   "license": "CC0-1.0"

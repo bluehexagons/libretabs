@@ -181,3 +181,23 @@ Original historical prose and reference annotations in `i18n/en.po` and
 score images, lyrics and cited recordings retain their own rights and are not
 bundled. No modern edition source code, harmonization, audio asset or new
 dependency is included. Research downloads were disposable review scratch.
+
+## Historical melody additions — 2026-11-02
+
+Reference-only historical music; no source assets, code, lyrics, audio or
+third-party MIDI are redistributed. The underlying historical compositions are
+public domain, not relicensed by the project. Independently encoded teaching
+realizations, newly authored practice basses and explanatory prose are CC0-1.0.
+Modern archive interfaces, metadata, articles and scans keep their own rights.
+
+| Work / exact version | Source and rights | Used paths and modifications |
+| --- | --- | --- |
+| Harry Dacre, *Daisy Bell*, T. B. Harms & Co., New York, copyright 1892; chorus printed p. 5, PDF p. 4; [Levy 140.090](https://levysheetmusic.mse.jhu.edu/collection/140/090) | Nineteenth-century published composition, public domain; cover and music-page copyright visually checked. Reference PDF SHA-256 `78ea8fc28cd4a5cdfde02ebaf53125e69ad15bd7806fb4b02477597b3718098b`. No claim of first printing. | `scripts/library_scores.py` recipe and `content/library/daisy_bell.mid`: upper vocal chorus only, G→C (-7 semitones), one small triplet decoration omitted, principal notes/rests/ties retained. No verse, piano, engraved page or later recording arrangement. New practice bass, steady tempo and bass release gaps. |
+| *Name unknown* (now Londonderry Air), George Petrie, *The Ancient Music of Ireland*, vol. I, Dublin: University Press/M. H. Gill, 1855, p. 57; [Boston Public Library scan](https://archive.org/details/petriecollection01petr/page/57/mode/1up) | Nineteenth-century traditional melody, public domain. Visually checked dated title and full score; same-page [Wikimedia crop](https://commons.wikimedia.org/wiki/File:Londonderry_Air,_first_print_1855,_sheet_music_edited_by_George_Petrie.jpg) consulted for legibility only. No modern edition or harmonization used. | `scripts/library_scores.py` recipe and `content/library/londonderry_air.mid`: upper melody E-flat→C (-3 semitones), source chromatic note/range/rests retained, final tie one attack. Added leading/closing padding, new bass, steady tempo and bass release gaps. Lower voices, piano and expressive marks omitted. No later *Danny Boy* setting or lyrics. |
+
+Historical source links and original summaries are in
+`content/library/song_history.json` and `i18n/en.po`; institutional sources,
+claim boundaries and edition caveats are detailed in
+[the library notes](../content/library/README.md#score-based-additions--2026-11-02).
+No archive page's present availability is treated as a license to bundle its
+modern material.

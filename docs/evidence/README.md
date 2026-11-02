@@ -4,6 +4,9 @@ Follow [artifact retention](../artifact-retention.md) when curating local build,
 export and review files. Keep dated records here even when newer work supersedes
 them; local media archives remain separate from published evidence.
 
+Repertoire follow-up: [primary-score Daisy Bell chorus and 1855 Londonderry Air,
+2026-11-02](repertoire-followup-2026-11-02.md).
+
 Classroom music review: [Old MacDonald's full form and clearer Foster teaching
 adaptations, 2026-11-01](classroom-music-review-2026-11-01.md).
 

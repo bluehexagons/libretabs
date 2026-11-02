@@ -271,6 +271,30 @@ add('long_long_ago', 'Long, Long Ago - 1845 melody study', 'Thomas Haynes Bayly'
     f'{long_ago_a} | {long_ago_end} | {long_ago_bridge} | {long_ago_bridge} | '
     f'{long_ago_a} | {long_ago_end}', tempo=88)
 
+# Dacre, T. B. Harms 1892, printed p. 5: chorus only, G lowered to C.
+# The small-note triplet decoration in bar 19 is omitted; principal notes,
+# rests and ties remain. No piano accompaniment or relative tempo changes.
+add('daisy_bell', 'Daisy Bell - 1892 chorus', 'Harry Dacre',
+    'G4:12 | E4:12 | C4:12 | G3:8 R:4 | A3 B3 C4 | A3:8 C4 | G3:12 | ~:8 R:4 | '
+    'D4:12 | G4:12 | E4:12 | C4:8 R:4 | A3 B3 C4 | D4:8 E4 | D4:12 | ~:4 R:4 E4 | '
+    'F4 E4 D4 | G4:8 E4 | D4 C4:8 | ~:8 D4 | E4:8 C4 | A3:8 C4 | A3 G3:8 | ~:4 R:4 G3 | '
+    'C4:8 E4 | D4 R:8 | C4:8 E4 | D4 R:4 E4:2 F4:2 | G4 E4 C4 | D4:8 G3 | C4:12 | ~:4 R:8',
+    (3, 4), 96)
+
+# Petrie, Ancient Music of Ireland vol. I (1855), p. 57, upper melody only.
+# E-flat lowered to C. Preserve the printed chromatic low B natural (G# here),
+# the high G (E here), rests, and one tied closing attack; pad pickup/final bar.
+add('londonderry_air', 'Londonderry Air - 1855 melody study', 'Irish traditional / Jane Ross, collector',
+    'R:10 B3:2 C4:2 D4:2 | E4:6 D4:2 E4:2 A4:2 G4:2 E4:2 | '
+    'D4:2 C4:2 A3 R:2 C4:2 E4:2 F4:2 | G4:6 A4:2 G4:2 E4:2 C4:2 E4:2 | '
+    'D4:8 R:2 B3:2 C4:2 D4:2 | E4:6 D4:2 E4:2 A4:2 G4:2 E4:2 | '
+    'D4:2 C4:2 A3:2 G#3:2 A3:2 B3:2 C4:2 D4:2 | E4:6 F4:2 E4:2 D4:2 C4:2 D4:2 | '
+    'C4:8 R:2 G4:2 A4:2 B4:2 | C5:6 B4:2 B4:2 A4:2 G4:2 E4:2 | '
+    'G4:2 E4:2 C4 R:2 G4:2 A4:2 B4:2 | C5:6 B4:2 B4:2 A4:2 G4:2 E4:2 | '
+    'D4:8 R:2 G4:2 G4:2 G4:2 | E5:6 D5:2 D5:2 C5:2 A4:2 C5:2 | '
+    'G4:2 E4:2 C4 R:2 B3:2 C4:2 D4:2 | E4:2 A4:2 G4:2 E4:2 D4:2 C4:2 A3:2 B3:2 | '
+    'C4:10 R:6', tempo=72)
+
 # Deliberately simple practice basses. Except for the Canon ground bass, these
 # are editorial additions, not the composers' accompaniment. Each root lasts one bar;
 # the MIDI recipe plays it, then its fifth, as two separate low notes.
@@ -315,6 +339,9 @@ BASS_ROOTS = {
     'row_your_boat_compound': [48, 48, 48, 43, 48, 48, 43, 48] * 2,
     'skye_boat_song': [43] * 8 + [40] * 8 + [43] * 8,
     'long_long_ago': [48, 48, 43, 48, 48, 48, 43, 48, 43, 48, 43, 48, 48, 48, 43, 48],
+    'daisy_bell': [48, 48, 48, 43, 48, 48, 43, 43, 48, 48, 48, 48, 48, 43, 43, 43,
+                   50, 48, 43, 43, 48, 41, 43, 43, 48, 43, 48, 43, 48, 43, 48, 48],
+    'londonderry_air': [43, 48, 41, 43, 43, 48, 45, 43, 48, 48, 48, 41, 43, 48, 48, 43, 48],
 }
 for key, song in SONGS.items():
     roots = BASS_ROOTS[key]

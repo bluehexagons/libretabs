@@ -12,7 +12,7 @@ from generate_fixtures import authored_melody
 
 class LibraryScores(unittest.TestCase):
     def test_all_phrases_and_artifacts(self):
-        self.assertEqual(len(SONGS), 32)
+        self.assertEqual(len(SONGS), 34)
         for key, song in SONGS.items():
             with self.subTest(song=key):
                 pitches, durations = zip(*song['notes'])
@@ -176,6 +176,41 @@ class LibraryScores(unittest.TestCase):
         self.assertEqual(notes(long_ago['bars'].split('|')[8], (4, 4)),
                          [(67, 240), (65, 240), (65, 240), (64, 240), (62, 480), (55, 240), (55, 240)])
         self.assertEqual(long_ago['notes'][-2:], [(60, 960), (None, 960)])
+
+    def test_daisy_chorus_preserves_source_phrasing_without_triplet_decoration(self):
+        song = SONGS['daisy_bell']
+        self.assertEqual(song['meter'], (3, 4))
+        self.assertEqual(len(song['bars'].split('|')), 32)
+        self.assertEqual(sum(duration for _, duration in song['notes']), 46080)
+        self.assertEqual(len([pitch for pitch, _ in song['notes'] if pitch is not None]), 50)
+        self.assertEqual(song['notes'][:5],
+                         [(67, 1440), (64, 1440), (60, 1440), (55, 960), (None, 480)])
+        # Source p. 5, bars 13 and 17: F# in G becomes B, and the next line
+        # starts C5-B4-A4 (F-E-D in C), not one scale step below.
+        bars = song['bars'].split('|')
+        self.assertEqual(notes(bars[12], (3, 4)), [(57, 480), (59, 480), (60, 480)])
+        self.assertEqual(notes(bars[16], (3, 4)), [(65, 480), (64, 480), (62, 480)])
+        # Omit only the small triplet: principal D-C stays, C tied four beats.
+        self.assertIn([(62, 480), (60, 1920), (62, 480)],
+                      [song['notes'][i:i + 3] for i in range(len(song['notes']) - 2)])
+        self.assertIn((55, 2400), song['notes'])
+        self.assertEqual(song['notes'][-2:], [(60, 1920), (None, 960)])
+
+    def test_petrie_air_preserves_edition_variants_and_padded_pickup(self):
+        song = SONGS['londonderry_air']
+        self.assertEqual(song['meter'], (4, 4))
+        self.assertEqual(len(song['bars'].split('|')), 17)
+        self.assertEqual(sum(duration for _, duration in song['notes']), 32640)
+        self.assertEqual(song['notes'][:4],
+                         [(None, 1200), (59, 240), (60, 240), (62, 240)])
+        bars = song['bars'].split('|')
+        # Petrie p. 57, main bar 6: explicit B natural in E-flat becomes G#.
+        self.assertEqual(notes(bars[6], (4, 4)),
+                         [(62, 240), (60, 240), (57, 240), (56, 240),
+                          (57, 240), (59, 240), (60, 240), (62, 240)])
+        self.assertEqual(notes(bars[13], (4, 4)),
+                         [(76, 720), (74, 240), (74, 240), (72, 240), (69, 240), (72, 240)])
+        self.assertEqual(song['notes'][-2:], [(60, 1200), (None, 720)])
 
     def test_bad_bars_and_ties_are_rejected(self):
         for bars in ['C4 C4 C4', '~:16', 'R:8 ~:8', 'C4:0 C4:16',

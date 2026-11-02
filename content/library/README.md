@@ -60,6 +60,8 @@ gaps are deliberate; no swing or human timing is added.
 | row_your_boat_compound | Eight-bar 1881 melody lowered from D to C, twice; lilting rhythm, tied phrase endings and the historical repeated-note third bar | 6/8 · 80 |
 | skye_boat_song | Chorus, solo and returning chorus from an 1888 melody-only score in G; edition-specific solo notes and dotted-eighth/sixteenth pairs retained; original alternating G/D and E/B practice bass | 6/8 · 80 |
 | long_long_ago | Sixteen-bar upper vocal melody from the Firth & Hall edition catalogued 1845, lowered from F to C; introduction, postlude and lower harmony omitted | 4/4 · 88 |
+| daisy_bell | Complete 32-bar chorus from the 1892 print, lowered G→C; phrase-ending rests and cross-bar ties retained; small triplet decoration omitted | 3/4 · 96 |
+| londonderry_air | Upper melody from Petrie's 1855 collection, lowered E-flat→C; wide range, low chromatic note and source rests retained; pickup and final bar padded | 4/4 · 72 |
 
 ## Score references checked 2026-09-11
 
@@ -335,3 +337,35 @@ Ode to Joy, Twinkle, Mary Had a Little Lamb, Frère Jacques, Au Clair de la Lune
 London Bridge, When the Saints and Silent Night had no further supported
 correction. See the [review evidence](../../docs/evidence/classroom-music-review-2026-11-01.md)
 for source editions, coverage and remaining limits.
+
+## Score-based additions — 2026-11-02
+
+Two further melodies bring the library to 34 historical teaching arrangements
+and the original piano study. They use the existing catalog/history format;
+existing songs and IDs are unchanged. These are independently encoded melodies
+from public-domain historical music with new CC0-1.0 practice basses. No source
+scans, lyrics, code, downloaded MIDI, recordings or later accompaniments are
+bundled. The steady tempos are editorial, not historical performance claims.
+
+| File | Exact reference | Used scope and adaptation |
+| --- | --- | --- |
+| daisy_bell | Harry Dacre, *Daisy Bell*, New York: T. B. Harms & Co., copyright 1892, [Levy Collection 140.090](https://levysheetmusic.mse.jhu.edu/collection/140/090), printed p. 5 (PDF p. 4). Cover and music-page copyright checked; not claimed to be a first printing. | Complete chorus only, G lowered seven semitones to C. Preserve phrase-ending rests and cross-bar ties. Omit the small upper-neighbor triplet decoration in chorus bar 19, retaining principal D4 quarter / C4 half and its tie into the next bar. Verses, introduction, piano parts, accents and relative tempo changes omitted. New root/fifth bass and 96 quarter-note BPM give 60 seconds. |
+| londonderry_air | George Petrie, *The Petrie Collection of the Ancient Music of Ireland*, vol. I, Dublin: University Press/M. H. Gill, 1855, p. 57, headed *Name unknown*, [Boston Public Library scan](https://archive.org/details/petriecollection01petr/page/57/mode/1up). Dated title and full score checked; sharper [same-score crop](https://commons.wikimedia.org/wiki/File:Londonderry_Air,_first_print_1855,_sheet_music_edited_by_George_Petrie.jpg) used to read notes. | Upper melody only, E-flat lowered three semitones to C. Keep the explicit source B natural in main bar 6 as G-sharp, and high G in main bar 13 as E5. Preserve source rests and one 2½-beat closing attack. Add 2½ beats before the pickup and 1½ beats after the last note, giving 17 full practice bars. Lower treble harmony, piano bass and expressive/articulation marks omitted. New bass and 72 quarter-note BPM give about 57 seconds. |
+
+Dacre's blurb credits early recorded performers separately from the later
+computer performance, using the [Library of Congress history](https://blogs.loc.gov/now-see-hear/2014/05/singing-circuits/)
+and [Computer History Museum's 1961 timeline](https://www.computerhistory.org/timeline/1961/).
+No recording or Bell Labs arrangement is used. The primary score's Harry Dacre
+credit takes precedence over the LOC blog's initial “Henry” typo.
+
+The air's blurb credits Jane Ross of Limavady as supplier, not composer, following
+[Trinity College Dublin](https://www.tcd.ie/library/exhibitions/in-tune/irish_folk_music.php).
+[ITMA's collection context](https://www.itma.ie/texts/petrie-2/) notes sections
+issued from 1853; the entry identifies the 1855 volume without an absolute
+first-publication claim. The [1913 *Danny Boy* edition](https://digitalcommons.conncoll.edu/sheetmusic/45/)
+supports Weatherly's later adaptation and singer credits only; no lyrics or
+later musical setting are used. Search accepts *Danny Boy* while the title
+identifies the actual 1855 melody source.
+
+See the [research record](../../docs/evidence/repertoire-followup-2026-11-02.md)
+for independent reading reconciliation, checks and remaining limits.

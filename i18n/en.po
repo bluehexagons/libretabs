@@ -3066,3 +3066,54 @@ msgstr "Long Long Ago! — Firth & Hall edition, Connecticut College"
 
 msgid "SONG_SOURCE_LONG_LONG_AGO_3"
 msgstr "Long, long ago — Elsie Baker, Victor recording, 1913, Library of Congress"
+
+msgid "LIBRARY_DAISY_BELL"
+msgstr "Daisy Bell · 1892 chorus · Harry Dacre"
+
+msgid "LIBRARY_DAISY_BELL_NAME"
+msgstr "Daisy Bell · 1892 chorus"
+
+msgid "LIBRARY_DAISY_BELL_CREDIT"
+msgstr "Harry Dacre"
+
+msgid "SONG_HISTORY_DAISY_BELL"
+msgstr "British songwriter Harry Dacre wrote Daisy Bell, published in 1892 during a bicycle craze. Early recordings included versions by Dan Quinn and Edward Favor. In 1961 a Bell Laboratories computer sang the song, with vocals programmed by John Kelly and Carol Lochbaum and accompaniment by Max Mathews."
+
+msgid "SONG_ARRANGEMENT_DAISY_BELL"
+msgstr "The 32-bar chorus from an 1892 print is lowered from G to C. Three quarter-note beats fill each bar. Held notes, rests and notes tied across bars retain the printed phrasing. A small triplet decoration in bar 19 is omitted, keeping its main notes. Verses, piano introduction, original accompaniment, accents and tempo changes are omitted. The steady practice tempo and low bass part are new; no historical recording is used."
+
+msgid "SONG_SOURCE_DAISY_BELL_1"
+msgstr "Daisy Bell — T. B. Harms, 1892, Levy Collection 140.090"
+
+msgid "SONG_SOURCE_DAISY_BELL_2"
+msgstr "Singing Circuits — Library of Congress"
+
+msgid "SONG_SOURCE_DAISY_BELL_3"
+msgstr "1961: computer-sung Daisy Bell — Computer History Museum"
+
+msgid "LIBRARY_LONDONDERRY_AIR"
+msgstr "Londonderry Air · 1855 melody (Danny Boy tune) · Irish traditional"
+
+msgid "LIBRARY_LONDONDERRY_AIR_NAME"
+msgstr "Londonderry Air · 1855 melody"
+
+msgid "LIBRARY_LONDONDERRY_AIR_CREDIT"
+msgstr "Irish traditional · supplied by Jane Ross"
+
+msgid "SONG_HISTORY_LONDONDERRY_AIR"
+msgstr "An air is a melody. George Petrie’s 1855 collection printed this Irish air without a known title and credited Jane Ross of Limavady for supplying it. Its composer and earlier history remain uncertain. A later setting, Danny Boy, was published in 1913 with an adaptation credited to Frederic Edward Weatherly; that edition names Schumann-Heink, Florence Hinkle and Dan Beddoe as singers."
+
+msgid "SONG_ARRANGEMENT_LONDONDERRY_AIR"
+msgstr "The upper melody from Petrie’s 1855 print is lowered from E-flat to C. Its wide range, low G-sharp and high E are retained. Notes before the first full bar have leading rests so the main beat lines up; extra closing rests complete the last practice bar. The final tied note has one attack lasting two and a half quarter-note beats. Lower harmony, piano accompaniment, expressive markings and later Danny Boy lyrics are omitted. The steady tempo and practice bass are new."
+
+msgid "SONG_SOURCE_LONDONDERRY_AIR_1"
+msgstr "Petrie’s Ancient Music of Ireland — 1855, page 57"
+
+msgid "SONG_SOURCE_LONDONDERRY_AIR_2"
+msgstr "Irish Folk Music and Song — Trinity College Dublin"
+
+msgid "SONG_SOURCE_LONDONDERRY_AIR_3"
+msgstr "Danny Boy — 1913 edition, Connecticut College"
+
+msgid "SONG_SOURCE_LONDONDERRY_AIR_4"
+msgstr "Petrie’s collection and publication context — Irish Traditional Music Archive"

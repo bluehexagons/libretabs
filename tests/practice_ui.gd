@@ -55,6 +55,10 @@ func run() -> void:
 		check(matches.size() == 1 and app.BUILT_IN_LIBRARY[matches[0]].file in ["row_your_boat_compound", "skye_boat_song", "long_long_ago"], "%s finds a researched addition" % title)
 	app.get("catalog_search").text = "Row Your Boat"
 	check(app.call("catalog_indices").size() == 2, "shared title search exposes both explicitly named Row variants")
+	for query: String in ["Daisy Bell", "Londonderry Air", "Danny Boy"]:
+		app.get("catalog_search").text = query
+		var matches: Array = app.call("catalog_indices")
+		check(matches.size() == 1 and app.BUILT_IN_LIBRARY[matches[0]].file in ["daisy_bell", "londonderry_air"], "%s finds a primary-score melody addition" % query)
 	app.get("catalog_search").text = "Fur Elise"
 	check(app.call("catalog_indices") == [1], "search also accepts unaccented song names")
 	app.get("catalog_search").text = ""
