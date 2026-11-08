@@ -2639,7 +2639,7 @@ msgid "BPM_PLAYBACK"
 msgstr "Playback starts at %.1f BPM · %s%% of %.1f BPM"
 
 msgid "SPEED_MARKERS_HELP"
-msgstr "Playback speed relative to base BPM. Marks favor half (50%), quarter (25%), eighth (12.5%) and sixteenth (6.25%) speed when space allows; all four are available in Playback presets. The thumb snaps only when close to a visible mark. Arrow keys adjust by 1%; Page Up or Down by 5%. Tap the percentage for BPM settings."
+msgstr "Drag to adjust speed; release to apply. Tap the percentage for presets and exact 0–999% entry. Arrow keys adjust by 1%; Page Up or Down by 5%."
 
 msgid "SONG_ABOUT"
 msgstr "About"
@@ -3117,3 +3117,12 @@ msgstr "Danny Boy — 1913 edition, Connecticut College"
 
 msgid "SONG_SOURCE_LONDONDERRY_AIR_4"
 msgstr "Petrie’s collection and publication context — Irish Traditional Music Archive"
+
+msgid "SPEED_EXACT"
+msgstr "Exact speed · percent"
+
+msgid "BPM_SETTINGS"
+msgstr "Base tempo settings"
+
+msgid "SPEED_CUSTOM"
+msgstr "Custom speed"

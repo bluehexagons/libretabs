@@ -135,6 +135,11 @@ func run() -> void:
 	touch.pressed = false
 	root.push_input(touch)
 	check(side_scroll.scroll_vertical > 0 and not listening.listener.paused and not app.get("audio").playing_practice, "finger drag reveals lower controls without pausing listening")
+	# Touch scrolling can leave Play focused. Model keyboard focus returning
+	# after the gesture settles, rather than re-grabbing the same focus inside
+	# the native scroll-end notification.
+	await settle(2)
+	app.get("play_button").release_focus()
 	app.get("play_button").grab_focus()
 	await settle(3)
 	check(side_scroll.get_global_rect().encloses(app.get("play_button").get_global_rect()), "keyboard focus scrolls play into view")

@@ -59,7 +59,7 @@ func run() -> void:
 		await settle(app)
 		var viewport: Rect2 = Rect2(Vector2.ZERO, root.size)
 		check(viewport.encloses(app.get("score_frame").get_global_rect()), "music fits representative viewport %s" % [config])
-		for key: String in ["play_button", "menu_button"]:
+		for key: String in ["play_button", "menu_button", "main_speed"]:
 			var control: Control = app.get(key)
 			check(control.is_visible_in_tree() and viewport.encloses(control.get_global_rect()) and control.size.y >= 44, key + " remains reachable")
 		app.call("set_speed", 0.0625)
@@ -75,6 +75,17 @@ func run() -> void:
 		menu.category_buttons["MENU_PRACTICE"].pressed.emit()
 		menu.entry_buttons["TEMPO"].pressed.emit()
 		check(app.get("opened_drawer") == "TEMPO", "menu category opens playback settings")
+		await settle(app)
+		var panel_slider: RelativeSpeedSlider = app.get("panel_speed")
+		check(viewport.encloses(panel_slider.get_global_rect()) and panel_slider.size.y >= 44, "expanded speed slider is immediately reachable")
+		app.get("speed_input").value = 12.5
+		check(is_equal_approx(app.get("speed"), 0.125) and panel_slider.percentage() == 12.5, "exact percent entry synchronizes both sliders")
+		app.get("speed_input").value = 6.25
+		await settle(app)
+		check(app.get("speed_input").get_line_edit().text.contains("6.25"), "exact entry displays quarter-percent precision honestly")
+		app.call("change_speed", app.get_script().get_script_constant_map()["SPEEDS"].size())
+		check(app.get("speed_input").get_line_edit().has_focus(), "custom speed focuses the visible exact entry")
+		app.call("set_speed", 1.0)
 		app.call("go_back")
 		check(app.get("opened_drawer") == "MENU_PRACTICE", "Back restores the menu category")
 		app.call("close_menu")
@@ -99,12 +110,12 @@ func run() -> void:
 	speed_slider.handle_pointer(tap)
 	tap.pressed = false
 	speed_slider.handle_pointer(tap)
-	check(is_equal_approx(app.get("speed"), 1.25), "middle-of-track tap uses the same cubic mapping as the thumb")
+	check(is_equal_approx(app.get("speed"), 0.25), "middle-of-track tap uses the same cubic mapping as the thumb")
 	# Drawing and pointer input share the responsive set of visible marks.
 	for percent: float in speed_slider.visible_markers():
 		var inset: float = speed_slider.get_theme_icon("grabber").get_width() / 2.0
-		var offset: float = -1.5 if percent == 999 else 1.5
-		tap.position = Vector2(speed_slider.global_position.x + inset + RelativeSpeedSlider.position_for_percent(percent) * speed_slider.track_width() + offset, speed_slider.get_global_rect().get_center().y)
+		var offset: float = -1.5 if percent == speed_slider.range_ceiling else 1.5
+		tap.position = Vector2(speed_slider.global_position.x + inset + RelativeSpeedSlider.position_for_percent(percent, speed_slider.range_ceiling) * speed_slider.track_width() + offset, speed_slider.get_global_rect().get_center().y)
 		tap.pressed = true
 		speed_slider.handle_pointer(tap)
 		tap.pressed = false
@@ -116,7 +127,7 @@ func run() -> void:
 		var percent: float = 100.0 / divisor
 		check(speed_slider.visible_markers().has(percent), "wide practice slider retains the 1/%d speed mark" % divisor)
 		var inset: float = speed_slider.get_theme_icon("grabber").get_width() / 2.0
-		tap.position = Vector2(speed_slider.global_position.x + inset + RelativeSpeedSlider.position_for_percent(percent) * speed_slider.track_width(), speed_slider.get_global_rect().get_center().y)
+		tap.position = Vector2(speed_slider.global_position.x + inset + RelativeSpeedSlider.position_for_percent(percent, speed_slider.range_ceiling) * speed_slider.track_width(), speed_slider.get_global_rect().get_center().y)
 		tap.pressed = true
 		speed_slider.handle_pointer(tap)
 		tap.pressed = false
@@ -139,24 +150,32 @@ func run() -> void:
 	# independently of the quarter-percentage resolution committed on release.
 	var probe: RelativeSpeedSlider = RelativeSpeedSlider.new()
 	probe.theme_type_variation = "TempoSlider"
+	probe.max_value = 1
+	probe.step = 0.000001
 	app.add_child(probe)
 	for width: int in [64, 180, 480]:
 		probe.size = Vector2(width, 48)
 		var marks: Array[float] = probe.visible_markers()
 		for index: int in range(1, marks.size()):
-			check((RelativeSpeedSlider.position_for_percent(marks[index]) - RelativeSpeedSlider.position_for_percent(marks[index - 1])) * probe.track_width() >= RelativeSpeedSlider.MARKER_GAP - 0.001, "visible tempo marks remain distinct at width %d" % width)
+			check((RelativeSpeedSlider.position_for_percent(marks[index], probe.range_ceiling) - RelativeSpeedSlider.position_for_percent(marks[index - 1], probe.range_ceiling)) * probe.track_width() >= RelativeSpeedSlider.MARKER_GAP - 0.001, "visible tempo marks remain distinct at width %d" % width)
 		for percent: float in marks:
 			var at: float = RelativeSpeedSlider.position_for_percent(percent)
-			var direction: float = -1 if percent == 999 else 1
+			var direction: float = -1 if percent == probe.range_ceiling else 1
 			var near: float = at + direction * 2 / probe.track_width()
 			var away: float = at + direction * 4 / probe.track_width()
 			check(is_equal_approx(probe.snapped_position(near), at), "two pixels snap at %s percent, width %d" % [percent, width])
 			check(is_equal_approx(probe.snapped_position(away), away), "four pixels remain free at %s percent, width %d" % [percent, width])
 	probe.size = Vector2(180, 48)
-	check(not probe.visible_markers().has(75.0), "short track omits the crowded 75 percent mark")
-	var unmarked: float = RelativeSpeedSlider.position_for_percent(75) + 1 / probe.track_width()
-	check(is_equal_approx(probe.snapped_position(unmarked), unmarked), "pointer near an omitted mark remains free")
+	probe.configure_range()
+	check(probe.range_ceiling == 150, "short track gives practice speeds the full usable range")
+	probe.set_percentage(800)
+	probe.configure_range()
+	check(probe.percentage() == 800 and probe.range_ceiling == 800, "exact extreme speeds expand the visible range without clamping")
+	probe.set_percentage(100)
+	probe.configure_range()
+	check(probe.range_ceiling == 150, "returning to practice speed restores the compact range")
 	probe.size = Vector2(480, 48)
+	probe.configure_range()
 	var shown: Array[float] = probe.visible_markers()
 	check(shown.filter(func(percent: float) -> bool: return percent <= 100).size() > shown.filter(func(percent: float) -> bool: return percent > 100).size(), "slow speeds have more notches than fast speeds")
 	probe.free()
@@ -167,6 +186,44 @@ func run() -> void:
 	app.call("set_speed", 1.0)
 	var speed_caption: String = app.get("tempo_caption").text
 	var thumb: float = speed_slider.value
+	# Short landscape must not relayout a changing caption during a gesture.
+	root.size = Vector2i(740, 360)
+	await settle(app)
+	app.call("set_speed", 0.99)
+	await settle(app)
+	var touch_origin: Vector2 = speed_slider.get_global_rect().get_center()
+	var held: InputEventScreenTouch = InputEventScreenTouch.new()
+	held.index = 3
+	held.position = touch_origin
+	held.pressed = true
+	speed_slider.handle_pointer(held)
+	var geometry: Rect2 = speed_slider.get_global_rect()
+	var movement: InputEventScreenDrag = InputEventScreenDrag.new()
+	movement.index = 3
+	movement.position = touch_origin + Vector2(15, 0)
+	speed_slider.handle_pointer(movement)
+	var preview_value: float = speed_slider.value
+	await settle(app)
+	speed_slider.handle_pointer(movement)
+	check(speed_slider.get_global_rect() == geometry and is_equal_approx(preview_value, speed_slider.value), "stationary landscape finger retains geometry and preview speed")
+	check(app.get("speed") == 0.99, "landscape drag waits for release before changing transport")
+	var other: InputEventScreenTouch = InputEventScreenTouch.new()
+	other.index = 7
+	other.position = touch_origin
+	other.pressed = true
+	speed_slider.handle_pointer(other)
+	check(speed_slider.pointer_active and speed_slider.pointer_index == 3, "second finger does not cancel the speed gesture")
+	var foreign_motion: InputEventScreenDrag = InputEventScreenDrag.new()
+	foreign_motion.index = 7
+	foreign_motion.position = touch_origin + Vector2(80, 0)
+	check(speed_slider.handle_pointer(foreign_motion) and is_equal_approx(speed_slider.value, preview_value), "second finger cannot reach native slider handling or change the preview")
+	held.pressed = false
+	speed_slider.handle_pointer(held)
+	check(is_equal_approx(app.get("speed"), speed_slider.percentage() / 100), "landscape release commits the preview once")
+	app.call("set_speed", 1.0)
+	root.size = Vector2i(1280, 800)
+	await settle(app)
+	thumb = speed_slider.value
 	for cancellation: String in ["touch", "focus", "vertical"]:
 		var touch: InputEventScreenTouch = InputEventScreenTouch.new()
 		touch.index = 4

@@ -86,9 +86,9 @@ func _initialize() -> void:
 		var invalid_style: Dictionary = PracticeSettings.DEFAULTS.duplicate()
 		invalid_style[field] = "invalid"
 		check(PracticeSettings.encode(invalid_style).is_empty(), "invalid navigation or highlight preference is rejected")
-	check(RelativeSpeedSlider.position_for_percent(100) - RelativeSpeedSlider.position_for_percent(25) > RelativeSpeedSlider.position_for_percent(999) - RelativeSpeedSlider.position_for_percent(924), "equal slow intervals occupy more slider room than fast intervals")
+	check(RelativeSpeedSlider.position_for_percent(100) - RelativeSpeedSlider.position_for_percent(25) > RelativeSpeedSlider.position_for_percent(200) - RelativeSpeedSlider.position_for_percent(125), "equal slow intervals occupy more slider room than fast intervals")
 	for percent: int in [0, 1, 25, 50, 100, 200, 500, 998, 999]:
-		check(RelativeSpeedSlider.percent_for_position(RelativeSpeedSlider.position_for_percent(percent)) == percent, "tempo mapping round-trips exact percent")
+		check(RelativeSpeedSlider.percent_for_position(RelativeSpeedSlider.position_for_percent(percent, 999), 999) == percent, "tempo mapping round-trips exact percent")
 	var effect_settings: Dictionary = defaults.duplicate()
 	effect_settings.reverb = false
 	effect_settings.reverb_amount = 35

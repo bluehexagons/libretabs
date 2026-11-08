@@ -161,6 +161,9 @@ var loop_summary: Label
 var loop_toggle: Button
 var count_length: SpinBox
 var speed_dragging: bool = false
+var tempo_columns: GridContainer
+var panel_speed: RelativeSpeedSlider
+var speed_input: SpinBox
 var main_speed: RelativeSpeedSlider
 var speed_control: PanelContainer
 var speed_unit_layout: BoxContainer
@@ -1338,57 +1341,103 @@ func build_drawers() -> void:
 	library.add_child(button("DETAILS", func() -> void: toggle_drawer("DETAILS")))
 
 	var tempo: VBoxContainer = section("TEMPO")
-	tempo.add_child(label("BPM_LABEL", 18))
-	bpm_input = SpinBox.new()
-	bpm_input.min_value = 10
-	bpm_input.max_value = 400
-	bpm_input.step = 1
-	bpm_input.custom_minimum_size.y = 56
-	bpm_input.value_changed.connect(change_bpm)
-	number_field(tempo, bpm_input, "BPM_LABEL")
-	source_bpm_button = button("BPM_USE_SONG", restore_song_bpm)
-	tempo.add_child(source_bpm_button)
-	tempo_caption = label("PLAYBACK_RATE", 18)
-	tempo.add_child(tempo_caption)
-	var speed_steps: HFlowContainer = flow(tempo)
+	tempo_columns = GridContainer.new()
+	tempo_columns.add_theme_constant_override("h_separation", 24)
+	tempo_columns.add_theme_constant_override("v_separation", 16)
+	tempo.add_child(tempo_columns)
+	var tempo_primary: VBoxContainer = VBoxContainer.new()
+	var tempo_secondary: VBoxContainer = VBoxContainer.new()
+	for column: VBoxContainer in [tempo_primary, tempo_secondary]:
+		column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		column.add_theme_constant_override("separation", 8)
+		tempo_columns.add_child(column)
+	tempo_caption = label("PLAYBACK_RATE", 22)
+	tempo_primary.add_child(tempo_caption)
+	panel_speed = RelativeSpeedSlider.new()
+	panel_speed.min_value = 0
+	panel_speed.max_value = 1
+	panel_speed.step = 0.000001
+	panel_speed.scrollable = false
+	panel_speed.theme_type_variation = "TempoSlider"
+	panel_speed.custom_minimum_size = Vector2(120, 56)
+	panel_speed.set_percentage(100)
+	panel_speed.drag_started.connect(func() -> void: speed_dragging = true)
+	panel_speed.value_changed.connect(func(_value: float) -> void:
+		if speed_dragging:
+			tempo_caption.text = tr("SPEED_VALUE") % RelativeSpeedSlider.percentage_text(panel_speed.percentage())
+		else: set_speed(panel_speed.percentage() / 100))
+	panel_speed.drag_ended.connect(func(changed: bool) -> void:
+		speed_dragging = false
+		if changed: set_speed(panel_speed.percentage() / 100)
+		else: update_tempo())
+	tempo_primary.add_child(panel_speed)
+	tempo_primary.add_child(label("SPEED_EXACT", 18))
+	speed_input = SpinBox.new()
+	speed_input.min_value = 0
+	speed_input.max_value = 999
+	speed_input.step = 0.01
+	speed_input.suffix = "%"
+	speed_input.custom_minimum_size.y = 56
+	speed_input.value_changed.connect(func(percent: float) -> void: set_speed(percent / 100))
+	number_field(tempo_primary, speed_input, "SPEED_EXACT")
+	var speed_steps: HFlowContainer = flow(tempo_primary)
 	slower_button = button("SLOWER", func() -> void: step_speed(-1))
 	faster_button = button("FASTER", func() -> void: step_speed(1))
 	original_button = button("ORIGINAL_SPEED", func() -> void: set_speed(1.0))
 	for item: Button in [slower_button, faster_button, original_button]: speed_steps.add_child(item)
 	speed_steps.add_child(button("STOP", func() -> void: stop_practice(); close_menu()))
-	tempo.add_child(label("TEMPO_HELP", 18))
-	metro_check = check("METRONOME", true)
-	metro_check.tooltip_text = tr("CLICK_HELP")
-	metro_check.toggled.connect(set_metronome)
-	tempo.add_child(metro_check)
-	count_check = check("COUNT_IN", true)
-	count_check.tooltip_text = tr("COUNT_HELP")
-	tempo.add_child(count_check)
-	count_check.toggled.connect(func(_enabled: bool) -> void: save_preferences())
-	pause_navigation_check = check("PAUSE_NAVIGATION", true)
-	pause_navigation_check.tooltip_text = tr("PAUSE_NAVIGATION_HELP")
-	pause_navigation_check.toggled.connect(func(_enabled: bool) -> void: save_preferences())
-	tempo.add_child(pause_navigation_check)
-	tempo.add_child(label("PAUSE_NAVIGATION_HELP", 18))
-	tempo.add_child(label("COUNT_LENGTH", 18))
-	count_length = SpinBox.new()
-	count_length.min_value = 1
-	count_length.max_value = 4
-	count_length.step = 1
-	count_length.custom_minimum_size.y = 56
-	count_length.value_changed.connect(func(_value: float) -> void: save_preferences())
-	number_field(tempo, count_length, "COUNT_LENGTH")
-	tempo.add_child(label("SPEED_PRESETS", 18))
+	tempo_primary.move_child(speed_steps, 2)
+	tempo_primary.add_child(label("SPEED_PRESETS", 18))
 	speed_picker = CaptionOption.new()
 	speed_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	speed_picker.fit_to_longest_item = false
 	speed_picker.clip_text = true
 	speed_picker.custom_minimum_size.y = 56
 	for multiplier: float in SPEEDS: speed_picker.add_item(tr("SPEED_VALUE") % RelativeSpeedSlider.percentage_text(multiplier * 100))
-	speed_picker.add_item(tr("CUSTOM_BPM"))
+	speed_picker.add_item(tr("SPEED_CUSTOM"))
 	speed_picker.select(SPEEDS.find(1.0))
 	speed_picker.item_selected.connect(change_speed)
-	tempo.add_child(speed_picker)
+	tempo_primary.add_child(speed_picker)
+
+	metro_check = check("METRONOME", true)
+	metro_check.tooltip_text = tr("CLICK_HELP")
+	metro_check.toggled.connect(set_metronome)
+	tempo_secondary.add_child(metro_check)
+	count_check = check("COUNT_IN", true)
+	count_check.tooltip_text = tr("COUNT_HELP")
+	tempo_secondary.add_child(count_check)
+	count_check.toggled.connect(func(_enabled: bool) -> void: save_preferences())
+	pause_navigation_check = check("PAUSE_NAVIGATION", true)
+	pause_navigation_check.tooltip_text = tr("PAUSE_NAVIGATION_HELP")
+	pause_navigation_check.toggled.connect(func(_enabled: bool) -> void: save_preferences())
+	tempo_secondary.add_child(pause_navigation_check)
+	tempo_secondary.add_child(label("COUNT_LENGTH", 18))
+	count_length = SpinBox.new()
+	count_length.min_value = 1
+	count_length.max_value = 4
+	count_length.step = 1
+	count_length.custom_minimum_size.y = 56
+	count_length.value_changed.connect(func(_value: float) -> void: save_preferences())
+	number_field(tempo_secondary, count_length, "COUNT_LENGTH")
+
+	var base_toggle: CheckButton = check("BPM_SETTINGS", false)
+	tempo_secondary.add_child(base_toggle)
+	var base_controls: VBoxContainer = VBoxContainer.new()
+	base_controls.add_theme_constant_override("separation", 8)
+	tempo_secondary.add_child(base_controls)
+	base_controls.hide()
+	base_toggle.toggled.connect(func(expanded: bool) -> void: base_controls.visible = expanded)
+	base_controls.add_child(label("BPM_LABEL", 18))
+	bpm_input = SpinBox.new()
+	bpm_input.min_value = 10
+	bpm_input.max_value = 400
+	bpm_input.step = 1
+	bpm_input.custom_minimum_size.y = 56
+	bpm_input.value_changed.connect(change_bpm)
+	number_field(base_controls, bpm_input, "BPM_LABEL")
+	source_bpm_button = button("BPM_USE_SONG", restore_song_bpm)
+	base_controls.add_child(source_bpm_button)
+	base_controls.add_child(label("TEMPO_HELP", 18))
 
 	var sound: VBoxContainer = section("SOUND")
 	sound.add_child(label("SOUND_HELP", 18))
@@ -1950,6 +1999,7 @@ func toggle_drawer(key: String, remember: bool = true) -> void:
 	leave_capture()
 	score_frame.cancel_pointers()
 	main_speed.cancel_pointer()
+	panel_speed.cancel_pointer()
 	if key in ["WELCOME", "TUNER"]: pause()
 	release_playing_inputs()
 	if not menu_overlay.visible: previous_focus = get_viewport().gui_get_focus_owner()
@@ -1996,6 +2046,7 @@ func close_menu() -> void:
 	drawer_navigation += 1
 	score_frame.cancel_pointers()
 	main_speed.cancel_pointer()
+	panel_speed.cancel_pointer()
 	if printer != null: printer.cancelled = true
 	if menu_tween != null: menu_tween.kill()
 	drawer.modulate.a = 1
@@ -2025,6 +2076,9 @@ func _input(event: InputEvent) -> void:
 		return
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE and host.is_fullscreen():
 		host.set_fullscreen(false)
+		get_viewport().set_input_as_handled()
+		return
+	if menu_overlay.visible and opened_drawer == "TEMPO" and panel_speed.handle_pointer(event):
 		get_viewport().set_input_as_handled()
 		return
 	if not menu_overlay.visible and not capture_active and not tv_tucked and main_speed.handle_pointer(event):
@@ -2553,8 +2607,8 @@ func step_speed(direction: int) -> void:
 
 func change_speed(index: int) -> void:
 	if index == SPEEDS.size():
-		bpm_input.get_line_edit().grab_focus()
-		bpm_input.get_line_edit().select_all()
+		speed_input.get_line_edit().grab_focus()
+		speed_input.get_line_edit().select_all()
 		return
 	set_speed(SPEEDS[index])
 
@@ -2576,7 +2630,7 @@ func update_speed_caption(percent: float) -> void:
 	var caption: String = tr("TEMPO_BUTTON") % RelativeSpeedSlider.percentage_text(percent)
 	if tempo_button.text == caption: return
 	tempo_button.text = caption
-	if controls_on_side: responsive()
+	if controls_on_side and not speed_dragging: responsive()
 
 func update_tempo() -> void:
 	updating = true
@@ -2590,10 +2644,12 @@ func update_tempo() -> void:
 	source_bpm_button.set_meta("hover_caption", source_bpm_button.text)
 	updating = false
 	var percent_text: String = RelativeSpeedSlider.percentage_text(speed * 100)
-	tempo_caption.text = tr("BPM_PLAYBACK") % [reference_bpm() * speed, percent_text, reference_bpm()]
+	tempo_caption.text = tr("SPEED_VALUE") % percent_text
 	tempo_caption.tooltip_text = tr("TEMPO_CURRENT") % [reference_bpm() * speed, reference_bpm(), percent_text]
 	update_speed_caption(speed * 100)
 	main_speed.set_percentage(speed * 100)
+	panel_speed.set_percentage(speed * 100)
+	speed_input.set_value_no_signal(speed * 100)
 	main_speed.tooltip_text = tr("SPEED_MARKERS_HELP")
 	main_speed.set_meta("hover_caption", main_speed.tooltip_text)
 	var preset: int = -1
@@ -3177,6 +3233,7 @@ func _suspended() -> void:
 	seek_dragging = false
 	seek_resume_playback = false
 	main_speed.cancel_pointer()
+	panel_speed.cancel_pointer()
 	speed_dragging = false
 	pause()
 	# A hidden browser may throttle the preview-release timer. Stop its worker now.

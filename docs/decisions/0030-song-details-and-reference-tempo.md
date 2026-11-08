@@ -52,6 +52,25 @@ percentage resolution, and captions retain up to two decimal places, so 12.5%
 and 6.25% are not rounded to whole percentages. Arrow keys and five-point buttons
 preserve the fractional part. Faster marks favor 200%, 400% and 800%.
 
+## Responsive control refinement — 2026-11-08
+
+Owner phone-landscape feedback supersedes the full-range track and drag snapping
+above. Short tracks (under 200 logical pixels) cover 0–150%; wider tracks cover
+0–200%. Exact percentage entry retains 0–999% and expands a track to include an
+unusual current speed. Returning to practice speeds restores the smaller range.
+The cubic mapping and exact quarter-point fractions remain. Track taps snap to
+visible marks; relative drags are smooth, freeze their press-time range/geometry,
+and use at least 320 logical pixels of virtual travel for precision. A thumb tap
+keeps its value. Secondary fingers do not cancel the owning gesture; canceled
+releases cannot fall through to native slider handling. Audio commits on release.
+
+Short side docks keep a 44-pixel-high speed track on its own row and prioritize
+Play, speed, Songs and Menu over auxiliary shortcuts. This prevents keyboard
+focus from scrolling an offscreen speed track under a finger. Playback opens
+with a large slider, exact percentage, steps and presets. Base BPM settings and
+the longer explanation are collapsed; click/count-in controls remain available.
+Transport, source timing, session-only override and persistence rules are unchanged.
+
 ## Validation
 
 Bundled metadata/translation/citation coverage, disputed-attribution regressions,

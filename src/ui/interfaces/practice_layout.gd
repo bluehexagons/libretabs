@@ -43,8 +43,8 @@ static func fit(app: Control) -> void:
 	app.songs_button.show()
 	app.import_button.visible = not side_dock and not app.tv_active
 	# The same actions remain in Menu; retain Songs and Menu on short phones.
-	app.tv_button.visible = not side_dock or app.size.y >= 360
-	app.fullscreen_button.visible = not side_dock or app.size.y >= 360
+	app.tv_button.visible = not side_dock or app.size.y >= 440
+	app.fullscreen_button.visible = not side_dock or app.size.y >= 440
 	if not side_dock and app.size.x >= 600 and expanded_controls:
 		app.tv_button.text = app.tr("TV_VIEW")
 	if not app.tv_active and not side_dock and not expanded_controls and (app.size.x < 760 or app.size.y < 620):
@@ -57,8 +57,8 @@ static func fit(app: Control) -> void:
 	if app.tight_controls: app.tempo_button.icon = null
 	app.quick_row.visible = true
 	app.tempo_button.visible = true
-	app.metro_button.visible = expanded_controls and not app.tight_controls and (not side_dock or app.size.y >= 320)
-	app.loop_button.visible = not app.tight_controls and not app.tv_active
+	app.metro_button.visible = expanded_controls and not app.tight_controls and (not side_dock or app.size.y >= 440)
+	app.loop_button.visible = not app.tight_controls and not app.tv_active and (not side_dock or app.size.y >= 440)
 	app.stop_button.visible = not app.tight_controls and not app.landscape and (not app.tv_active or app.size.x >= 760)
 	if not side_dock and not expanded_controls and app.size.y < 620:
 		app.stop_button.hide()
@@ -134,6 +134,8 @@ static func fit(app: Control) -> void:
 	app.status.custom_minimum_size.y = 0
 	app.dock.vertical = side_dock or (app.size.x < 900 and not app.tight_controls)
 	var menu_width: float = 800 if app.opened_drawer in ["MENU", "SETTINGS"] and app.size.x >= 1000 else 560
+	if app.opened_drawer == "TEMPO" and app.size.x >= 700 and expanded_controls: menu_width = 800
+	app.tempo_columns.columns = 2 if minf(app.size.x, menu_width) >= 700 and expanded_controls else 1
 	app.drawer.position = Vector2(0 if app.handedness == "left" else maxf(0, app.size.x - menu_width), 0)
 	app.drawer.size = Vector2(minf(app.size.x, menu_width), app.size.y)
 	var song_columns: int = 2 if app.size.x >= 600 and app.theme.default_font_size < 30 else 1
@@ -202,7 +204,7 @@ static func fit(app: Control) -> void:
 		app.speed_unit_layout.vertical = true
 		app.tempo_button.icon = null
 		app.tempo_button.custom_minimum_size = Vector2(64, 40)
-		app.main_speed.custom_minimum_size = Vector2(48, 40)
+		app.main_speed.custom_minimum_size = Vector2(48, 44)
 		app.loop_button.hide()
 		app.stop_button.hide()
 		app.metro_button.hide()
@@ -210,6 +212,16 @@ static func fit(app: Control) -> void:
 			item.text = ""
 			item.custom_minimum_size.x = 64
 			item.set_meta("mobile_rail", true)
+	# Keep a finger-sized track even in the side dock. Percentage and track
+	# occupy separate rows so changing the caption cannot squeeze the slider.
+	if side_dock and not app.presentation.mobile_rail:
+		app.speed_unit_layout.vertical = true
+		app.tempo_button.icon = null
+		app.tempo_button.custom_minimum_size.y = 44
+		app.main_speed.custom_minimum_size = Vector2(112, 44)
+		app.speed_control.custom_minimum_size.y = 88
+	app.main_speed.configure_range.call_deferred()
+	app.panel_speed.configure_range.call_deferred()
 	if app.opened_drawer == "WELCOME":
 		var inset: float = 8 if app.size.x < 600 else 24
 		app.drawer.size = Vector2(minf(app.size.x - inset * 2, 720), minf(app.size.y - inset * 2, 760))
