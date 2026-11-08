@@ -4,6 +4,9 @@ Follow [artifact retention](../artifact-retention.md) when curating local build,
 export and review files. Keep dated records here even when newer work supersedes
 them; local media archives remain separate from published evidence.
 
+Responsive speed controls: [adaptive ranges, stable dragging and compact Playback
+panel, 2026-11-08](responsive-speed-2026-11-08.md).
+
 Repertoire follow-up: [primary-score Daisy Bell chorus and 1855 Londonderry Air,
 2026-11-02](repertoire-followup-2026-11-02.md).
 
