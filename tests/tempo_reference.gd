@@ -30,6 +30,59 @@ func attacks(events: Array[Dictionary], id: String) -> Array[int]:
 		if event.kind == "on" and event.note.id == id: frames.append(event.frame)
 	return frames
 
+func audit_drag_playback(app: Control, player: ClockAudio) -> void:
+	var gestures: RefCounted = preload("res://tests/helpers/speed_controls.gd").new()
+	for scale: float in [1,2]:
+		app.call("apply_scale",scale)
+		for viewport: Vector2i in [Vector2i(1440,900),Vector2i(390,844),Vector2i(740,260)]:
+			root.size = viewport
+			app.call("set_speed",0.8337)
+			app.call("start",true)
+			await settle(app)
+			await app.call("wait_for_layout_stability")
+			var slider: RelativeSpeedSlider = app.get("main_speed")
+			var rect: Rect2 = slider.get_global_rect()
+			var origin: Vector2 = rect.get_center()
+			root.push_input(gestures.touch(origin,true))
+			root.push_input(gestures.motion(origin + Vector2(-20,0)))
+			var preview: float = slider.percentage()
+			player.transport.take_events(player.transport.count_frames + 100)
+			app.call("_process",0.0)
+			var geometry_stable: bool = true
+			for _frame: int in range(12):
+				await process_frame
+				geometry_stable = geometry_stable and slider.get_global_rect() == rect
+			check(slider.pointer_active and geometry_stable and slider.percentage() == preview and app.get("speed") == 0.8337, "count-in completion preserves every frame of drag geometry and preview at %s %s%% text" % [viewport,scale*100])
+			root.push_input(gestures.touch(origin + Vector2(-20,0),false))
+			check(is_equal_approx(app.get("speed"),preview/100) and player.playing_practice and player.transport.count_frames == 0, "drag release during music commits once without another count-in")
+			app.call("pause")
+	root.size = Vector2i(1440,900)
+	app.call("apply_scale",1)
+	for mode: String in ["paused","count","music"]:
+		app.call("set_speed",0.8337)
+		app.call("seek_tick",1440)
+		if mode != "paused":
+			app.call("start",mode == "count")
+			player.transport.take_events(1000)
+		await settle(app)
+		await app.call("wait_for_layout_stability")
+		var slider: RelativeSpeedSlider = app.get("main_speed")
+		var origin: Vector2 = slider.get_global_rect().get_center()
+		root.push_input(gestures.touch(origin,true))
+		root.push_input(gestures.motion(origin + Vector2(-20,-40)))
+		root.push_input(gestures.motion(origin + Vector2(-40,-40)))
+		var key: InputEventKey = InputEventKey.new()
+		key.pressed = true
+		key.keycode = KEY_SPACE
+		root.push_input(key)
+		check(not slider.pointer_active and not app.get("speed_readout").visible and app.get("speed") == 0.8337, "Space discards the unfinished speed preview during %s" % mode)
+		check(player.playing_practice == (mode == "paused") and (mode != "paused" or player.transport.count_frames > 0), "Space keeps its normal play/pause and count-in behavior during %s" % mode)
+		root.push_input(gestures.touch(origin + Vector2(-40,-40),false))
+		check(app.get("speed") == 0.8337 and not slider.pointer_active, "late release after Space cannot commit the discarded preview")
+		app.call("pause")
+	app.call("seek_tick",0)
+	app.call("set_speed",1)
+
 func _initialize() -> void: call_deferred("run")
 
 func run() -> void:
@@ -51,6 +104,7 @@ func run() -> void:
 	var tempos: Array[Dictionary] = song.tempos.duplicate(true)
 	var notes: Array[Dictionary] = song.notes.duplicate(true)
 	check(is_equal_approx(app.call("base_bpm"), 100), "fixture starts at 100 BPM")
+	await audit_drag_playback(app,player)
 	# Exercise the visible actions with the injected frame clock at later notes.
 	app.get("count_check").set_pressed_no_signal(true)
 	for tick: float in [0,1440,4320]:

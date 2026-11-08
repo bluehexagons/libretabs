@@ -229,6 +229,7 @@ height, so choose fewer Music lines if you need taller notes.
   The readout uses space above, below or beside the control.
   Fine adjustment stays active until release. Pulling straight up does not
   change speed. Escape, focus loss or resizing cancels an unfinished drag.
+  Outside menus, Space cancels the preview and plays or pauses at the original speed.
 - **Slider range:** tap the speed, or open **Menu → Practice → Playback**,
   then choose **Slider range**. Automatic uses 10–150% on short tracks and
   10–200% on wider tracks. Other choices cover 10–100%, 10–150%, 10–200%, 10–400%,

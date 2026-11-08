@@ -448,6 +448,16 @@ static func fit_controls(app: Control, node: Node) -> void:
 			app.play_button.custom_minimum_size = Vector2(maxf(120, app.size.x - 64), 72)
 		else:
 			app.play_button.custom_minimum_size.y = 64
+		if not app.tv_active and not app.controls_on_side and not app.tight_controls and not app.compact_listening_transport():
+			# The countdown hides the label. Reserve its text height and both
+			# playback widths so finishing it cannot move a speed control mid-drag.
+			var font: Font = app.play_button.get_theme_font("font")
+			var font_size: int = app.play_button.get_theme_font_size("font_size")
+			var text_height: float = ceilf(font.get_height(font_size)) + app.play_button.get_theme_stylebox("normal").get_minimum_size().y
+			app.play_button.custom_minimum_size.y = maxf(app.play_button.custom_minimum_size.y, text_height)
+			if app.size.x >= 760:
+				var label_width: float = maxf(font.get_string_size(app.tr("PLAY"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x, font.get_string_size(app.tr("PAUSE"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x)
+				app.play_button.custom_minimum_size.x = maxf(app.play_button.custom_minimum_size.x, minf(label_width + 62, app.size.x - 56))
 		if app.presentation.mobile_rail: app.play_button.custom_minimum_size = Vector2(64, 64)
 		elif app.presentation.console: app.play_button.custom_minimum_size = Vector2(0, 80)
 		elif app.presentation.inline_transport: app.play_button.custom_minimum_size = Vector2(64, 48)

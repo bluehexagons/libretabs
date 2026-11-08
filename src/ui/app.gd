@@ -2106,6 +2106,11 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventKey and live != null and not menu_overlay.visible and live.piano.handle_key(event):
 		get_viewport().set_input_as_handled()
 		return
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_SPACE and not event.ctrl_pressed and not event.meta_pressed and not event.alt_pressed and speed_dragging and not menu_overlay.visible:
+		# Leave Space available to the normal play/pause shortcut below. Restore
+		# the committed speed first, and discard this gesture's later release.
+		main_speed.cancel_pointer()
+		panel_speed.cancel_pointer()
 	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE and speed_dragging:
 		main_speed.cancel_pointer()
 		panel_speed.cancel_pointer()

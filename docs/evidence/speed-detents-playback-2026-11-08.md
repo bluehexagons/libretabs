@@ -97,3 +97,40 @@ ordinary reload loaded the fixes, without clearing caches or forcing activation.
 Review logs, selected captures and final publication receipts are retained under
 `artifacts/archive/2026-11-08--speed-review/`. This retains the previous evidence
 and physical-device limitations; no additional platform acceptance is claimed.
+
+## Playback interruption follow-up — 2026-11-08
+
+Further review reproduced two interaction gaps. At 200% text, completing the
+count-in widened the desktop Play/Pause button and briefly increased its height
+in portrait, moving a held speed control. The text-button layout now reserves
+the translated playback labels' width and font height during the countdown.
+Compact icon controls retain their existing layout.
+
+Space was consumed by an active speed gesture before it reached Play/Pause.
+Outside menus, Space now cancels the unfinished preview, restores the committed
+speed and runs the normal playback shortcut. The discarded finger release
+cannot apply a value afterward. Escape and menu keyboard behavior are unchanged.
+
+Added 21 injected-clock checks cover count-in completion at 1440×900, 390×844
+and 740×260 with normal and 200% text, inspecting each of twelve subsequent
+frames for movement. Releasing commits once without a fresh count-in. Space
+cases cover paused playback, count-in and music, including a late release.
+
+Quick/UI/practice verification passed all 12 commands in 88.57 seconds:
+1,404 UI checks including 1,119 speed checks, 61 tempo checks, 87 navigation
+checks, 274 page-follow checks and 6,685 core checks. No transport, song or
+persistence contract changed; the full gate recorded above remains the baseline
+for unaffected audio, input and persistence systems.
+
+Managed web export and browser checks confirmed Space starts at the committed
+speed from a held desktop preview, and pauses from a held portrait fine preview.
+The late release leaves the original speed intact. At 390×844 and 200% text,
+the updated player keeps an 80-pixel Play/Pause button through count-in, with
+the held slider at the same position and its preview unchanged. Browser traces
+sample periodically; the native test supplies the per-frame geometry check.
+Ordinary reloads loaded each updated cached export without clearing caches or
+forcing service-worker activation. Browser sizes and touch were emulated;
+physical-device and other-platform limitations above still apply.
+
+Selected reproductions, verification logs, browser traces and final publication
+receipts are retained under `artifacts/archive/2026-11-08--speed-interruption/`.
