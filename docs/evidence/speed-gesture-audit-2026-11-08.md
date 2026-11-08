@@ -70,3 +70,35 @@ Selected logs, browser results and captures are retained with checksums under
 ignored `artifacts/archive/2026-11-08--speed-gesture-audit/`. Task-owned export,
 guide and test staging is removed after publication. No editing worktrees were
 created.
+
+## First-pull and control-edge follow-up
+
+Continuing the audit found two gaps: a first pure vertical pull could leave the
+floating display at its pre-wrap height, and top/side placements could put it
+under the lifted finger. The initial browser reproduction was 1,549 logical
+pixels high in a 390×844 viewport. The display now shrinks with wrapped-content
+minimum-size changes and chooses space above, below or beside the press point.
+Its anchor remains fixed during horizontal adjustment.
+
+The standard UI helper adds 96 assertions over fresh pure-lift displays at
+390×844 and 740×260, normal/200% text, all four control edges and both handed
+layouts. It checks viewport bounds, clearance from the lifted finger, active
+gesture ownership, unchanged speed and stable control/readout geometry. A local
+64-combination exploratory sweep also covered 844×390 and 1440×900 placements.
+
+`python3 scripts/verify.py --suite quick --suite ui-smoke --suite practice`
+passed all 12 commands, including 491 speed and 797 total UI checks. A final
+`--suite ui-smoke` run passed again after strengthening the ownership assertion.
+The earlier full gate remains the baseline for unrelated audio/state behavior.
+
+Fresh exported-browser pure lifts fit at 390×844 (374×189 readout) and 740×260
+(596×189 readout), with speed unchanged, the lifted finger clear and the original
+slider geometry retained. On the short screen a subsequent fine drag previewed
+95.77% while speed remained 100%; release committed 95.77% and hid the display.
+The desktop Playback slider at 1440×900 placed its 640×189 display below the
+control, retaining speed and geometry; Escape canceled it without committing.
+No application console errors or failed requests were observed in these checks.
+The guide/player publication pair was refreshed and checked again. Follow-up
+logs, reproduction script, browser results and captures are retained under
+ignored `artifacts/archive/2026-11-08--speed-readout-placement/` with checksums;
+task-owned staging is removed at handoff. This remains emulated touch evidence.

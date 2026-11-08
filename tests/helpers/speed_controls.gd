@@ -97,6 +97,39 @@ func run(app: Control, tree: SceneTree, settle: Callable) -> void:
 			tree.root.push_input(touch(origin + Vector2(-20,-40),false))
 			check(app.get("speed") < 0.8337, "fine drag commits in %s %s" % [interface_id,viewport])
 	app.call("change_interface", "classic")
+	# A first pure lift must work before an ordinary drag has sized the readout.
+	# Top/side placements need space away from the finger, in either handed layout.
+	for scale: float in [1.0, 2.0]:
+		app.call("apply_scale", scale)
+		for viewport: Vector2i in [Vector2i(390,844), Vector2i(740,260)]:
+			tree.root.size = viewport
+			for edge: String in ["top", "bottom", "left", "right"]:
+				for hand: String in ["left", "right"]:
+					app.set("control_position", edge)
+					app.set("handedness", hand)
+					app.call("responsive")
+					app.call("set_speed", 0.8337)
+					await settle.call(app)
+					var control: RelativeSpeedSlider = app.get("main_speed")
+					var rect: Rect2 = control.get_global_rect()
+					var origin: Vector2 = rect.get_center()
+					var fresh: SpeedDragReadout = SpeedDragReadout.new()
+					app.add_child(fresh)
+					tree.root.push_input(touch(origin,true))
+					tree.root.push_input(motion(origin + Vector2(0,-40)))
+					fresh.display(control, viewport)
+					for _frame: int in range(4): await tree.process_frame
+					var context: String = "%s %s %s %s%%" % [viewport,edge,hand,scale * 100]
+					check(Rect2(Vector2.ZERO, viewport).encloses(fresh.get_global_rect()), "fresh pure-lift readout fits " + context)
+					check(not fresh.get_global_rect().has_point(origin + Vector2(0,-40)), "readout leaves lifted finger clear " + context)
+					var readout_rect: Rect2 = fresh.get_global_rect()
+					fresh.display(control, viewport)
+					for _frame: int in range(4): await tree.process_frame
+					check(control.pointer_active and control.fine_adjustment and fresh.track.visible and fresh.get_global_rect() == readout_rect and control.get_global_rect() == rect and app.get("speed") == 0.8337, "repeated pure lift keeps ownership, geometry and speed " + context)
+					tree.root.push_input(touch(origin + Vector2(0,-40),false))
+					fresh.queue_free()
+	app.set("control_position", "bottom")
+	app.set("handedness", "right")
 	# Explicit ranges affect geometry, never the transport or immutable source.
 	app.call("apply_scale", 1.0)
 	tree.root.size = Vector2i(1280,800)

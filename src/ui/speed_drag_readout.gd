@@ -12,11 +12,16 @@ var low: Label
 var high: Label
 var viewport_extent: Vector2
 var finger_origin: Vector2
+var maximum_width: float
+const EDGE_INSET: float = 8
+const FINGER_GAP: float = 56
+const SIDE_GAP: float = 48
 
 func _init() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	z_index = 100
 	resized.connect(place)
+	minimum_size_changed.connect(func() -> void: fit_height.call_deferred())
 	var column: VBoxContainer = VBoxContainer.new()
 	column.add_theme_constant_override("separation", 6)
 	add_child(column)
@@ -67,15 +72,36 @@ func display(owner: RelativeSpeedSlider, viewport_size: Vector2) -> void:
 	hint.visible = viewport_size.y >= 360 or get_theme_default_font_size() < 30
 	# A compact readout becomes a wide, enlarged control only on deliberate lift.
 	custom_minimum_size = Vector2.ZERO
-	var width: float = minf(640 if fine else 360, viewport_size.x - 16)
-	size = Vector2(width, 0)
-	var height: float = get_combined_minimum_size().y
-	size.y = height
-	place()
+	maximum_width = minf(640 if fine else 360, viewport_size.x - EDGE_INSET * 2)
+	size = Vector2(maximum_width, 0)
+	fit_height()
 	show()
+
+func fit_height() -> void:
+	# A container grows when wrapped text grows, but does not automatically shrink
+	# a height assigned before its first width was laid out (e.g. a pure lift).
+	size.y = get_combined_minimum_size().y
+	place()
 
 func place() -> void:
 	if viewport_extent == Vector2.ZERO: return
-	# Wrapped text can change the minimum height on the next layout pass.
-	# Reposition after that resize as well as on the input frame.
-	position = Vector2(clampf(finger_origin.x - size.x / 2, 8, maxf(8, viewport_extent.x - size.x - 8)), clampf(finger_origin.y - size.y - 56, 8, maxf(8, viewport_extent.y - size.y - 8)))
+	var above: float = finger_origin.y - size.y - FINGER_GAP
+	var below: float = finger_origin.y + FINGER_GAP
+	var y: float = above
+	var x: float = finger_origin.x - maximum_width / 2
+	var width: float = maximum_width
+	if above < EDGE_INSET:
+		if below + size.y <= viewport_extent.y - EDGE_INSET:
+			y = below
+		else:
+			# Short screens have more space beside an edge control than above it.
+			# Keep the readout still as the finger moves; anchor to the press point.
+			var left_space: float = finger_origin.x - SIDE_GAP - EDGE_INSET
+			var right_space: float = viewport_extent.x - finger_origin.x - SIDE_GAP - EDGE_INSET
+			var side_space: float = maxf(left_space, right_space)
+			if side_space >= minf(320, maximum_width):
+				width = minf(maximum_width, side_space)
+				x = finger_origin.x + SIDE_GAP if right_space >= left_space else finger_origin.x - SIDE_GAP - width
+				y = finger_origin.y - size.y / 2
+	if not is_equal_approx(size.x, width): size.x = width
+	position = Vector2(clampf(x, EDGE_INSET, maxf(EDGE_INSET, viewport_extent.x - size.x - EDGE_INSET)), clampf(y, EDGE_INSET, maxf(EDGE_INSET, viewport_extent.y - size.y - EDGE_INSET)))

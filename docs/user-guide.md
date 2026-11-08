@@ -223,6 +223,7 @@ height, so choose fewer Music lines if you need taller notes.
   readout; release applies it once. **Pull upward while holding the slider**
   to enlarge the readout and fine-tune at one quarter of the normal drag rate.
   Enlarging keeps the current value and the original control stays in place.
+  The readout uses space above, below or beside the control.
   Fine adjustment stays active until release. Pulling straight up does not
   change speed. Escape, focus loss or resizing cancels an unfinished drag.
 - **Slider range:** tap the percentage, or open **Menu → Practice → Playback**,

@@ -147,7 +147,7 @@ func run() -> void:
 	speed_slider.handle_pointer(speed_key)
 	check(is_equal_approx(app.get("speed"), 0.0625), "arrow key returns to the exact fraction")
 	# Check screen-distance behavior at slow and fast values on multiple widths,
-	# independently of the quarter-percentage resolution committed on release.
+	# independently of the hundredth-percentage resolution committed on release.
 	var probe: RelativeSpeedSlider = RelativeSpeedSlider.new()
 	probe.theme_type_variation = "TempoSlider"
 	probe.max_value = 1

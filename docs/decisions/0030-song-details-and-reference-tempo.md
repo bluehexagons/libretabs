@@ -101,6 +101,12 @@ No playback clock, MIDI source, tempo-map, persistence schema, dependency or
 platform target changes. These remain prototype ergonomics for evaluation;
 physical-device touch and audible timing acceptance are separate gates.
 
+The subsequent placement check includes all four control edges and both handed
+layouts. The floating display prefers room above, then below, then beside the
+press point on short screens. It stays anchored while the finger moves. Its
+height follows wrapped-content minimum-size changes, including a first gesture
+that pulls straight upward before an ordinary drag has sized the display.
+
 ## Validation
 
 Bundled metadata/translation/citation coverage, disputed-attribution regressions,
