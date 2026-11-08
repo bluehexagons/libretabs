@@ -7,6 +7,9 @@ them; local media archives remain separate from published evidence.
 Responsive speed controls: [adaptive ranges, stable dragging and compact Playback
 panel, 2026-11-08](responsive-speed-2026-11-08.md).
 
+Speed gesture follow-up: [configurable ranges, pull-up fine adjustment and
+cross-layout input checks, 2026-11-08](speed-gesture-audit-2026-11-08.md).
+
 Repertoire follow-up: [primary-score Daisy Bell chorus and 1855 Londonderry Air,
 2026-11-02](repertoire-followup-2026-11-02.md).
 

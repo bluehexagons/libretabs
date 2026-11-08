@@ -161,6 +161,12 @@ var loop_summary: Label
 var loop_toggle: Button
 var count_length: SpinBox
 var speed_dragging: bool = false
+var speed_readout: SpeedDragReadout
+var speed_range_picker: OptionButton
+var speed_range_limit: SpinBox
+var speed_range_custom: VBoxContainer
+var speed_range_caption: Label
+const SPEED_RANGE_LIMITS: Array[float] = [0, 100, 150, 200, 400, 999]
 var tempo_columns: GridContainer
 var panel_speed: RelativeSpeedSlider
 var speed_input: SpinBox
@@ -354,7 +360,12 @@ func _ready() -> void:
 	add_child(host)
 	host.picked.connect(_file_picked)
 	host.hidden.connect(_suspended)
+	host.touch_cancelled.connect(func(index: int) -> void:
+		for slider: RelativeSpeedSlider in [main_speed, panel_speed]:
+			if is_instance_valid(slider) and slider.pointer_active and slider.pointer_index == index: slider.cancel_pointer())
 	host.focus_lost.connect(func() -> void:
+		if is_instance_valid(main_speed): main_speed.cancel_pointer()
+		if is_instance_valid(panel_speed): panel_speed.cancel_pointer()
 		HoverHelp.pointer_down = false
 		release_playing_inputs()
 		# A permission prompt may temporarily take focus while connecting. Every
@@ -996,6 +1007,8 @@ func surface(color: String, padding: int = 16) -> StyleBoxFlat:
 	return box
 
 func build_ui() -> void:
+	speed_readout = SpeedDragReadout.new()
+	add_child(speed_readout)
 	PracticeSurface.build(self)
 
 func change_interface(id: String) -> void:
@@ -1361,15 +1374,7 @@ func build_drawers() -> void:
 	panel_speed.theme_type_variation = "TempoSlider"
 	panel_speed.custom_minimum_size = Vector2(120, 56)
 	panel_speed.set_percentage(100)
-	panel_speed.drag_started.connect(func() -> void: speed_dragging = true)
-	panel_speed.value_changed.connect(func(_value: float) -> void:
-		if speed_dragging:
-			tempo_caption.text = tr("SPEED_VALUE") % RelativeSpeedSlider.percentage_text(panel_speed.percentage())
-		else: set_speed(panel_speed.percentage() / 100))
-	panel_speed.drag_ended.connect(func(changed: bool) -> void:
-		speed_dragging = false
-		if changed: set_speed(panel_speed.percentage() / 100)
-		else: update_tempo())
+	bind_speed_slider(panel_speed)
 	tempo_primary.add_child(panel_speed)
 	tempo_primary.add_child(label("SPEED_EXACT", 18))
 	speed_input = SpinBox.new()
@@ -1398,6 +1403,33 @@ func build_drawers() -> void:
 	speed_picker.select(SPEEDS.find(1.0))
 	speed_picker.item_selected.connect(change_speed)
 	tempo_primary.add_child(speed_picker)
+
+	tempo_primary.add_child(label("SPEED_RANGE", 18))
+	speed_range_picker = CaptionOption.new()
+	speed_range_picker.custom_minimum_size.y = 56
+	speed_range_picker.fit_to_longest_item = false
+	speed_range_picker.clip_text = true
+	speed_range_picker.tooltip_text = tr("SPEED_RANGE_HELP")
+	speed_range_picker.add_item(tr("SPEED_RANGE_AUTO"))
+	for limit: float in SPEED_RANGE_LIMITS.slice(1):
+		speed_range_picker.add_item(tr("SPEED_RANGE_VALUE") % RelativeSpeedSlider.percentage_text(limit))
+	speed_range_picker.add_item(tr("SPEED_RANGE_CUSTOM"))
+	speed_range_picker.item_selected.connect(change_speed_range)
+	tempo_primary.add_child(speed_range_picker)
+	speed_range_custom = VBoxContainer.new()
+	tempo_primary.add_child(speed_range_custom)
+	speed_range_custom.add_child(label("SPEED_RANGE_MAX", 18))
+	speed_range_limit = SpinBox.new()
+	speed_range_limit.min_value = 1
+	speed_range_limit.max_value = 999
+	speed_range_limit.step = 1
+	speed_range_limit.value = 150
+	speed_range_limit.suffix = "%"
+	speed_range_limit.value_changed.connect(func(_limit: float) -> void: apply_speed_range())
+	number_field(speed_range_custom, speed_range_limit, "SPEED_RANGE_MAX")
+	speed_range_custom.hide()
+	speed_range_caption = label("SPEED_RANGE", 18)
+	tempo_primary.add_child(speed_range_caption)
 
 	metro_check = check("METRONOME", true)
 	metro_check.tooltip_text = tr("CLICK_HELP")
@@ -2074,6 +2106,11 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventKey and live != null and not menu_overlay.visible and live.piano.handle_key(event):
 		get_viewport().set_input_as_handled()
 		return
+	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE and speed_dragging:
+		main_speed.cancel_pointer()
+		panel_speed.cancel_pointer()
+		get_viewport().set_input_as_handled()
+		return
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE and host.is_fullscreen():
 		host.set_fullscreen(false)
 		get_viewport().set_input_as_handled()
@@ -2509,6 +2546,9 @@ func reveal_scale_choice() -> void:
 	if scale_picker.is_visible_in_tree(): menu_scroll.ensure_control_visible(scale_picker)
 
 func responsive() -> void:
+	if speed_dragging:
+		main_speed.cancel_pointer()
+		panel_speed.cancel_pointer()
 	presentation = interface_provider.describe(size, theme.default_font_size, control_position, handedness, tv_active)
 	PracticeLayout.fit(self)
 	if capture_active: fit_capture_toolbar()
@@ -2602,8 +2642,40 @@ func update_metronome() -> void:
 	metro_button.icon = UIIcons.get_icon("CLICK_ON" if metro_check.button_pressed else "CLICK_OFF")
 	adapt_flow(dock)
 
+# One owner handles the entire gesture. The floating readout never receives input.
+func bind_speed_slider(slider: RelativeSpeedSlider) -> void:
+	slider.drag_started.connect(func() -> void: speed_dragging = true)
+	slider.adjustment_preview.connect(func() -> void:
+		speed_readout.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 12, appearance_mode == "midnight"))
+		speed_readout.display(slider, size))
+	slider.value_changed.connect(func(_value: float) -> void:
+		if not speed_dragging: set_speed(slider.percentage() / 100))
+	slider.drag_ended.connect(func(changed: bool) -> void:
+		speed_dragging = false
+		speed_readout.hide()
+		if changed: set_speed(slider.percentage() / 100)
+		else: update_tempo())
+
+func change_speed_range(index: int) -> void:
+	speed_range_custom.visible = index == SPEED_RANGE_LIMITS.size()
+	apply_speed_range()
+
+func apply_speed_range() -> void:
+	main_speed.cancel_pointer()
+	panel_speed.cancel_pointer()
+	var index: int = speed_range_picker.selected
+	var limit: float = speed_range_limit.value if index == SPEED_RANGE_LIMITS.size() else SPEED_RANGE_LIMITS[index]
+	for slider: RelativeSpeedSlider in [main_speed, panel_speed]:
+		slider.requested_ceiling = limit
+		slider.configure_range()
+	update_speed_range_caption()
+
+func update_speed_range_caption() -> void:
+	if speed_range_caption == null: return
+	speed_range_caption.text = tr("SPEED_RANGE_CURRENT") % RelativeSpeedSlider.percentage_text(panel_speed.range_ceiling)
+
 func step_speed(direction: int) -> void:
-	set_speed(clampf(snappedf(speed * 100.0 + direction * 5.0, 0.25) / 100.0, 0.0, 9.99))
+	set_speed(clampf(snappedf(speed * 100.0 + direction * 5.0, 0.01) / 100.0, 0.0, 9.99))
 
 func change_speed(index: int) -> void:
 	if index == SPEEDS.size():
@@ -2619,6 +2691,8 @@ func change_bpm(value: float) -> void:
 
 func set_speed(value: float) -> void:
 	if not is_finite(value): return
+	main_speed.cancel_pointer()
+	panel_speed.cancel_pointer()
 	var was_playing: bool = audio.playing_practice
 	pause()
 	speed = clampf(value, 0.0, 9.99)
@@ -2649,6 +2723,9 @@ func update_tempo() -> void:
 	update_speed_caption(speed * 100)
 	main_speed.set_percentage(speed * 100)
 	panel_speed.set_percentage(speed * 100)
+	main_speed.configure_range()
+	panel_speed.configure_range()
+	update_speed_range_caption()
 	speed_input.set_value_no_signal(speed * 100)
 	main_speed.tooltip_text = tr("SPEED_MARKERS_HELP")
 	main_speed.set_meta("hover_caption", main_speed.tooltip_text)
@@ -3276,7 +3353,7 @@ func report_state() -> void:
 	if host.trace_enabled():
 		var evidence: Dictionary = audio.metrics()
 		evidence.merge({"muted_parts": muted.duplicate(), "focused_part": part})
-		evidence.merge({"tv_active": tv_active, "tv_tucked": tv_tucked, "tv_zoom": tv_zoom, "status_visible": status_toast.visible, "tv_systems": score_frame.visible_systems(), "page_slide_count": score_frame.follow_slide_count, "page_slide_offset": score_frame.follow_offset, "music_lines": score_frame.music_lines, "note_spacing": score_frame.note_spacing, "staff_height": score_frame.staff_height, "score_height": score.drawing_height(), "fitted_rows": score.fitted_rows, "fullscreen": host.is_fullscreen(), "follow_pages": score.follow_pages, "upcoming_tick": score.upcoming_tick, "count_beat": int(count_badge.text) if count_badge.visible else 0, "capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "shape_cues": shape_cues, "font_style": font_style, "control_position": control_position, "handedness": handedness, "controls_on_side": controls_on_side, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "input_visible": live.visible, "piano_held": live.piano.pointers.size(), "input_result": {"kind": live.latest.get("kind", ""), "timing": live.latest.get("timing", "")}, "midi_status": playing_devices.midi.status, "microphone_status": listening.listener.capture.status, "tuner_enabled": listening.listener.capture.enabled and not listening.listener.paused, "playback_muted": listening.playback_mute.button_pressed, "pitch_analysis_ms": listening.listener.max_analysis_ms, "microphone_dropped": listening.listener.capture.dropped, "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "interface": interface_id, "interface_rail": presentation.rail, "background_style": background_style, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "controls_scroll_y": header_scroll.scroll_vertical, "tuner_profile": listening.listener.profile, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "notation_rows": notation_rows, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed": speed, "bpm": reference_bpm() * speed, "reference_bpm": reference_bpm(), "bpm_override": bpm_override, "playback_speed": playback_speed(), "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "arrangement_style": projection.style, "placed": projection.placed, "eligible": projection.eligible, "omitted": projection.omitted.size(), "mute_marks": projection.mute_marks, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
+		evidence.merge({"tv_active": tv_active, "tv_tucked": tv_tucked, "tv_zoom": tv_zoom, "status_visible": status_toast.visible, "tv_systems": score_frame.visible_systems(), "page_slide_count": score_frame.follow_slide_count, "page_slide_offset": score_frame.follow_offset, "music_lines": score_frame.music_lines, "note_spacing": score_frame.note_spacing, "staff_height": score_frame.staff_height, "score_height": score.drawing_height(), "fitted_rows": score.fitted_rows, "fullscreen": host.is_fullscreen(), "follow_pages": score.follow_pages, "upcoming_tick": score.upcoming_tick, "count_beat": int(count_badge.text) if count_badge.visible else 0, "capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "shape_cues": shape_cues, "font_style": font_style, "control_position": control_position, "handedness": handedness, "controls_on_side": controls_on_side, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "input_visible": live.visible, "piano_held": live.piano.pointers.size(), "input_result": {"kind": live.latest.get("kind", ""), "timing": live.latest.get("timing", "")}, "midi_status": playing_devices.midi.status, "microphone_status": listening.listener.capture.status, "tuner_enabled": listening.listener.capture.enabled and not listening.listener.paused, "playback_muted": listening.playback_mute.button_pressed, "pitch_analysis_ms": listening.listener.max_analysis_ms, "microphone_dropped": listening.listener.capture.dropped, "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "interface": interface_id, "interface_rail": presentation.rail, "background_style": background_style, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "controls_scroll_y": header_scroll.scroll_vertical, "tuner_profile": listening.listener.profile, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "notation_rows": notation_rows, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed_rect": {"x": main_speed.global_position.x, "y": main_speed.global_position.y, "width": main_speed.size.x, "height": main_speed.size.y}, "panel_speed_rect": {"x": panel_speed.global_position.x, "y": panel_speed.global_position.y, "width": panel_speed.size.x, "height": panel_speed.size.y}, "speed_readout_rect": {"x": speed_readout.position.x, "y": speed_readout.position.y, "width": speed_readout.size.x, "height": speed_readout.size.y}, "speed_pointer_index": main_speed.pointer_index if main_speed.pointer_active else panel_speed.pointer_index, "speed_dragging": speed_dragging, "speed_preview": main_speed.percentage() if main_speed.pointer_active else panel_speed.percentage(), "speed_fine": main_speed.fine_adjustment if main_speed.pointer_active else panel_speed.fine_adjustment, "speed_readout_visible": speed_readout.visible, "speed_range": main_speed.range_ceiling, "speed": speed, "bpm": reference_bpm() * speed, "reference_bpm": reference_bpm(), "bpm_override": bpm_override, "playback_speed": playback_speed(), "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "arrangement_style": projection.style, "placed": projection.placed, "eligible": projection.eligible, "omitted": projection.omitted.size(), "mute_marks": projection.mute_marks, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
 		host.report(evidence)
 	offline.text = tr("OFFLINE_READY") if host.offline_ready() else tr("OFFLINE_PENDING")
 	if host.offline_ready() and not host.trace_enabled(): idle_timer.stop()

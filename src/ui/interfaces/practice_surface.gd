@@ -38,7 +38,7 @@ static func build(app: Control) -> void:
 	app.header_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	app.header_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	app.header_scroll.follow_focus = true
-	app.header_scroll.input_allowed = func() -> bool: return not app.menu_overlay.visible and (app.picker_overlay == null or not app.picker_overlay.visible) and not app.capture_active and not app.tv_tucked
+	app.header_scroll.input_allowed = func() -> bool: return not app.speed_dragging and not app.menu_overlay.visible and (app.picker_overlay == null or not app.picker_overlay.visible) and not app.capture_active and not app.tv_tucked
 	app.header_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	app.header_margin.add_child(app.header_scroll)
 	app.header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -135,6 +135,7 @@ static func build(app: Control) -> void:
 	app.menu_close = app.button("CLOSE", app.close_menu)
 	drawer_header.add_child(app.menu_close)
 	app.menu_scroll = TouchScrollContainer.new()
+	app.menu_scroll.input_allowed = func() -> bool: return not app.speed_dragging
 	app.menu_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	app.menu_scroll.follow_focus = true
 	app.menu_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -327,15 +328,7 @@ static func build(app: Control) -> void:
 	app.main_speed.custom_minimum_size = Vector2(120, 48)
 	app.main_speed.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	app.main_speed.tooltip_text = app.tr("SPEED")
-	app.main_speed.drag_started.connect(func() -> void: app.speed_dragging = true)
-	app.main_speed.drag_ended.connect(func(changed: bool) -> void:
-		app.speed_dragging = false
-		if changed: app.set_speed(app.main_speed.percentage() / 100.0)
-		else: app.update_tempo())
-	app.main_speed.value_changed.connect(func(_value: float) -> void:
-		var percent: float = app.main_speed.percentage()
-		if app.speed_dragging: app.update_speed_caption(percent)
-		else: app.set_speed(percent / 100.0))
+	app.bind_speed_slider(app.main_speed)
 	app.speed_unit_layout.add_child(app.main_speed)
 	app.main_speed.press_control = app.tempo_button
 	app.main_speed.tap_control.connect(func() -> void: app.toggle_drawer("TEMPO"))

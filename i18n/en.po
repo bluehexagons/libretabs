@@ -2639,7 +2639,7 @@ msgid "BPM_PLAYBACK"
 msgstr "Playback starts at %.1f BPM · %s%% of %.1f BPM"
 
 msgid "SPEED_MARKERS_HELP"
-msgstr "Drag to adjust speed; release to apply. Tap the percentage for presets and exact 0–999% entry. Arrow keys adjust by 1%; Page Up or Down by 5%."
+msgstr "Drag to adjust; pull up for a larger, finer control. Release to apply. Tap the percentage to set the slider range or enter an exact speed. Arrow keys adjust by 1%; Page Up or Down by 5%."
 
 msgid "SONG_ABOUT"
 msgstr "About"
@@ -3126,3 +3126,30 @@ msgstr "Base tempo settings"
 
 msgid "SPEED_CUSTOM"
 msgstr "Custom speed"
+
+msgid "SPEED_RANGE"
+msgstr "Slider range"
+
+msgid "SPEED_RANGE_AUTO"
+msgstr "Automatic · fit the layout"
+
+msgid "SPEED_RANGE_VALUE"
+msgstr "0–%s%%"
+
+msgid "SPEED_RANGE_CUSTOM"
+msgstr "Custom range"
+
+msgid "SPEED_RANGE_MAX"
+msgstr "Maximum speed · percent"
+
+msgid "SPEED_RANGE_CURRENT"
+msgstr "Active range: 0–%s%%"
+
+msgid "SPEED_DRAG_LIFT"
+msgstr "Pull up to enlarge and fine-tune"
+
+msgid "SPEED_DRAG_FINE"
+msgstr "Fine adjustment · release to apply"
+
+msgid "SPEED_RANGE_HELP"
+msgstr "Changing the slider range keeps playback speed unchanged. A speed outside your range temporarily extends the track to include it. This choice lasts for this session."

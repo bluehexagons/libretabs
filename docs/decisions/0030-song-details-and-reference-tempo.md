@@ -71,6 +71,36 @@ with a large slider, exact percentage, steps and presets. Base BPM settings and
 the longer explanation are collapsed; click/count-in controls remain available.
 Transport, source timing, session-only override and persistence rules are unchanged.
 
+## Range and enlarged-drag audit — 2026-11-08
+
+Further owner feedback adds session-only slider range selection: Automatic,
+0–100/150/200/400/999%, or a custom maximum of 1–999%. The lower endpoint stays
+at zero. This is UI state, shared by toolbar and Playback controls; choosing a
+range never changes the transport or persists a speed default. A current speed
+outside the requested range temporarily expands it, with the effective range
+shown in Playback. Returning inside restores the requested range.
+
+All percentage input now retains hundredth-point precision, including the
+slider and five-point steps, matching exact entry. This supersedes the earlier
+quarter-point slider resolution while retaining all exact practice fractions.
+Horizontal dragging shows a floating readout. Pulling up 28 logical pixels
+expands it into a wide track and latches fine adjustment at one quarter of
+normal horizontal sensitivity. Lifting rebases horizontal input without changing
+speed. The floating display is input-transparent; the original slider retains
+the pointer and its geometry. Release applies the preview once. Downward
+movement before a horizontal drag, Escape, focus loss, a menu change or resizing
+cancels. Other fingers and synthesized mouse input cannot take ownership.
+Touch scrolling is suspended while a speed gesture owns the finger.
+
+The web host adapter forwards canvas `touchcancel` identifiers in capture phase,
+before Godot's web input converts cancellation into a normal release. Only the
+owning finger is canceled; its preview is restored. Browser blur also explicitly
+cancels the gesture. Both behaviors have host and application regressions.
+
+No playback clock, MIDI source, tempo-map, persistence schema, dependency or
+platform target changes. These remain prototype ergonomics for evaluation;
+physical-device touch and audible timing acceptance are separate gates.
+
 ## Validation
 
 Bundled metadata/translation/citation coverage, disputed-attribution regressions,

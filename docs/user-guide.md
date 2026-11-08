@@ -217,19 +217,24 @@ height, so choose fewer Music lines if you need taller notes.
 ## Adjust playback and repeat a passage
 
 - **Playback speed:** 100% is the base tempo; 50% is half that tempo. **Slower −5%**
-  and **Faster +5%** make small changes. **100% of base tempo** restores 100%. At 0%,
-  playback pauses; raise the speed and press Play to continue. The slider gives
-  slower speeds more room for fine adjustment and compresses faster speeds,
-  with 0–150% on short tracks and 0–200% on wider tracks.
-  **Exact speed** in Playback accepts the full 0–999% range; higher values expand
-  the track to include them. Returning to practice speeds restores the smaller range. Slower speeds have more marks;
-  faster speeds have fewer. Track taps snap near visible marks; drags move smoothly without snapping
-  and apply once on release. Short tracks use finer relative dragging. Narrow tracks show
-  fewer marks to keep them distinct. Marks prioritize half (50%), quarter (25%),
-  eighth (12.5%) and sixteenth (6.25%) speed. All four are also in Playback's
-  speed presets, including when a narrow track cannot show every mark. The
-  fractional percentages are exact; they change playback speed while preserving
-  the notes and rhythm. Arrow keys adjust one percentage
+  and **Faster +5%** make small changes without losing decimal precision.
+  **100% of base tempo** restores 100%. At 0%, playback pauses; raise the speed
+  and press Play to continue. Dragging previews the new speed in a floating
+  readout; release applies it once. **Pull upward while holding the slider**
+  to enlarge the readout and fine-tune at one quarter of the normal drag rate.
+  Enlarging keeps the current value and the original control stays in place.
+  Fine adjustment stays active until release. Pulling straight up does not
+  change speed. Escape, focus loss or resizing cancels an unfinished drag.
+- **Slider range:** tap the percentage, or open **Menu → Practice → Playback**,
+  then choose **Slider range**. Automatic uses 0–150% on short tracks and
+  0–200% on wider tracks. Other choices cover 0–100%, 0–150%, 0–200%, 0–400%,
+  or 0–999%; **Custom range** lets you enter a maximum from 1 to 999%.
+  This setting changes the track, not playback speed. An exact speed outside
+  the chosen range temporarily extends the track; returning inside restores
+  the chosen range. The choice lasts for this session. **Exact speed** always
+  accepts 0–999%. Track taps snap near visible marks; drags move smoothly.
+  Marks favor half (50%), quarter (25%), eighth (12.5%) and sixteenth (6.25%)
+  speed; all four remain available in presets. Arrow keys adjust one percentage
   point; Page Up/Down adjust five; Home/End select 0/999%.
 - **Base tempo:** BPM means beats per minute; here a beat is a quarter note. Tap the percentage beside the speed slider, or open **Menu → Practice → Playback**. Expand **Base tempo settings** and enter a base BPM to make it the new 100%. For example, 80 BPM at 50% starts at 40 BPM. **Use song BPM** restores the song’s tempo and 100% speed. Later tempo changes keep their proportions. The override lasts until you open another song and is not saved. Changing speed changes how quickly notes arrive, not their pitch.
 - **Beat clicks (metronome):** adds a click on each beat to help you keep time.

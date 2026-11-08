@@ -60,6 +60,13 @@
       document.addEventListener('visibilitychange', () => { if (document.hidden) callback(); });
       window.addEventListener('pagehide', () => callback());
     },
+    onTouchCancel(callback) {
+      // Capture before the engine turns a canceled browser touch into release.
+      document.addEventListener('touchcancel', event => {
+        if (event.target?.id !== 'canvas') return;
+        for (const touch of event.changedTouches) callback(touch.identifier);
+      }, true);
+    },
     onBlur(callback) { window.addEventListener('blur', () => callback()); },
     loadPractice() {
       try { const raw = localStorage.getItem('libretabs.practice.v1') || ''; return raw.length <= 4096 ? raw : '!oversize'; }

@@ -6,6 +6,7 @@ signal picked(name: String, bytes: PackedByteArray, error: String)
 signal hidden
 signal appearance_changed
 signal focus_lost
+signal touch_cancelled(index: int)
 signal motion_changed
 signal exported(success: bool)
 signal export_cancelled
@@ -22,6 +23,7 @@ var progress_path: String = "user://learning-v1.json"
 var progress_writable: bool = true
 var progress_snapshot: String = ""
 var focus_callback: JavaScriptObject
+var touch_cancel_callback: JavaScriptObject
 var display_path: String = "user://display.cfg"
 var dialog: FileDialog
 var callback: JavaScriptObject
@@ -43,6 +45,8 @@ func _ready() -> void:
 		web.onHidden(hidden_callback)
 		focus_callback = JavaScriptBridge.create_callback(func(_args: Array) -> void: focus_lost.emit())
 		web.onBlur(focus_callback)
+		touch_cancel_callback = JavaScriptBridge.create_callback(func(args: Array) -> void: touch_cancelled.emit(int(args[0])))
+		web.onTouchCancel(touch_cancel_callback)
 		appearance_callback = JavaScriptBridge.create_callback(func(_args: Array) -> void: appearance_changed.emit())
 		web.onAppearance(appearance_callback)
 		motion_callback = JavaScriptBridge.create_callback(func(_args: Array) -> void: motion_changed.emit())

@@ -3,6 +3,7 @@ class_name RelativeSpeedSlider
 extends CaptionSlider
 
 signal tap_control
+signal adjustment_preview
 const PRACTICE_MARKERS: Array[float] = [100, 50, 25, 12.5, 6.25]
 const MARKERS: Array[float] = [0, 1, 6.25, 12.5, 25, 50, 75, 100, 200, 400, 800, 999]
 const MARKER_GAP: float = 8.0
@@ -20,13 +21,18 @@ var discarded_index: int = -1
 var origin_span: float
 var origin_rect: Rect2
 var range_ceiling: float = 200
+var requested_ceiling: float = 0 # Zero selects the responsive automatic range.
+var fine_adjustment: bool = false
+var last_pointer_x: float
+const LIFT_DISTANCE: float = 28
+const FINE_FACTOR: float = 0.25
 
 # A small control needs a useful practice range. Keep unusual rates reachable
 # through exact entry; expand the track when displaying such a rate.
 func configure_range() -> void:
 	if pointer_active: return
 	var percent: float = percentage()
-	var ceiling: float = 150 if size.x < 200 else 200
+	var ceiling: float = requested_ceiling if requested_ceiling > 0 else (150 if size.x < 200 else 200)
 	if percent > ceiling: ceiling = minf(999, ceilf(percent / 100) * 100)
 	if is_equal_approx(ceiling, range_ceiling): return
 	range_ceiling = ceiling
@@ -39,8 +45,8 @@ static func position_for_percent(percent: float, ceiling: float = 200) -> float:
 	return pow(clampf(percent / ceiling, 0, 1), 1.0 / 3.0)
 
 static func percent_for_position(position_ratio: float, ceiling: float = 200) -> float:
-	# Quarter-percentage resolution preserves exact eighth/sixteenth speeds.
-	return snappedf(ceiling * pow(clampf(position_ratio, 0, 1), 3), 0.25)
+	# Hundredth-point resolution matches exact entry and preserves fractions.
+	return snappedf(ceiling * pow(clampf(position_ratio, 0, 1), 3), 0.01)
 
 static func percentage_text(percent: float) -> String:
 	return String.num(percent, 2).trim_suffix(".0")
@@ -104,6 +110,10 @@ func pointer_ratio(x: float) -> float:
 func handle_pointer(event: InputEvent) -> bool:
 	if not is_visible_in_tree(): return false
 	if event is InputEventKey and has_focus() and event.pressed:
+		if pointer_active:
+			if event.keycode == KEY_ESCAPE: cancel_pointer()
+			return true
+		if event.ctrl_pressed or event.alt_pressed or event.meta_pressed: return false
 		var next: float = percentage()
 		match event.keycode:
 			KEY_LEFT, KEY_DOWN: next -= 1
@@ -126,7 +136,7 @@ func handle_pointer(event: InputEvent) -> bool:
 	var index: int = event.index if event is InputEventScreenTouch or event is InputEventScreenDrag else -1
 	var button_event: bool = event is InputEventScreenTouch or (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT)
 	if discard_release and index == discarded_index:
-		if not button_event: return true
+		if not button_event: return false
 		discard_release = false
 		if not event.pressed: return true
 	if button_event and event.pressed:
@@ -140,6 +150,8 @@ func handle_pointer(event: InputEvent) -> bool:
 		# Short tracks use a longer virtual drag span for fine adjustment.
 		origin_span = maxf(320, track_width())
 		origin_rect = get_global_rect()
+		fine_adjustment = false
+		last_pointer_x = position.x
 		dragged = false
 		control_tap = over_control
 		grab_focus()
@@ -152,12 +164,21 @@ func handle_pointer(event: InputEvent) -> bool:
 		return true
 	if event is InputEventMouseMotion or event is InputEventScreenDrag:
 		var delta: Vector2 = position - origin
-		if not dragged and absf(delta.y) > 12 and absf(delta.y) > absf(delta.x):
+		if not fine_adjustment and delta.y <= -LIFT_DISTANCE:
+			fine_adjustment = true
+			dragged = true
+			# Rebase at the lift. Enlarging never changes the current value.
+			last_pointer_x = position.x
+		if not dragged and delta.y > 12 and delta.y > absf(delta.x):
 			cancel_pointer()
 			return true
 		if absf(delta.x) > 8: dragged = true
 		if dragged:
-			value = clampf(origin_value + delta.x / origin_span, 0, 1)
+			var movement: float = (position.x - last_pointer_x) / origin_span
+			if fine_adjustment: movement *= FINE_FACTOR
+			last_pointer_x = position.x
+			value = clampf(value + movement, 0, 1)
+			adjustment_preview.emit()
 		return true
 	if button_event and not event.pressed:
 		if not dragged and not control_tap:
@@ -183,3 +204,4 @@ func cancel_pointer() -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT: cancel_pointer()
+	if what == NOTIFICATION_RESIZED and pointer_active and not size.is_equal_approx(origin_rect.size): cancel_pointer()

@@ -7,7 +7,9 @@ import {readFileSync} from 'node:fs';
 const code = readFileSync(new URL('../src/platform/bridge.js', import.meta.url), 'utf8');
 function host(localStorage) {
   const inputs = [];
+  const listeners = new Map();
   const document = {
+    addEventListener(name, handler, capture) { listeners.set(name, {handler, capture}); },
     body: {append() {}},
     createElement() {
       const handlers = {};
@@ -25,7 +27,7 @@ function host(localStorage) {
   const sandbox = {window: {addEventListener() {}}, document, navigator: {}, URLSearchParams,
     location: {search: ''}, localStorage, Blob, URL: {createObjectURL: () => 'blob:print', revokeObjectURL() {}}, setTimeout() {}};
   vm.runInNewContext(code, sandbox);
-  return {api: sandbox.window.libretabsHost, inputs};
+  return {api: sandbox.window.libretabsHost, inputs, listeners};
 }
 const file = (name = 'song.mid', size = 1, arrayBuffer = async () => new ArrayBuffer(size)) =>
   ({name, size, arrayBuffer});
@@ -198,4 +200,17 @@ test('stale learning writes preserve marks and future schemas from another sessi
   values.set('libretabs.learning.v1', future);
   assert.equal(first.saveProgress(one, one), false);
   assert.equal(second.loadProgress(), future);
+});
+
+
+test('canvas touch cancellation reaches the owning identifier in capture phase', () => {
+  const {api, listeners} = host();
+  const canceled = [];
+  api.onTouchCancel(id => canceled.push(id));
+  const listener = listeners.get('touchcancel');
+  assert.equal(listener.capture, true);
+  listener.handler({target: {id: 'canvas'}, changedTouches: [{identifier: 2}, {identifier: 7}]});
+  assert.deepEqual(canceled, [2, 7]);
+  listener.handler({target: {id: 'other'}, changedTouches: [{identifier: 9}]});
+  assert.deepEqual(canceled, [2, 7]);
 });

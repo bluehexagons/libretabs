@@ -222,6 +222,7 @@ static func fit(app: Control) -> void:
 		app.speed_control.custom_minimum_size.y = 88
 	app.main_speed.configure_range.call_deferred()
 	app.panel_speed.configure_range.call_deferred()
+	app.update_speed_range_caption.call_deferred()
 	if app.opened_drawer == "WELCOME":
 		var inset: float = 8 if app.size.x < 600 else 24
 		app.drawer.size = Vector2(minf(app.size.x - inset * 2, 720), minf(app.size.y - inset * 2, 760))

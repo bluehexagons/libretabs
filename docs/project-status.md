@@ -2,7 +2,7 @@
 
 To use the current player, start with the [user guide](user-guide.md).
 
-Snapshot date: 2026-11-01. Current phase: evaluating public **prototype releases**.
+Snapshot date: 2026-11-08. Current phase: evaluating public **prototype releases**.
 
 The [evidence records](evidence/README.md) are dated snapshots. This handoff is
 the current summary; older measurements remain useful for their stated scope.
@@ -44,6 +44,13 @@ with a small screen-distance snap radius shared by slow and fast settings.
 The [fraction follow-up](evidence/practice-fractions-2026-11-01.md) prioritizes
 half/quarter/eighth/sixteenth-speed marks and presets, preserving exact fractional
 percentages in playback, captions and adjustments.
+
+The [speed gesture audit](evidence/speed-gesture-audit-2026-11-08.md) adds a
+compact Playback control panel, session-only slider ranges and a pull-up enlarged
+readout with fine adjustment. Relative dragging keeps the pressed control in
+place and commits once on release. Hundredth precision and browser cancellation
+fixes have native and exported-browser checks across aspect ratios and enlarged
+text; physical-device acceptance remains open.
 
 The [CI follow-up](evidence/ci-followup-2026-11-01.md) repairs the compact-card
 layout assertion, restores pinned browsing on Back from details, and adds

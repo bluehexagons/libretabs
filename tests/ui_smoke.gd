@@ -414,6 +414,10 @@ func run() -> void:
 	check(requests[0] == 1 and not listening.practice_pending and not listening.listen_check.button_pressed, "canceling startup rejects a late READY")
 	capture.stop()
 	check(app.get("song").source.bytes_copy() == source, "practice actions preserve exact source MIDI")
+	var speed_audit: RefCounted = load("res://tests/helpers/speed_controls.gd").new()
+	await speed_audit.run(app, self, Callable(self, "settle"))
+	checks += speed_audit.checks
+	failures += speed_audit.failures
 	app.queue_free()
 	await process_frame
 	print("UI smoke: %d checks, %d failures" % [checks, failures])
