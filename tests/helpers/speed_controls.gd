@@ -25,6 +25,8 @@ func motion(position: Vector2, index: int = 2) -> InputEventScreenDrag:
 
 func audit_detents(app: Control) -> void:
 	var probe: RelativeSpeedSlider = RelativeSpeedSlider.new()
+	var readout: SpeedDragReadout = SpeedDragReadout.new()
+	app.add_child(readout)
 	probe.theme_type_variation = "TempoSlider"
 	probe.max_value = 1
 	probe.step = 0.000001
@@ -61,6 +63,9 @@ func audit_detents(app: Control) -> void:
 					check(probe.snapped_marker != marker and not is_equal_approx(probe.value,target), "small motions escape detent " + context)
 					probe.handle_pointer(touch(origin + Vector2(travel,y),false))
 					check(not probe.pointer_active and probe.snapped_marker < 0, "release clears detent state " + context)
+				if fine:
+					readout.display(probe, app.size)
+					check(readout.track.visible_markers() == probe.visible_markers(), "enlarged track shows only the owner's snap targets at width %s range %s" % [width,ceiling])
 			# Omitted marks must not become invisible drag magnets.
 			for marker: float in RelativeSpeedSlider.MARKERS:
 				if marker > ceiling or probe.visible_markers().has(marker): continue
@@ -72,7 +77,43 @@ func audit_detents(app: Control) -> void:
 				probe.handle_pointer(motion(origin + Vector2((target-start) * probe.origin_span,0)))
 				check(probe.snapped_marker != marker, "hidden mark never attracts drag at width %s range %s" % [width,ceiling])
 				probe.cancel_pointer()
+	readout.free()
 	probe.free()
+
+func audit_clipping(app: Control) -> void:
+	var clip: Control = Control.new()
+	clip.clip_contents = true
+	clip.position = Vector2(20,100)
+	clip.size = Vector2(200,100)
+	app.add_child(clip)
+	var probe: RelativeSpeedSlider = RelativeSpeedSlider.new()
+	probe.max_value = 1
+	probe.step = 0.000001
+	probe.position = Vector2(0,-24)
+	probe.size = Vector2(180,48)
+	clip.add_child(probe)
+	probe.set_percentage(100)
+	var hidden_point: Vector2 = clip.global_position + Vector2(80,-12)
+	check(not probe.handle_pointer(touch(hidden_point,true)) and not probe.pointer_active, "clipped track cannot steal a press outside its scroll area")
+	probe.cancel_pointer()
+	probe.handle_pointer(touch(hidden_point,false))
+	var caption: Button = Button.new()
+	caption.position = Vector2(0,-80)
+	caption.size = Vector2(140,48)
+	clip.add_child(caption)
+	probe.press_control = caption
+	var caption_point: Vector2 = caption.get_global_rect().get_center()
+	check(not probe.handle_pointer(touch(caption_point,true)) and not probe.pointer_active, "clipped speed caption cannot steal a press")
+	probe.cancel_pointer()
+	probe.handle_pointer(touch(caption_point,false))
+	var origin: Vector2 = clip.global_position + Vector2(80,12)
+	probe.handle_pointer(touch(origin,true))
+	probe.handle_pointer(motion(origin + Vector2(-20,-40)))
+	probe.handle_pointer(motion(origin + Vector2(-40,-40)))
+	check(probe.pointer_active and probe.fine_adjustment and probe.percentage() < 100, "visible press keeps dragging outside the clipped region")
+	probe.handle_pointer(touch(origin + Vector2(-40,-40),false))
+	check(not probe.pointer_active and probe.percentage() < 100, "release outside the clipped region commits its preview")
+	clip.free()
 
 func run(app: Control, tree: SceneTree, settle: Callable) -> void:
 	app.call("close_menu")
@@ -80,12 +121,33 @@ func run(app: Control, tree: SceneTree, settle: Callable) -> void:
 	app.call("change_interface", "classic")
 	app.set("control_position", "bottom")
 	audit_detents(app)
+	audit_clipping(app)
 	for percent: float in [50,25,12.5]:
 		app.call("set_speed", percent / 100)
 		check(app.get("tempo_caption").text == RelativeSpeedSlider.speed_caption(percent,true) and app.get("speed_input").value == percent, "fraction display preserves exact numeric entry %s" % percent)
 	check(RelativeSpeedSlider.speed_caption(83.37) == "83.4%" and RelativeSpeedSlider.speed_caption(83.0) == "83%", "ordinary captions use at most one decimal")
 	app.call("set_speed", 0)
 	check(app.get("speed") == 0.1 and app.get("speed_input").min_value == 10, "numeric entry enforces the ten percent floor")
+	# A scrolled slider may geometrically overlap the fixed drawer header.
+	tree.root.size = Vector2i(390,844)
+	app.call("set_speed", 0.8337)
+	app.call("toggle_drawer", "TEMPO")
+	await settle.call(app)
+	var panel: RelativeSpeedSlider = app.get("panel_speed")
+	var close: Button = app.get("menu_close")
+	app.get("menu_scroll").scroll_vertical = roundi(panel.get_global_rect().get_center().y - close.get_global_rect().get_center().y)
+	for _frame: int in range(4): await tree.process_frame
+	var close_point: Vector2 = close.get_global_rect().get_center()
+	check(panel.get_global_rect().has_point(close_point) and not app.get("menu_scroll").get_global_rect().has_point(close_point), "scrolled-panel regression overlaps the fixed Close button outside the viewport")
+	var click: InputEventMouseButton = InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.position = close_point
+	click.pressed = true
+	tree.root.push_input(click)
+	click.pressed = false
+	tree.root.push_input(click)
+	check(not app.get("menu_overlay").visible and app.get("speed") == 0.8337, "Close works above a clipped speed track without changing speed")
+	app.call("close_menu")
 	var source: PackedByteArray = app.get("song").source.bytes_copy()
 	# Exercise actual input propagation, including competing touch scroll areas.
 	for scale: float in [1.0, 2.0]:

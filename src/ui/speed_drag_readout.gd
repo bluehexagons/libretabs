@@ -62,6 +62,7 @@ func display(owner: RelativeSpeedSlider, viewport_size: Vector2) -> void:
 	var fine: bool = owner.fine_adjustment
 	caption.text = RelativeSpeedSlider.speed_caption(owner.percentage(), true)
 	caption.add_theme_font_size_override("font_size", mini(42, get_theme_default_font_size() + 12))
+	track.marker_source = owner
 	track.range_ceiling = owner.range_ceiling
 	track.set_percentage(owner.percentage())
 	track.snapped_marker = owner.snapped_marker

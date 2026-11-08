@@ -60,3 +60,40 @@ Selected logs, browser state and five screenshots are retained locally under
 `artifacts/archive/2026-11-08--speed-detents-playback/`, with checksums and an
 index. Export/guide staging is disposable; publications remain at their existing
 managed names. Final publication receipts are retained with the evidence.
+
+## Review follow-up — 2026-11-08
+
+The subsequent review reproduced and corrected four gaps:
+
+- A scrolled-off speed track could overlap the fixed Playback header and
+  intercept Close, changing speed instead. Press routing now respects every
+  clipping ancestor for the track and caption. A gesture begun on a visible
+  portion still owns movement and release outside the scroll area.
+- The enlarged readout independently chose marks from its wider track, showing
+  targets that the owning slider would not snap to. It now mirrors the owner's
+  actual marks, including at narrow widths and large configured ranges.
+- Arrow/Home/End keys at an already selected endpoint emitted another speed
+  change, restarting the running count-in. Unchanged keyboard values are now
+  consumed without changing playback. Injected-clock cases cover both limits.
+- Count-in help still described immediate resume. It now matches Play/Restart
+  behavior. The hosted guide's half-speed example also identifies “1/2× (50%)”.
+
+Before the fixes, the added cases reported 15 UI failures and two timing
+failures. After the fixes, quick/UI/practice verification passed all 12 commands
+in 82.86 seconds: 1,404 UI checks including 1,119 speed checks, 40 tempo checks,
+87 navigation checks, 274 page-follow checks and 6,685 core checks. The guide's
+eight build tests also passed after its copy change. The full gate above remains
+the audio/input/persistence baseline; this review changes only UI routing,
+readout feedback, no-op keyboard handling and help.
+
+Exported-browser checks confirmed Close works over the clipped track without
+changing speed at 390×844. At 10%, repeated Home/Left keys let the active count-in
+continue advancing. At 740×260, lifting keeps 50%, fine dragging snaps to 25%,
+the pressed control stays fixed, and release commits 25% and hides the readout.
+The enlarged marks match the original control. No console errors or failed
+requests were observed. The browser first used its previous cached player; one
+ordinary reload loaded the fixes, without clearing caches or forcing activation.
+
+Review logs, selected captures and final publication receipts are retained under
+`artifacts/archive/2026-11-08--speed-review/`. This retains the previous evidence
+and physical-device limitations; no additional platform acceptance is claimed.

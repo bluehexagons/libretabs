@@ -94,6 +94,21 @@ func run() -> void:
 	app.call("toggle_play")
 	check(app.get("speed") == 0.1 and player.transport.speed == 0.1, "ten percent floor always configures a positive-rate transport")
 	app.call("pause")
+	# A key held at an endpoint must not keep restarting the preparation clicks.
+	for endpoint: float in [0.1,9.99]:
+		app.call("set_speed", endpoint)
+		app.call("toggle_play")
+		player.transport.take_events(1000)
+		app.get("main_speed").grab_focus()
+		var key: InputEventKey = InputEventKey.new()
+		key.pressed = true
+		key.keycode = KEY_LEFT if endpoint == 0.1 else KEY_RIGHT
+		root.push_input(key)
+		key.keycode = KEY_HOME if endpoint == 0.1 else KEY_END
+		key.echo = true
+		root.push_input(key)
+		check(player.playing_practice and player.transport.rendered_frames == 1000 and app.get("speed") == endpoint, "endpoint key repeats preserve the running count-in at %s" % endpoint)
+		app.call("pause")
 	app.call("set_speed",1)
 	for divisor: int in [2, 4, 8]:
 		app.call("set_speed", 1.0 / divisor)

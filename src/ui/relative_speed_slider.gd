@@ -11,6 +11,8 @@ const MARKER_GAP: float = 8.0
 const SNAP_DISTANCE: float = 3.0
 
 var press_control: Control
+# The input-transparent enlarged readout shows the owner's actual snap targets.
+var marker_source: RelativeSpeedSlider
 var pointer_active: bool = false
 var pointer_index: int = -1
 var origin: Vector2
@@ -70,6 +72,7 @@ func track_width() -> float:
 # Prioritize normal speed and common practice fractions before filling space.
 # Hidden marks must not create invisible snap targets.
 func visible_markers() -> Array[float]:
+	if is_instance_valid(marker_source): return marker_source.visible_markers()
 	var visible_values: Array[float] = [MIN_PERCENT, range_ceiling]
 	var span: float = track_width()
 	for marker: float in PRACTICE_MARKERS + MARKERS:
@@ -151,6 +154,16 @@ func pointer_ratio(x: float) -> float:
 	var inset: float = get_theme_icon("grabber").get_width() / 2.0
 	return clampf((x - global_position.x - inset) / track_width(), 0, 1)
 
+static func pointer_hits(control: Control, position: Vector2) -> bool:
+	if not is_instance_valid(control) or not control.is_visible_in_tree() or not control.get_global_rect().has_point(position): return false
+	# Input is routed before Godot's GUI clipping. A scrolled-off track must
+	# not capture a press on the fixed drawer header or outside its scroll area.
+	var ancestor: Node = control.get_parent()
+	while ancestor != null:
+		if ancestor is Control and ancestor.clip_contents and not ancestor.get_global_rect().has_point(position): return false
+		ancestor = ancestor.get_parent()
+	return true
+
 func handle_pointer(event: InputEvent) -> bool:
 	if not is_visible_in_tree(): return false
 	if event is InputEventKey and has_focus() and event.pressed:
@@ -168,13 +181,15 @@ func handle_pointer(event: InputEvent) -> bool:
 			KEY_END: next = 999
 			_: return false
 		next = clampf(next, MIN_PERCENT, 999)
+		# Repeated endpoint keys must not restart playback or its count-in.
+		if is_equal_approx(next, percentage()): return true
 		set_percentage(next)
 		value_changed.emit(value)
 		return true
 	if not (event is InputEventMouseButton or event is InputEventMouseMotion or event is InputEventScreenTouch or event is InputEventScreenDrag): return false
 	var position: Vector2 = event.position
-	var over_slider: bool = get_global_rect().has_point(position)
-	var over_control: bool = is_instance_valid(press_control) and press_control.get_global_rect().has_point(position)
+	var over_slider: bool = pointer_hits(self, position)
+	var over_control: bool = pointer_hits(press_control, position)
 	if (event is InputEventMouseButton or event is InputEventMouseMotion) and event.device == InputEvent.DEVICE_ID_EMULATION:
 		return pointer_active or over_slider or over_control
 	var index: int = event.index if event is InputEventScreenTouch or event is InputEventScreenDrag else -1

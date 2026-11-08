@@ -1028,7 +1028,7 @@ msgid "CLICK_HELP"
 msgstr "The metronome clicks on each beat to help you keep time. Count-in gives you clicks before you start."
 
 msgid "COUNT_HELP"
-msgstr "Count in on your next start. Resuming a paused phrase continues immediately."
+msgstr "Add preparation clicks whenever you press Play or Restart, including after a pause. Turn this off for immediate playback."
 
 msgid "SPEED_PRESETS"
 msgstr "Speed presets"
