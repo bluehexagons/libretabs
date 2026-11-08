@@ -57,10 +57,9 @@ layouts; a final redesign has not been selected.
    appear in Play and beside the starting music; the filled dot moves each beat.
    The moving line follows the music. Rounded outlines mark sounding tab numbers; slightly larger, bolder
    staff noteheads mark sounding notes without changing their shape.
-3. Open **Menu → Practice → Playback** and choose a slower speed, such as **50%** under
+3. Open **Menu → Practice → Playback** and choose a slower speed, such as **1/2 speed** under
    **Speed presets**. That means half the base tempo, with the same pitches. The base initially follows the song.
-   Choose **Restart** beside Play to return to the beginning and pause.
-   Press Play when you are ready.
+   Choose **Restart** beside Play to return to the beginning and play after the count-in.
 4. Follow just a few numbers on the guitar tabs, using the reading guide below.
    It is fine to listen again before joining in.
 5. To repeat a short section, open **Menu → Practice → Loop**, set **From** to **1** and
@@ -216,40 +215,46 @@ height, so choose fewer Music lines if you need taller notes.
 
 ## Adjust playback and repeat a passage
 
-- **Playback speed:** 100% is the base tempo; 50% is half that tempo. **Slower −5%**
+- **Playback speed:** 100% is the base tempo; **1/2×** means half that tempo
+  (50%). Quarter and eighth speed appear as **1/4×** and **1/8×**. Other readouts
+  use at most one decimal; **Exact speed** keeps the precise percentage.
+  **Slower −5%**
   and **Faster +5%** make small changes without losing decimal precision.
-  **100% of base tempo** restores 100%. At 0%, playback pauses; raise the speed
-  and press Play to continue. Dragging previews the new speed in a floating
-  readout; release applies it once. **Pull upward while holding the slider**
+  **100% of base tempo** restores 100%. The minimum is 10%; lower the base tempo
+  for slower practice. Dragging previews the new speed in a floating readout
+  and snaps near visible marks. The readout says **Snapped** when a mark holds;
+  keep sliding to leave it. Release applies the preview once. **Pull upward while holding the slider**
   to enlarge the readout and fine-tune at one quarter of the normal drag rate.
   Enlarging keeps the current value and the original control stays in place.
   The readout uses space above, below or beside the control.
   Fine adjustment stays active until release. Pulling straight up does not
   change speed. Escape, focus loss or resizing cancels an unfinished drag.
-- **Slider range:** tap the percentage, or open **Menu → Practice → Playback**,
-  then choose **Slider range**. Automatic uses 0–150% on short tracks and
-  0–200% on wider tracks. Other choices cover 0–100%, 0–150%, 0–200%, 0–400%,
-  or 0–999%; **Custom range** lets you enter a maximum from 1 to 999%.
+- **Slider range:** tap the speed, or open **Menu → Practice → Playback**,
+  then choose **Slider range**. Automatic uses 10–150% on short tracks and
+  10–200% on wider tracks. Other choices cover 10–100%, 10–150%, 10–200%, 10–400%,
+  or 10–999%; **Custom range** lets you enter a maximum from 11 to 999%.
   This setting changes the track, not playback speed. An exact speed outside
   the chosen range temporarily extends the track; returning inside restores
   the chosen range. The choice lasts for this session. **Exact speed** always
-  accepts 0–999%. Track taps snap near visible marks; drags move smoothly.
-  Marks favor half (50%), quarter (25%), eighth (12.5%) and sixteenth (6.25%)
-  speed; all four remain available in presets. Arrow keys adjust one percentage
-  point; Page Up/Down adjust five; Home/End select 0/999%.
+  accepts 10–999%. Track taps and drags snap near visible marks.
+  Marks favor half (50%), quarter (25%) and eighth (12.5%)
+  speed; all three remain available in presets. Arrow keys adjust one percentage
+  point; Page Up/Down adjust five; Home/End select 10/999%.
 - **Base tempo:** BPM means beats per minute; here a beat is a quarter note. Tap the percentage beside the speed slider, or open **Menu → Practice → Playback**. Expand **Base tempo settings** and enter a base BPM to make it the new 100%. For example, 80 BPM at 50% starts at 40 BPM. **Use song BPM** restores the song’s tempo and 100% speed. Later tempo changes keep their proportions. The override lasts until you open another song and is not saved. Changing speed changes how quickly notes arrive, not their pitch.
 - **Beat clicks (metronome):** adds a click on each beat to help you keep time.
-  **Count in before playing** adds preparation clicks on a fresh start; resuming
-  after Pause continues immediately. Use **Menu → Practice → Playback → Stop**, then Play,
-  when you want a new count-in.
+  **Count in before playing** adds preparation clicks whenever you press Play,
+  including after pausing or choosing a position partway through the song.
+  Restart uses the same count-in setting and length. Turn the setting off for
+  immediate playback.
 - **Move to a passage:** click or tap the music to move playback there. In
   scrolling view, drag sideways across the music to browse without changing playback.
   The position slider is available in every regular interface, including phone
   landscape and manual pages. Its compact label shows measure number and elapsed
   time. Small score jumps ease into place; Reduced Motion makes them immediate.
   **Restart** returns to the beginning of the song, or the beginning of an enabled loop.
-  Seeking and restarting leave playback paused by default. Turn off **Pause after
-  seeking or restarting** in Playback to resume automatically if already playing.
+  Restart plays automatically with the enabled count-in. Seeking leaves playback
+  paused by default. Turn off **Pause after seeking** in Playback to resume
+  automatically after a seek if already playing.
   Changing speed or other playback settings keeps its existing playback behavior.
 - **Loop:** From and Through include the first and last measures you choose.
   **Repeat this measure** sets and enables a one-measure loop. **Start at current
@@ -410,7 +415,7 @@ arrows move one beat, Page Up/Down one measure, and Home/End to the start/end.
 | Problem | Try this |
 | --- | --- |
 | No sound | Press Play, check device/browser volume, raise Instrument volume in Volume & parts, and enable the part you want to hear. Try a built-in exercise. |
-| Playback will not advance | Check that speed is above 0%, then press Play. Returning from a hidden browser tab also requires Play. |
+| Playback will not advance | Press Play and wait for the enabled count-in. Returning from a hidden browser tab also requires Play. |
 | The tune keeps repeating | Open Loop and choose Turn loop off. |
 | The page stopped following | Turning a page manually disables following. Enable Follow playback in Score view. |
 | Notes are missing from tabs | Read About this arrangement. Try Basic tab, another part or simpler music. Omitted tab notes may still sound. |

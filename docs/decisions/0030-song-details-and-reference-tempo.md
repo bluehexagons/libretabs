@@ -107,6 +107,32 @@ press point on short screens. It stays anchored while the finger moves. Its
 height follows wrapped-content minimum-size changes, including a first gesture
 that pulls straight upward before an ordinary drag has sized the display.
 
+## Drag detents and playback follow-up — 2026-11-08
+
+Owner feedback restores snapping during relative drags. A visible mark attracts
+the raw pointer position within six logical pixels of virtual finger travel,
+and holds until ten pixels away. Bands narrow around crowded neighboring marks;
+only drawn marks attract. The unsnapped accumulator keeps small movements from
+locking the thumb forever. Fine dragging uses the same finger-distance bands
+at its lower sensitivity. Lifting or a stationary finger cannot acquire a new
+mark. The readout says Snapped, and the held mark is thicker. Release commits
+the displayed detent once; exact entry and keyboard steps bypass snapping.
+
+The owner selected a 10% minimum relative speed. This supersedes the zero lower
+endpoint, zero-as-pause behavior and sixteenth-speed preset above. Both sliders,
+exact entry, steps, Home and presets enforce 10–999%; custom slider maxima are
+11–999%. Lower reference BPM remains available for slower practice. The cubic
+mapping now spans the configured range above 10%. Half, quarter and eighth
+captions use fractions; other speed readouts show at most one decimal. Exact
+percentage entry and transport precision remain unchanged.
+
+Every explicit Play/resume uses the enabled count-in at its selected source
+position. Restart always returns to the song or enabled loop start and plays,
+using the same count-in setting and length. The saved pause-navigation preference
+now controls seeking only. Automatic reconfiguration during active playback
+retains its existing behavior. This changes application actions, not the shared
+transport clock, canonical song or preference schema.
+
 ## Validation
 
 Bundled metadata/translation/citation coverage, disputed-attribution regressions,

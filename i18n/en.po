@@ -395,10 +395,10 @@ msgid "RESTART"
 msgstr "Restart"
 
 msgid "TIP_RESTART"
-msgstr "Return to the start of the song, or to the first measure of an active loop. Playback stays paused by default; change this in Playback settings."
+msgstr "Return to the start of the song, or to the first measure of an active loop, and play with the enabled count-in."
 
 msgid "SPEED"
-msgstr "Tap the track to set speed, or drag horizontally to adjust from the current value (0–999%). Slower speeds have more space on the slider. At 0%, playback is paused; pitch stays the same."
+msgstr "Tap the track to set speed, or drag horizontally to adjust from the current value (10–999%). Slower speeds have more space on the slider. Lower the base tempo for slower practice; pitch stays the same."
 
 msgid "SPEED_VALUE"
 msgstr "%s%% speed"
@@ -1511,7 +1511,7 @@ msgid "FULLSCREEN_UNAVAILABLE"
 msgstr "Fullscreen is unavailable here. Use your browser’s fullscreen option, or open the player directly if it is embedded in another page."
 
 msgid "SPEED_ZERO"
-msgstr "Speed is 0%. Increase the speed, then press Play to resume."
+msgstr "Set speed to at least 10%, then press Play."
 
 msgid "MUSIC_LAYOUT_HELP"
 msgstr "Use more lines to see a longer passage, or fewer lines for taller music. Note spacing fits more notes across without shrinking their height. Staff height gives the five pitch lines more room. Settings are remembered separately for regular and Theater views."
@@ -2581,10 +2581,10 @@ msgid "CONTROL_LAYOUT_SUMMARY"
 msgstr "Choose the control edge and your preferred hand. Small screens adapt the placement."
 
 msgid "PAUSE_NAVIGATION"
-msgstr "Pause after seeking or restarting"
+msgstr "Pause after seeking"
 
 msgid "PAUSE_NAVIGATION_HELP"
-msgstr "Leave playback paused after moving to another position or restarting. Turn this off to resume automatically when the song was playing."
+msgstr "Leave playback paused after seeking to another position. Turn this off to resume automatically when the song was playing. Restart always plays with the enabled count-in."
 
 msgid "SONGS_PIN"
 msgstr "Pin songs to practice"
@@ -2639,7 +2639,7 @@ msgid "BPM_PLAYBACK"
 msgstr "Playback starts at %.1f BPM · %s%% of %.1f BPM"
 
 msgid "SPEED_MARKERS_HELP"
-msgstr "Drag to adjust; pull up for a larger, finer control. Release to apply. Tap the percentage to set the slider range or enter an exact speed. Arrow keys adjust by 1%; Page Up or Down by 5%."
+msgstr "100% is normal speed; 1/2× is half speed. Drag snaps near visible marks; keep sliding to leave a mark. Pull up for finer control and release to apply. Tap the speed for ranges or exact percentage entry. Arrow keys adjust by 1%; Page Up or Down by 5%."
 
 msgid "SONG_ABOUT"
 msgstr "About"
@@ -3134,7 +3134,7 @@ msgid "SPEED_RANGE_AUTO"
 msgstr "Automatic · fit the layout"
 
 msgid "SPEED_RANGE_VALUE"
-msgstr "0–%s%%"
+msgstr "10–%s%%"
 
 msgid "SPEED_RANGE_CUSTOM"
 msgstr "Custom range"
@@ -3143,7 +3143,7 @@ msgid "SPEED_RANGE_MAX"
 msgstr "Maximum speed · percent"
 
 msgid "SPEED_RANGE_CURRENT"
-msgstr "Active range: 0–%s%%"
+msgstr "Active range: 10–%s%%"
 
 msgid "SPEED_DRAG_LIFT"
 msgstr "Pull up to enlarge and fine-tune"
@@ -3153,3 +3153,12 @@ msgstr "Fine adjustment · release to apply"
 
 msgid "SPEED_RANGE_HELP"
 msgstr "Changing the slider range keeps playback speed unchanged. A speed outside your range temporarily extends the track to include it. This choice lasts for this session."
+
+msgid "SPEED_FRACTION_SHORT"
+msgstr "%s×"
+
+msgid "SPEED_FRACTION_VALUE"
+msgstr "%s speed"
+
+msgid "SPEED_DRAG_SNAPPED"
+msgstr "Snapped · slide to adjust"

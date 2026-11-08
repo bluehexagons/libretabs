@@ -52,6 +52,13 @@ place and commits once on release. Hundredth precision and browser cancellation
 fixes have native and exported-browser checks across aspect ratios and enlarged
 text; physical-device acceptance remains open.
 
+The [detents and playback follow-up](evidence/speed-detents-playback-2026-11-08.md)
+adds drag snapping with jitter tolerance, readable fraction captions and a 10%
+minimum speed; lower base BPM supports slower practice. Play/resume and Restart
+use the enabled count-in at any position, and Restart always plays. The saved
+pause-navigation preference now applies only to seeking. Full verification,
+the targeted practice audit and exported-browser interaction checks pass.
+
 The [CI follow-up](evidence/ci-followup-2026-11-01.md) repairs the compact-card
 layout assertion, restores pinned browsing on Back from details, and adds
 deterministic BPM/count-in/loop scheduling and canceled-slider regressions to

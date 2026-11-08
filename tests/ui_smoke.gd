@@ -62,9 +62,9 @@ func run() -> void:
 		for key: String in ["play_button", "menu_button", "main_speed"]:
 			var control: Control = app.get(key)
 			check(control.is_visible_in_tree() and viewport.encloses(control.get_global_rect()) and control.size.y >= 44, key + " remains reachable")
-		app.call("set_speed", 0.0625)
+		app.call("set_speed", 0.125)
 		await settle(app)
-		check(app.get("tempo_button").text == "6.25%" and viewport.encloses(app.get("speed_control").get_global_rect()), "fractional speed caption fits representative viewport %s" % [config])
+		check(app.get("tempo_button").text == "1/8×" and viewport.encloses(app.get("speed_control").get_global_rect()), "fractional speed caption fits representative viewport %s" % [config])
 		for percent: float in [99.25, 998.75]:
 			app.call("set_speed", percent / 100.0)
 			await settle(app)
@@ -80,9 +80,9 @@ func run() -> void:
 		check(viewport.encloses(panel_slider.get_global_rect()) and panel_slider.size.y >= 44, "expanded speed slider is immediately reachable")
 		app.get("speed_input").value = 12.5
 		check(is_equal_approx(app.get("speed"), 0.125) and panel_slider.percentage() == 12.5, "exact percent entry synchronizes both sliders")
-		app.get("speed_input").value = 6.25
+		app.get("speed_input").value = 12.25
 		await settle(app)
-		check(app.get("speed_input").get_line_edit().text.contains("6.25"), "exact entry displays quarter-percent precision honestly")
+		check(app.get("speed_input").get_line_edit().text.contains("12.25"), "exact entry displays quarter-percent precision honestly")
 		app.call("change_speed", app.get_script().get_script_constant_map()["SPEEDS"].size())
 		check(app.get("speed_input").get_line_edit().has_focus(), "custom speed focuses the visible exact entry")
 		app.call("set_speed", 1.0)
@@ -110,7 +110,7 @@ func run() -> void:
 	speed_slider.handle_pointer(tap)
 	tap.pressed = false
 	speed_slider.handle_pointer(tap)
-	check(is_equal_approx(app.get("speed"), 0.25), "middle-of-track tap uses the same cubic mapping as the thumb")
+	check(is_equal_approx(app.get("speed"), 0.3375), "middle-of-track tap uses the same cubic mapping as the thumb")
 	# Drawing and pointer input share the responsive set of visible marks.
 	for percent: float in speed_slider.visible_markers():
 		var inset: float = speed_slider.get_theme_icon("grabber").get_width() / 2.0
@@ -122,8 +122,8 @@ func run() -> void:
 		speed_slider.handle_pointer(tap)
 		check(is_equal_approx(app.get("speed"), percent / 100.0), "pointer snaps to marked division %s" % percent)
 	var speed_presets: Array = app.get_script().get_script_constant_map()["SPEEDS"]
-	var fraction_labels: Dictionary = {2: "50%", 4: "25%", 8: "12.5%", 16: "6.25%"}
-	for divisor: int in [2, 4, 8, 16]:
+	var fraction_labels: Dictionary = {2: "1/2", 4: "1/4", 8: "1/8"}
+	for divisor: int in [2, 4, 8]:
 		var percent: float = 100.0 / divisor
 		check(speed_slider.visible_markers().has(percent), "wide practice slider retains the 1/%d speed mark" % divisor)
 		var inset: float = speed_slider.get_theme_icon("grabber").get_width() / 2.0
@@ -133,19 +133,19 @@ func run() -> void:
 		tap.pressed = false
 		speed_slider.handle_pointer(tap)
 		check(is_equal_approx(app.get("speed"), 1.0 / divisor) and is_equal_approx(app.call("playback_speed"), 1.0 / divisor), "1/%d pointer mark commits the exact playback fraction" % divisor)
-		check(app.get("tempo_button").text == fraction_labels[divisor], "fractional pointer caption remains exact")
+		check(app.get("tempo_button").text == fraction_labels[divisor] + "×", "fractional pointer caption remains exact")
 		app.call("change_speed", speed_presets.find(1.0 / divisor))
 		check(is_equal_approx(app.get("speed"), 1.0 / divisor) and app.get("speed_picker").get_item_text(app.get("speed_picker").selected) == fraction_labels[divisor] + " speed", "practice preset retains its exact fraction and label")
 	app.call("step_speed", 1)
-	check(is_equal_approx(app.get("speed"), 0.1125), "faster adds five points without rounding sixteenth speed")
+	check(is_equal_approx(app.get("speed"), 0.175), "faster adds five points without rounding eighth speed")
 	app.call("step_speed", -1)
-	check(is_equal_approx(app.get("speed"), 0.0625), "slower restores exact sixteenth speed")
+	check(is_equal_approx(app.get("speed"), 0.125), "slower restores exact eighth speed")
 	speed_key.keycode = KEY_RIGHT
 	speed_slider.handle_pointer(speed_key)
-	check(is_equal_approx(app.get("speed"), 0.0725), "arrow key adds one point without losing the fractional part")
+	check(is_equal_approx(app.get("speed"), 0.135), "arrow key adds one point without losing the fractional part")
 	speed_key.keycode = KEY_LEFT
 	speed_slider.handle_pointer(speed_key)
-	check(is_equal_approx(app.get("speed"), 0.0625), "arrow key returns to the exact fraction")
+	check(is_equal_approx(app.get("speed"), 0.125), "arrow key returns to the exact fraction")
 	# Check screen-distance behavior at slow and fast values on multiple widths,
 	# independently of the hundredth-percentage resolution committed on release.
 	var probe: RelativeSpeedSlider = RelativeSpeedSlider.new()
@@ -253,7 +253,7 @@ func run() -> void:
 	check(not audio.playing_practice and app.get("source_tick") == 120, "seeking pauses at the exact chosen tick by default")
 	app.call("start", false)
 	app.call("restart_song")
-	check(not audio.playing_practice and app.get("source_tick") == 0, "restart pauses at the beginning by default")
+	check(audio.playing_practice and audio.transport.count_frames > 0 and app.get("source_tick") == 0, "restart counts in and plays from the beginning by default")
 	app.call("start", false)
 	app.call("begin_seek_drag")
 	app.call("seek_tick", 240)

@@ -214,7 +214,7 @@ var import_name: String = ""
 var max_import_usec: int = 0
 var started_msec: int = 0
 var paused_in_count: bool = false
-const SPEEDS: Array[float] = [0.0625, 0.125, 0.25, 0.4, 0.5, 0.6, 0.75, 0.8, 0.9, 1.0, 1.1, 1.25, 1.5, 1.75, 2.0]
+const SPEEDS: Array[float] = [0.1, 0.125, 0.25, 0.4, 0.5, 0.6, 0.75, 0.8, 0.9, 1.0, 1.1, 1.25, 1.5, 1.75, 2.0]
 var bpm_input: SpinBox
 var tempo_caption: Label
 var song_title: Label
@@ -1378,7 +1378,7 @@ func build_drawers() -> void:
 	tempo_primary.add_child(panel_speed)
 	tempo_primary.add_child(label("SPEED_EXACT", 18))
 	speed_input = SpinBox.new()
-	speed_input.min_value = 0
+	speed_input.min_value = RelativeSpeedSlider.MIN_PERCENT
 	speed_input.max_value = 999
 	speed_input.step = 0.01
 	speed_input.suffix = "%"
@@ -1398,7 +1398,7 @@ func build_drawers() -> void:
 	speed_picker.fit_to_longest_item = false
 	speed_picker.clip_text = true
 	speed_picker.custom_minimum_size.y = 56
-	for multiplier: float in SPEEDS: speed_picker.add_item(tr("SPEED_VALUE") % RelativeSpeedSlider.percentage_text(multiplier * 100))
+	for multiplier: float in SPEEDS: speed_picker.add_item(RelativeSpeedSlider.speed_caption(multiplier * 100, true))
 	speed_picker.add_item(tr("SPEED_CUSTOM"))
 	speed_picker.select(SPEEDS.find(1.0))
 	speed_picker.item_selected.connect(change_speed)
@@ -1420,7 +1420,7 @@ func build_drawers() -> void:
 	tempo_primary.add_child(speed_range_custom)
 	speed_range_custom.add_child(label("SPEED_RANGE_MAX", 18))
 	speed_range_limit = SpinBox.new()
-	speed_range_limit.min_value = 1
+	speed_range_limit.min_value = RelativeSpeedSlider.MIN_PERCENT + 1
 	speed_range_limit.max_value = 999
 	speed_range_limit.step = 1
 	speed_range_limit.value = 150
@@ -2675,7 +2675,7 @@ func update_speed_range_caption() -> void:
 	speed_range_caption.text = tr("SPEED_RANGE_CURRENT") % RelativeSpeedSlider.percentage_text(panel_speed.range_ceiling)
 
 func step_speed(direction: int) -> void:
-	set_speed(clampf(snappedf(speed * 100.0 + direction * 5.0, 0.01) / 100.0, 0.0, 9.99))
+	set_speed(clampf(snappedf(speed * 100.0 + direction * 5.0, 0.01) / 100.0, RelativeSpeedSlider.MIN_PERCENT / 100, 9.99))
 
 func change_speed(index: int) -> void:
 	if index == SPEEDS.size():
@@ -2695,13 +2695,12 @@ func set_speed(value: float) -> void:
 	panel_speed.cancel_pointer()
 	var was_playing: bool = audio.playing_practice
 	pause()
-	speed = clampf(value, 0.0, 9.99)
+	speed = clampf(value, RelativeSpeedSlider.MIN_PERCENT / 100, 9.99)
 	update_tempo()
-	if speed == 0: set_status("SPEED_ZERO")
-	elif was_playing: start(paused_in_count)
+	if was_playing: start(paused_in_count)
 
 func update_speed_caption(percent: float) -> void:
-	var caption: String = tr("TEMPO_BUTTON") % RelativeSpeedSlider.percentage_text(percent)
+	var caption: String = RelativeSpeedSlider.speed_caption(percent)
 	if tempo_button.text == caption: return
 	tempo_button.text = caption
 	if controls_on_side and not speed_dragging: responsive()
@@ -2718,7 +2717,7 @@ func update_tempo() -> void:
 	source_bpm_button.set_meta("hover_caption", source_bpm_button.text)
 	updating = false
 	var percent_text: String = RelativeSpeedSlider.percentage_text(speed * 100)
-	tempo_caption.text = tr("SPEED_VALUE") % percent_text
+	tempo_caption.text = RelativeSpeedSlider.speed_caption(speed * 100, true)
 	tempo_caption.tooltip_text = tr("TEMPO_CURRENT") % [reference_bpm() * speed, reference_bpm(), percent_text]
 	update_speed_caption(speed * 100)
 	main_speed.set_percentage(speed * 100)
@@ -2733,10 +2732,10 @@ func update_tempo() -> void:
 	for index: int in range(SPEEDS.size()):
 		if is_equal_approx(speed, SPEEDS[index]): preset = index
 	speed_picker.select(SPEEDS.size() if preset < 0 else preset)
-	slower_button.disabled = speed <= 0.0
+	slower_button.disabled = speed <= RelativeSpeedSlider.MIN_PERCENT / 100
 	faster_button.disabled = speed >= 9.99
 	original_button.disabled = is_equal_approx(speed, 1.0)
-	tempo_button.tooltip_text = tempo_caption.tooltip_text
+	tempo_button.tooltip_text = main_speed.tooltip_text
 	adapt_flow(dock)
 
 func set_activity(active: bool) -> void:
@@ -3030,7 +3029,7 @@ func toggle_play() -> void:
 		pause()
 	else:
 		if state == "STATE_COMPLETE": source_tick = 0.0
-		start(count_check.button_pressed and (state != "STATE_PAUSED" or paused_in_count))
+		start(count_check.button_pressed)
 
 func start(count_in: bool) -> void:
 	if audio_commands != null: audio_commands.cancel()
@@ -3089,9 +3088,8 @@ func stop_practice() -> void:
 
 func restart_song() -> void:
 	if song == null or importer != null: return
-	var was_playing: bool = audio.playing_practice
 	stop_practice()
-	if was_playing and not pause_navigation_check.button_pressed: start(false)
+	start(count_check.button_pressed)
 
 func restart_if_playing() -> void:
 	var was_playing: bool = audio.playing_practice

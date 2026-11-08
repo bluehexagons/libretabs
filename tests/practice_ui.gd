@@ -261,8 +261,8 @@ func run() -> void:
 	app.set("motion_mode", "full")
 	app.call("apply_motion")
 	var speed_presets: Array = app.get_script().get_script_constant_map()["SPEEDS"]
-	var fraction_labels: Dictionary = {2: "50% speed", 4: "25% speed", 8: "12.5% speed", 16: "6.25% speed"}
-	for divisor: int in [2, 4, 8, 16]:
+	var fraction_labels: Dictionary = {2: "1/2 speed", 4: "1/4 speed", 8: "1/8 speed"}
+	for divisor: int in [2, 4, 8]:
 		app.call("change_speed", speed_presets.find(1.0 / divisor))
 		check(is_equal_approx(app.get("speed"), 1.0 / divisor), "practice fraction preset 1/%d" % divisor)
 		check(app.get("speed_picker").get_item_text(app.get("speed_picker").selected) == fraction_labels[divisor], "fraction preset label matches playback")
@@ -295,15 +295,19 @@ func run() -> void:
 	var speed_move: InputEventMouseMotion = InputEventMouseMotion.new()
 	speed_move.position = speed_press.position + Vector2(1000, 0)
 	speed_slider.handle_pointer(speed_move)
-	check(speed_slider.percentage() == 999 and app.get("speed") == 1.0, "speed pans to 999 percent with a deferred transport commit")
+	var drag_ceiling: float = speed_slider.range_ceiling
+	check(speed_slider.percentage() == drag_ceiling and app.get("speed") == 1.0, "speed drag reaches its configured ceiling with a deferred transport commit")
 	speed_press.pressed = false
 	speed_press.position = speed_move.position
 	speed_slider.handle_pointer(speed_press)
-	check(app.get("speed") == 9.99, "speed drag release commits beyond the old range")
+	check(app.get("speed") == drag_ceiling / 100, "speed drag release commits the visible ceiling")
+	app.call("set_speed", 9.99)
+	check(app.get("speed") == 9.99 and speed_slider.percentage() == 999, "exact entry reaches rates outside the automatic range")
 	app.call("set_speed", 0.0)
 	var zero_tick: float = app.get("source_tick")
 	app.call("toggle_play")
-	check(not app.get("audio").playing_practice and app.get("source_tick") == zero_tick and app.get("status_key") == "SPEED_ZERO", "zero speed pauses safely without configuring a zero-rate transport")
+	check(app.get("audio").playing_practice and app.get("source_tick") == zero_tick and app.get("speed") == 0.1, "zero input clamps to a playable ten percent speed")
+	app.call("pause")
 	app.call("set_speed", 1.0)
 	app.call("load_demo", 1)
 	for _frame: int in range(30): await process_frame
@@ -522,7 +526,7 @@ func run() -> void:
 	check(not player.playing_practice, "Space pauses from any non-menu focus")
 	app.call("start", false)
 	app.call("restart_song")
-	check(not player.playing_practice and app.get("source_tick") == 0.0, "Restart pauses by default")
+	check(player.playing_practice and app.get("source_tick") == 0.0 and player.transport.count_frames > 0, "Restart plays with count-in by default")
 	app.get("pause_navigation_check").button_pressed = false
 	app.call("start", false)
 	app.call("restart_song")
@@ -838,7 +842,7 @@ func run() -> void:
 			check(app.get("main_speed").is_visible_in_tree(), "playback settings directly reachable at every scale")
 			check(app.get("seek_navigation").visible and app.get("scroll").vertical_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "short landscape retains its compact timeline without scrolling the player")
 			check(app.get("play_button").get_global_rect().end.y <= viewport.y and app.get("menu_button").size.y >= 56, "landscape transport and menu remain usable")
-			check(app.get("songs_button").is_visible_in_tree() and app.get("songs_button").size.x >= 56 and app.get("loop_button").is_visible_in_tree() and app.get("loop_button").size.x >= 56, "landscape keeps large song and loop controls directly reachable")
+			check(app.get("songs_button").is_visible_in_tree() and app.get("songs_button").size.x >= 56 and app.get("menu_button").is_visible_in_tree() and app.get("menu_button").size.x >= 56, "short landscape prioritizes large Songs and Menu controls beside speed")
 			check(app.get("menu_button").global_position.y >= 8 and app.get("songs_button").global_position.x >= 8, "landscape header is inset from the screen edges")
 			if viewport.x == 480:
 				app.call("start", true)
@@ -1127,7 +1131,8 @@ func run() -> void:
 		root.size = viewport
 		for _frame: int in range(20): await process_frame
 		check(app.get("root_box").size.x <= viewport.x + 1 and app.get("root_box").size.y <= viewport.y + 1, "dense regular player fits %s" % viewport)
-		check(app.get("fullscreen_button").is_visible_in_tree() and app.get("tv_button").is_visible_in_tree(), "TV and fullscreen are direct header actions")
+		var direct_header: bool = not app.get("controls_on_side") or viewport.y >= 440
+		check((app.get("fullscreen_button").is_visible_in_tree() and app.get("tv_button").is_visible_in_tree()) if direct_header else (app.get("options_menu").entry_buttons.has("TV_VIEW") and app.get("menu_fullscreen_button") != null), "TV and fullscreen remain reachable in headers or the short-screen menu")
 		for next: ScoreView in app.get("score_frame").continuations:
 			if next.visible:
 				check(next.song == score.song and next.projection == score.projection and next.current_tick == score.current_tick, "continuation systems share source, arrangement and transport")

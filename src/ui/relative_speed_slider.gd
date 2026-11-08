@@ -4,8 +4,9 @@ extends CaptionSlider
 
 signal tap_control
 signal adjustment_preview
-const PRACTICE_MARKERS: Array[float] = [100, 50, 25, 12.5, 6.25]
-const MARKERS: Array[float] = [0, 1, 6.25, 12.5, 25, 50, 75, 100, 200, 400, 800, 999]
+const MIN_PERCENT: float = 10
+const PRACTICE_MARKERS: Array[float] = [100, 50, 25, 12.5]
+const MARKERS: Array[float] = [10, 12.5, 25, 50, 75, 100, 200, 400, 800, 999]
 const MARKER_GAP: float = 8.0
 const SNAP_DISTANCE: float = 3.0
 
@@ -24,8 +25,12 @@ var range_ceiling: float = 200
 var requested_ceiling: float = 0 # Zero selects the responsive automatic range.
 var fine_adjustment: bool = false
 var last_pointer_x: float
+var drag_position: float
+var snapped_marker: float = -1
 const LIFT_DISTANCE: float = 28
 const FINE_FACTOR: float = 0.25
+const DRAG_SNAP_ENTER: float = 6
+const DRAG_SNAP_LEAVE: float = 10
 
 # A small control needs a useful practice range. Keep unusual rates reachable
 # through exact entry; expand the track when displaying such a rate.
@@ -33,6 +38,7 @@ func configure_range() -> void:
 	if pointer_active: return
 	var percent: float = percentage()
 	var ceiling: float = requested_ceiling if requested_ceiling > 0 else (150 if size.x < 200 else 200)
+	ceiling = clampf(ceiling, MIN_PERCENT + 1, 999)
 	if percent > ceiling: ceiling = minf(999, ceilf(percent / 100) * 100)
 	if is_equal_approx(ceiling, range_ceiling): return
 	range_ceiling = ceiling
@@ -42,14 +48,21 @@ func configure_range() -> void:
 # Cubic mapping gives the lower tempos most of the track. Range.value is
 # the thumb position; percentage is the only value passed to the transport.
 static func position_for_percent(percent: float, ceiling: float = 200) -> float:
-	return pow(clampf(percent / ceiling, 0, 1), 1.0 / 3.0)
+	return pow(clampf((percent - MIN_PERCENT) / maxf(1, ceiling - MIN_PERCENT), 0, 1), 1.0 / 3.0)
 
 static func percent_for_position(position_ratio: float, ceiling: float = 200) -> float:
 	# Hundredth-point resolution matches exact entry and preserves fractions.
-	return snappedf(ceiling * pow(clampf(position_ratio, 0, 1), 3), 0.01)
+	return snappedf(MIN_PERCENT + (ceiling - MIN_PERCENT) * pow(clampf(position_ratio, 0, 1), 3), 0.01)
 
 static func percentage_text(percent: float) -> String:
 	return String.num(percent, 2).trim_suffix(".0")
+
+static func speed_caption(percent: float, full: bool = false) -> String:
+	for denominator: int in [2, 4, 8]:
+		if is_equal_approx(percent, 100.0 / denominator):
+			return TranslationServer.translate("SPEED_FRACTION_VALUE" if full else "SPEED_FRACTION_SHORT") % ("1/%d" % denominator)
+	var number: String = String.num(percent, 1).trim_suffix(".0")
+	return TranslationServer.translate("SPEED_VALUE" if full else "TEMPO_BUTTON") % number
 
 func track_width() -> float:
 	return maxf(1, size.x - get_theme_icon("grabber").get_width())
@@ -57,7 +70,7 @@ func track_width() -> float:
 # Prioritize normal speed and common practice fractions before filling space.
 # Hidden marks must not create invisible snap targets.
 func visible_markers() -> Array[float]:
-	var visible_values: Array[float] = [0, range_ceiling]
+	var visible_values: Array[float] = [MIN_PERCENT, range_ceiling]
 	var span: float = track_width()
 	for marker: float in PRACTICE_MARKERS + MARKERS:
 		if visible_values.has(marker) or marker > range_ceiling: continue
@@ -86,19 +99,50 @@ func snapped_position(position_ratio: float) -> float:
 			nearest = at
 	return nearest
 
+func drag_snap_radius(marker: float, maximum: float, markers: Array[float] = []) -> float:
+	var span: float = origin_span / (FINE_FACTOR if fine_adjustment else 1.0)
+	var radius: float = maximum
+	var at: float = position_for_percent(marker, range_ceiling)
+	# Bands stay inside neighboring marks, even on crowded wide tracks.
+	for other: float in (visible_markers() if markers.is_empty() else markers):
+		if other == marker: continue
+		var separation: float = absf(position_for_percent(other, range_ceiling) - at) * span
+		radius = minf(radius, separation * (0.35 if maximum == DRAG_SNAP_ENTER else 0.48))
+	return radius
+
+func snapped_drag_position() -> float:
+	# Keep unmodified pointer travel separately: small events must accumulate
+	# until they leave a detent instead of resetting to the snapped thumb.
+	var span: float = origin_span / (FINE_FACTOR if fine_adjustment else 1.0)
+	var markers: Array[float] = visible_markers()
+	if snapped_marker >= 0:
+		var at: float = position_for_percent(snapped_marker, range_ceiling)
+		if absf(drag_position - at) * span <= drag_snap_radius(snapped_marker, DRAG_SNAP_LEAVE, markers): return at
+		snapped_marker = -1
+	var distance: float = DRAG_SNAP_ENTER
+	for marker: float in markers:
+		var at: float = position_for_percent(marker, range_ceiling)
+		var difference: float = absf(drag_position - at) * span
+		if difference <= minf(distance, drag_snap_radius(marker, DRAG_SNAP_ENTER, markers)):
+			distance = difference
+			snapped_marker = marker
+	return position_for_percent(snapped_marker, range_ceiling) if snapped_marker >= 0 else drag_position
+
 func _draw() -> void:
 	var inset: float = get_theme_icon("grabber").get_width() / 2.0
 	var ink: Color = get_theme_color("font_color", "Label")
 	for marker: float in visible_markers():
 		var x: float = inset + position_for_percent(marker, range_ceiling) * track_width()
-		var major: bool = marker in [0, 100, range_ceiling]
+		var held: bool = marker == snapped_marker
+		var major: bool = held or marker in [MIN_PERCENT, 100, range_ceiling]
 		var y: float = size.y / 2.0 + 5
-		draw_line(Vector2(x, y), Vector2(x, minf(size.y - 1, y + (6 if major else 3))), ink, 2 if major else 1)
+		draw_line(Vector2(x, y), Vector2(x, minf(size.y - 1, y + (9 if held else (6 if major else 3)))), ink, 3 if held else (2 if major else 1))
 
 func percentage() -> float:
 	return percent_for_position(value, range_ceiling)
 
 func set_percentage(percent: float) -> void:
+	percent = clampf(percent, MIN_PERCENT, 999)
 	if not pointer_active and percent > range_ceiling: range_ceiling = minf(999, ceilf(percent / 100) * 100)
 	set_value_no_signal(position_for_percent(percent, range_ceiling))
 	queue_redraw()
@@ -120,10 +164,10 @@ func handle_pointer(event: InputEvent) -> bool:
 			KEY_RIGHT, KEY_UP: next += 1
 			KEY_PAGEUP: next += 5
 			KEY_PAGEDOWN: next -= 5
-			KEY_HOME: next = 0
+			KEY_HOME: next = MIN_PERCENT
 			KEY_END: next = 999
 			_: return false
-		next = clampf(next, 0, 999)
+		next = clampf(next, MIN_PERCENT, 999)
 		set_percentage(next)
 		value_changed.emit(value)
 		return true
@@ -147,6 +191,8 @@ func handle_pointer(event: InputEvent) -> bool:
 		pointer_index = index
 		origin = position
 		origin_value = value
+		drag_position = value
+		snapped_marker = -1
 		# Short tracks use a longer virtual drag span for fine adjustment.
 		origin_span = maxf(320, track_width())
 		origin_rect = get_global_rect()
@@ -164,11 +210,14 @@ func handle_pointer(event: InputEvent) -> bool:
 		return true
 	if event is InputEventMouseMotion or event is InputEventScreenDrag:
 		var delta: Vector2 = position - origin
+		var lifted: bool = false
 		if not fine_adjustment and delta.y <= -LIFT_DISTANCE:
 			fine_adjustment = true
 			dragged = true
 			# Rebase at the lift. Enlarging never changes the current value.
 			last_pointer_x = position.x
+			drag_position = value
+			lifted = true
 		if not dragged and delta.y > 12 and delta.y > absf(delta.x):
 			cancel_pointer()
 			return true
@@ -177,7 +226,11 @@ func handle_pointer(event: InputEvent) -> bool:
 			var movement: float = (position.x - last_pointer_x) / origin_span
 			if fine_adjustment: movement *= FINE_FACTOR
 			last_pointer_x = position.x
-			value = clampf(value + movement, 0, 1)
+			# A lift or stationary finger cannot acquire a new detent and jump.
+			if not lifted and not is_zero_approx(movement):
+				drag_position = clampf(drag_position + movement, 0, 1)
+				value = snapped_drag_position()
+			queue_redraw()
 			adjustment_preview.emit()
 		return true
 	if button_event and not event.pressed:
@@ -189,6 +242,8 @@ func handle_pointer(event: InputEvent) -> bool:
 			if absf(position.x - thumb_x) > 12:
 				value = snapped_position(pointer_ratio(position.x))
 		pointer_active = false
+		snapped_marker = -1
+		queue_redraw()
 		drag_ended.emit(not is_equal_approx(value, origin_value))
 		if not dragged and control_tap and over_control: tap_control.emit()
 		return true
@@ -197,6 +252,8 @@ func handle_pointer(event: InputEvent) -> bool:
 func cancel_pointer() -> void:
 	if not pointer_active: return
 	pointer_active = false
+	snapped_marker = -1
+	queue_redraw()
 	discard_release = true
 	discarded_index = pointer_index
 	set_value_no_signal(origin_value)

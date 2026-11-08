@@ -60,15 +60,16 @@ func display(owner: RelativeSpeedSlider, viewport_size: Vector2) -> void:
 	viewport_extent = viewport_size
 	finger_origin = owner.origin
 	var fine: bool = owner.fine_adjustment
-	caption.text = tr("SPEED_VALUE") % RelativeSpeedSlider.percentage_text(owner.percentage())
+	caption.text = RelativeSpeedSlider.speed_caption(owner.percentage(), true)
 	caption.add_theme_font_size_override("font_size", mini(42, get_theme_default_font_size() + 12))
 	track.range_ceiling = owner.range_ceiling
 	track.set_percentage(owner.percentage())
+	track.snapped_marker = owner.snapped_marker
 	track.visible = fine
 	endpoints.visible = fine
-	low.text = tr("TEMPO_BUTTON") % "0"
+	low.text = tr("TEMPO_BUTTON") % RelativeSpeedSlider.percentage_text(RelativeSpeedSlider.MIN_PERCENT)
 	high.text = tr("TEMPO_BUTTON") % RelativeSpeedSlider.percentage_text(owner.range_ceiling)
-	hint.text = tr("SPEED_DRAG_FINE" if fine else "SPEED_DRAG_LIFT")
+	hint.text = tr("SPEED_DRAG_SNAPPED" if owner.snapped_marker >= 0 else ("SPEED_DRAG_FINE" if fine else "SPEED_DRAG_LIFT"))
 	hint.visible = viewport_size.y >= 360 or get_theme_default_font_size() < 30
 	# A compact readout becomes a wide, enlarged control only on deliberate lift.
 	custom_minimum_size = Vector2.ZERO

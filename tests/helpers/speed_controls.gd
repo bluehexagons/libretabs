@@ -23,11 +23,69 @@ func motion(position: Vector2, index: int = 2) -> InputEventScreenDrag:
 	event.index = index
 	return event
 
+func audit_detents(app: Control) -> void:
+	var probe: RelativeSpeedSlider = RelativeSpeedSlider.new()
+	probe.theme_type_variation = "TempoSlider"
+	probe.max_value = 1
+	probe.step = 0.000001
+	app.add_child(probe)
+	for width: int in [64, 180, 480]:
+		probe.size = Vector2(width, 48)
+		for ceiling: float in [100, 150, 200, 999]:
+			probe.range_ceiling = ceiling
+			for fine: bool in [false, true]:
+				for marker: float in probe.visible_markers():
+					var target: float = RelativeSpeedSlider.position_for_percent(marker, ceiling)
+					var direction: float = -1 if target < 0.1 else 1
+					var start: float = clampf(target - direction * 0.1, 0, 1)
+					probe.set_value_no_signal(start)
+					var origin: Vector2 = probe.get_global_rect().get_center()
+					probe.handle_pointer(touch(origin,true))
+					if fine: probe.handle_pointer(motion(origin + Vector2(0,-40)))
+					var span: float = probe.origin_span / (RelativeSpeedSlider.FINE_FACTOR if fine else 1.0)
+					var travel: float = (target - start) * span
+					var y: float = -40 if fine else 0
+					var context: String = "%s%% width %s range %s fine %s" % [marker,width,ceiling,fine]
+					probe.handle_pointer(motion(origin + Vector2(travel + direction, y)))
+					check(probe.snapped_marker == marker and is_equal_approx(probe.percentage(),marker), "drag acquires visible detent " + context)
+					probe.handle_pointer(motion(origin + Vector2(travel + direction * 0.5,y)))
+					probe.handle_pointer(motion(origin + Vector2(travel + direction * 1.5,y)))
+					check(probe.snapped_marker == marker and is_equal_approx(probe.percentage(),marker), "detent holds against small jitter " + context)
+					# Leave using small accumulated events, never a single large jump.
+					var exit_distance: float = probe.drag_snap_radius(marker, RelativeSpeedSlider.DRAG_SNAP_LEAVE) + 2
+					for pixel: int in range(4, ceili(exit_distance * 2) + 1):
+						probe.handle_pointer(motion(origin + Vector2(travel + direction * pixel / 2.0, y)))
+					# Endpoints remain clamped when moving outward, so reverse inward.
+					if marker == RelativeSpeedSlider.MIN_PERCENT or marker == ceiling:
+						probe.handle_pointer(motion(origin + Vector2(travel - direction * (exit_distance + 12),y)))
+					check(probe.snapped_marker != marker and not is_equal_approx(probe.value,target), "small motions escape detent " + context)
+					probe.handle_pointer(touch(origin + Vector2(travel,y),false))
+					check(not probe.pointer_active and probe.snapped_marker < 0, "release clears detent state " + context)
+			# Omitted marks must not become invisible drag magnets.
+			for marker: float in RelativeSpeedSlider.MARKERS:
+				if marker > ceiling or probe.visible_markers().has(marker): continue
+				var target: float = RelativeSpeedSlider.position_for_percent(marker, ceiling)
+				probe.set_value_no_signal(clampf(target - 0.1,0,1))
+				var start: float = probe.value
+				var origin: Vector2 = probe.get_global_rect().get_center()
+				probe.handle_pointer(touch(origin,true))
+				probe.handle_pointer(motion(origin + Vector2((target-start) * probe.origin_span,0)))
+				check(probe.snapped_marker != marker, "hidden mark never attracts drag at width %s range %s" % [width,ceiling])
+				probe.cancel_pointer()
+	probe.free()
+
 func run(app: Control, tree: SceneTree, settle: Callable) -> void:
 	app.call("close_menu")
 	app.call("pause")
 	app.call("change_interface", "classic")
 	app.set("control_position", "bottom")
+	audit_detents(app)
+	for percent: float in [50,25,12.5]:
+		app.call("set_speed", percent / 100)
+		check(app.get("tempo_caption").text == RelativeSpeedSlider.speed_caption(percent,true) and app.get("speed_input").value == percent, "fraction display preserves exact numeric entry %s" % percent)
+	check(RelativeSpeedSlider.speed_caption(83.37) == "83.4%" and RelativeSpeedSlider.speed_caption(83.0) == "83%", "ordinary captions use at most one decimal")
+	app.call("set_speed", 0)
+	check(app.get("speed") == 0.1 and app.get("speed_input").min_value == 10, "numeric entry enforces the ten percent floor")
 	var source: PackedByteArray = app.get("song").source.bytes_copy()
 	# Exercise actual input propagation, including competing touch scroll areas.
 	for scale: float in [1.0, 2.0]:
@@ -130,6 +188,21 @@ func run(app: Control, tree: SceneTree, settle: Callable) -> void:
 					fresh.queue_free()
 	app.set("control_position", "bottom")
 	app.set("handedness", "right")
+	app.call("apply_scale", 1.0)
+	tree.root.size = Vector2i(1440,900)
+	for location: String in ["main_speed", "panel_speed"]:
+		app.call("set_speed", 0.6)
+		if location == "panel_speed": app.call("toggle_drawer", "TEMPO")
+		await settle.call(app)
+		var control: RelativeSpeedSlider = app.get(location)
+		var origin: Vector2 = control.get_global_rect().get_center()
+		var dx: float = (RelativeSpeedSlider.position_for_percent(50,control.range_ceiling) - control.value) * maxf(320,control.track_width()) + 1
+		tree.root.push_input(touch(origin,true))
+		tree.root.push_input(motion(origin + Vector2(dx,0)))
+		check(control.snapped_marker == 50 and app.get("speed") == 0.6 and app.get("speed_readout").caption.text == "1/2 speed" and app.get("speed_readout").hint.text == app.tr("SPEED_DRAG_SNAPPED"), "snapped preview shows fraction and feedback " + location)
+		tree.root.push_input(touch(origin + Vector2(dx,0),false))
+		check(app.get("speed") == 0.5 and app.get("tempo_button").text == "1/2×", "release commits exact detent " + location)
+		if location == "panel_speed": app.call("close_menu")
 	# Explicit ranges affect geometry, never the transport or immutable source.
 	app.call("apply_scale", 1.0)
 	tree.root.size = Vector2i(1280,800)
@@ -161,7 +234,7 @@ func run(app: Control, tree: SceneTree, settle: Callable) -> void:
 	for keycode: Key in [KEY_RIGHT, KEY_LEFT, KEY_END, KEY_HOME]:
 		key.keycode = keycode
 		slider.handle_pointer(key)
-		var expected: float = {KEY_RIGHT: 0.8437, KEY_LEFT: 0.8337, KEY_END: 9.99, KEY_HOME: 0.0}[keycode]
+		var expected: float = {KEY_RIGHT: 0.8437, KEY_LEFT: 0.8337, KEY_END: 9.99, KEY_HOME: 0.1}[keycode]
 		check(is_equal_approx(app.get("speed"), expected), "keyboard retains hundredths and reaches global endpoint %s" % keycode)
 	app.call("set_speed", 0.8337)
 	await settle.call(app)
@@ -191,7 +264,7 @@ func run(app: Control, tree: SceneTree, settle: Callable) -> void:
 	tree.root.push_input(touch(origin,true))
 	tree.root.push_input(motion(origin + Vector2(-400,0)))
 	tree.root.push_input(motion(origin + Vector2(-384,0)))
-	check(slider.percentage() > 0, "drag reverses immediately after reaching the lower bound")
+	check(slider.percentage() > 10, "drag reverses immediately after reaching the lower bound")
 	slider.cancel_pointer()
 	tree.root.push_input(touch(origin,false))
 	app.call("set_speed", 0.8337)
