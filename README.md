@@ -63,9 +63,9 @@ results and open checks.
 
 ## For contributors: run locally
 
-Use the pinned Godot `4.7.2.stable.official.ed1daf0bf` and Node.js 24.22.1+
-within 24.x (LTS) or 26.12.1+ within 26.x (Current) for browser adapter tests.
-`.nvmrc` selects Node 24.22.1 (`nvm use`). With those tools installed:
+Use the pinned Godot `4.7.2.stable.official.ed1daf0bf` and Node.js 24.22.3+
+within 24.x (LTS) or 26.13.1+ within 26.x (Current) for browser adapter tests.
+`.nvmrc` selects Node 24.22.3 (`nvm use`). With those tools installed:
 
 ```bash
 python3 scripts/verify.py
