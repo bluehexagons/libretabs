@@ -10,7 +10,7 @@ larger instrumental works.
 
 The readable recipe is [library_scores.py](../../scripts/library_scores.py).
 Every bar is checked against its meter before MIDI generation. An explicit
-`transpose` value lowers the complete Canon, Greensleeves, Silent Night and
+`transpose` value lowers the complete Für Elise, Canon, Greensleeves, Silent Night and
 Minuet melodies by one octave for guitar practice, preserving all intervals and
 rhythms. Durations use
 sixteenth-note units; rests are explicit and ties extend the original attack.
@@ -18,19 +18,19 @@ Pickups (notes before the first full measure) begin after padding rests in the
 first MIDI measure so the following downbeat aligns correctly. Tempos are chosen
 for practice, not claims about an authoritative performance. Ornamentation and
 historical accompaniment other than the Canon ground bass are omitted. The practice bass plays a low
-root followed by its fifth in most bars, with changes of harmony or a held bass note at selected cadences; the first bass note waits for a pickup
-melody to enter. Canon in D instead follows the traditional eight-note ground
-bass over two bars, with an authored tonic/fifth cadence in each final study
-bar. Bass notes release 30 MIDI ticks before the next attack. The original
+root followed by its fifth in most bars, with changes of harmony or a held
+note at selected cadences. The bass waits for a pickup melody to enter. Canon in D instead follows the traditional eight-note ground
+bass over two bars, with one held D after both passes. Bass notes release 30 MIDI ticks
+before the next attack. The original
 piano study releases its quarter/half notes 60 ticks early. These articulation
 gaps are deliberate; no swing or human timing is added.
 
 | File | Scope and rhythm review | Meter / quarter-note BPM |
 | --- | --- | --- |
 | ode_to_joy | Complete 16-bar familiar theme in C, including contrasting phrase and dotted cadences | 4/4 · 100 |
-| fur_elise | Opening theme twice, with pickup, sixteenths, rests and held A endings | 3/8 · 72 |
+| fur_elise | Opening theme, contrasting right-hand phrase and return in A minor, down one octave, with written repeats omitted and a held A ending | 3/8 · 72 |
 | spring | Longer opening theme in E, one octave below the violin source; eighths, sixteenths and dotted notes retained; final E half-note is an authored practice cadence | 4/4 · 100 |
-| canon_in_d | First violin's opening four bars and three bars of the eighth-note variation, down one octave over the quarter-note ground bass; authored whole-note D cadence; study played twice | 4/4 · 80 |
+| canon_in_d | First violin’s four-bar opening and complete first four-bar variation, down one octave over the ground bass, played twice before a held D cadence | 4/4 · 80 |
 | twinkle | Complete 12-bar melody, including the contrasting middle and returning opening | 4/4 · 100 |
 | the_entertainer | First 16-bar strain with pickup; syncopations tied across beats/bars; melody extracted from chords; final pickup replaced by rest | 2/4 · 80 |
 | mary_had_a_little_lamb | Complete eight bars twice, with full-length closing note | 4/4 · 100 |
@@ -44,7 +44,7 @@ gaps are deliberate; no swing or human timing is added.
 | jingle_bells | Sixteen-bar verse and sixteen-bar familiar refrain in C, with dotted rhythms and paired eighth notes | 4/4 · 116 |
 | greensleeves | Both sixteen-bar melody sections in A minor plus a padded pickup, down one octave; dotted-quarter/eighth pairs and chromatic notes retained; accompaniment replaced | 3/4 · 90 |
 | amazing_grace | Seventeen-bar New Britain melody in C, with a padded pickup, dotted-quarter/eighth pairs and tied phrase endings | 3/4 · 80 |
-| london_bridge | Eight-bar familiar melody in C, played twice; opening dotted-eighth/sixteenth pair simplified to even eighths | 2/4 · 80 |
+| london_bridge | Two eight-bar singing-game melodies in C, the familiar version followed by the tune on p. 209 of Newell | 2/4 · 80 |
 | old_macdonald | Sixteen-bar classroom melody in C, with the second farm/animal line and its low-G lead-in restored before the repeated calls; one verse, without lyrics | 4/4 · 96 |
 | when_the_saints | Sixteen-bar straight-time melody study in C, with padded pickups and held notes; no jazz improvisation | 4/4 · 100 |
 | aura_lee | Sixteen-bar verse and refrain in C; historical 2/4 note values doubled into 4/4 teaching bars, with dotted refrain rhythm; first phrase rests and second holds into the refrain; grace note omitted | 4/4 · 88 |
@@ -135,7 +135,7 @@ listed in the table above; musician review remains open.
 | Added file | Historical work / dated reference | Reference use and adaptation |
 | --- | --- | --- |
 | amazing_grace | Traditional *New Britain*, paired with *Amazing Grace* in William Walker's *Southern Harmony* (1835); [Library of Congress timeline](https://www.loc.gov/collections/amazing-grace/articles-and-essays/timeline/) | Historical melody identity; common single-line C-major version, preserving dotted rhythm and a padded pickup. No historical or modern choral harmonization is used. |
-| london_bridge | English traditional singing game; William Wells Newell, *Games and Songs of American Children* (1883), no. 150, [Gutenberg edition 45762](https://www.gutenberg.org/cache/epub/45762/pg45762-images.html) | Historical singing-game reference only. Common classroom tune in C, played twice with even opening eighths; no book illustrations or arrangement are used. |
+| london_bridge | English traditional singing game; William Wells Newell, *Games and Songs of American Children* (1883), no. 150, [Gutenberg edition 45762](https://www.gutenberg.org/cache/epub/45762/pg45762-images.html) | The first eight bars are the common classroom tune. The second eight use the different upper melody on [p. 209 of the 1884 printing](https://www.loc.gov/resource/gdcmassbookdig.gamessongsofamer01newe/?sp=227), lowered a fifth into C, with its dotted opening and closing rest. Both have a new practice bass. |
 | old_macdonald | Traditional farm-song family, including *Ohio* in F. T. Nettleingham's *Tommy's Tunes* (1917), Erskine Macdonald; [Sibley Music Library copy, explicitly public domain](https://urresearch.rochester.edu/institutionalPublicationPublicView.action?institutionalItemId=19340) | Historical variant reference only. Familiar classroom form in C, including repeated animal-call notes; no text, scan or accompaniment is used. |
 | when_the_saints | Traditional spiritual, documented in a November 1923 Paramount Jubilee Singers recording as *When All the Saints Go Marching In*; [Library of Congress historical essay](https://www.loc.gov/static/programs/national-recording-preservation-board/documents/When-the-Saint-Go-Marching-In_Riccardi.pdf) | Common melody only, in straight 4/4. No recording, Armstrong/Russell jazz arrangement, solo or modern harmonization is used. |
 | aura_lee | George R. Poulton, *Aura Lea*, John Church Jr. (1861); [Morgan Library probable first-edition record](https://www.themorgan.org/music-manuscripts-and-printed-music/222259), also [Levy collection 024.002](https://levysheetmusic.mse.jhu.edu/collection/024/002) | Historical composition identity; single-line melody in C. No later *Love Me Tender* lyrics, arrangement or recording is used. |

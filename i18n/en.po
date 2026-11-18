@@ -89,7 +89,7 @@ msgid "LIBRARY_AMAZING_GRACE"
 msgstr "Amazing Grace · New Britain melody · traditional"
 
 msgid "LIBRARY_LONDON_BRIDGE"
-msgstr "London Bridge · twice · English traditional"
+msgstr "London Bridge · two singing-game tunes · English traditional"
 
 msgid "LIBRARY_OLD_MACDONALD"
 msgstr "Old MacDonald Had a Farm · melody study · traditional"
@@ -2702,7 +2702,7 @@ msgid "SONG_HISTORY_ODE_TO_JOY"
 msgstr "This melody comes from Ludwig van Beethoven’s Ninth Symphony, completed in 1824 and first performed in Vienna on 7 May that year. Its final movement brings voices into the symphony to sing Friedrich Schiller’s poem “An die Freude”, known in English as “Ode to Joy”."
 
 msgid "SONG_ARRANGEMENT_FUR_ELISE"
-msgstr "The opening theme is played twice. Short opening notes lead into the main phrase; fast notes, rests and held A endings are retained."
+msgstr "The opening tune leads into a contrasting phrase and returns to finish on A. The melody follows the right hand, one octave lower for guitar. Listen for the high E before the opening returns. Written repeats and the later episodes are omitted."
 
 msgid "SONG_HISTORY_FUR_ELISE"
 msgstr "Beethoven’s surviving sketches for this short piano piece date from 1810 and show that he revisited it in 1822. Ludwig Nohl first published it in 1867, decades after the composer’s death. The finished manuscript that Nohl described is lost, and the identity of “Elise” remains uncertain."
@@ -2714,7 +2714,7 @@ msgid "SONG_HISTORY_SPRING"
 msgstr "Antonio Vivaldi published “Spring” in 1725 as the first of four violin concertos depicting the seasons, within his larger Opus 8 collection. Each concerto accompanies a poem describing seasonal scenes; the instrumental parts also contain directions connecting particular musical passages with sounds and events in nature."
 
 msgid "SONG_ARRANGEMENT_CANON_IN_D"
-msgstr "Selected opening and faster-moving violin phrases are lowered one octave. The repeating eight-note bass pattern is retained; the final held D and its accompaniment form a new practice ending. The study is played twice. The bass includes a low D below a standard guitar's lowest open string; use it as accompaniment or for piano practice."
+msgstr "The opening violin phrase and the faster variation are played twice, one octave lower. The eight-note bass repeats beneath both passes. A held D in both parts gives the study its own ending. The bass includes a low D below a standard guitar's lowest open string; use it as accompaniment or for piano practice."
 
 msgid "SONG_HISTORY_CANON_IN_D"
 msgstr "Johann Pachelbel wrote this chamber work for three violins and a supporting bass part, pairing it with a lively dance called a gigue. The violins enter one after another with the same music over a repeating bass pattern. Its date and original occasion are unknown; Jean-François Paillard’s 1968 recording helped launch its modern popularity."
@@ -2792,7 +2792,7 @@ msgid "SONG_HISTORY_AMAZING_GRACE"
 msgstr "John Newton prepared these words for a 1773 sermon in Olney, England; they appeared in Olney Hymns in 1779. William Walker paired them with the existing New Britain melody in his 1835 Southern Harmony. The melody's original composer remains uncertain. Judy Collins's recording entered the British singles chart in December 1970 and reached number five in 1971."
 
 msgid "SONG_ARRANGEMENT_LONDON_BRIDGE"
-msgstr "The common classroom melody is in C and is played twice. The opening uses equal short notes."
+msgstr "Two versions of the singing game share the same ending. The familiar tune comes first. Listen for the lower, repeated notes that open the version printed by William Wells Newell. Both are in C."
 
 msgid "SONG_HISTORY_LONDON_BRIDGE"
 msgstr "This English singing game was also played in the United States by the nineteenth century. Folklorist William Wells Newell described children forming a bridge with raised arms, then catching players as they passed underneath. His collection preserves several versions, showing how words and rules changed between communities."
@@ -2887,6 +2887,9 @@ msgstr "Los Angeles Philharmonic: The Four Seasons"
 msgid "SONG_SOURCE_CANON_IN_D_1"
 msgstr "Chamber Music Society of Lincoln Center: Pachelbel, Canon in D"
 
+msgid "SONG_SOURCE_CANON_IN_D_2"
+msgstr "Berlin State Library · Canon manuscript"
+
 msgid "SONG_SOURCE_TWINKLE_1"
 msgstr "Morgan Library & Museum: Rhymes for the Nursery, 1806"
 
@@ -2947,6 +2950,9 @@ msgstr "Boston University: Jingle Bells History Takes Surprising Turn"
 msgid "SONG_SOURCE_JINGLE_BELLS_2"
 msgstr "Kyna Hamill: The Story I Must Tell, Jingle Bells in the Minstrel Repertoire"
 
+msgid "SONG_SOURCE_JINGLE_BELLS_3"
+msgstr "Kinder wollen singen · familiar melody"
+
 msgid "SONG_SOURCE_GREENSLEEVES_1"
 msgstr "Library of Congress: Jordi Savall and Hespèrion XXI concert programme, 2 April 2024"
 
@@ -2958,6 +2964,9 @@ msgstr "Official Charts: Amazing Grace by Judy Collins"
 
 msgid "SONG_SOURCE_LONDON_BRIDGE_1"
 msgstr "Games and Songs of American Children — William Wells Newell, London Bridge, no. 150"
+
+msgid "SONG_SOURCE_LONDON_BRIDGE_2"
+msgstr "Library of Congress · Newell, page 209"
 
 msgid "SONG_SOURCE_OLD_MACDONALD_1"
 msgstr "Tommy's Tunes — The Morgan Library & Museum"
@@ -3015,6 +3024,9 @@ msgstr "Sakura, Sakura: A Study of Its Development and Popularisation into a Sch
 
 msgid "SONG_SOURCE_POP_GOES_THE_WEASEL_1"
 msgstr "Sheet Music Spotlight: Pop Goes the Weasel — Library of Congress"
+
+msgid "SONG_SOURCE_POP_GOES_THE_WEASEL_2"
+msgstr "Ryan’s Mammoth Collection · dance, page 264"
 
 msgid "SONG_SOURCE_HOME_ON_THE_RANGE_1"
 msgstr "Kansas Senate Resolution 1822 — Higley Cabin and Home on the Range"

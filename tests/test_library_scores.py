@@ -7,7 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'scripts'))
 from library_scores import SONGS, notes
-from generate_fixtures import authored_melody
+from generate_fixtures import authored_melody, authored_piano_study
 
 
 class LibraryScores(unittest.TestCase):
@@ -29,10 +29,35 @@ class LibraryScores(unittest.TestCase):
                 self.assertTrue(all(36 <= pitch < 60 for root in song['bass_roots']
                                     for pitch in (root if isinstance(root, tuple) else (root, root + 7))))
 
+    def test_piano_study_reproduces_the_bundled_two_hand_arrangement(self):
+        self.assertEqual((ROOT / 'content/library/piano_study.mid').read_bytes(),
+                         authored_piano_study())
+
+    def test_contrasting_lines_and_returns(self):
+        def bar(song, number):
+            score = SONGS[song]
+            return notes(score['bars'].split('|')[number - 1], score['meter'])
+
+        # The 1850 verse subdivides the repeated line before the chorus.
+        self.assertEqual(bar('camptown_races', 10)[-2:], [(67, 120)] * 2)
+        self.assertEqual(bar('camptown_races', 18), [(60, 360), (60, 120), (64, 240), (67, 240)])
+        self.assertEqual(bar('oh_susanna', 9), [(60, 1440), (60, 240), (62, 240)])
+        self.assertEqual(bar('oh_susanna', 10), [(64, 480), (67, 480), (67, 480), (69, 480)])
+        self.assertEqual(bar('oh_susanna', 18), [(65, 960)] * 2)
+        self.assertEqual(bar('aura_lee', 4), [(60, 1440), (None, 480)])
+        self.assertEqual(bar('aura_lee', 8), [(60, 1920)])
+        # The second strain rises in Ryan; Newell's game tune starts lower.
+        self.assertEqual(bar('pop_goes_the_weasel', 9), [(72, 720), (69, 480), (72, 240)])
+        self.assertEqual(bar('london_bridge', 9), [(60, 360), (60, 120), (60, 240), (59, 240)])
+        # Compare the written violin and piano lines before guitar transposition.
+        self.assertEqual([pitch for pitch, _ in bar('canon_in_d', 6)], [62, 59, 62, 69, 67, 71, 69, 67])
+        self.assertEqual(bar('fur_elise', 10), [(76, 360), (67, 120), (77, 120), (76, 120)])
+        self.assertEqual(bar('fur_elise', 16), bar('fur_elise', 2))
+
     def test_distinctive_rhythms(self):
         self.assertEqual(SONGS['canon_in_d']['notes'][:4], [(66, 480), (64, 480), (62, 480), (61, 480)])
         self.assertEqual(SONGS['fur_elise']['meter'], (3, 8))
-        self.assertEqual(SONGS['fur_elise']['notes'][:4], [(None, 480), (76, 120), (75, 120), (76, 120)])
+        self.assertEqual(SONGS['fur_elise']['notes'][:4], [(None, 480), (64, 120), (63, 120), (64, 120)])
         self.assertEqual(SONGS['the_entertainer']['meter'], (2, 4))
         self.assertIn((72, 720), SONGS['the_entertainer']['notes'])  # tied across bar
         self.assertEqual(notes(SONGS['frere_jacques']['bars'].split('|')[4], (4, 4)),
@@ -67,8 +92,9 @@ class LibraryScores(unittest.TestCase):
                          [(62, 240), (60, 720), (64, 720), (62, 240)])
         ground = SONGS['canon_in_d']['bass_roots']
         self.assertEqual(ground[:2], [(50, 45, 47, 42), (43, 38, 43, 45)])
-        self.assertEqual(ground[7], 50)  # authored tonic cadence
-        self.assertEqual(ground[:8], ground[8:])
+        self.assertEqual(ground[:-1], ground[:2] * 8)
+        self.assertEqual(ground[-1], (50,))  # one sustained D after both passes
+        self.assertEqual(SONGS['canon_in_d']['notes'][-3:], [(62, 360), (61, 120), (62, 1920)])
 
     def test_reviewed_ending_and_accompaniment(self):
         # North Atlantic's G8 closing note, transposed G→C, fills four beats.

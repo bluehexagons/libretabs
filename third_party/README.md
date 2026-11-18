@@ -222,3 +222,14 @@ with an original bass. The second half of the verse in
 retaining the project's four-beat classroom rhythm. Both historical melodies
 are public domain. Only the new realizations and their readable note recipes
 are bundled.
+
+In `content/library/london_bridge.mid` the second eight bars are the upper
+melody from Newell's 1884 printing of *Games and Songs of American Children*,
+p. 209, transposed G to C. In `content/library/canon_in_d.mid` the first
+violin's opening and complete first variation follow the [Berlin manuscript
+copy, Mus.ms. 16481/8](https://resolver.staatsbibliothek-berlin.de/SBB0000A73000000000),
+down one octave with an added closing D. The restored middle of the Für Elise
+opening in `content/library/fur_elise.mid` follows the right-hand line in
+the public-domain 1888 edition and its Mutopia transcription 2015/08/18-931.
+The guitar study sounds an octave lower and omits the repeat signs and later
+episodes. Each MIDI is generated from the project’s readable recipe.

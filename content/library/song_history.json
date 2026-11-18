@@ -46,6 +46,11 @@
           "title_key": "SONG_SOURCE_CANON_IN_D_1",
           "url": "https://www.chambermusicsociety.org/about-the-music/compositions/pachelbel-canon",
           "supports": "Composer, original parts, companion gigue, musical construction, uncertain origins and Paillard recording."
+        },
+        {
+          "title_key": "SONG_SOURCE_CANON_IN_D_2",
+          "url": "https://resolver.staatsbibliothek-berlin.de/SBB0000A73000000000",
+          "supports": "Opening violin pitches and the dotted end of the first moving variation."
         }
       ],
       "research_notes": "Avoid stating an exact composition year or a wedding origin. The surviving manuscript is a nineteenth-century copy."
@@ -221,6 +226,11 @@
           "title_key": "SONG_SOURCE_JINGLE_BELLS_2",
           "url": "https://www.cambridge.org/core/services/aop-cambridge-core/content/view/D42C78950A58BDB88290954F73B195B2/S0040557417000291a.pdf/div-class-title-the-story-i-must-tell-span-class-italic-span-jingle-bells-span-class-italic-span-in-the-minstrel-repertoire-div.pdf",
           "supports": "Peer-reviewed archival research into publication, earliest documented performances and minstrel history."
+        },
+        {
+          "title_key": "SONG_SOURCE_JINGLE_BELLS_3",
+          "url": "https://www.kinder-wollen-singen.de/lieder/jingle-bells/",
+          "supports": "The public-domain 2010 G-major setting linked as LilyPond provides the verse and familiar refrain."
         }
       ],
       "research_notes": "Use earliest documented performance, not an absolute first performance. The place where Pierpont composed it remains uncertain; avoid the Medford tavern and Thanksgiving origin stories."
@@ -262,6 +272,11 @@
           "title_key": "SONG_SOURCE_LONDON_BRIDGE_1",
           "url": "https://www.gutenberg.org/files/45762/45762-h/45762-h.htm",
           "supports": "English and American versions; documented game movements and local variations."
+        },
+        {
+          "title_key": "SONG_SOURCE_LONDON_BRIDGE_2",
+          "url": "https://www.loc.gov/resource/gdcmassbookdig.gamessongsofamer01newe/?sp=227",
+          "supports": "Second eight-bar melody, upper staff of the 1884 printing."
         }
       ],
       "research_notes": "The digitized edition is dated 1884, copyright 1883. Newell's mythological explanations are historical speculation, not established origins. Avoid Viking destruction or human-sacrifice stories."
@@ -349,7 +364,7 @@
           "supports": "Levy 071.014 scan of Benteen/Mayo 1850 print, music pages 3-4: Foster credit, longer verse, separate choir voices, pickup and phrase-ending rests."
         }
       ],
-      "research_notes": "No particular real racecourse or town is securely established as its inspiration. The 1850 Levy scan was visually compared with the teaching recipe. The project version shortens the verse, starts on the main beat, evens some long-short pairs and extends some phrase endings over source rests; it is not a complete transcription. No scan, source accompaniment or lyrics are bundled."
+      "research_notes": "The Benteen/Mayo 1850 print, Levy 071.014, supplies the full vocal verse and the chorus line marked Air. No particular real racecourse or town is securely established as its inspiration."
     },
     "au_clair_de_la_lune": {
       "history_key": "SONG_HISTORY_AU_CLAIR_DE_LA_LUNE",
@@ -427,6 +442,11 @@
           "title_key": "SONG_SOURCE_POP_GOES_THE_WEASEL_1",
           "url": "https://blogs.loc.gov/music/2016/07/sheet-music-spotlight-pop-goes-the-weasel/",
           "supports": "Country-dance history, 1853 and 1856 editions, later lyrics/variations and Henry Reed recording."
+        },
+        {
+          "title_key": "SONG_SOURCE_POP_GOES_THE_WEASEL_2",
+          "url": "https://violinsheetmusic.org/files/download/collections/ryans-mammoth-collection.pdf#page=264",
+          "supports": "Higher second strain of the dance, checked against the 1883 score."
         }
       ],
       "research_notes": "The source does not establish an original composer. Do not turn the various proposed slang meanings of weasel into historical fact; named sheet-music arrangers are not necessarily composers."

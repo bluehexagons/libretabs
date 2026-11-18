@@ -75,7 +75,7 @@ func run() -> void:
 	check(not app.call("catalog_indices").has(app.BUILT_IN_LIBRARY.size() - 1), "guitar filter excludes the two-hand piano-only study")
 	app.get("catalog_instrument").select(0)
 	app.get("catalog_sort").select(2)
-	check(app.call("catalog_indices")[0] == 1, "duration sort puts the shortest song first")
+	check(app.BUILT_IN_LIBRARY[app.call("catalog_indices")[0]].file == "piano_study", "duration sort puts the shortest song first")
 	app.get("catalog_sort").select(0)
 	app.call("refresh_song_catalog")
 	app.get("catalog_search").text = "no song has this name"

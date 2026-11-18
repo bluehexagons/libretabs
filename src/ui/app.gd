@@ -314,9 +314,9 @@ var click_slider: HSlider
 var fixtures: Array[String] = ["first_melody", "changing_tempo", "format0", "held_notes", "dense_chord"]
 const BUILT_IN_LIBRARY: Array[Dictionary] = [
 	{"file": "ode_to_joy", "title_key": "LIBRARY_ODE_TO_JOY", "level": 1, "seconds": 38, "bpm": 100, "views": ["guitar", "piano"]},
-	{"file": "fur_elise", "title_key": "LIBRARY_FUR_ELISE", "level": 2, "seconds": 21, "bpm": 72, "views": ["guitar", "piano"]},
+	{"file": "fur_elise", "title_key": "LIBRARY_FUR_ELISE", "level": 2, "seconds": 29, "bpm": 72, "views": ["guitar", "piano"]},
 	{"file": "spring", "title_key": "LIBRARY_SPRING", "level": 1, "seconds": 34, "bpm": 100, "views": ["guitar", "piano"]},
-	{"file": "canon_in_d", "title_key": "LIBRARY_CANON_IN_D", "level": 1, "seconds": 48, "bpm": 80, "views": ["guitar", "piano"]},
+	{"file": "canon_in_d", "title_key": "LIBRARY_CANON_IN_D", "level": 1, "seconds": 51, "bpm": 80, "views": ["guitar", "piano"]},
 	{"file": "twinkle", "title_key": "LIBRARY_TWINKLE", "level": 0, "seconds": 29, "bpm": 100, "views": ["guitar", "piano"]},
 	{"file": "the_entertainer", "title_key": "LIBRARY_THE_ENTERTAINER", "level": 2, "seconds": 26, "bpm": 80, "views": ["guitar", "piano"]},
 	{"file": "mary_had_a_little_lamb", "title_key": "LIBRARY_MARY_HAD_A_LITTLE_LAMB", "level": 0, "seconds": 38, "bpm": 100, "views": ["guitar", "piano"]},

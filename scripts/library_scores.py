@@ -23,7 +23,7 @@ def notes(bars, meter):
                     raise ValueError('Tie needs a preceding note')
                 result[-1] = (result[-1][0], result[-1][1] + duration)
                 continue
-            match = re.fullmatch(r'([A-G])([#b]?)([3-5])', name)
+            match = re.fullmatch(r'([A-G])([#b]?)([3-6])', name)
             if name != 'R' and match is None:
                 raise ValueError(f'Bar {index}: invalid note: {name}')
             pitch = None if name == 'R' else (12 * (int(match[3]) + 1)
@@ -54,7 +54,10 @@ elise = ('E5:1 D#5:1 E5:1 B4:1 D5:1 C5:1 | A4:2 R:1 C4:1 E4:1 A4:1 | '
          'E5:1 D#5:1 E5:1 B4:1 D5:1 C5:1 | A4:2 R:1 C4:1 E4:1 A4:1 | '
          'B4:2 R:1 E4:1 C5:1 B4:1')
 add('fur_elise', 'Fur Elise - opening theme', 'Beethoven',
-    f'R:4 E5:1 D#5:1 | {elise} | A4:4 E5:1 D#5:1 | {elise} | A4:4 R:2', (3, 8), 72)
+    f'R:4 E5:1 D#5:1 | {elise} | A4:2 R:1 B4:1 C5:1 D5:1 | '
+    'E5:3 G4:1 F5:1 E5:1 | D5:3 F4:1 E5:1 D5:1 | C5:3 E4:1 D5:1 C5:1 | '
+    'B4:2 R:1 E4:1 E5:1 R:1 | R:1 E5:1 E6:1 R:2 D#5:1 | '
+    f'E5:2 R:1 D#5:1 E5:1 D#5:1 | {elise} | A4:4 R:2', (3, 8), 72, transpose=-12)
 
 spring_a = 'G#4:2 G#4:2 G#4:2 F#4:1 E4:1 B4:6 B4:1 A4:1'
 spring_b = 'G#4:2 A4:1 B4:1 A4:2 G#4:2 F#4:2 D#4:2 B3:2 E4:2'
@@ -69,9 +72,10 @@ add('spring', 'Spring - opening theme', 'Vivaldi',
 
 canon = ('F#5 E5 D5 C#5 | B4 A4 B4 C#5 | D5 C#5 B4 A4 | G4 F#4 G4 E4 | '
          'D4:2 F#4:2 A4:2 G4:2 F#4:2 D4:2 F#4:2 E4:2 | '
-         'D4:2 A3:2 D4:2 B4:2 A4:2 C#5:2 B4:2 A4:2 | '
-         'F#4:2 D4:2 E4:2 C#5:2 D5:2 F#5:2 A5:2 A4:2 | D5:16')
-add('canon_in_d', 'Canon in D - opening study, twice', 'Pachelbel', f'{canon} | {canon}', tempo=80, transpose=-12)
+         'D4:2 B3:2 D4:2 A4:2 G4:2 B4:2 A4:2 G4:2 | '
+         'F#4:2 D4:2 E4:2 C#5:2 D5:2 F#5:2 A5:2 A4:2 | '
+         'B4:2 G4:2 A4:2 F#4:2 D4:2 D5:2 D5:3 C#5:1')
+add('canon_in_d', 'Canon in D - opening study, twice', 'Pachelbel', f'{canon} | {canon} | D5:16', tempo=80, transpose=-12)
 
 twinkle_a = 'C4 C4 G4 G4 | A4 A4 G4:8 | F4 F4 E4 E4 | D4 D4 C4:8'
 add('twinkle', 'Twinkle Twinkle Little Star - traditional', 'Traditional',
@@ -156,8 +160,10 @@ add('amazing_grace', 'Amazing Grace - New Britain melody', 'Traditional',
 
 london = ('G4:2 A4:2 G4:2 F4:2 | E4:2 F4:2 G4:4 | D4:2 E4:2 F4:4 | E4:2 F4:2 G4:4 | '
           'G4:2 A4:2 G4:2 F4:2 | E4:2 F4:2 G4:4 | D4:4 G4:4 | E4:2 C4:6')
-add('london_bridge', 'London Bridge - twice', 'English traditional',
-    f'{london} | {london}', (2, 4), 80)
+newell_bridge = ('C4:3 C4:1 C4:2 B3:2 | A3:2 B3:2 C4:4 | G3:2 G3:2 G3:4 | E3:2 E3:2 G3:4 | '
+                 'C4:3 C4:1 C4:2 B3:2 | A3:2 B3:2 C4:4 | D4:4 G4:4 | E4:2 C4:4 R:2')
+add('london_bridge', 'London Bridge - two singing-game tunes', 'English traditional',
+    f'{london} | {newell_bridge}', (2, 4), 80)
 
 macdonald_line = 'C4 C4 C4 G3 | A3 A3 G3:8 | E4 E4 D4 D4'
 add('old_macdonald', 'Old MacDonald Had a Farm - melody study', 'Traditional',
@@ -315,29 +321,31 @@ add('londonderry_air', 'Londonderry Air - 1855 melody study', 'Irish traditional
 # the MIDI recipe plays it, then its fifth, as two separate low notes.
 # A tuple instead specifies each successive bass pitch within that bar.
 BASS_ROOTS = {
-    'ode_to_joy': [48, 43, 48, 43, 48, 43, 48, 48, 43, 43, 48, 48, 43, 43, 48, 48],
-    'fur_elise': [45, 52, 45, 52, 45, 52, 45, 52, 45, 52, 45, 52, 45, 52, 45, 45, 45],
-    'spring': [40, 40, 47, 40, 45, 40, 47, 40, 45, 40, 47, 40, 45, 47],
-    # Four ground-bass notes per bar; the sixth note is low D2, not D3.
-    # The final study bar uses an authored tonic/fifth cadence.
-    'canon_in_d': ([(50, 45, 47, 42), (43, 38, 43, 45)] * 3
-                   + [(50, 45, 47, 42), 50]) * 2,
-    'twinkle': [48, (41, 48), (41, 48), (43, 48), 48, 43, 48, 43, 48, (41, 48), (41, 48), (43, 48)],
-    'the_entertainer': [48, 48, 43, 48, 41, 48, 43, 48, 43, 48, 43, 48, 41, 48, 43, 48, 48],
+    'ode_to_joy': [48, 43, 48, 43, 48, 43, 48, (43, 48), 43, 43, 48, (45, 50, 43, 43),
+                   48, 43, 48, (43, 48)],
+    'fur_elise': [40] + [40, 45, 40, 45, 40, 45, 40, 45] + [48, 43, 45, 40, 40, 40] + [
+        40, 45, 40, 45, 40, 45, 40, (45,)],
+    'spring': [40, 40, 40, 40, 40, 40, 47, 40, 45, (40, 47), 40, 40, 45, (47, 40)],
+    # The eight quarter notes repeat through both violin phrases and both passes.
+    'canon_in_d': [(50, 45, 47, 42), (43, 38, 43, 45)] * 8 + [(50,)],
+    'twinkle': [48, (41, 48), (41, 48), (43, 48), (48, 43), (48, 43), (48, 43), (48, 43),
+                48, (41, 48), (41, 48), (43, 48)],
+    'the_entertainer': [48, 48, (41, 40), 48, 48, 48, (41, 40), 50, 43, 48, (41, 40),
+                        48, 48, 48, 43, 48, (48,)],
     'mary_had_a_little_lamb': [48, 48, 43, 48, 48, 48, 43, 48] * 2,
     'frere_jacques': [48, 48, 43, 43, 41, 41, 48, 48] * 2,
     'auld_lang_syne': [48, 48, 43, 48, 41, 48, 43, 48, 48, 48, 43, 48, 41, 48, 43, 48, 48],
     'yankee_doodle': [48, 43, 48, 43, 48, 41, 43, 48, 41, 48, 43, 48, 41, 48, 43, 48] * 2,
-    'brahms_lullaby': [48, 48, 43, 48, 41, 43, 48, 43, 48, 41, 48, 41, 48, 41, 43, 48, 48],
-    'minuet_in_g': [43, 43, 48, 43, 48, 43, 50, 43, 43, 48, 43, 48, 43, 50, 43, 43,
-                    43, 50, 43, 45, 43, 50, 43, 50, 43, 48, 43, 48, 43, 50, 43, 43],
+    'brahms_lullaby': [48, 48, 43, 48, 41, 43, 48, 43, 48, 41, 48, 41, 48, 41, 48, (48, 50, 43), (48,)],
+    'minuet_in_g': [43, 43, 48, 43, 48, 43, 50, 50, 43, 43, 48, 43, 45, 43, (48, 50, 50), 43,
+                    43, 50, 43, 45, 45, 50, (50, 42, 45), 50, 43, 48, 43, 50, 50, 50, 43, (43,)],
     'row_your_boat': [48, 48, 41, 48, 48, 48, 43, 48] * 2,
     'jingle_bells': [48, 48, 48, 41, 41, 43, 43, 48, 48, 48, 48, 41, 41, 43, 43, 48,
                      48, 48, 48, 48, 41, 48, 43, 43, 48, 48, 48, 48, 41, 48, 43, (48,)],
     'greensleeves': [45, 45, 48, 43, 43, 45, 41, 40, 40, 45, 48, 43, 43, 45, 40, 45, 45,
                       48, 48, 43, 43, 45, 41, 40, 40, 48, 48, 43, 43, 45, 40, 45, 45],
     'amazing_grace': [48, 48, 48, 45, 43, 48, 48, 43, 43, 48, 48, 45, 43, 48, 43, 48, 48],
-    'london_bridge': [48, 48, 43, 48, 48, 48, 43, 48] * 2,
+    'london_bridge': [48, 48, 43, 48, 48, 48, 43, 48, 48, 41, 43, 48, 48, 41, 43, (48,)],
     'old_macdonald': [48, 41, 43, 48] * 2 + [48, 48, 48, 43, 48, 41, 43, 48],
     'when_the_saints': [48, 48, 48, 48, 48, 48, 48, 43, 43, 48, 48, 41, 41, 48, 43, 48],
     'aura_lee': [48, 50, 43, 48, 48, 50, 43, 48, 48, 48, 48, 48, 41, 50, 50, 48],
