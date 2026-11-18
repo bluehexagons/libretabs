@@ -2629,8 +2629,7 @@ func playback_speed() -> float:
 	return speed * reference_bpm() / base_bpm()
 
 func restore_song_bpm() -> void:
-	bpm_override = 0.0
-	set_speed(1.0)
+	set_tempo(1.0, 0.0)
 
 func set_metronome(enabled: bool) -> void:
 	metro_check.set_pressed_no_signal(enabled)
@@ -2691,16 +2690,21 @@ func change_speed(index: int) -> void:
 
 func change_bpm(value: float) -> void:
 	if updating or not is_finite(value) or value <= 0: return
-	bpm_override = clampf(value, bpm_input.min_value, bpm_input.max_value)
-	set_speed(1.0)
+	set_tempo(1.0, clampf(value, bpm_input.min_value, bpm_input.max_value))
 
 func set_speed(value: float) -> void:
+	set_tempo(value, bpm_override)
+
+func set_tempo(value: float, override_bpm: float) -> void:
 	if not is_finite(value): return
+	var next_speed: float = clampf(value, RelativeSpeedSlider.MIN_PERCENT / 100, 9.99)
+	if is_equal_approx(next_speed, speed) and override_bpm == bpm_override: return
 	main_speed.cancel_pointer()
 	panel_speed.cancel_pointer()
 	var was_playing: bool = audio.playing_practice
 	pause()
-	speed = clampf(value, RelativeSpeedSlider.MIN_PERCENT / 100, 9.99)
+	speed = next_speed
+	bpm_override = override_bpm
 	update_tempo()
 	if was_playing: start(paused_in_count)
 

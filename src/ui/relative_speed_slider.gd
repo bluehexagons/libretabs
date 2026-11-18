@@ -63,8 +63,7 @@ static func speed_caption(percent: float, full: bool = false) -> String:
 	for denominator: int in [2, 4, 8]:
 		if is_equal_approx(percent, 100.0 / denominator):
 			return TranslationServer.translate("SPEED_FRACTION_VALUE" if full else "SPEED_FRACTION_SHORT") % ("1/%d" % denominator)
-	var number: String = String.num(percent, 1).trim_suffix(".0")
-	return TranslationServer.translate("SPEED_VALUE" if full else "TEMPO_BUTTON") % number
+	return TranslationServer.translate("SPEED_VALUE" if full else "TEMPO_BUTTON") % percentage_text(percent)
 
 func track_width() -> float:
 	return maxf(1, size.x - get_theme_icon("grabber").get_width())

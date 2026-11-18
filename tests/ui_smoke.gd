@@ -68,6 +68,7 @@ func run() -> void:
 		for percent: float in [99.25, 998.75]:
 			app.call("set_speed", percent / 100.0)
 			await settle(app)
+			check(app.get("tempo_button").text == "%s%%" % str(percent), "the tempo button displays both decimal places at %s" % percent)
 			check(app.get("root_box").size.x <= viewport.size.x and viewport.encloses(app.get("speed_control").get_global_rect()), "long fractional percentage fits representative viewport %s" % [config])
 		app.call("set_speed", 1.0)
 		app.call("toggle_drawer", "MENU")

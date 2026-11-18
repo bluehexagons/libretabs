@@ -189,7 +189,7 @@ notice explains that new marks may last only for this session.
 
 LibreTabs remembers sound, effects, count-in, beat clicks, volumes, keyboard
 layout/octave/visibility/feedback, regular reading mode, pinned songs, song sorting,
-seek/restart pausing, note highlights and tuner
+pause after seeking, note highlights and tuner
 instrument/sensitivity/reference. It also keeps the existing appearance, text,
 interface, notation rows, handedness, control edge and regular/Theater layout
 preferences. Microphone/controller connections, calibration and temporary musical
@@ -217,7 +217,7 @@ height, so choose fewer Music lines if you need taller notes.
 
 - **Playback speed:** 100% is the base tempo; **1/2×** means half that tempo
   (50%). Quarter and eighth speed appear as **1/4×** and **1/8×**. Other readouts
-  use at most one decimal; **Exact speed** keeps the precise percentage.
+  show the selected percentage with up to two decimal places.
   **Slower −5%**
   and **Faster +5%** make small changes without losing decimal precision.
   **100% of base tempo** restores 100%. The minimum is 10%; lower the base tempo

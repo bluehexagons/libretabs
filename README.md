@@ -19,11 +19,12 @@ six lessons and musical, timing, accessibility and device checks remain open.
 2. Press **Play** and listen once. On the six tab lines, the top line is the
    thinnest guitar string. Numbers tell you which fret to press; **0** means
    pluck the string without pressing it.
-3. Open **Menu → Practice → Playback → Speed presets** and try **50%** for half speed.
-   The notes keep the same pitch. Choose **Restart**, then **Play** to start again.
+3. Open **Menu → Practice → Playback → Speed presets** and try **1/2 speed**.
+   The notes keep the same pitch. Close the menu and choose **Restart** to play
+   again from the beginning.
 4. Open **Menu → Practice → Loop**, set **From 1** and **Through 2**, and choose
    **Play selected section** to repeat the first two measures (groups of beats).
-5. Open **Menu → Songs** for another tune. Try Twinkle, Twinkle Little Star.
+5. Open **Songs** for another tune. Try Twinkle, Twinkle Little Star.
 
 The [user guide](docs/user-guide.md) explains reading tabs, choosing music,
 practicing with loops, changing the view, printing and troubleshooting. You can

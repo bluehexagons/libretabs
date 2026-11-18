@@ -125,7 +125,7 @@ func run(app: Control, tree: SceneTree, settle: Callable) -> void:
 	for percent: float in [50,25,12.5]:
 		app.call("set_speed", percent / 100)
 		check(app.get("tempo_caption").text == RelativeSpeedSlider.speed_caption(percent,true) and app.get("speed_input").value == percent, "fraction display preserves exact numeric entry %s" % percent)
-	check(RelativeSpeedSlider.speed_caption(83.37) == "83.4%" and RelativeSpeedSlider.speed_caption(83.0) == "83%", "ordinary captions use at most one decimal")
+	check(RelativeSpeedSlider.speed_caption(83.37) == "83.37%" and RelativeSpeedSlider.speed_caption(83.0) == "83%", "ordinary captions preserve hundredths without adding trailing zeroes")
 	app.call("set_speed", 0)
 	check(app.get("speed") == 0.1 and app.get("speed_input").min_value == 10, "numeric entry enforces the ten percent floor")
 	# A scrolled slider may geometrically overlap the fixed drawer header.
