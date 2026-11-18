@@ -122,6 +122,14 @@ class ReleaseTests(unittest.TestCase):
                 self.assertIn('index.html', archive.namelist())
                 self.assertEqual((archive.getinfo('run').external_attr >> 16) & 0o777, 0o755)
 
+    def test_export_license_documents_include_the_project_notice(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            licenses = Path(temporary) / 'licenses'
+            release.copy_license_documents(ROOT, licenses)
+            self.assertEqual((licenses / 'NOTICE').read_bytes(), (ROOT / 'NOTICE').read_bytes())
+            self.assertEqual((licenses / 'LICENSE-SCOPE.md').read_bytes(),
+                             (ROOT / 'LICENSES/README.md').read_bytes())
+
     def test_checksum_promotion_refuses_tampering(self):
         with tempfile.TemporaryDirectory() as temporary:
             folder = Path(temporary)

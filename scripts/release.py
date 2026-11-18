@@ -49,6 +49,17 @@ def digest(path):
     with path.open('rb') as source:
         return hashlib.file_digest(source, 'sha256').hexdigest()
 
+def copy_license_documents(source, destination):
+    destination.mkdir()
+    documents = (
+        'LICENSE', 'NOTICE', 'LICENSES/CC0-1.0.txt', 'third_party/README.md',
+        'assets/fonts/Bravura-LICENSE.txt', 'assets/fonts/Nunito-LICENSE.txt',
+        'assets/fonts/Godot-template-LICENSE.txt',
+    )
+    for name in documents:
+        shutil.copy2(source / name, destination / Path(name).name)
+    shutil.copy2(source / 'LICENSES/README.md', destination / 'LICENSE-SCOPE.md')
+
 def archive_directory(source, destination):
     with zipfile.ZipFile(destination, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
         for path in sorted(source.rglob('*')):
@@ -110,11 +121,8 @@ def main():
             if name.startswith('linux'):
                 (payload / target['entry']).chmod(0o755)
             licenses = payload / 'licenses'
-            licenses.mkdir()
-            for source_path in ['LICENSE', 'LICENSES/CC0-1.0.txt', 'third_party/README.md', 'assets/fonts/Bravura-LICENSE.txt', 'assets/fonts/Nunito-LICENSE.txt', 'assets/fonts/Godot-template-LICENSE.txt']:
-                shutil.copy2(stage / source_path, licenses / Path(source_path).name)
+            copy_license_documents(stage, licenses)
             shutil.copy2(notices, licenses / notices.name)
-            shutil.copy2(stage / 'LICENSES/README.md', licenses / 'LICENSE-SCOPE.md')
             (payload / 'BUILD.json').write_text(json.dumps({'version': args.version, 'commit': commit, 'engine': LOCK['version'], 'target': name}, indent=2) + '\n')
             launch = 'Serve index.html over HTTPS with COOP/COEP headers; do not open via file://.' if name == 'web' else f"Extract the whole archive, then run {target['entry']}. No Godot installation is needed."
             (payload / 'README.txt').write_text(f'LibreTabs {args.version} — {name}\n{launch}\nUnsigned evaluation prototype; no installer, account, telemetry or automatic updater.\nImported MIDI stays on your device and is session-only.\nProcedural audio and simplified notation; lessons and musical review remain incomplete.\nFeedback: https://github.com/bluehexagons/libretabs/issues\nSource and release instructions: https://github.com/bluehexagons/libretabs\nLicenses and notices are in licenses/.\n')

@@ -5,10 +5,9 @@ import argparse
 from contextlib import nullcontext
 import os
 from pathlib import Path
-import shutil
 import sys
 
-from release import LOCK, ROOT, TARGETS, VERSION, run, source_snapshot, validate_payload
+from release import LOCK, ROOT, TARGETS, VERSION, copy_license_documents, run, source_snapshot, validate_payload
 
 
 def main():
@@ -37,12 +36,7 @@ def main():
         run([engine, '--headless', '--path', source, '--export-release', args.preset, output / 'index.html'])
         validate_payload(output, TARGETS['web'])
         licenses = output / 'licenses'
-        licenses.mkdir()
-        for name in ('LICENSE', 'LICENSES/CC0-1.0.txt', 'third_party/README.md',
-                     'assets/fonts/Bravura-LICENSE.txt', 'assets/fonts/Nunito-LICENSE.txt',
-                     'assets/fonts/Godot-template-LICENSE.txt'):
-            shutil.copy2(source / name, licenses / Path(name).name)
-        shutil.copy2(source / 'LICENSES/README.md', licenses / 'LICENSE-SCOPE.md')
+        copy_license_documents(source, licenses)
         run([engine, '--headless', '--path', source, '--script', 'res://scripts/engine_notices.gd',
              '--', licenses / 'GODOT-NOTICES.txt'], source)
     print(output)
