@@ -57,15 +57,16 @@ layouts; a final redesign has not been selected.
    appear in Play and beside the starting music; the filled dot moves each beat.
    The moving line follows the music. Rounded outlines mark sounding tab numbers; slightly larger, bolder
    staff noteheads mark sounding notes without changing their shape.
-3. Open **Menu → Practice → Playback** and choose a slower speed, such as **1/2 speed** under
-   **Speed presets**. That means half the base tempo, with the same pitches. The base initially follows the song.
-   Choose **Restart** beside Play to return to the beginning and play after the count-in.
+3. Move the speed slider beside the playback controls to slow down. **1/2×** means
+   half speed, with the same pitches. Select the speed number for exact settings.
+   Quick start also offers **Start at half speed**.
 4. Follow just a few numbers on the guitar tabs, using the reading guide below.
    It is fine to listen again before joining in.
-5. To repeat a short section, open **Menu → Practice → Loop**, set **From** to **1** and
-   **Through** to **2**, then choose **Play selected section**. Both measures
-   repeat after your usual count-in. Choose **Turn loop off** when you want to
-   continue through the song.
+5. Choose **Repeat → Repeat this measure** to practice the current group of beats
+   between two vertical lines. For a longer passage, choose **Repeat → Choose a
+   range**, set **From** to **1** and **Through** to **2**, then choose **Play
+   selected section**. Choose **Turn repeat off** to continue through the song.
+   If the practice controls are condensed, open **Menu → Practice → Repeat**.
 
 For another tune, choose **Songs** (also in the Theater header). Search by title
 or composer, or open **Show filters & sort** to narrow by suggested level,
@@ -257,8 +258,9 @@ height, so choose fewer Music lines if you need taller notes.
   paused by default. Turn off **Pause after seeking** in Playback to resume
   automatically after a seek if already playing.
   Changing speed or other playback settings keeps its existing playback behavior.
-- **Loop:** From and Through include the first and last measures you choose.
-  **Repeat this measure** sets and enables a one-measure loop. **Start at current
+- **Repeat:** **Repeat this measure** returns to the beginning of the current
+  measure and sets it to repeat. Open **Choose a range** for a longer passage.
+  From and Through include the first and last measures you choose. **Start at current
   measure** and **End at current measure** set the range from the current position.
   **Play selected section** starts at the first selected measure and repeats,
   using your count-in setting. **Repeat whole song** selects all measures and
@@ -417,7 +419,7 @@ arrows move one beat, Page Up/Down one measure, and Home/End to the start/end.
 | --- | --- |
 | No sound | Press Play, check device/browser volume, raise Instrument volume in Volume & parts, and enable the part you want to hear. Try a built-in exercise. |
 | Playback will not advance | Press Play and wait for the enabled count-in. Returning from a hidden browser tab also requires Play. |
-| The tune keeps repeating | Open Loop and choose Turn loop off. |
+| The tune keeps repeating | Open Repeat and choose Turn repeat off. |
 | The page stopped following | Turning a page manually disables following. Enable Follow playback in Score view. |
 | Notes are missing from tabs | Read About this arrangement. Try Basic tab, another part or simpler music. Omitted tab notes may still sound. |
 | File rejected | Check that it is MIDI, read the error, and try a shorter file or a built-in song. Renaming an audio file to `.mid` will not convert it. |

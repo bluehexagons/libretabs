@@ -33,6 +33,7 @@ static func fit(app: Control) -> void:
 	if app.menu_tween != null: app.menu_tween.kill()
 	app.drawer.modulate.a = 1
 	var expanded_controls: bool = app.theme.default_font_size < 30
+	var phone_header: bool = not side_dock and not app.tv_active and app.size.x < 600
 	var header_icons: bool = app.presentation.inline_transport or side_dock or app.size.x < 1100 or not expanded_controls
 	for item: Button in [app.songs_button, app.import_button, app.tv_button, app.fullscreen_button, app.menu_button]:
 		var key: String = "SONG_MENU" if item == app.songs_button else ("IMPORT_MIDI" if item == app.import_button else ("TV_VIEW" if item == app.tv_button else (("EXIT_FULLSCREEN" if app.host.is_fullscreen() else "FULLSCREEN") if item == app.fullscreen_button else "MENU")))
@@ -45,6 +46,16 @@ static func fit(app: Control) -> void:
 	# The same actions remain in Menu; retain Songs and Menu on short phones.
 	app.tv_button.visible = not side_dock or app.size.y >= 440
 	app.fullscreen_button.visible = not side_dock or app.size.y >= 440
+	var short_console: bool = app.presentation.console and app.size.y < 700
+	app.reading_help_button.visible = phone_header and not app.presentation.stacked_toolbar and not short_console
+	if phone_header:
+		app.tv_button.hide()
+		app.fullscreen_button.hide()
+		for action: Button in [app.songs_button, app.reading_help_button]:
+			var caption: String = app.tr("SONG_MENU" if action == app.songs_button else "HELP")
+			var show_caption: bool = expanded_controls and app.size.x >= 360
+			action.text = caption if show_caption else ""
+			action.icon = null if show_caption else UIIcons.get_icon("SONG_MENU" if action == app.songs_button else "HELP")
 	if not side_dock and app.size.x >= 600 and expanded_controls:
 		app.tv_button.text = app.tr("TV_VIEW")
 	if not app.tv_active and not side_dock and not expanded_controls and (app.size.x < 760 or app.size.y < 620):
@@ -58,11 +69,12 @@ static func fit(app: Control) -> void:
 	app.quick_row.visible = true
 	app.tempo_button.visible = true
 	app.metro_button.visible = expanded_controls and not app.tight_controls and (not side_dock or app.size.y >= 440)
-	app.loop_button.visible = not app.tight_controls and not app.tv_active and (not side_dock or app.size.y >= 440)
+	app.loop_button.visible = not app.tight_controls and not app.tv_active
 	app.stop_button.visible = not app.tight_controls and not app.landscape and (not app.tv_active or app.size.x >= 760)
-	if not side_dock and not expanded_controls and app.size.y < 620:
+	if phone_header or (not side_dock and not expanded_controls and app.size.y < 620):
 		app.stop_button.hide()
-		app.loop_button.hide()
+	if phone_header and not app.presentation.console:
+		app.metro_button.hide()
 	app.stop_button.text = "" if side_dock or app.size.x < 760 or app.tv_active else app.tr("RESTART")
 	app.stop_button.tooltip_text = app.tr("TIP_RESTART")
 	app.update_play_control()
@@ -115,8 +127,7 @@ static func fit(app: Control) -> void:
 	app.brand_label.visible = not app.tv_active and not side_dock and app.size.x >= (760 if expanded_controls else 1100)
 	app.menu_button.size_flags_horizontal = Control.SIZE_FILL if side_dock else Control.SIZE_SHRINK_END
 	app.header.alignment = BoxContainer.ALIGNMENT_BEGIN if side_dock else BoxContainer.ALIGNMENT_END
-	app.song_title.visible = not app.presentation.mobile_rail and not app.presentation.stacked_toolbar and not app.landscape and (app.size.y >= 620 if app.presentation.plain_score else (app.tv_active or not app.compact))
-	app.song_title.add_theme_font_size_override("font_size", roundi((24 if app.presentation.plain_score else 32) * app.theme.default_font_size / 20.0))
+	fit_title(app)
 	app.tv_inline_zoom.vertical = app.size.x < 600 and app.theme.default_font_size >= 30
 	for caption: Label in app.tv_zoom_captions:
 		if caption.get_parent() == app.tv_inline_zoom: caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART if app.tv_inline_zoom.vertical else TextServer.AUTOWRAP_OFF
@@ -136,8 +147,12 @@ static func fit(app: Control) -> void:
 	var menu_width: float = 800 if app.opened_drawer in ["MENU", "SETTINGS"] and app.size.x >= 1000 else 560
 	if app.opened_drawer == "TEMPO" and app.size.x >= 700 and expanded_controls: menu_width = 800
 	app.tempo_columns.columns = 2 if minf(app.size.x, menu_width) >= 700 and expanded_controls else 1
-	app.drawer.position = Vector2(0 if app.handedness == "left" else maxf(0, app.size.x - menu_width), 0)
-	app.drawer.size = Vector2(minf(app.size.x, menu_width), app.size.y)
+	var menu_height: float = app.size.y
+	if app.opened_drawer == "LOOP_TOOL" and expanded_controls:
+		menu_width = 416
+		menu_height = minf(app.size.y, 400)
+	app.drawer.position = Vector2(0 if app.handedness == "left" else maxf(0, app.size.x - menu_width), app.size.y - menu_height if effective_position == "bottom" else 0)
+	app.drawer.size = Vector2(minf(app.size.x, menu_width), menu_height)
 	var song_columns: int = 2 if app.size.x >= 600 and app.theme.default_font_size < 30 else 1
 	if app.catalog_filter_grid != null: app.catalog_filter_grid.columns = song_columns
 	app.more_song_grid.columns = song_columns
@@ -160,7 +175,6 @@ static func fit(app: Control) -> void:
 		app.brand_label.visible = app.presentation.rail
 	if app.presentation.minimal:
 		app.stop_button.hide()
-		app.loop_button.hide()
 		app.metro_button.visible = not side_dock and app.size.x >= 760 and expanded_controls
 		app.reading_tools.hide()
 		var quiet_dock: StyleBoxFlat = UIAppearance.panel_style(app.dark_mode, 6, app.appearance_mode == "midnight")
@@ -205,7 +219,6 @@ static func fit(app: Control) -> void:
 		app.tempo_button.icon = null
 		app.tempo_button.custom_minimum_size = Vector2(64, 40)
 		app.main_speed.custom_minimum_size = Vector2(48, 44)
-		app.loop_button.hide()
 		app.stop_button.hide()
 		app.metro_button.hide()
 		for item: Button in [app.songs_button, app.tuner_button, app.menu_button] + app.interface_navigation.get_children():
@@ -290,7 +303,7 @@ static func arrange_controls(app: Control, position: String) -> void:
 	elif app.presentation.inline_transport: app.header.move_child(app.dock_margin, 0)
 	# Hand preference changes reach order without changing text direction.
 	app.header.move_child(app.brand_label, app.header.get_child_count() - 1 if app.handedness == "left" else 0)
-	app.set_child_order(app.header_actions, [app.menu_button, app.tuner_button, app.fullscreen_button, app.tv_button, app.import_button, app.songs_button] if app.handedness == "left" else [app.songs_button, app.import_button, app.tv_button, app.fullscreen_button, app.tuner_button, app.menu_button])
+	app.set_child_order(app.header_actions, [app.menu_button, app.tuner_button, app.reading_help_button, app.fullscreen_button, app.tv_button, app.import_button, app.songs_button] if app.handedness == "left" else [app.songs_button, app.import_button, app.tv_button, app.fullscreen_button, app.reading_help_button, app.tuner_button, app.menu_button])
 	app.set_child_order(app.transport_row, [app.metro_button, app.loop_button, app.play_button, app.stop_button] if app.handedness == "left" else [app.play_button, app.loop_button, app.metro_button, app.stop_button])
 	app.set_child_order(app.dock, [app.quick_row, app.transport_row] if app.handedness == "left" else [app.transport_row, app.quick_row])
 	app.set_child_order(app.seek_navigation, [app.seek_label, app.seek] if app.handedness == "left" else [app.seek, app.seek_label])
@@ -331,6 +344,17 @@ static func order_children(parent: Node, ordered: Array) -> void:
 		var child: Node = ordered[index]
 		if child != null and child.get_parent() == parent: parent.move_child(child, index)
 
+static func fit_title(app: Control) -> void:
+	var short_title: bool = not app.tv_active and (app.size.x < 600 or app.compact)
+	var show_title: bool = app.tv_active or app.size.y >= (700 if app.presentation.console else 500)
+	if app.presentation.plain_score: show_title = app.size.y >= 620
+	app.song_title.visible = show_title and not app.presentation.mobile_rail and not app.presentation.stacked_toolbar and not app.landscape
+	var base_size: int = 22 if short_title else (24 if app.presentation.plain_score else 32)
+	app.song_title.add_theme_font_size_override("font_size", roundi(base_size * app.theme.default_font_size / 20.0))
+	var single_line: bool = short_title or app.theater_context.visible
+	app.song_title.autowrap_mode = TextServer.AUTOWRAP_OFF if single_line else TextServer.AUTOWRAP_WORD_SMART
+	app.song_title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS if single_line else TextServer.OVERRUN_NO_TRIMMING
+
 static func fit_score(app: Control) -> void:
 	if not is_instance_valid(app) or not app.is_inside_tree() or app.is_queued_for_deletion(): return
 	if app.score_frame == null or app.score == null: return
@@ -341,7 +365,7 @@ static func fit_score(app: Control) -> void:
 	# appropriate context restored, then remove duplicates before scaling music.
 	app.fit_hide_cue = false
 	app.fit_hide_seek = false
-	app.song_title.visible = not app.presentation.mobile_rail and not app.presentation.stacked_toolbar and not app.landscape and (app.size.y >= 620 if app.presentation.plain_score else (app.tv_active or not app.compact))
+	fit_title(app)
 	app.tv_inline_zoom.vertical = app.size.x < 600 and app.theme.default_font_size >= 30
 	for caption: Label in app.tv_zoom_captions:
 		if caption.get_parent() == app.tv_inline_zoom: caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART if app.tv_inline_zoom.vertical else TextServer.AUTOWRAP_OFF
@@ -373,6 +397,7 @@ static func fit_score(app: Control) -> void:
 	# transport stays reachable. Preserve the ordinary score-only fit policy.
 	app.scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO if app.live.visible else ScrollContainer.SCROLL_MODE_DISABLED
 	app.scroll.scroll_vertical = 0
+	app.root_box.queue_sort()
 	await app.wait_for_layout_stability()
 	if not is_instance_valid(app) or not app.is_inside_tree() or app.is_queued_for_deletion(): return
 	app.fitting_layout = false
@@ -441,23 +466,26 @@ static func fit_controls(app: Control, node: Node) -> void:
 		if app.tv_active and not app.controls_on_side:
 			app.play_button.custom_minimum_size = Vector2(64, 64)
 		elif app.controls_on_side:
-			app.play_button.custom_minimum_size = Vector2(app.dock.custom_minimum_size.x - (64 if app.theme.default_font_size >= 30 or app.size.y < 360 else 0), 80 if app.size.y >= 360 or (app.theme.default_font_size >= 30 and app.size.y >= 320) else 64)
+			app.play_button.custom_minimum_size = Vector2(app.dock.custom_minimum_size.x - (64 if app.theme.default_font_size >= 30 or app.landscape else 0), 80 if app.size.y >= 360 or (app.theme.default_font_size >= 30 and app.size.y >= 320) else 64)
+		elif app.tight_controls:
+			app.play_button.custom_minimum_size = Vector2(56, 64)
 		elif app.compact_listening_transport():
 			app.play_button.custom_minimum_size = Vector2(72, 64)
 		elif app.size.x < 760 and not app.tight_controls:
-			app.play_button.custom_minimum_size = Vector2(maxf(120, app.size.x - 64), 72)
+			app.play_button.custom_minimum_size = Vector2(96, 56)
 		else:
-			app.play_button.custom_minimum_size.y = 64
-		if not app.tv_active and not app.controls_on_side and not app.tight_controls and not app.compact_listening_transport():
-			# The countdown hides the label. Reserve its text height and both
-			# playback widths so finishing it cannot move a speed control mid-drag.
+			app.play_button.custom_minimum_size = Vector2(120, 64)
+		if app.play_uses_caption():
+			# Reserve the same space during count-in, play and pause so the
+			# speed slider remains stationary under a held pointer.
 			var font: Font = app.play_button.get_theme_font("font")
-			var font_size: int = app.play_button.get_theme_font_size("font_size")
+			var font_size: int = roundi(float(app.play_button.get_meta("base_font_size", 20)) * app.theme.default_font_size / 20.0)
 			var text_height: float = ceilf(font.get_height(font_size)) + app.play_button.get_theme_stylebox("normal").get_minimum_size().y
 			app.play_button.custom_minimum_size.y = maxf(app.play_button.custom_minimum_size.y, text_height)
-			if app.size.x >= 760:
-				var label_width: float = maxf(font.get_string_size(app.tr("PLAY"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x, font.get_string_size(app.tr("PAUSE"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x)
-				app.play_button.custom_minimum_size.x = maxf(app.play_button.custom_minimum_size.x, minf(label_width + 62, app.size.x - 56))
+			var label_width: float = 0.0
+			for key: String in ["PLAY", "PAUSE", "REPLAY", "RECENTER"]:
+				label_width = maxf(label_width, font.get_string_size(app.tr(key), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x)
+			app.play_button.custom_minimum_size.x = maxf(app.play_button.custom_minimum_size.x, minf(label_width + 62, app.size.x - 56))
 		if app.presentation.mobile_rail: app.play_button.custom_minimum_size = Vector2(64, 64)
 		elif app.presentation.console: app.play_button.custom_minimum_size = Vector2(0, 80)
 		elif app.presentation.inline_transport: app.play_button.custom_minimum_size = Vector2(64, 48)

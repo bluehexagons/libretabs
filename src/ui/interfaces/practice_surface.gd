@@ -65,6 +65,8 @@ static func build(app: Control) -> void:
 	app.header_actions.add_child(app.fullscreen_button)
 	app.tuner_button = app.button("TUNER", func() -> void: app.toggle_drawer("TUNER"))
 	app.header_actions.add_child(app.tuner_button)
+	app.reading_help_button = app.button("HELP", func() -> void: app.toggle_drawer("HELP"))
+	app.header_actions.add_child(app.reading_help_button)
 	app.menu_button = app.button("MENU", func() -> void: app.toggle_drawer("MENU"))
 	app.header_actions.add_child(app.menu_button)
 	app.interface_button = app.button("INTERFACE", func() -> void: app.toggle_drawer("INTERFACE"))
@@ -279,6 +281,8 @@ static func build(app: Control) -> void:
 	app.transport_row.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	app.dock.add_child(app.transport_row)
 	app.play_button = app.button("PLAY", app.activate_play_control)
+	app.play_button.autowrap_mode = TextServer.AUTOWRAP_OFF
+	app.play_button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	app.play_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	app.play_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	app.play_button.custom_minimum_size.y = 64
@@ -338,6 +342,7 @@ static func build(app: Control) -> void:
 	app.transport_row.add_child(app.metro_button)
 	app.loop_button = app.button("LOOP_TOOL", func() -> void: app.toggle_drawer("LOOP_TOOL"))
 	app.loop_button.toggle_mode = true
+	app.loop_button.custom_minimum_size.x = 56
 	app.loop_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	# This opens an editor; the pressed appearance reports the loop setting.
 	app.loop_button.pressed.connect(app.update_loop_controls)

@@ -157,6 +157,9 @@ var loop_from: SpinBox
 var loop_to: SpinBox
 var loop_check: CheckButton
 var loop_button: Button
+var repeat_current_button: Button
+var repeat_off_button: Button
+var repeat_measure_help: Label
 var loop_summary: Label
 var loop_toggle: Button
 var count_length: SpinBox
@@ -241,6 +244,7 @@ var picker_choices: VBoxContainer
 var picker_source: OptionButton
 var picker_close: Button
 var menu_button: Button
+var reading_help_button: Button
 var tuner_button: Button
 var quick_tuner: Button
 var quick_mute: Button
@@ -1052,10 +1056,14 @@ func section(key: String) -> VBoxContainer:
 
 func build_welcome_menu() -> void:
 	var welcome: VBoxContainer = section("WELCOME")
-	welcome_practice = button("WELCOME_PRACTICE", func() -> void:
+	var begin_practice: Callable = func() -> void:
 		close_menu()
-		play_button.grab_focus())
+		play_button.grab_focus()
+	welcome_practice = button("WELCOME_PRACTICE", begin_practice)
 	welcome.add_child(welcome_practice)
+	welcome.add_child(button("WELCOME_HALF_SPEED", func() -> void:
+		set_speed(0.5)
+		begin_practice.call()))
 	var welcome_steps: VBoxContainer = VBoxContainer.new()
 	welcome_steps.add_theme_constant_override("separation", 10)
 	welcome.add_child(welcome_steps)
@@ -1392,6 +1400,7 @@ func build_drawers() -> void:
 	original_button = button("ORIGINAL_SPEED", func() -> void: set_speed(1.0))
 	for item: Button in [slower_button, faster_button, original_button]: speed_steps.add_child(item)
 	speed_steps.add_child(button("STOP", func() -> void: stop_practice(); close_menu()))
+	speed_steps.add_child(button("RESTART", func() -> void: close_menu(); restart_song()))
 	tempo_primary.move_child(speed_steps, 2)
 	tempo_primary.add_child(label("SPEED_PRESETS", 18))
 	speed_picker = CaptionOption.new()
@@ -1520,17 +1529,26 @@ func build_drawers() -> void:
 	chorus_check.toggled.connect(func(_value: bool) -> void: update_effects())
 	reverb_amount.value_changed.connect(func(_value: float) -> void: update_effects())
 
-	var loops: VBoxContainer = section("LOOP_TOOL")
+	var repeat: VBoxContainer = section("LOOP_TOOL")
+	loop_summary = label("LOOP_OFF", 20)
+	repeat.add_child(loop_summary)
+	repeat_current_button = button("REPEAT_MEASURE", func() -> void: repeat_measure(); close_menu())
+	repeat.add_child(repeat_current_button)
+	repeat.add_child(button("LOOP_RANGE_EDITOR", func() -> void: toggle_drawer("LOOP_RANGE_EDITOR")))
+	repeat_off_button = button("DISABLE_LOOP", func() -> void:
+		loop_check.button_pressed = false
+		close_menu())
+	repeat.add_child(repeat_off_button)
+	repeat_measure_help = label("REPEAT_MEASURE_HELP", 18)
+	repeat.add_child(repeat_measure_help)
+
+	var loops: VBoxContainer = section("LOOP_RANGE_EDITOR")
 	loops.add_child(label("LOOP_HELP", 18))
-	loop_summary = label("LOOP_OFF", 24)
-	loops.add_child(loop_summary)
 	var loop_actions: HFlowContainer = flow(loops)
 	loop_toggle = button("ENABLE_LOOP", func() -> void: loop_check.button_pressed = not loop_check.button_pressed)
 	loop_actions.add_child(loop_toggle)
 	loop_actions.add_child(button("PLAY_SECTION", play_section))
-	var loop_presets: HFlowContainer = flow(loops)
-	loop_presets.add_child(button("REPEAT_MEASURE", func() -> void: repeat_measure(); close_menu()))
-	loop_presets.add_child(button("REPEAT_SONG", func() -> void: repeat_song(); close_menu()))
+	loops.add_child(button("REPEAT_SONG", func() -> void: repeat_song(); close_menu()))
 	loop_check = check("LOOP", false)
 	loops.add_child(loop_check)
 	# The named action above is also available to touch-and-hold help.
@@ -2047,6 +2065,7 @@ func toggle_drawer(key: String, remember: bool = true) -> void:
 	responsive()
 	menu_close.grab_focus()
 	if key == "WELCOME": welcome_practice.grab_focus()
+	if key == "LOOP_TOOL": repeat_current_button.grab_focus()
 	reset_menu_scroll.call_deferred(key)
 	if key == "PRINT" and song != null:
 		print_first.max_value = song.measures.size()
@@ -2415,7 +2434,8 @@ func update_page_controls() -> void:
 	page_label.visible = score.mode == "pages" and not tv_active
 	# On very short portrait windows the synchronized score carries the same
 	# current-note information; dropping this duplicate row keeps practice fixed.
-	cue.get_parent().visible = (presentation.show_cue or tv_active) and (score.mode == "scroll" or tv_active) and not landscape and size.y >= 620 and not fit_hide_cue
+	var cue_min_height: float = 700 if size.x < 600 else 620
+	cue.get_parent().visible = (presentation.show_cue or tv_active) and (score.mode == "scroll" or tv_active) and not landscape and size.y >= cue_min_height and not fit_hide_cue
 	seek_navigation.visible = not tv_active or (not landscape and not fit_hide_seek)
 	var small_navigation: bool = compact or controls_on_side or size.x < 900
 	page_label.text = tr("PAGE_NUMBER_COMPACT" if small_navigation else "PAGE_NUMBER") % [score.page_index + 1, score.pages()]
@@ -3155,14 +3175,20 @@ func set_loop_boundary(first: bool) -> void:
 func update_loop_controls() -> void:
 	if loop_button == null: return
 	var enabled: bool = loop_check.button_pressed
-	var range_text: String = tr("LOOP_SELECTED") % [int(loop_from.value), int(loop_to.value)]
-	loop_summary.text = (tr("LOOP_ENABLED_RANGE") if enabled else tr("LOOP_DISABLED_RANGE")) % [int(loop_from.value), int(loop_to.value)]
+	var first: int = int(loop_from.value)
+	var last: int = int(loop_to.value)
+	var range_text: String = tr("LOOP_SELECTED_MEASURE") % first if first == last else tr("LOOP_SELECTED") % [first, last]
+	loop_summary.text = (tr("LOOP_ENABLED_MEASURE") % first if first == last else tr("LOOP_ENABLED_RANGE") % [first, last]) if enabled else tr("LOOP_OFF")
+	repeat_off_button.visible = enabled
+	repeat_measure_help.visible = not enabled
 	loop_toggle.text = tr("DISABLE_LOOP" if enabled else "ENABLE_LOOP")
 	loop_toggle.tooltip_text = tr("TIP_DISABLE_LOOP" if enabled else "TIP_ENABLE_LOOP")
 	loop_button.set_pressed_no_signal(enabled)
-	loop_button.text = "" if controls_on_side or compact_listening_transport() or (theme.default_font_size >= 30 and size.x < 760) else (range_text if enabled else tr("LOOP_OFF"))
-	loop_button.icon = UIIcons.get_icon("LOOP_TOOL") if loop_button.text.is_empty() or size.x >= 760 else null
-	loop_button.tooltip_text = tr("TIP_LOOP_ACTIVE") % [int(loop_from.value), int(loop_to.value)] if enabled else tr("TIP_LOOP_TOOL")
+	var icon_only: bool = controls_on_side or compact_listening_transport() or tight_controls or (theme.default_font_size >= 30 and size.x < 760)
+	loop_button.text = "" if icon_only else (range_text if enabled else tr("LOOP_TOOL"))
+	loop_button.icon = UIIcons.get_icon("LOOP_ACTIVE" if enabled else "LOOP_TOOL") if icon_only or size.x >= 760 else null
+	loop_button.tooltip_text = tr("TIP_LOOP_ACTIVE_MEASURE") % first if enabled and first == last else (tr("TIP_LOOP_ACTIVE") % [first, last] if enabled else tr("TIP_LOOP_TOOL"))
+	loop_button.set_meta("hover_caption", range_text if enabled else tr("LOOP_TOOL"))
 	adapt_flow(dock)
 
 func loop_changed(end_edited: bool = false) -> void:
@@ -3179,6 +3205,9 @@ func loop_changed(end_edited: bool = false) -> void:
 	if audio.playing_practice and (loop_check.button_pressed or audio.transport.repeat):
 		pause()
 		start(false)
+
+func play_uses_caption() -> bool:
+	return not tv_active and not controls_on_side and not tight_controls and not compact_listening_transport() and (theme.default_font_size < 30 or size.x >= 760)
 
 func update_play_control(frame: int = -1) -> void:
 	if count_badge == null: return
@@ -3204,7 +3233,7 @@ func update_play_control(frame: int = -1) -> void:
 		play_button.icon = null
 		play_button.tooltip_text = tr("TIP_COUNT_BEAT") % beat
 	else:
-		play_button.text = tr(key) if presentation.console and not tv_active else ("" if tv_active or controls_on_side or tight_controls or compact_listening_transport() else tr(key))
+		play_button.text = tr(key) if play_uses_caption() else ""
 		play_button.icon = UIIcons.get_icon(key)
 		play_button.tooltip_text = tr("TIP_" + key)
 	if key != play_control_key:

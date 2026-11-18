@@ -53,15 +53,21 @@ func run() -> void:
 	var source: PackedByteArray = app.get("song").source.bytes_copy()
 	var audio: PracticeAudio = app.get("audio")
 	var menu: OptionsMenu = app.get("options_menu")
-	for config: Array in [[1280, 800, 1.0], [360, 740, 2.0], [480, 320, 2.0]]:
+	for config: Array in [[1280, 800, 1.0], [1280, 800, 2.0], [360, 640, 1.0], [360, 740, 2.0], [480, 320, 2.0]]:
 		root.size = Vector2i(config[0], config[1])
 		app.call("apply_scale", config[2])
 		await settle(app)
 		var viewport: Rect2 = Rect2(Vector2.ZERO, root.size)
 		check(viewport.encloses(app.get("score_frame").get_global_rect()), "music fits representative viewport %s" % [config])
-		for key: String in ["play_button", "menu_button", "main_speed"]:
+		for key: String in ["play_button", "menu_button", "main_speed", "loop_button"]:
 			var control: Control = app.get(key)
 			check(control.is_visible_in_tree() and viewport.encloses(control.get_global_rect()) and control.size.y >= 44, key + " remains reachable")
+		var play: Button = app.get("play_button")
+		if not play.text.is_empty():
+			var font: Font = play.get_theme_font("font")
+			var caption_width: float = font.get_string_size(play.text, HORIZONTAL_ALIGNMENT_LEFT, -1, play.get_theme_font_size("font_size")).x
+			var chrome_width: float = play.get_theme_stylebox("normal").get_minimum_size().x + play.icon.get_width() + play.get_theme_constant("h_separation")
+			check(play.size.x >= caption_width + chrome_width, "Play fits its caption and icon without wrapping")
 		app.call("set_speed", 0.125)
 		await settle(app)
 		check(app.get("tempo_button").text == "1/8×" and viewport.encloses(app.get("speed_control").get_global_rect()), "fractional speed caption fits representative viewport %s" % [config])
@@ -91,6 +97,30 @@ func run() -> void:
 		check(app.get("opened_drawer") == "MENU_PRACTICE", "Back restores the menu category")
 		app.call("close_menu")
 		check(not app.get("menu_overlay").visible, "Close returns to practice")
+	# Exercise the quick Repeat route using its actual buttons, then rotate.
+	app.call("apply_scale", 1.0)
+	root.size = Vector2i(360, 640)
+	await settle(app)
+	check(app.get("song_title").visible and app.get("reading_help_button").is_visible_in_tree(), "phone keeps the song title and reading help visible")
+	check(absf(app.get("play_button").get_global_rect().get_center().y - app.get("loop_button").get_global_rect().get_center().y) < 2, "Play and Repeat share a compact row at phone width")
+	app.get("reading_help_button").pressed.emit()
+	check(app.get("opened_drawer") == "HELP", "reading help opens directly from practice")
+	app.call("close_menu")
+	app.call("seek_measure", 2)
+	app.call("set_speed", 0.5)
+	app.get("loop_button").pressed.emit()
+	check(app.get("opened_drawer") == "LOOP_TOOL" and app.get("repeat_current_button").has_focus(), "Repeat opens directly to the current-measure action")
+	app.get("repeat_current_button").pressed.emit()
+	check(app.get("opened_drawer") == "" and app.get("loop_from").value == 2 and app.get("loop_to").value == 2 and app.get("loop_button").button_pressed, "repeating this measure returns to practice with the range active")
+	var repeat_tick: float = app.get("source_tick")
+	root.size = Vector2i(844, 390)
+	await settle(app)
+	check(app.get("source_tick") == repeat_tick and app.get("speed") == 0.5 and app.get("loop_button").button_pressed, "rotation preserves the selected position, speed and repeat range")
+	app.get("loop_button").pressed.emit()
+	app.get("repeat_off_button").pressed.emit()
+	check(app.get("opened_drawer") == "" and not app.get("loop_button").button_pressed and app.get("loop_from").value == 2, "quick off returns to practice and remembers the range")
+	app.call("seek_measure", 1)
+	app.call("set_speed", 1.0)
 	# Navigation defaults, compact browsing and custom cues are part of the
 	# representative gate, including enlarged text and short landscape.
 	app.call("apply_scale", 1.0)

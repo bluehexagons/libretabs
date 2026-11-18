@@ -710,7 +710,7 @@ msgid "SOUND"
 msgstr "Volume & parts"
 
 msgid "LOOP_TOOL"
-msgstr "Loop"
+msgstr "Repeat"
 
 msgid "HELP"
 msgstr "Help"
@@ -1106,7 +1106,7 @@ msgid "CARD_PRINT"
 msgstr "Print your music\nTabs, sheet music or both"
 
 msgid "CARD_LOOP_TOOL"
-msgstr "Loop\nRepeat one measure or a section"
+msgstr "Repeat"
 
 msgid "CARD_SOUND"
 msgstr "Volume & parts\nListen, mute your part or balance the sound"
@@ -1135,6 +1135,9 @@ msgstr "Quick start · Getting started"
 msgid "WELCOME_PRACTICE"
 msgstr "Start practicing"
 
+msgid "WELCOME_HALF_SPEED"
+msgstr "Start at half speed"
+
 msgid "WELCOME_READ_TITLE"
 msgstr "1. Read a number"
 
@@ -1151,7 +1154,7 @@ msgid "WELCOME_PACE_TITLE"
 msgstr "3. Find your pace"
 
 msgid "WELCOME_PACE_BODY"
-msgstr "Open Practice in Menu, then Playback, to slow the tune down before playing along."
+msgstr "Move the speed slider next to playback to slow down. Use Repeat to practice the same few beats again."
 
 msgid "WELCOME_MORE"
 msgstr "Want to change the view or song?"
@@ -1310,25 +1313,37 @@ msgid "CURRENT_SONG"
 msgstr "Current song"
 
 msgid "LOOP_OFF"
-msgstr "Loop off"
+msgstr "Repeat is off"
+
+msgid "LOOP_SELECTED_MEASURE"
+msgstr "Repeat %d"
+
+msgid "LOOP_ENABLED_MEASURE"
+msgstr "Repeating measure %d"
+
+msgid "TIP_LOOP_ACTIVE_MEASURE"
+msgstr "Repeating measure %d. Choose another range or turn repeat off."
+
+msgid "LOOP_RANGE_EDITOR"
+msgstr "Choose a range"
+
+msgid "REPEAT_MEASURE_HELP"
+msgstr "A measure is a group of beats between vertical lines on the music."
 
 msgid "LOOP_SELECTED"
-msgstr "Loop %d–%d"
+msgstr "Repeat %d–%d"
 
 msgid "LOOP_ENABLED_RANGE"
 msgstr "Repeating measures %d–%d"
 
-msgid "LOOP_DISABLED_RANGE"
-msgstr "Loop off · Selected measures %d–%d"
-
 msgid "ENABLE_LOOP"
-msgstr "Turn loop on"
+msgstr "Repeat selected range"
 
 msgid "DISABLE_LOOP"
-msgstr "Turn loop off"
+msgstr "Turn repeat off"
 
 msgid "TIP_ENABLE_LOOP"
-msgstr "Repeat the selected measures during playback. Press Play when you are ready."
+msgstr "Repeat the selected measures. Press Play when you are ready."
 
 msgid "TIP_DISABLE_LOOP"
 msgstr "Continue past the selected measures. Keep the range for later."
@@ -1340,10 +1355,10 @@ msgid "LOOP_END_HERE"
 msgstr "End at current measure"
 
 msgid "TIP_LOOP_TOOL"
-msgstr "Loop is off. Choose a measure or a range to repeat."
+msgstr "Choose a measure or a range to repeat."
 
 msgid "TIP_LOOP_ACTIVE"
-msgstr "Loop is on for measures %d–%d. Change the range or turn looping off."
+msgstr "Repeating measures %d–%d. Change the range or turn repeat off."
 
 msgid "CHOOSE_EXERCISE"
 msgstr "Choose an exercise…"
@@ -2081,7 +2096,7 @@ msgid "INPUT_TUNER_PAUSED"
 msgstr "Tuner paused — switch Tuner on to listen again"
 
 msgid "RECENTER"
-msgstr "Back to current note"
+msgstr "Follow"
 
 msgid "TIP_RECENTER"
 msgstr "Return to the current position without starting or pausing playback. Space still plays or pauses."
@@ -2451,7 +2466,7 @@ msgid "MENU_PRACTICE"
 msgstr "Practice"
 
 msgid "MENU_PRACTICE_HINT"
-msgstr "Speed, count-in, loops and practice layouts."
+msgstr "Speed, count-in, repeat and practice layouts."
 
 msgid "MENU_READING"
 msgstr "Score & print"
