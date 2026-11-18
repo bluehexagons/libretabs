@@ -3066,6 +3066,7 @@ func start(count_in: bool) -> void:
 		set_activity(false)
 		update_position()
 		update_play_control()
+		set_status("STATE_COMPLETE")
 		return
 	source_tick = start_tick
 	audio.transport.configure(song, start_tick, end_tick, playback_speed(), loop_check.button_pressed, count_in, true, muted.duplicate(), loop_start_tick, int(count_length.value))
@@ -3301,12 +3302,14 @@ func seek_tick(value: float) -> void:
 	if state == "STATE_COMPLETE" and next_tick < song.end_tick:
 		state = "STATE_READY"
 		update_play_control()
+		set_status("START_HINT")
 	var was_playing: bool = audio.playing_practice
 	if not seek_dragging: pause()
 	source_tick = next_tick
 	if next_tick >= song.end_tick and not loop_check.button_pressed:
 		state = "STATE_COMPLETE"
 		update_play_control()
+		set_status("STATE_COMPLETE")
 	elif not seek_dragging and was_playing and not pause_navigation_check.button_pressed:
 		start(false)
 	update_position()

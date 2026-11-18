@@ -161,7 +161,9 @@ func run() -> void:
 	var audio: PracticeAudio = app.get("audio")
 	app.call("seek_tick", app.get("song").end_tick + 500)
 	check(not audio.playing_practice and app.get("state") == "STATE_COMPLETE" and app.get("source_tick") == app.get("song").end_tick, "seeking to the end completes without a phantom playback or count-in")
+	check(app.get("status_key") == "STATE_COMPLETE", "seeking to the end reports completion even when playback did not finish naturally")
 	app.call("seek_tick", 0)
+	check(app.get("status_key") == "START_HINT", "seeking back from the end restores the ready status")
 	app.call("seek_tick", app.get("song").end_tick)
 	check(app.get("state") == "STATE_COMPLETE" and app.get("play_button").get_meta("hover_caption") == TranslationServer.translate("REPLAY"), "paused seeking to the end offers Replay immediately")
 	var seek: HSlider = app.get("seek")
@@ -178,6 +180,7 @@ func run() -> void:
 		seek.value = app.get("song").end_tick
 		app.call("seek_input", seek_release)
 		check(not audio.playing_practice and app.get("play_control_key") == "REPLAY", "a timeline drag to the end offers Replay with pause-after-seeking %s" % pause_on_seek)
+		check(app.get("status_key") == "STATE_COMPLETE", "scrubbing to the end reports completion with pause-after-seeking %s" % pause_on_seek)
 		app.call("activate_play_control")
 		check(audio.playing_practice and app.get("source_tick") == 0, "one press replays from the beginning after scrubbing to the end")
 		app.call("pause")
