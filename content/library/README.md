@@ -39,7 +39,7 @@ gaps are deliberate; no swing or human timing is added.
 | yankee_doodle | Verse and chorus twice, with dotted chorus rhythm | 2/4 · 100 |
 | brahms_lullaby | Complete vocal melody in C, preserving pickup, rests and dotted rhythm. The practice bass starts each full bar on low C | 3/4 · 84 |
 | minuet_in_g | Both 16-bar sections, without repeats or ornaments, down one octave | 3/4 · 100 |
-| piano_study | Original eight-bar two-hand C-major exercise with a quarter-note melody and alternating low half notes on separate treble and bass MIDI parts | 4/4 · 88 |
+| piano_study | Original eight-bar two-hand C-major exercise with a quarter-note melody and bass notes on beats 1 and 3, on separate MIDI parts | 4/4 · 88 |
 | row_your_boat | Common eight-bar teaching round in C, played twice; rhythm simplified to quarter, half and whole notes | 4/4 · 96 |
 | jingle_bells | Sixteen-bar verse and sixteen-bar familiar refrain in C, with dotted rhythms and paired eighth notes | 4/4 · 116 |
 | greensleeves | Both sixteen-bar melody sections in A minor plus a padded pickup, down one octave; dotted-quarter/eighth pairs and chromatic notes retained; accompaniment replaced | 3/4 · 90 |

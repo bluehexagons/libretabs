@@ -14,21 +14,19 @@ six lessons and musical, timing, accessibility and device checks remain open.
 
 ## Your first session
 
-1. [Open the player](https://bluehexagons.github.io/libretabs/play/). An exercise
-   is ready. Read **Quick start**, then choose **Start practicing**.
-2. Press **Play** and listen once. On the six tab lines, the top line is the
-   thinnest guitar string. Numbers tell you which fret to press; **0** means
-   pluck the string without pressing it.
-3. Open **Menu → Practice → Playback → Speed presets** and try **1/2 speed**.
-   The notes keep the same pitch. Close the menu and choose **Restart** to play
-   again from the beginning.
-4. Open **Menu → Practice → Loop**, set **From 1** and **Through 2**, and choose
-   **Play selected section** to repeat the first two measures (groups of beats).
-5. Open **Songs** for another tune. Try Twinkle, Twinkle Little Star.
+1. **Listen.** On a fresh launch, **Ode to Joy** is ready. Choose **Start at
+   half speed** in **Quick start**, then press **Play**.
+2. **Follow a few notes.** Try **0–0–1–3** on the top tab line for the thinnest
+   string. **0** means pluck without pressing. **1** and **3** tell you which
+   metal strip, or fret, to press just behind.
+3. **Repeat one measure.** Pause and tap the opening music. Choose **Repeat →
+   Repeat this measure**, then press **Play**. A measure is a group of beats
+   between vertical lines. The guide shows how to repeat the opening even
+   after it scrolls out of view.
 
-The [user guide](docs/user-guide.md) explains reading tabs, choosing music,
-practicing with loops, changing the view, printing and troubleshooting. You can
-also open **Menu → Help & app → Help** or **Quick start** inside the player.
+The [first-session guide](docs/user-guide.md#your-first-five-minutes) walks through
+this passage and suggests what to play next on guitar or piano. For help inside
+the player, open **Menu → Help & app → Help** or **Quick start**.
 
 The project is maintained by **bluehexagons**. It is operated without paid
 editions, subscriptions, advertising or data monetization. That describes the
@@ -44,16 +42,14 @@ offline files and cross-origin isolation. The guide and release pages are the
 public entry points; the managed preview used during development is not a public
 launch URL.
 
-The Songs drawer includes 29 project-authored MIDI teaching arrangements of
-public-domain works and traditional melodies, plus an original two-hand piano
-study. Try Amazing Grace, Silent Night, Aura Lee or London Bridge for another
-familiar melody. Open **About** for historical credits, source links and details
-of each teaching arrangement. Pin Songs for one-tap switching during practice.
-Start with Hot Cross Buns, Twinkle, Twinkle Little Star or Mary
-Had a Little Lamb, then try Simple Gifts or Sakura Sakura when you feel ready.
-It also includes technical examples and
-opens local Standard MIDI File format 0 or 1 files. Imported files are read on
-the device and are not uploaded or saved by the prototype.
+The Songs drawer includes 34 teaching arrangements of public-domain works and
+traditional melodies, plus an original two-hand piano study. Try **Hot Cross
+Buns** for a three-note tune or **Mary Had a Little Lamb** for longer phrases.
+Open **About** for practice cues, history and sources. Pin Songs for one-tap
+switching during practice.
+
+The player also includes technical examples and opens local Standard MIDI File
+format 0 or 1 files. Imported files stay on the device for the session.
 
 The player currently supports generated practice sound, basic guitar placement,
 staff/tab display, count-in, tempo, seeking, looping, keyboard reference notes,

@@ -1072,7 +1072,7 @@ func build_welcome_menu() -> void:
 	welcome_step_pair = BoxContainer.new()
 	welcome_step_pair.add_theme_constant_override("separation", 10)
 	welcome_steps.add_child(welcome_step_pair)
-	for step: String in ["READ", "PLAY", "PACE"]:
+	for step: String in ["PLAY", "READ", "PACE"]:
 		var card: PanelContainer = PanelContainer.new()
 		card.add_theme_stylebox_override("panel", UIAppearance.role_style("reading", dark_mode, "normal"))
 		card.set_meta("welcome_card", true)
@@ -1705,7 +1705,7 @@ func build_drawers() -> void:
 	var help: VBoxContainer = section("HELP")
 	help.add_child(button("WELCOME", func() -> void: toggle_drawer("WELCOME")))
 	keyboard_help = label("KEYBOARD_HELP_LOWER", 18)
-	for key: String in ["HELP_STRINGS", "HELP_FRETS", "HELP_STAFF", "HELP_TIMING", "HELP_HIGHLIGHTS", "HELP_WARNINGS", "HELP_TECHNIQUES", "VIEW_HELP"]:
+	for key: String in ["HELP_STRINGS", "HELP_FRETS", "HELP_TIMING", "HELP_STAFF", "HELP_HIGHLIGHTS", "HELP_WARNINGS", "HELP_TECHNIQUES", "VIEW_HELP"]:
 		help.add_child(label(key, 20))
 	help.add_child(label("TOUCH_HELP"))
 	help.add_child(label("PLAYER_SHORTCUTS"))
@@ -3821,7 +3821,10 @@ func prepare_print() -> void:
 		print_status.text = tr("CANCELLED" if cancelled else "PRINT_FAILED")
 		return
 	var subtitle: String = tr("PRINT_SUBTITLE") % [part + 1, int(print_first.value), int(print_last.value), print_notation.get_item_text(print_notation.selected)]
-	print_html = PrintLayout.document(images, title, subtitle, summary.text + "\n\n" + warning.text + "\n\n" + tr("HELP_STRINGS") + "\n\n" + tr("HELP_STAFF"), paper_size)
+	var notes: PackedStringArray = [summary.text, warning.text]
+	if notation != "staff": notes.append_array([tr("HELP_STRINGS"), tr("HELP_FRETS")])
+	if notation != "tab": notes.append(tr("HELP_STAFF"))
+	print_html = PrintLayout.document(images, title, subtitle, "\n\n".join(notes), paper_size)
 	print_save.disabled = print_html.is_empty()
 	print_status.text = tr("PRINT_READY") % images.size()
 

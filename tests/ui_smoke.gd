@@ -48,6 +48,21 @@ func run() -> void:
 	check(app.get("opened_drawer") == "WELCOME", "first launch offers Quick start")
 	app.get("welcome_practice").pressed.emit()
 	check(app.get("opened_drawer") == "" and not app.get("audio").playing_practice, "Start practicing closes help without starting audio")
+	app.call("toggle_drawer", "WELCOME")
+	var welcome: VBoxContainer = app.get("drawers")["WELCOME"]
+	var half_speed: Button = welcome.get_child(1)
+	check(half_speed.text == app.tr("WELCOME_HALF_SPEED"), "Quick start offers the suggested starting speed")
+	half_speed.pressed.emit()
+	check(app.get("speed") == 0.5 and app.get("opened_drawer") == "" and not app.get("audio").playing_practice and app.get("play_button").has_focus(), "half speed prepares the first listen and puts focus on Play")
+	var starter: SongDocument = app.get("song")
+	var projection: TabProjection = app.get("projection")
+	var first_tabs: Array[Vector2i] = []
+	for note: Dictionary in starter.notes:
+		if note.part != app.get("part") or note.start >= starter.measures[0].end: continue
+		var placement: Dictionary = projection.placements.get(note.id, {})
+		if not placement.is_empty(): first_tabs.append(Vector2i(placement.string, placement.fret))
+	check(first_tabs == [Vector2i(1, 0), Vector2i(1, 0), Vector2i(1, 1), Vector2i(1, 3)], "fresh practice opens with the guide's four tabs on the thinnest string")
+	app.call("set_speed", 1.0)
 	app.set("motion_mode", "reduced")
 	app.call("apply_motion")
 	var source: PackedByteArray = app.get("song").source.bytes_copy()
@@ -372,6 +387,10 @@ func run() -> void:
 		check(app.get("opened_drawer") == "SONG_DETAILS" and about.song_index == 11 and about.source_buttons.size() == 1, "expanded song details include bundled history and source links")
 		check(app.get("song") == details_song and not audio.playing_practice, "reading song details preserves practice selection and silence")
 		check(about.size.x <= root.size.x and app.get("drawer").size.x <= root.size.x, "detail text wraps at representative viewport and scale")
+		var headings: Array[String] = []
+		for child: Node in about.get_children():
+			if child is Label: headings.append(child.text)
+		check(headings.has(app.tr("SONG_ARRANGEMENT_HEADING")) and headings.find(app.tr("SONG_HISTORY_HEADING")) > headings.find(app.tr("SONG_ARRANGEMENT_HEADING")), "song details put practice guidance before history")
 		for source_button: Button in about.source_buttons:
 			check(source_button.focus_mode == Control.FOCUS_ALL and source_button.size.y >= 44, "source link remains keyboard and touch accessible")
 		app.call("go_back")

@@ -2,93 +2,69 @@
 
 [Open the player](https://bluehexagons.github.io/libretabs/play/) · [Downloads](https://github.com/bluehexagons/libretabs/releases) · [Back to README](../README.md)
 
-LibreTabs shows you where to play notes on a six-string guitar, plays a reference
-sound, and helps you repeat music at your own pace. You can start with the built-in
-music; you do not need a music file or an account. Optional playing inputs add
-keyboard/MIDI feedback and experimental single-note microphone listening. The
-tuner estimates pitch; it does not adjust your instrument for you.
+LibreTabs shows you where to play notes on a six-string guitar and helps you
+hear and repeat music at your own pace. Start with the built-in music. Optional
+keyboard, MIDI and microphone input can add playing feedback later.
 
 This guide describes the current prototype. The planned six-lesson course is
 not yet available. Generated guitar arrangements and notation still need musician
 review; treat them as practice suggestions.
 
-## Find an option
-
-Open **Menu** for six groups: **Practice**, **Score & print**, **Sound & input**,
-**Screen & interface**, **Songs & progress**, and **Help & app**. Each card
-describes what it contains. Songs and Tuner also have direct buttons at the top.
-Cards use fewer columns on narrow screens or with larger text; scroll to reach
-the remaining choices.
-
-Use **Find an option** to search for a setting or instrument, such as “count in,”
-“ukulele,” “MIDI channel” or “text size.” Spaces and punctuation are interchangeable.
-Results name their category. Select a result, or press Enter to open the first one.
-**Back** keeps your search and position. **Close** returns to practice; reopening
-Menu shows the categories again.
-
-## Try another interface
-
-Open **Menu → Screen & interface → Interface** to compare the current player (**Classic**) with three
-alternatives:
-
-- **Focus:** a plain music stand with Play and speed above the score, sharing
-  one slim toolbar on wide screens and a compact stacked header on phones.
-  Secondary actions are in Menu.
-- **Touch:** navigation tabs and a wide, labeled Play button above a separate
-  row of practice actions. Its position slider sits beside these thumb controls.
-  Short windows use a compact dock; short landscape screens put controls on your preferred hand side.
-- **Workspace:** a labeled controls rail, plus a separate score setup panel on
-  large screens, and a narrow icon rail with direct tool shortcuts on phones.
-  The smallest windows and enlarged text use the compact player.
-
-Select a choice, then **Done** to return to practice. Switching keeps your song,
-playback position, speed, loop, music layout and listening connection. The choice
-is saved on this device; choosing Classic returns to the original interface.
-Theater and capture use their usual shared music views. These are comparison
-layouts; a final redesign has not been selected.
-
 ## Your first five minutes
 
-1. Open the player. An exercise is already loaded. Choose **Start practicing**
-   in **Quick start**. This does not start the sound. To change how the music is
-   shown, choose **Practice layouts** in Quick start or **Menu → Practice**.
-2. Press **Play** and listen once without playing your guitar. The clicks before
-   the music are a **count-in**: time to get ready. A number and a row of beat dots
-   appear in Play and beside the starting music; the filled dot moves each beat.
-   The moving line follows the music. Rounded outlines mark sounding tab numbers; slightly larger, bolder
-   staff noteheads mark sounding notes without changing their shape.
-3. Move the speed slider beside the playback controls to slow down. **1/2×** means
-   half speed, with the same pitches. Select the speed number for exact settings.
-   Quick start also offers **Start at half speed**.
-4. Follow just a few numbers on the guitar tabs, using the reading guide below.
-   It is fine to listen again before joining in.
-5. Choose **Repeat → Repeat this measure** to practice the current group of beats
-   between two vertical lines. For a longer passage, choose **Repeat → Choose a
-   range**, set **From** to **1** and **Through** to **2**, then choose **Play
-   selected section**. Choose **Turn repeat off** to continue through the song.
-   If the practice controls are condensed, open **Menu → Practice → Repeat**.
-6. Once you can follow the notes, choose **My part** next to Speed to play them
-   yourself while the other parts and beat clicks keep their settings. On compact
-   screens, look for the music-note button or select the speed number and turn off
-   **Hear my part** in Playback. A note with an × indicates that your part is
-   muted. Turn it back on to listen again.
+1. **Listen.** On a fresh launch, **Ode to Joy** is ready. In **Quick start**,
+   choose **Start at half speed**, then press **Play**. A **count-in** is the
+   series of clicks before the music that gives you time to get ready, if enabled.
+   Listen to the first four notes, E–E–F–G. Each takes one beat, the pulse you can
+   tap along with.
+2. **Follow a few notes.** On the default guitar layout, find **0–0–1–3** on the
+   top tab line. That line represents the thinnest string. Play the first two
+   notes without pressing the string. For the next two, press just behind the
+   first and third metal strips, called frets. Follow the moving line from left
+   to right. The [tab reading guide](#read-the-guitar-tabs) shows the other strings.
+3. **Repeat one measure.** Pause and tap the opening music to move back there.
+   A **measure**, or bar, is the group of beats between vertical lines. Choose
+   **Repeat → Repeat this measure**, then **Play** if paused. If the first measure
+   has scrolled out of view, choose **Repeat → Choose a range**, set **From** and
+   **Through** to **1**, then choose **Play selected section**. Find **Repeat**
+   under **Menu → Practice** if the shortcut is tucked away.
+4. Keep the melody audible while you learn the pattern. Once you can play it
+   steadily, choose **My part** or turn off **Hear my part** in Playback to try
+   it with any backing and beat clicks you have enabled. Turn it back on to
+   check the tune again. Choose **Repeat → Turn repeat off** when you want to
+   continue through the piece.
 
-For another tune, choose **Songs** (also in the Theater header). Search by title
-or composer, or open **Show filters & sort** to narrow by suggested level,
-playing time, starting BPM or suggested instrument. **First steps** songs appear first
-by default.
-The level is a teaching suggestion for this short arrangement, not a tested
-performance grade. The guitar and piano suggestions describe the intended
-practice arrangement; they do not claim every song has been checked on a
-physical instrument. Some tunes begin with silence.
-Wait for the moving line to reach the first note.
+**1/2×** means half speed (50%). Slowing the music gives you more time and
+keeps the notes at the same pitch. You can change speed anytime with the slider
+or select its number for **Playback** options.
 
-Use a song’s **About** action for its history, sources and arrangement details.
-Some entries identify a particular historical version: **Row Your Boat** offers
-a straight-rhythm study and a lilting 1881 version, whose bars group short notes
-in threes. **The Skye Boat Song** follows an 1888 melody, while **Long, Long Ago**
-uses an edition catalogued as 1845. Their descriptions explain the differences
-and the newly written practice basses.
+If you need to restore the tabs, choose **Guitar · tabs + staff** under
+**Practice layouts**. Outside Quick start, find it under **Menu → Practice**.
+
+## What to practice next
+
+Find each piece by name in **Songs**. Choose **Listen** for a short preview,
+or select the title and press **Play** to practice. Set your pace again after
+switching pieces. The **About** button puts practice notes ahead of the
+history and sources. **Filters** can show pieces tagged **First steps**.
+
+| Try | Practice goal |
+| --- | --- |
+| **Hot Cross Buns** | Repeat bars 1–2. Each uses just E–D–C. Hold the C for two beats. When those bars feel steady, try bar 3, which fits two short notes into each beat. |
+| **Mary Had a Little Lamb** | Follow the four-note opening as it returns in bar 5. Hear what changes after it, then hold the last C for four beats. |
+| **Twinkle, Twinkle Little Star** | Practice the opening jump from C to G. Listen for the opening to return in bar 9. |
+| **Row Your Boat** | Compare the straight-rhythm setting with **Row Your Boat · lilting 1881**. Tap along to the two main beats per bar in the lilting one, each divided into three. |
+
+For piano, open **Menu → Practice → Practice layouts → Try a two-hand piano
+exercise**. In **Volume & parts**, turn off **Hear Bass** to listen to and play
+the right-hand melody first. Then bring back the bass. The left hand plays on
+beats 1 and 3. Practice one bar at a time before joining both hands. If you want
+to play on the screen, choose **Piano · staffs + playable keys** in Practice
+layouts.
+
+Use **Learned** in Songs when you feel ready to keep a record. You could try the
+tune from start to finish at a comfortable speed as a check. The marks are
+[manual and reversible](#keep-track-of-what-you-have-learned).
 
 ## Read the guitar tabs
 
@@ -106,14 +82,14 @@ pitches on a staff:
 | Bottom | 6 · thickest, lowest sounding | E |
 
 A **fret** is a metal strip across the guitar neck. A number on a tab line tells
-you which fret to use on that string, not which finger to use. For **3**, press
-the string just behind the third metal fret, on the side toward the headstock,
-then pluck that string. **0** means pluck the open string without pressing it.
-Numbers lined up vertically ask for notes at the same time; this is a **chord**.
+you which fret to use on that string. For **3**, press just behind the third
+fret, on the side closer to the tuning pegs, then pluck that string.
+**0** means pluck the open string without pressing it. Numbers lined up
+vertically ask for notes at the same time, called a **chord**.
 
-The tabs assume **standard tuning**: E–A–D–G–B–E from thickest to thinnest string.
-Use Menu → Tuner & listening, or a separate tuner. Changing the app's handed layout changes where
-controls sit; it does not reverse the tab lines or change the tuning.
+The tabs assume **standard tuning**, E–A–D–G–B–E from thickest to thinnest string.
+Use **Tuner & listening** in Menu, or a separate tuner, to check your strings.
+The same string order and tuning apply in either control layout.
 
 ## Follow the timing
 
@@ -122,23 +98,40 @@ A **beat** is the regular pulse you can count or tap along with. A **measure**
 written silence: do not start a note there.
 
 The five-line **staff** is the sheet music reference. Higher positions mean
-higher pitches, and note shapes describe how long notes last. You can begin with
-the tabs and learn the staff gradually. In this player, a quarter note lasts one
-beat, a half note two, and an eighth note half a beat. A dot adds half the note's
-length; a tie joins notes of the same pitch into one held sound. Guitar treble
-notation is written an octave higher than it sounds: the same note name in the
-next higher register.
+higher pitches, and note shapes show how long notes last. A half note lasts as
+long as two quarter notes. A quarter note lasts as long as two eighth notes. A
+dot adds half the note’s length. A **tie** joins notes of the same pitch into
+one held sound.
 
-A curved underline marks the next note. Sounding tab numbers have a rounded
-outline; sounding staff noteheads become slightly larger and bolder while
-retaining their filled or hollow shape. Gentle ripples mark tab note starts
-when reduced motion is off. These are playback cues, not feedback about your
-playing. Fret numbers remain the
-instruction even when colors or optional shapes are shown. **!** or **△** means
-there is an arrangement warning; open **Songs → About this arrangement**.
+In **4/4**, as in *Ode to Joy*, count four beats per measure, with a quarter note
+per beat. In **6/8**, as in *Silent Night* or the lilting *Row Your Boat*, feel
+two main beats, each divided into three eighth notes. **Beat clicks** and the
+count-in follow that pulse. The tempo readout still counts quarter notes per
+minute. The guitar staff writes notes an octave higher than they sound, with
+the same note names one register up.
+
+With the default highlights, a curved underline marks the next note. Sounding
+tab numbers have a rounded outline, and sounding staff notes grow slightly
+larger and bolder. Gentle ripples mark the start of a tab note when reduced
+motion is off. All these cues follow the song’s playback. **!** or **△** flags
+an arrangement warning. Open **Menu → Score & print → About this arrangement**.
 
 The prototype rounds rhythms for display. Playback keeps the imported timing,
 so unusually detailed rhythms may not line up exactly with the simplified symbols.
+
+## Find an option
+
+Open **Menu** for six groups: **Practice**, **Score & print**, **Sound & input**,
+**Screen & interface**, **Songs & progress**, and **Help & app**. Each card
+describes what it contains. Songs and Tuner also have direct buttons at the top.
+Cards use fewer columns on narrow screens or with larger text; scroll to reach
+the remaining choices.
+
+Use **Find an option** to search for a setting or instrument, such as “count in,”
+“ukulele,” “MIDI channel” or “text size.” Spaces and punctuation are interchangeable.
+Results name their category. Select a result, or press Enter to open the first one.
+**Back** keeps your search and position. **Close** returns to practice; reopening
+Menu shows the categories again.
 
 ## Choose music or open your own file
 
@@ -146,13 +139,20 @@ In **Songs** (also in the Theater header), use **Listen** to hear up to 12 secon
 from the first note of a built-in song. Listen keeps your current song open and
 pauses any playing practice audio. Tap the song title to open it for practice.
 Search by title or composer, or expand the filters to browse by suggested level,
-length, starting speed, and instrument. **About** opens the full song details: duration, practice tempo, instruments, what the teaching arrangement changes, and a sourced historical note. Source buttons open references in your browser; the notes themselves work offline. **Practice this song** selects it. **Back** returns to browsing. **Open MIDI file** loads your own music.
+length, starting tempo, and instrument. **About** opens the full song details,
+including practice cues and sourced history. Source links open in your browser.
+The notes work offline. **Practice this song** selects it and **Back** returns
+to browsing. Use **Import MIDI** to load your own music.
 Enable **Pin songs to practice** to keep a compact scrolling browser above the
 music. Tap a title to switch in one action; playback waits for Play. The browser
 keeps its scroll position and keyboard focus. The information button beside each title opens its details without switching songs. Search narrows this list, **Songs**
 opens the full catalog, and **Unpin** removes the browser. Pinning is remembered;
 imported songs are never added to a saved list. Both search fields have a clear
 button and Enter opens the first matching song.
+
+The built-in examples below the catalog demonstrate features such as tempo
+changes, multiple parts and held notes. For practice pieces, start with the
+[song suggestions above](#what-to-practice-next).
 
 A **MIDI file** contains note and timing instructions; it is not
 a recording such as an MP3, a photograph of sheet music, or a guitar-tab
@@ -247,7 +247,12 @@ height, so choose fewer Music lines if you need taller notes.
   Marks favor half (50%), quarter (25%) and eighth (12.5%)
   speed; all three remain available in presets. Arrow keys adjust one percentage
   point; Page Up/Down adjust five; Home/End select 10/999%.
-- **Base tempo:** BPM means beats per minute; here a beat is a quarter note. Tap the percentage beside the speed slider, or open **Menu → Practice → Playback**. Expand **Base tempo settings** and enter a base BPM to make it the new 100%. For example, 80 BPM at 50% starts at 40 BPM. **Use song BPM** restores the song’s tempo and 100% speed. Later tempo changes keep their proportions. The override lasts until you open another song and is not saved. Changing speed changes how quickly notes arrive, not their pitch.
+- **Base tempo:** the BPM readout counts quarter notes per minute. Tap the
+  speed number or open **Menu → Practice → Playback**. Expand **Base tempo
+  settings** and enter a base BPM to make it the new 100%. For example, 80 BPM
+  at 50% starts at 40 BPM. **Use song BPM** restores the song’s tempo and 100%
+  speed. Later tempo changes keep their proportions. The override lasts until
+  you open another song. Changing speed keeps the notes at the same pitch.
 - **Beat clicks (metronome):** adds a click on each beat to help you keep time.
   **Count in before playing** adds preparation clicks whenever you press Play,
   including after pausing or choosing a position partway through the song.
@@ -264,7 +269,8 @@ height, so choose fewer Music lines if you need taller notes.
   automatically after a seek if already playing.
   Changing speed or other playback settings keeps its existing playback behavior.
 - **Repeat:** **Repeat this measure** returns to the beginning of the current
-  measure and sets it to repeat. Open **Choose a range** for a longer passage.
+  measure and sets it to repeat. If paused, press **Play**. Open **Choose a range**
+  for a longer passage.
   From and Through include the first and last measures you choose. **Start at current
   measure** and **End at current measure** set the range from the current position.
   **Play selected section** starts at the first selected measure and repeats,
@@ -349,9 +355,9 @@ Open **Menu → Score & print → Score view** for reading and layout choices:
   manually turns off following without moving playback. Enable **Follow playback**
   to resume automatic turns. Tapping a position on the music does move playback.
 - In smooth scrolling, drag sideways on the music to browse without seeking.
-  Tap a note to play from it. After browsing or turning a page manually, the
-  Play/Pause button becomes **Back to current note**. It returns to the current
-  playback position without starting or pausing sound. Space still plays or pauses.
+  Tap a note to move playback there, then press Play if paused. After browsing
+  or turning a page manually, Play/Pause becomes **Back to current note**. It
+  brings the current playback position into view. Space still plays or pauses.
 - The **Music lines** dropdown beside the player also switches between
   **Smooth scrolling** and pages with one to six lines. Choosing pages enables
   following playback. Fewer lines give each line more height.
@@ -383,6 +389,27 @@ For a stationary reading view, choose Manual pages as well as reduced motion.
 App information, license notices and offline readiness are in
 **Menu → Help & app → About LibreTabs**.
 
+## Try another interface
+
+Open **Menu → Screen & interface → Interface** to compare the current player (**Classic**) with three
+alternatives:
+
+- **Focus:** a plain music stand with Play and speed above the score, sharing
+  one slim toolbar on wide screens and a compact stacked header on phones.
+  Secondary actions are in Menu.
+- **Touch:** navigation tabs and a wide, labeled Play button above a separate
+  row of practice actions. Its position slider sits beside these thumb controls.
+  Short windows use a compact dock; short landscape screens put controls on your preferred hand side.
+- **Workspace:** a labeled controls rail, plus a separate score setup panel on
+  large screens, and a narrow icon rail with direct tool shortcuts on phones.
+  The smallest windows and enlarged text use the compact player.
+
+Select a choice, then **Done** to return to practice. Switching keeps your song,
+playback position, speed, loop, music layout and listening connection. The choice
+is saved on this device; choosing Classic returns to the original interface.
+Theater and capture use their usual shared music views. These are comparison
+layouts; a final redesign has not been selected.
+
 ## Print, capture and play reference notes
 
 **Menu → Score & print → Print your music:** choose tabs, sheet music or both, a measure range,
@@ -392,7 +419,8 @@ Open the saved HTML in a browser and print or choose Save as PDF.
 Use the matching paper size and turn off browser headers and footers. The file
 works offline. Measures share continuous rows with a clef and time signature at
 the start of each row; crowded measures receive more space. Printing retains
-the prototype's arrangement limitations.
+the prototype's arrangement limitations. The reading notes match the notation
+you chose for the page.
 
 **Menu → Screen & interface → Capture & overlay:** choose the music, background and placement, then
 **Preview overlay**. The toolbar has **Play/Pause**, **Settings** and **Back to

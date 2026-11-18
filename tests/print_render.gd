@@ -58,6 +58,8 @@ func run() -> void:
 		await app.call("prepare_print")
 		var html: String = app.get("print_html")
 		check(not html.is_empty() and not app.get("print_save").disabled, "complete song produces exportable pages")
+		check(html.contains(app.tr("HELP_FRETS").xml_escape()) == (notation != "staff"), "fret instructions accompany printed tabs")
+		check(html.contains(app.tr("HELP_STAFF").xml_escape()) == (notation != "tab"), "staff instructions accompany printed staff")
 		var images: Array[RegExMatch] = image_pattern.search_all(html)
 		var plan: Dictionary = PrintLayout.plan(app.get("song"), app.get("part"), notation, "Letter" if index == 20 else "A4", 0, app.get("song").measures.size() - 1)
 		check(images.size() == plan.pages.size(), "every planned page has a rendered image")

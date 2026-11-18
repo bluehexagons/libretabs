@@ -260,7 +260,7 @@ msgid "SONG_SORT_BPM"
 msgstr "Slowest starting speed first"
 
 msgid "SONG_LEVEL_HELP"
-msgstr "Practice levels and instruments are suggestions for these short teaching arrangements, not tested performance grades. BPM means beats per minute; you can change playback speed after opening a song."
+msgstr "The levels and instruments suggest where to start. These arrangements are awaiting musician review. The BPM number counts quarter notes per minute. You can change speed after opening a song."
 
 msgid "SONG_CATALOG_COUNT"
 msgstr "%d of %d songs"
@@ -731,7 +731,7 @@ msgid "DISPLAY"
 msgstr "Appearance & text"
 
 msgid "TEMPO_HELP"
-msgstr "Tempo is how fast the music moves. BPM means beats per minute; here a beat is a quarter note. Enter a base BPM to make it the new 100%. The speed slider scales from that base without changing pitches. Later tempo changes keep their proportions. A new song uses its own BPM."
+msgstr "Tempo is how fast the music moves. The BPM number counts quarter notes per minute. Enter a base BPM to make it the new 100%. The speed slider scales from that base without changing pitches. Later tempo changes keep their proportions. A new song uses its own BPM."
 
 msgid "BPM_LABEL"
 msgstr "Base tempo · beats per minute (BPM)"
@@ -755,19 +755,19 @@ msgid "LOOP_HELP"
 msgstr "A measure is a group of beats between vertical lines. From and Through include both end measures. Play selected section repeats them with your count-in setting."
 
 msgid "HELP_STRINGS"
-msgstr "1. Read tabs from left to right. The six lines represent guitar strings. The top line is string 1, the thinnest and highest sounding; the bottom is string 6, the thickest. Tabs assume standard tuning: E–A–D–G–B–E from thickest to thinnest. Use Menu → Tuner & listening, or a separate tuner."
+msgstr "Read guitar tablature (tabs) from left to right. The six lines represent strings. The top line is string 1, the thinnest. The bottom line is string 6, the thickest. Standard tuning is E–A–D–G–B–E from thickest to thinnest."
 
 msgid "HELP_FRETS"
-msgstr "2. A fret is a metal strip across the guitar neck. A tab number tells you which fret to use, not which finger. For 3, press just behind the third fret toward the headstock, then pluck that string. A 0 means pluck without pressing. Vertically aligned numbers are played together: a chord."
+msgstr "A fret is a metal strip across the guitar neck. For a 3 on a tab line, press that string just behind the third fret, on the side closer to the tuning pegs, then pluck it. A 0 means pluck the open string without pressing. Stacked numbers ask for notes played together, called a chord."
 
 msgid "HELP_STAFF"
-msgstr "3. The five-line staff is the sheet music reference. Higher positions mean higher pitches; note shapes show duration. Here, a quarter note lasts one beat, a half note two, and an eighth note half a beat. A rest means silence. A tie joins same-pitch notes into one held sound. Guitar treble is written an octave higher than it sounds: the same note name in the next higher register."
+msgstr "On the five-line staff, higher positions show higher pitches. A quarter note lasts as long as two eighth notes. A half note lasts as long as two quarter notes. In 4/4, count a beat for each quarter note. In 6/8, count two beats per measure, each as long as three eighth notes. A rest shows silence. A tie joins notes of the same pitch into one held sound. The guitar staff writes notes an octave higher than they sound, with the same note names one register up."
 
 msgid "HELP_TIMING"
-msgstr "4. A beat is the pulse you count along with; a measure groups beats between vertical lines. In Playback, turn on Beat clicks for a steady pulse or lower the speed to give yourself more time. Tap the music to move playback there. The rhythm display is simplified; audio keeps the original timing."
+msgstr "A beat is the pulse you can count or tap. A measure, or bar, is the group of beats between vertical lines. Turn on Beat clicks in Playback to hear the pulse while the music plays. The rhythm display is simplified. Audio keeps the original timing."
 
 msgid "HELP_TECHNIQUES"
-msgstr "5. In About this arrangement (under Songs), choose Basic tab, Strum with a pick or Fingerpick. A strum bracket marks the strings to sweep; X means keep that string quiet. B marks a possible barre: one fretting finger presses several strings at one fret. For fingerpicking, T is thumb; I, M, R are index, middle, ring of the picking hand. Read the warnings: simplified tabs may omit notes that remain in the staff and sound."
+msgstr "Open Score & print in Menu, then About this arrangement to choose Basic tab, Strum with a pick or Fingerpick. A strum bracket marks the strings to sweep. X means keep that string quiet. B marks a possible barre, where one finger presses several strings at one fret. For fingerpicking, T is thumb. I, M and R are the index, middle and ring fingers of the picking hand. Notes left out of the tab can still appear on the staff and sound in playback."
 
 msgid "FOLLOW_HINT"
 msgstr "Follow the outlined fret numbers."
@@ -1151,25 +1151,25 @@ msgid "WELCOME_HALF_SPEED"
 msgstr "Start at half speed"
 
 msgid "WELCOME_READ_TITLE"
-msgstr "1. Read a number"
+msgstr "2. Follow a few notes"
 
 msgid "WELCOME_READ_BODY"
-msgstr "On guitar tabs, each line is a string. A 0 means pluck that string without pressing a fret."
+msgstr "Read guitar tabs from left to right. The top line is the thinnest string. A number tells you which fret, or metal strip, to press just behind. For 0, pluck the string without pressing."
 
 msgid "WELCOME_PLAY_TITLE"
-msgstr "2. Listen, then join in"
+msgstr "1. Listen"
 
 msgid "WELCOME_PLAY_BODY"
-msgstr "Press Play. The clicks give you time to get ready; follow the notes from left to right."
+msgstr "Choose a starting speed above, then press Play and listen to the opening. The clicks before the music are the count-in, if enabled."
 
 msgid "WELCOME_PACE_TITLE"
-msgstr "3. Find your pace"
+msgstr "3. Repeat a short section"
 
 msgid "WELCOME_PACE_BODY"
-msgstr "Move the speed slider next to playback to slow down. Use Repeat to practice the same few beats again."
+msgstr "Tap the music where you want to practice. Open Repeat and choose Repeat this measure to hear the same group of beats again. If paused, press Play. Try playing along once you can follow the notes."
 
 msgid "WELCOME_MORE"
-msgstr "Want to change the view or song?"
+msgstr "For a tune with three notes, find Hot Cross Buns in Songs. For piano or bass, try Practice layouts."
 
 msgid "LIBRARY_PIANO_STUDY"
 msgstr "Two-hand piano study · original exercise"
@@ -1340,7 +1340,7 @@ msgid "LOOP_RANGE_EDITOR"
 msgstr "Choose a range"
 
 msgid "REPEAT_MEASURE_HELP"
-msgstr "A measure is a group of beats between vertical lines on the music."
+msgstr "A measure is a group of beats between vertical lines. Repeat this measure moves to the start of that group. If playback is paused, press Play to hear it repeat."
 
 msgid "LOOP_SELECTED"
 msgstr "Repeat %d–%d"
@@ -1475,7 +1475,7 @@ msgid "VIEW_FOLLOW_PAGES"
 msgstr "Pages · follow playback"
 
 msgid "HELP_HIGHLIGHTS"
-msgstr "A curved underline below a tab number or staff note means it is coming next, including notes played together. A rounded outline marks tab numbers sounding now; staff noteheads become slightly larger and bolder while keeping their shape. Gentle ripples mark tab note starts when reduced motion is off. These cues follow playback; they do not grade your playing."
+msgstr "With the default highlights, a curved underline shows the next note. The notes sounding now have outlines in the tabs or bolder noteheads on the staff. These cues follow the song’s playback. Playing feedback is a separate option."
 
 msgid "PAGE_FOLLOW"
 msgstr "Follow playback"
@@ -1613,7 +1613,7 @@ msgid "SOUND_HELP"
 msgstr "Listen to the focused part first. Then mute it to play that line yourself while hearing enabled other parts. Each part keeps its own mute choice if you change focus. Instrument and beat-click volumes are separate."
 
 msgid "HELP_WARNINGS"
-msgstr "A ! or △ marks an arrangement warning, not a mistake you played. Open Songs, then About this arrangement to see which notes could not fit the guitar tab. Try another part or simpler music if needed."
+msgstr "An exclamation mark or triangle flags a limitation of the arrangement. Open Score & print in Menu, then About this arrangement to see what fit on the guitar tab. Try another part or simpler music if needed."
 
 msgid "PRACTICE_INSTRUMENT"
 msgstr "Instrument sound"
@@ -2696,7 +2696,7 @@ msgid "SONG_ARRANGEMENT_COMMON"
 msgstr "The starting tempo is in quarter notes per minute. Canon in D uses Pachelbel’s repeating bass. The other bass lines were written for practice."
 
 msgid "SONG_ARRANGEMENT_ODE_TO_JOY"
-msgstr "The familiar 16-bar theme is in C. The first two phrases begin alike and end differently. Listen for quicker notes in the third phrase and a drop to low G before the opening returns."
+msgstr "Start with E–E–F–G in bar 1. Give each note one beat. The 16-bar melody is in C. The first two phrases begin alike and end differently. Listen for quicker notes in the third phrase and a drop to low G before the opening returns."
 
 msgid "SONG_HISTORY_ODE_TO_JOY"
 msgstr "Ludwig van Beethoven completed his Ninth Symphony in 1824. It premiered in Vienna on 7 May. In the finale, cellos and double basses introduce the tune before voices sing words from Friedrich Schiller’s poem “Ode to Joy”. The tune later became the wordless anthem of the Council of Europe and the European Union."
@@ -2834,7 +2834,7 @@ msgid "SONG_HISTORY_AU_CLAIR_DE_LA_LUNE"
 msgstr "On 9 April 1860, Édouard-Léon Scott de Martinville recorded a fragment of this French song with a phonautograph, which traced sound on soot-covered paper. First Sounds recovered audible sound from the trace in 2008. The Austrian Mediathek link plays the team’s improved 2010 restoration."
 
 msgid "SONG_ARRANGEMENT_HOT_CROSS_BUNS"
-msgstr "The classroom melody uses just E, D and C. Each four-bar pass starts with the same falling line twice. In bar 3, play four short Cs followed by four short Ds before the ending. The whole exercise plays three times."
+msgstr "Start with bars 1 and 2. Both play E–D–C, with the C held for two beats. In bar 3, fit four short Cs into two beats, then four short Ds into the next two. The four-bar pattern plays three times."
 
 msgid "SONG_HISTORY_HOT_CROSS_BUNS"
 msgstr "This English nursery song echoes street sellers calling out buns for sale. A print from 1799 depicts the trade in London. The 1878 songbook The Baby’s Bouquet prints a longer version, with illustrations by Walter Crane and tunes collected and arranged by Lucy Crane."

@@ -26,11 +26,11 @@ func show_song(index: int) -> void:
 	meta.text = tr("SONG_DETAILS_META") % [tr(level_key), "%d:%02d" % [int(entry.seconds) / 60, int(entry.seconds) % 60], int(entry.bpm), tr("SONG_VIEW_BOTH" if entry.views.size() > 1 else "SONG_VIEW_PIANO")]
 	add_child(meta)
 	add_child(app.button("SONG_DETAILS_PRACTICE", func() -> void: app.load_library_item(index)))
-	add_child(app.label("SONG_HISTORY_HEADING", 20))
-	add_child(app.label(str(history.history_key), 18))
 	add_child(app.label("SONG_ARRANGEMENT_HEADING", 20))
 	add_child(app.label(str(history.arrangement_key), 18))
 	add_child(app.label("SONG_ARRANGEMENT_COMMON", 18))
+	add_child(app.label("SONG_HISTORY_HEADING", 20))
+	add_child(app.label(str(history.history_key), 18))
 	if history.sources.is_empty(): return
 	add_child(app.label("SONG_SOURCES_HEADING", 20))
 	add_child(app.label("SONG_SOURCES_HELP", 16))

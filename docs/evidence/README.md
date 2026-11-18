@@ -4,6 +4,8 @@ Follow [artifact retention](../artifact-retention.md) when curating local build,
 export and review files. Keep dated records here even when newer work supersedes
 them; local media archives remain separate from published evidence.
 
+Beginner practice sequence [Quick start, guides, song details and print, 2026-11-18](learning-coherence-2026-11-18.md).
+
 Song context and source review [all 35 library cards, 2026-11-18](song-context-2026-11-18.md).
 
 Focused-part audio: [switch from listening to playing your part, 2026-11-18](focused-part-shortcut-2026-11-18.md).
