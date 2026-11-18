@@ -28,7 +28,7 @@ gaps are deliberate; no swing or human timing is added.
 | File | Scope and rhythm review | Meter / quarter-note BPM |
 | --- | --- | --- |
 | ode_to_joy | Complete 16-bar familiar theme in C, including contrasting phrase and dotted cadences | 4/4 · 100 |
-| fur_elise | Opening theme, contrasting right-hand phrase and return in A minor, down one octave, with written repeats omitted and a held A ending | 3/8 · 72 |
+| fur_elise | Opening theme, contrasting phrase and return in A minor, down one octave. Both hands contribute to the high E and the alternating E–D-sharp notes before the return | 3/8 · 72 |
 | spring | Longer opening theme in E, one octave below the violin source; eighths, sixteenths and dotted notes retained; final E half-note is an authored practice cadence | 4/4 · 100 |
 | canon_in_d | First violin’s four-bar opening and complete first four-bar variation, down one octave over the ground bass, played twice before a held D cadence | 4/4 · 80 |
 | twinkle | Complete 12-bar melody, including the contrasting middle and returning opening | 4/4 · 100 |
@@ -47,7 +47,7 @@ gaps are deliberate; no swing or human timing is added.
 | london_bridge | Two eight-bar singing-game melodies in C, the familiar version followed by the tune on p. 209 of Newell | 2/4 · 80 |
 | old_macdonald | Sixteen-bar classroom melody in C, with the second farm/animal line and its low-G lead-in restored before the repeated calls; one verse, without lyrics | 4/4 · 96 |
 | when_the_saints | Sixteen-bar straight-time melody study in C, with padded pickups and held notes; no jazz improvisation | 4/4 · 100 |
-| aura_lee | Sixteen-bar verse and refrain in C; historical 2/4 note values doubled into 4/4 teaching bars, with dotted refrain rhythm; first phrase rests and second holds into the refrain; grace note omitted | 4/4 · 88 |
+| aura_lee | Sixteen-bar solo verse and refrain from the 1861 print, in C. Doubled note values preserve the long–short opening, held C into the refrain and C–B dip before the closing cadence | 4/4 · 88 |
 | silent_night | Twenty-four-bar familiar melody in C, down one octave for guitar; six eighth notes per measure, dotted rhythm and a tied closing note | 6/8 · 72 |
 | camptown_races | Padded pickup, full sixteen-bar verse and eight-bar chorus from the 1850 print, lowered from D to C | 2/4 · 96 |
 | au_clair_de_la_lune | Complete sixteen-bar classroom melody in C, with the contrasting middle phrase and returning opening | 4/4 · 88 |

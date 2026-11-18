@@ -52,6 +52,10 @@ class LibraryScores(unittest.TestCase):
         # Compare the written violin and piano lines before guitar transposition.
         self.assertEqual([pitch for pitch, _ in bar('canon_in_d', 6)], [62, 59, 62, 69, 67, 71, 69, 67])
         self.assertEqual(bar('fur_elise', 10), [(76, 360), (67, 120), (77, 120), (76, 120)])
+        # Both hands contribute to the octave figure and the continuous chromatic return.
+        self.assertEqual(bar('fur_elise', 13)[-3:], [(64, 120), (76, 120), (64, 120)])
+        self.assertEqual(bar('fur_elise', 14), [(pitch, 120) for pitch in [76, 76, 88, 75, 76, 75]])
+        self.assertEqual(bar('fur_elise', 15), [(76, 120), (75, 120)] * 3)
         self.assertEqual(bar('fur_elise', 16), bar('fur_elise', 2))
 
     def test_distinctive_rhythms(self):
@@ -83,13 +87,13 @@ class LibraryScores(unittest.TestCase):
         self.assertEqual(notes(green['bars'].split('|')[17], (3, 4)), [(79, 1440)])
         self.assertEqual(green['notes'][-2:], [(57, 1440), (57, 1440)])
         self.assertEqual(green['transpose'], -12)
-        # Poulton 1861 vocal refrain, rhythm doubled into teaching 4/4 bars.
+        # Poulton 1861, p. 3 solo refrain, rhythm doubled into teaching 4/4 bars.
         aura_bars = SONGS['aura_lee']['bars'].split('|')
         self.assertEqual(notes(aura_bars[9], (4, 4)), [(64, 480), (64, 480), (64, 960)])
         self.assertEqual(notes(aura_bars[10], (4, 4)),
                          [(64, 720), (62, 240), (60, 480), (62, 480)])
         self.assertEqual(notes(aura_bars[14], (4, 4)),
-                         [(62, 240), (60, 720), (64, 720), (62, 240)])
+                         [(60, 240), (59, 720), (64, 720), (62, 240)])
         ground = SONGS['canon_in_d']['bass_roots']
         self.assertEqual(ground[:2], [(50, 45, 47, 42), (43, 38, 43, 45)])
         self.assertEqual(ground[:-1], ground[:2] * 8)

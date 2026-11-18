@@ -229,7 +229,13 @@ p. 209, transposed G to C. In `content/library/canon_in_d.mid` the first
 violin's opening and complete first variation follow the [Berlin manuscript
 copy, Mus.ms. 16481/8](https://resolver.staatsbibliothek-berlin.de/SBB0000A73000000000),
 down one octave with an added closing D. The restored middle of the Für Elise
-opening in `content/library/fur_elise.mid` follows the right-hand line in
-the public-domain 1888 edition and its Mutopia transcription 2015/08/18-931.
-The guitar study sounds an octave lower and omits the repeat signs and later
-episodes. Each MIDI is generated from the project’s readable recipe.
+opening in `content/library/fur_elise.mid` follows the public-domain 1888
+edition and its Mutopia transcription 2015/08/18-931. The study combines notes
+from both piano hands into one guitar line in bars 13–15, sounds an octave lower,
+and omits the repeat signs and later episodes. Each MIDI is generated from the
+project’s readable recipe.
+
+The Aura Lee refrain in `content/library/aura_lee.mid` uses the solo melody on
+p. 3 of the previously recorded 1861 Church print, including the descent from
+scale degree 1 to 7 in the penultimate bar. The print's p. 4 choral setting is
+a separate version of that passage.

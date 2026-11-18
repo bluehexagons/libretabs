@@ -2702,7 +2702,7 @@ msgid "SONG_HISTORY_ODE_TO_JOY"
 msgstr "This melody comes from Ludwig van Beethoven’s Ninth Symphony, completed in 1824 and first performed in Vienna on 7 May that year. Its final movement brings voices into the symphony to sing Friedrich Schiller’s poem “An die Freude”, known in English as “Ode to Joy”."
 
 msgid "SONG_ARRANGEMENT_FUR_ELISE"
-msgstr "The opening tune leads into a contrasting phrase and returns to finish on A. The melody follows the right hand, one octave lower for guitar. Listen for the high E before the opening returns. Written repeats and the later episodes are omitted."
+msgstr "The opening tune leads into a contrasting phrase and returns to finish on A. The melody plays an octave lower for guitar. Near the return, it combines notes from both piano hands into one line. Listen for the high E and the quick alternation of E and D-sharp. This arrangement plays the opening section once."
 
 msgid "SONG_HISTORY_FUR_ELISE"
 msgstr "Beethoven’s surviving sketches for this short piano piece date from 1810 and show that he revisited it in 1822. Ludwig Nohl first published it in 1867, decades after the composer’s death. The finished manuscript that Nohl described is lost, and the identity of “Elise” remains uncertain."
@@ -2810,7 +2810,7 @@ msgid "SONG_HISTORY_WHEN_THE_SAINTS"
 msgstr "This traditional Christian spiritual became a fixture of New Orleans jazz and brass-band culture. The Paramount Jubilee Singers recorded it in 1923; Louis Armstrong's 1938 recording, arranged by pianist Luis Russell, helped make it internationally familiar. Armstrong popularized the song rather than composing it."
 
 msgid "SONG_ARRANGEMENT_AURA_LEE"
-msgstr "The verse and refrain melody are in C. Note lengths are doubled from the 1861 score's two-beat bars into four-beat teaching bars. Listen for the long then short opening notes. The first line ends with a rest, while the second holds C right up to the refrain. A small decorative note is omitted. The practice bass is new. No Love Me Tender lyrics or later recording arrangement is included."
+msgstr "The 1861 solo melody is moved from G to C. Note lengths are doubled to fit four-beat bars. Listen for the long then short opening notes and the small dip from C to B near the end. The practice bass follows some of the printed harmony changes. A small decorative note is skipped."
 
 msgid "SONG_HISTORY_AURA_LEE"
 msgstr "George R. Poulton wrote the music and W. W. Fosdick the words for Aura Lea, published in Cincinnati in 1861. The original sheet music was for voice and piano and dedicated to S. C. Campbell of Hooley & Campbell's Minstrels. Its melody later became the basis of Love Me Tender."
