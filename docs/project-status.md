@@ -16,8 +16,9 @@ light/dark/midnight appearance, printing, Theater and capture layouts. Songs
 offers filters and short previews. Optional microphone listening, a tuner, MIDI
 input and an on-screen piano provide local live-playing feedback; microphone
 pitch estimates are limited to one note at a time. The default library contains
-32 public-domain teaching arrangements and an original two-hand piano study. The
-six-lesson course and musical/platform acceptance gates remain incomplete.
+34 public-domain or traditional teaching arrangements and an original two-hand
+piano study. The six-lesson course and musical/platform acceptance gates remain
+incomplete.
 
 The [practice feedback follow-up](evidence/practice-feedback-2026-11-01.md)
 adds saved pause-on-seek/restart defaults, a pinned compact song browser, smaller
@@ -36,7 +37,7 @@ adds an explicitly labeled 1881 lilting Row variant, the 1888 Skye melody and
 Bayly’s Long, Long Ago from an edition catalogued 1845. Historical credits,
 performance references and edition differences are documented in expanded
 details. The original straight Row study remains; Für Elise and Greensleeves
-history wording is more precise. The library now has 33 entries in total.
+history wording is more precise. That update brought the library to 33 entries.
 
 The [slider correction](evidence/slider-distance-2026-11-01.md) adds more slow-speed
 marks, removes crowded marks on narrow tracks and replaces percentage thresholds

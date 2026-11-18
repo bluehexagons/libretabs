@@ -64,3 +64,34 @@ offline reload. Both pack checksums matched the HTTPS publication. The
 published pack contains the updated catalog metadata and English copy
 alongside all 35 MIDI files. Detailed checks and publication receipts are
 retained under `artifacts/archive/2026-11-18--song-context/`.
+
+## Follow-up on sources and practice cues
+
+- The Austrian Mediathek catalog identifies the 9 April 1860 *Au Clair de
+  la Lune* trace and serves First Sounds’ improved 2010 restoration. Its MP3
+  decoded as 21.7 seconds. David Giovannoni’s account for the Library of
+  Congress dates the first sound recovery to 2008.
+  [Austrian Mediathek recording](https://www.mediathek.at/atom/2862B13D-1D5-00027-001AB6C1-072BC9EB), [Library of Congress essay](https://www.loc.gov/static/programs/national-recording-preservation-board/documents/phonautograms.pdf)
+- The University of Glasgow exhibit identifies Frances Dunlop as the
+  recipient of Burns’s 1788 letter and reproduces the two early *Auld Lang
+  Syne* settings. Both audio examples downloaded and decoded. The practice
+  card now identifies the last note of bar 9 as the lead-in to the chorus.
+  [University of Glasgow exhibit](https://burnsc21.glasgow.ac.uk/online-exhibitions/auld-lang-syne/)
+- Newell’s 1884 printing documents the *London Bridge* game on page 204 and
+  the second practice melody on page 209. The 1878 *Baby’s Bouquet* prints a
+  longer *Hot Cross Buns* on pages 10–11. Both scans were checked on the
+  cited pages. The Canterbury Shaker Archives finding aid documents the
+  Brackett attribution and dance-song classification for *Simple Gifts*.
+  [Newell scan](https://archive.org/details/gamessongsofamer01newe/page/204/mode/1up), [Cranes’ songbook](https://archive.org/details/babyquotsbouque00cran/page/10/mode/1up), [Shaker Archives finding aid](https://www.shakers.org/wp-content/uploads/2020/05/ROGER-LEE-HALL-COLLECTION-Canterbury-Shaker-Village.pdf#page=4)
+- *Brahms’s Lullaby* and *Sakura Sakura* now link to the published
+  transcriptions used for their practice scores. The recipes confirm the
+  added cues for those tunes, the long G in *Greensleeves*, the final held C
+  in *Silent Night*, and the two left-hand Cs at the end of the piano study.
+  [Brahms edition](https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1037), [Potter’s transcription of Dittrich](https://www.daisyfield.com/music/jpm/pdf/NGS04-Sakura-Koto.pdf), [score recipes](../../scripts/library_scores.py)
+
+All nine new or replaced references responded directly. The full sweep
+reached 65 of 88 distinct URLs from the VM. The remaining requests encountered
+access restrictions, throttling, or a timeout. The follow-up also checked the
+catalog tempo and duration of all 35 entries against the bundled scores.
+The MIDI and score recipes remain byte-for-byte identical to the preceding
+revision.

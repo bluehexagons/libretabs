@@ -325,8 +325,9 @@ to show both staffs and the on-screen keyboard. The layout menu stays open as
 you compare choices; choose **Done · return to practice** when ready.
 **Treble focus** and **Bass focus** give
 the selected part more room and show the other part on a smaller five-line
-**mini staff**. The built-in songs have original simple bass lines on separate
-MIDI parts; these are practice additions, not historical accompaniments.
+**mini staff**. The built-in songs store melody and bass on separate MIDI parts.
+Most bass lines were written for practice. Canon in D uses Pachelbel’s
+repeating bass pattern.
 **Try a two-hand piano exercise** loads an original short piece with separately
 selectable treble and bass parts. Piano keys
 can also show which notes sound now. Piano and bass staffs show actual sounding

@@ -2693,7 +2693,7 @@ msgid "SONG_DETAILS_META"
 msgstr "%s · %s · practice tempo %d BPM · %s"
 
 msgid "SONG_ARRANGEMENT_COMMON"
-msgstr "The listed tempo is a practice starting point. LibreTabs writes the bass parts for practice, except for the repeating bass in Canon in D."
+msgstr "The starting tempo is in quarter notes per minute. Canon in D uses Pachelbel’s repeating bass. The other bass lines were written for practice."
 
 msgid "SONG_ARRANGEMENT_ODE_TO_JOY"
 msgstr "The familiar 16-bar theme is in C. The first two phrases begin alike and end differently. Listen for quicker notes in the third phrase and a drop to low G before the opening returns."
@@ -2744,10 +2744,10 @@ msgid "SONG_HISTORY_FRERE_JACQUES"
 msgstr "“Frère Jacques” is a French round: singers begin the same melody at different times, allowing its phrases to overlap. Long passed down as traditional children’s music, it has been attributed to Jean-Philippe Rameau by musicologist Sylvie Bouissou through her research into eighteenth-century French manuscripts of musical canons."
 
 msgid "SONG_ARRANGEMENT_AULD_LANG_SYNE"
-msgstr "Verse and chorus are in C, with the short lead-in before the main beat, long–short rhythms and held phrase endings retained. The final C lasts four main beats."
+msgstr "The verse and chorus are in C. A short low G leads into the verse. Listen for the long–short rhythms and the short A at the end of bar 9 that leads into the chorus. Hold the final C for four beats."
 
 msgid "SONG_HISTORY_AULD_LANG_SYNE"
-msgstr "Robert Burns reworked an older Scots song and sent a version to a friend in 1788. George Thomson published Burns’s words with the familiar tune in 1799, after an earlier setting used a different melody. The title means roughly “for old time’s sake”. The song is often sung on Hogmanay, the Scottish New Year’s Eve."
+msgstr "Robert Burns discussed this older Scots song in a 1788 letter to Frances Dunlop. The words he reworked first reached print with a different melody. George Thomson published them with the now-familiar tune in 1799. The title means roughly “for old time’s sake”. The song is often sung on Hogmanay, the Scottish New Year’s Eve."
 
 msgid "SONG_ARRANGEMENT_YANKEE_DOODLE"
 msgstr "The verse and chorus each last eight bars, and the pair plays twice. The verse starts with even short notes. Listen for the long–short rhythm as the chorus begins in bar 9."
@@ -2756,7 +2756,7 @@ msgid "SONG_HISTORY_YANKEE_DOODLE"
 msgstr "The tune’s origins are uncertain. British soldiers used the song to mock American colonists, who turned it into a patriotic song by adding their own verses. In eighteenth-century Britain a “macaroni” was a man dressed in an exaggeratedly fashionable style. The feather verse jokes that one feather could make the singer fashionable."
 
 msgid "SONG_ARRANGEMENT_BRAHMS_LULLABY"
-msgstr "The sung melody is in C, with the lead-in notes, rests and long–short rhythms retained. Brahms anchors each full bar with the same low note, so the practice bass starts each full bar on low C. The arrangement begins with the sung melody."
+msgstr "Two short Es lead into the sung melody in C. Low C returns on the first beat of each full bar, following the repeating low note in Brahms’s piano accompaniment."
 
 msgid "SONG_HISTORY_BRAHMS_LULLABY"
 msgstr "Johannes Brahms wrote his Wiegenlied, or cradle song, in 1868 for Bertha and Artur Faber’s baby son Hans. Originally for voice and piano, it appeared as Opus 49, No. 4. The first documented public performance was in Vienna in December 1869, with Louise Dustmann singing and Clara Schumann at the piano."
@@ -2780,7 +2780,7 @@ msgid "SONG_HISTORY_JINGLE_BELLS"
 msgstr "James Lord Pierpont published the song as “The One Horse Open Sleigh” in 1857. It reappeared in 1859 under the title “Jingle Bells, or the One Horse Open Sleigh”. The earliest documented performance was by Johnny Pell at Boston’s Ordway Hall in September 1857, in a blackface minstrelsy show built around racist caricatures of Black people."
 
 msgid "SONG_ARRANGEMENT_GREENSLEEVES"
-msgstr "The familiar melody includes both sections and is lowered one octave. Long–short rhythms and held phrase endings are retained; decorative extra notes are omitted."
+msgstr "The familiar melody includes both sections and is lowered one octave. The long–short rhythms and held phrase endings are retained. Listen for the long high G at the start of bar 18 and the return to A at the end."
 
 msgid "SONG_HISTORY_GREENSLEEVES"
 msgstr "“Greensleeves” is an anonymous tune from Renaissance England. Shakespeare refers to it in The Merry Wives of Windsor. One way musicians elaborated the melody was to play variations over a ground, a repeating bass pattern. The “Greensleeves to a Ground” concert notes explain this tradition."
@@ -2795,7 +2795,7 @@ msgid "SONG_ARRANGEMENT_LONDON_BRIDGE"
 msgstr "The familiar version comes first. Listen for the lower, repeated notes when William Wells Newell’s version begins at bar 9. Both versions close with D–G–E–C. Newell’s final C is shorter and followed by a rest."
 
 msgid "SONG_HISTORY_LONDON_BRIDGE"
-msgstr "This English singing game was also played in the United States by the nineteenth century. Folklorist William Wells Newell described children forming a bridge with raised arms, then catching players as they passed underneath. His collection preserves several versions, showing how words and rules changed between communities."
+msgstr "This English singing game was also played in the United States by the nineteenth century. In an 1884 collection, folklorist William Wells Newell describes children making a bridge with raised arms and lowering it to catch players. His book preserves several versions with different words and rules."
 
 msgid "SONG_ARRANGEMENT_OLD_MACDONALD"
 msgstr "The 16-bar classroom version in C includes the second farm-and-animal line before the repeated calls, then returns to the opening. A low G leads into the second line; some phrase endings leave a short rest. The practice bass is new. This is not a transcription of the earlier Ohio variant."
@@ -2816,7 +2816,7 @@ msgid "SONG_HISTORY_AURA_LEE"
 msgstr "George R. Poulton wrote the music and W. W. Fosdick the words. The 1861 Cincinnati print spells the title Aura Lea and dedicates the song to S. C. Campbell of Hooley & Campbell’s Minstrels. The same melody later became familiar in Elvis Presley’s Love Me Tender."
 
 msgid "SONG_ARRANGEMENT_SILENT_NIGHT"
-msgstr "The familiar melody is in C and lowered one octave for guitar. Count two main beats per bar, with three eighth notes to each beat, to feel the rocking rhythm."
+msgstr "The familiar melody is in C and lowered one octave for guitar. Count two main beats per bar, with three eighth notes to each beat. The last C begins in bar 23 and continues into bar 24 as a single held note."
 
 msgid "SONG_HISTORY_SILENT_NIGHT"
 msgstr "Joseph Mohr wrote the German words in 1816. Franz Xaver Gruber set them to music on Christmas Eve 1818, and the two performed it that evening in Oberndorf, near Salzburg. Mohr sang and played guitar, and Gruber sang the lower part. A surviving manuscript in Mohr’s hand shows the tune for two voices and guitar."
@@ -2831,13 +2831,13 @@ msgid "SONG_ARRANGEMENT_AU_CLAIR_DE_LA_LUNE"
 msgstr "This classroom version uses 16 bars in C. Listen for the lower, contrasting phrase at bar 9 and the return of the opening tune at bar 13."
 
 msgid "SONG_HISTORY_AU_CLAIR_DE_LA_LUNE"
-msgstr "On 9 April 1860, Édouard-Léon Scott de Martinville used this French song in an experiment with a phonautograph. The device traced vibrations on soot-covered paper. The First Sounds team recovered audible sound from the trace in 2008. You can hear the restored fragment in the sources."
+msgstr "On 9 April 1860, Édouard-Léon Scott de Martinville recorded a fragment of this French song with a phonautograph, which traced sound on soot-covered paper. First Sounds recovered audible sound from the trace in 2008. The Austrian Mediathek link plays the team’s improved 2010 restoration."
 
 msgid "SONG_ARRANGEMENT_HOT_CROSS_BUNS"
 msgstr "The classroom melody uses just E, D and C. Each four-bar pass starts with the same falling line twice. In bar 3, play four short Cs followed by four short Ds before the ending. The whole exercise plays three times."
 
 msgid "SONG_HISTORY_HOT_CROSS_BUNS"
-msgstr "This English nursery song echoes street sellers calling out buns for sale. A print from 1799 depicts the trade in London. The Baby’s Bouquet later published a longer version, with illustrations by Walter Crane and tunes collected and arranged by Lucy Crane."
+msgstr "This English nursery song echoes street sellers calling out buns for sale. A print from 1799 depicts the trade in London. The 1878 songbook The Baby’s Bouquet prints a longer version, with illustrations by Walter Crane and tunes collected and arranged by Lucy Crane."
 
 msgid "SONG_ARRANGEMENT_SIMPLE_GIFTS"
 msgstr "Two short notes lead into the first section. The contrasting section begins at bar 10 with a held G. Each section plays once, and the tune comes to rest on C."
@@ -2846,7 +2846,7 @@ msgid "SONG_HISTORY_SIMPLE_GIFTS"
 msgstr "Simple Gifts is a Shaker dance song traditionally credited to Joseph Brackett of Maine. Its words connect bowing, bending and turning with the dance. Aaron Copland wrote a set of variations on the tune for Martha Graham’s ballet Appalachian Spring, which premiered at the Library of Congress in 1944."
 
 msgid "SONG_ARRANGEMENT_SAKURA_SAKURA"
-msgstr "The melody and note lengths follow the 1894 Nippon Gakufu version, lowered five semitones (piano-key steps). The practice bass alternates E and B, then holds E through the last bar."
+msgstr "The melody follows Rudolf Dittrich’s 1894 Nippon Gakufu, lowered five semitones (piano-key steps). Listen for A–A–B at the start. The practice bass alternates E and B until the last bar, when both parts settle on E."
 
 msgid "SONG_HISTORY_SAKURA_SAKURA"
 msgstr "Sakura means cherry blossoms. The song appears in an 1888 collection for koto, a Japanese stringed instrument whose strings run along a long wooden body. Later schoolbooks changed some words and notes. The tune’s earlier history and creators are not securely identified."
@@ -2870,10 +2870,10 @@ msgid "SONG_HISTORY_OH_SUSANNA"
 msgstr "A Pittsburgh advertisement for a singing contest in 1847 announced Stephen Foster’s song as Susanna. Several printings appeared in 1848, including W. C. Peters’s edition prepared from Foster’s manuscript. The song originated in blackface minstrelsy, a stage tradition built on racist caricatures of Black people."
 
 msgid "SONG_ARRANGEMENT_PIANO_STUDY"
-msgstr "An original eight-bar exercise in C major. A melody of quarter notes (one main beat each) and alternating low half notes (two beats each) use separate parts for the right and left hands."
+msgstr "In this eight-bar exercise in C major, the right hand plays one note per beat. The left hand plays on beats 1 and 3, with a repeated low C in the last bar."
 
 msgid "SONG_HISTORY_PIANO_STUDY"
-msgstr "This exercise was written for LibreTabs to practice coordinating two hands. Try the right hand alone first. When you add the left hand, it begins a new bass note on beats 1 and 3 while the right hand keeps playing every beat."
+msgstr "LibreTabs wrote this piece as a first two-hand exercise. Try the right hand alone first, then add the bass."
 
 msgid "SONG_SOURCE_ODE_TO_JOY_1"
 msgstr "Beethoven-Haus Bonn: Symphony no. 9, op. 125"
@@ -2942,7 +2942,7 @@ msgid "SONG_SOURCE_AULD_LANG_SYNE_1"
 msgstr "National Trust for Scotland: Auld Lang Syne manuscript fragment"
 
 msgid "SONG_SOURCE_AULD_LANG_SYNE_2"
-msgstr "Library of Congress: Auld Lang Syne, Sharing a Cup of Kindness with Old Friends"
+msgstr "University of Glasgow · hear both early tunes"
 
 msgid "SONG_SOURCE_AULD_LANG_SYNE_3"
 msgstr "National Trust for Scotland · Hogmanay and Auld Lang Syne"
@@ -2958,6 +2958,9 @@ msgstr "Brahms-Institut Lübeck: Opus 49, Five Songs for Voice and Piano"
 
 msgid "SONG_SOURCE_BRAHMS_LULLABY_2"
 msgstr "WDR · Brahms’s letter to the Faber family"
+
+msgid "SONG_SOURCE_BRAHMS_LULLABY_3"
+msgstr "Mutopia · Brahms’s voice and piano score"
 
 msgid "SONG_SOURCE_MINUET_IN_G_1"
 msgstr "Netherlands Bach Society: Minuet in G major and G minor"
@@ -2993,10 +2996,10 @@ msgid "SONG_SOURCE_AMAZING_GRACE_2"
 msgstr "Official Charts: Amazing Grace by Judy Collins"
 
 msgid "SONG_SOURCE_LONDON_BRIDGE_1"
-msgstr "Games and Songs of American Children — William Wells Newell, London Bridge, no. 150"
+msgstr "Newell’s singing games · London Bridge, 1884"
 
 msgid "SONG_SOURCE_LONDON_BRIDGE_2"
-msgstr "Library of Congress · Newell, page 209"
+msgstr "Newell’s second London Bridge melody · page 209"
 
 msgid "SONG_SOURCE_OLD_MACDONALD_1"
 msgstr "Tommy's Tunes — The Morgan Library & Museum"
@@ -3035,22 +3038,22 @@ msgid "SONG_SOURCE_CAMPTOWN_RACES_4"
 msgstr "Library of Congress · 1852 guitar edition"
 
 msgid "SONG_SOURCE_AU_CLAIR_DE_LA_LUNE_1"
-msgstr "First Sounds · hear the 1860 recording"
+msgstr "Austrian Mediathek · hear the 1860 recording"
 
 msgid "SONG_SOURCE_AU_CLAIR_DE_LA_LUNE_2"
-msgstr "From the Recording Registry: Phonautograms, c. 1853–61 — Library of Congress"
+msgstr "Library of Congress · how the sound traces were recovered"
 
 msgid "SONG_SOURCE_HOT_CROSS_BUNS_1"
 msgstr "Hot Cross Buns — Words for Life, National Literacy Trust"
 
 msgid "SONG_SOURCE_HOT_CROSS_BUNS_2"
-msgstr "The Baby's Bouquet — Walter and Lucy Crane"
+msgstr "The Baby’s Bouquet · 1878 illustrated songbook"
 
 msgid "SONG_SOURCE_HOT_CROSS_BUNS_3"
 msgstr "Metropolitan Museum of Art · London bun seller, 1799"
 
 msgid "SONG_SOURCE_SIMPLE_GIFTS_1"
-msgstr "Joseph Brackett's Simple Gifts — Roger Lee Hall, American Music Preservation"
+msgstr "Canterbury Shaker Archives · Simple Gifts, page 4"
 
 msgid "SONG_SOURCE_SIMPLE_GIFTS_2"
 msgstr "The Boatmen's Dance and Simple Gifts by Aaron Copland — Library of Congress"
@@ -3063,6 +3066,9 @@ msgstr "Sakura Sakura (Cherry Blossoms) — National Museum of Ethnology sound c
 
 msgid "SONG_SOURCE_SAKURA_SAKURA_2"
 msgstr "Sakura, Sakura: A Study of Its Development and Popularisation into a School Song — Yumi Shimada, 2002"
+
+msgid "SONG_SOURCE_SAKURA_SAKURA_3"
+msgstr "Tom Potter · melody from Dittrich’s 1894 edition"
 
 msgid "SONG_SOURCE_POP_GOES_THE_WEASEL_1"
 msgstr "Sheet Music Spotlight: Pop Goes the Weasel — Library of Congress"
@@ -3173,7 +3179,7 @@ msgid "SONG_HISTORY_DAISY_BELL"
 msgstr "Harry Dacre’s song was published in 1892, during a bicycle craze. In 1961 Bell Labs used it to demonstrate computer singing. John Kelly and Carol Lochbaum programmed the voice and Max Mathews programmed the accompaniment. That recording inspired HAL’s rendition in 2001: A Space Odyssey."
 
 msgid "SONG_ARRANGEMENT_DAISY_BELL"
-msgstr "One 32-bar verse leads into a 32-bar chorus, lowered from G to C. Start at bar 33 for the familiar chorus. Listen for three long notes descending from G to E to C. The melody keeps the principal notes of a small decoration in the printed chorus."
+msgstr "One 32-bar verse leads into a 32-bar chorus, lowered from G to C. Start at bar 33 for the familiar chorus. Listen for three long notes descending from G to E to C. The chorus simplifies one small decoration from the 1892 edition."
 
 msgid "SONG_SOURCE_DAISY_BELL_1"
 msgstr "Daisy Bell — T. B. Harms, 1892, Levy Collection 140.090"

@@ -174,8 +174,8 @@
         },
         {
           "title_key": "SONG_SOURCE_AULD_LANG_SYNE_2",
-          "url": "https://blogs.loc.gov/music/2018/12/auld-lang-syne-sharing-a-cup-of-kindness-with-old-friends/",
-          "supports": "Scots language, title meaning and the song’s treatment of friendship and memory."
+          "url": "https://burnsc21.glasgow.ac.uk/online-exhibitions/auld-lang-syne/",
+          "supports": "The 1788 letter to Frances Dunlop, the Johnson and Thomson printings, and recordings of the two tunes."
         },
         {
           "title_key": "SONG_SOURCE_AULD_LANG_SYNE_3",
@@ -215,6 +215,11 @@
           "title_key": "SONG_SOURCE_BRAHMS_LULLABY_2",
           "url": "https://www1.wdr.de/stichtag/stichtag8774.amp",
           "supports": "Brahms’s dated letter, the gift for newborn Hans Faber and the first documented concert."
+        },
+        {
+          "title_key": "SONG_SOURCE_BRAHMS_LULLABY_3",
+          "url": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1037",
+          "supports": "The vocal melody and repeated low note in the piano accompaniment used as references for the practice score."
         }
       ],
       "research_notes": "The institute spells the singer Louise Dustmann; some English references use Luise. Avoid speculative claims about Brahms’s romantic intentions."
@@ -325,12 +330,12 @@
       "sources": [
         {
           "title_key": "SONG_SOURCE_LONDON_BRIDGE_1",
-          "url": "https://www.gutenberg.org/files/45762/45762-h/45762-h.htm",
+          "url": "https://archive.org/details/gamessongsofamer01newe/page/204/mode/1up",
           "supports": "English and American versions; documented game movements and local variations."
         },
         {
           "title_key": "SONG_SOURCE_LONDON_BRIDGE_2",
-          "url": "https://www.loc.gov/resource/gdcmassbookdig.gamessongsofamer01newe/?sp=227",
+          "url": "https://archive.org/details/gamessongsofamer01newe/page/209/mode/1up",
           "supports": "Second eight-bar melody, upper staff of the 1884 printing."
         }
       ],
@@ -437,12 +442,12 @@
       "sources": [
         {
           "title_key": "SONG_SOURCE_AU_CLAIR_DE_LA_LUNE_1",
-          "url": "https://www.firstsounds.org/sounds/scott.php",
-          "supports": "April 1860 phonautogram, restoration methods and playable audio."
+          "url": "https://www.mediathek.at/atom/2862B13D-1D5-00027-001AB6C1-072BC9EB",
+          "supports": "9 April 1860 catalog date and playable audio of the First Sounds team’s improved 2010 restoration."
         },
         {
           "title_key": "SONG_SOURCE_AU_CLAIR_DE_LA_LUNE_2",
-          "url": "https://blogs.loc.gov/now-see-hear/2021/08/from-the-recording-registry-phonautograms-c-1853-61/",
+          "url": "https://www.loc.gov/static/programs/national-recording-preservation-board/documents/phonautograms.pdf",
           "supports": "Phonautograph purpose, 9 April 1860 recording and 2008 sound recovery."
         }
       ],
@@ -459,8 +464,8 @@
         },
         {
           "title_key": "SONG_SOURCE_HOT_CROSS_BUNS_2",
-          "url": "https://www.gutenberg.org/cache/epub/25432/pg25432-images.html",
-          "supports": "Primary printed setting, illustration and arrangement credits, longer words."
+          "url": "https://archive.org/details/babyquotsbouque00cran/page/10/mode/1up",
+          "supports": "1878 printed setting, illustration and arrangement credits, and the longer words on pages 10–11."
         },
         {
           "title_key": "SONG_SOURCE_HOT_CROSS_BUNS_3",
@@ -476,8 +481,8 @@
       "sources": [
         {
           "title_key": "SONG_SOURCE_SIMPLE_GIFTS_1",
-          "url": "https://www.americanmusicpreservation.com/JosephBrackettSimpleGifts.htm",
-          "supports": "Brackett attribution, Shaker dance-song classification, movement words and Copland adaptations."
+          "url": "https://www.shakers.org/wp-content/uploads/2020/05/ROGER-LEE-HALL-COLLECTION-Canterbury-Shaker-Village.pdf#page=4",
+          "supports": "The Canterbury Shaker Archives record Hall’s Brackett attribution, the dance-song classification, and the repository of the Shaker manuscript."
         },
         {
           "title_key": "SONG_SOURCE_SIMPLE_GIFTS_2",
@@ -505,6 +510,11 @@
           "title_key": "SONG_SOURCE_SAKURA_SAKURA_2",
           "url": "https://www.jstage.jst.go.jp/article/jjomer/32/2/32_1/_article/-char/en",
           "supports": "Research challenging ancient origins; 1888 koto publication and later text/melody changes in school use."
+        },
+        {
+          "title_key": "SONG_SOURCE_SAKURA_SAKURA_3",
+          "url": "https://www.daisyfield.com/music/jpm/pdf/NGS04-Sakura-Koto.pdf",
+          "supports": "Tom Potter’s melody-only transcription of the 1894 Dittrich setting used as the pitch and rhythm reference."
         }
       ],
       "research_notes": "Shimada argues for creation for the 1888 education collection; other accounts call it traditional. Do not assert an established Edo-period origin. This app's arrangement is traced to Dittrich's 1894 Nippon Gakufu; avoid implying it reproduces every later school version."
