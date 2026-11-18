@@ -1048,6 +1048,9 @@ msgstr "Speed presets"
 msgid "REPEAT_MEASURE"
 msgstr "Repeat this measure"
 
+msgid "TIP_REPEAT_MEASURE"
+msgstr "Set this group of beats to repeat. If paused, press Play when ready."
+
 msgid "PLAY_SECTION"
 msgstr "Play selected section"
 
@@ -1156,17 +1159,23 @@ msgstr "2. Follow a few notes"
 msgid "WELCOME_READ_BODY"
 msgstr "Read guitar tabs from left to right. The top line is the thinnest string. A number tells you which fret, or metal strip, to press just behind. For 0, pluck the string without pressing."
 
+msgid "WELCOME_READ_ODE"
+msgstr "For the first four notes of Ode to Joy, read 0–0–1–3 on the top line, the thinnest string. Pluck twice without pressing. Then press just behind the first and third metal strips, called frets."
+
+msgid "WELCOME_READ_STAFF"
+msgstr "Read the five-line staff from left to right. A higher note on the same staff sounds higher. Try following the notes with your eyes before you play along."
+
 msgid "WELCOME_PLAY_TITLE"
 msgstr "1. Listen"
 
 msgid "WELCOME_PLAY_BODY"
-msgstr "Choose a starting speed above, then press Play and listen to the opening. The clicks before the music are the count-in, if enabled."
+msgstr "Choose Start at half speed for more time to follow. Then press Play and listen from your current position. If enabled, the count-in gives you clicks to get ready."
 
 msgid "WELCOME_PACE_TITLE"
 msgstr "3. Repeat a short section"
 
 msgid "WELCOME_PACE_BODY"
-msgstr "Tap the music where you want to practice. Open Repeat and choose Repeat this measure to hear the same group of beats again. If paused, press Play. Try playing along once you can follow the notes."
+msgstr "A measure is a group of beats between vertical lines. Set the current measure to repeat, then press Play. Try playing along once you can follow the notes. When ready to continue, choose Turn repeat off in Repeat."
 
 msgid "WELCOME_MORE"
 msgstr "For a tune with three notes, find Hot Cross Buns in Songs. For piano or bass, try Practice layouts."
@@ -2720,7 +2729,7 @@ msgid "SONG_HISTORY_CANON_IN_D"
 msgstr "Johann Pachelbel wrote this chamber work for three violins and a supporting bass part, pairing it with a lively dance called a gigue. The violins enter one after another with the same music over a repeating bass pattern. Its date and original occasion are unknown; Jean-François Paillard’s 1968 recording helped launch its modern popularity."
 
 msgid "SONG_ARRANGEMENT_TWINKLE"
-msgstr "The 12 bars form three four-bar sections. Listen for the opening leap from C to G, then the two matching phrases in the middle. The opening returns for the ending."
+msgstr "Repeat bar 1 to practice the jump from C to G. Both notes are played twice. The 12 bars form three four-bar sections. Listen for the opening to return in bar 9."
 
 msgid "SONG_HISTORY_TWINKLE"
 msgstr "Jane Taylor’s words first appeared as “The Star” in Rhymes for the Nursery in 1806. The familiar melody is the French tune “Ah, vous dirai-je, Maman”. Its composer is unknown. Mozart wrote twelve keyboard variations on the tune, each using the same melody as a starting point."
@@ -2732,7 +2741,7 @@ msgid "SONG_HISTORY_THE_ENTERTAINER"
 msgstr "Scott Joplin’s piano rag was published in 1902 with a dedication to James Brown and his mandolin club. Ragtime grew from African American musical traditions and places accents between the beats of a steady pulse. Publisher John Stark later issued a version for two mandolins and guitar. The 1973 film The Sting brought the tune to a new audience, and Marvin Hamlisch’s recording earned a Grammy."
 
 msgid "SONG_ARRANGEMENT_MARY_HAD_A_LITTLE_LAMB"
-msgstr "This melody uses just C, D, E and G. The same eight bars play twice. When the opening E–D–C–D returns halfway through each pass, listen for the different answer and the C held for four beats at the end."
+msgstr "This melody uses just C, D, E and G. Compare bars 1–2 and 5–6. Both start E–D–C–D, then the next bar gives a different answer. Hold the last C in bar 8 for four beats. The eight-bar tune plays twice."
 
 msgid "SONG_HISTORY_MARY_HAD_A_LITTLE_LAMB"
 msgstr "Sarah Josepha Hale published “Mary’s Lamb” in 1830. The poem circulated through print and in New England Sunday schools. Thomas Edison later recalled using the rhyme to test his first phonograph in 1877."

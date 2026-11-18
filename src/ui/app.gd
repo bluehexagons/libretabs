@@ -92,6 +92,8 @@ var startup_help_pending: bool = true
 var startup_help_check: CheckBox
 var welcome_storage: Label
 var welcome_practice: Button
+var welcome_read: Label
+var welcome_repeat: Button
 var status: Label
 var summary: Label
 var cue: Label
@@ -1080,11 +1082,20 @@ func build_welcome_menu() -> void:
 		var content: VBoxContainer = VBoxContainer.new()
 		content.add_theme_constant_override("separation", 5)
 		content.add_child(label("WELCOME_" + step + "_TITLE", 20))
-		content.add_child(label("WELCOME_" + step + "_BODY", 18))
+		var instructions: Label = label("WELCOME_" + step + "_BODY", 18)
+		content.add_child(instructions)
+		if step == "READ": welcome_read = instructions
 		card.add_child(content)
 		welcome_cards.append(card)
-		if step == "PACE": welcome_steps.add_child(card)
-		else: welcome_step_pair.add_child(card)
+		if step == "PACE":
+			welcome_steps.add_child(card)
+			welcome_repeat = button("REPEAT_MEASURE", func() -> void:
+				if importer != null: return
+				repeat_measure()
+				begin_practice.call())
+			content.add_child(welcome_repeat)
+		else:
+			welcome_step_pair.add_child(card)
 	welcome.add_child(label("WELCOME_MORE", 18))
 	var actions: HFlowContainer = flow(welcome)
 	actions.add_child(button("LAYOUTS", func() -> void: toggle_drawer("LAYOUTS")))
@@ -1105,6 +1116,18 @@ func build_welcome_menu() -> void:
 	welcome_storage = label("STORAGE_SESSION", 18)
 	welcome_storage.hide()
 	welcome.add_child(welcome_storage)
+
+func update_welcome() -> void:
+	var notation: String = score.drawing_notation()
+	var shows_tab: bool = notation in ["both", "tab"] or score.drawing_rows().any(
+		func(row: Dictionary) -> bool: return row.type == "tab")
+	var key: String = "WELCOME_READ_BODY"
+	if not shows_tab:
+		key = "WELCOME_READ_STAFF"
+	elif current_learning_id == "song:ode_to_joy" and part == 0 and projection.style == TabProjection.BASIC and is_zero_approx(source_tick) and not score.manual_pan:
+		key = "WELCOME_READ_ODE"
+	welcome_read.text = tr(key)
+	welcome_repeat.disabled = song == null or importer != null
 
 func build_preset_grid(parent: VBoxContainer, targets: Dictionary) -> GridContainer:
 	var grid: GridContainer = GridContainer.new()
@@ -2066,6 +2089,7 @@ func toggle_drawer(key: String, remember: bool = true) -> void:
 	menu_overlay.show()
 	drawer.show()
 	for name_key: String in drawers: drawers[name_key].visible = drawers[name_key] == drawers[key]
+	if key == "WELCOME": update_welcome()
 	drawer_title.text = tr(key)
 	menu_scroll.scroll_vertical = 0
 	responsive()

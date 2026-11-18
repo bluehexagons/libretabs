@@ -21,3 +21,16 @@ Quick start passed 36 additional layout and focus checks at 1280 × 800,
 rendering audit passed 81 checks for both notation types together and each
 separately. The [planned course](../mvp-roadmap.md#m1--first-time-learner-slice)
 and moderated learner testing remain open.
+
+## Quick Start follow-up
+
+Quick Start now shows **0–0–1–3** at the beginning of the default guitar
+version of *Ode to Joy*. It uses general tab guidance away from the opening
+and staff guidance in staff-only layouts. **Repeat this measure** uses the
+current position, prepares that measure at the existing speed, and returns
+focus to Play. The song cards for *Twinkle, Twinkle Little Star* and *Mary Had
+a Little Lamb* now point to the same practice bars as the user guide.
+
+The UI smoke checks cover the opening and staff cues and the repeat shortcut
+from measure 2. The shortcut received focus and scrolled fully into view at
+1280 × 800, 360 × 640, 360 × 740 and 480 × 320, including 200% text.

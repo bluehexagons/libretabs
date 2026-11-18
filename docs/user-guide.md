@@ -40,6 +40,10 @@ or select its number for **Playback** options.
 
 If you need to restore the tabs, choose **Guitar · tabs + staff** under
 **Practice layouts**. Outside Quick start, find it under **Menu → Practice**.
+Quick start shows the opening tab numbers when the default guitar tab is on
+the first note of **Ode to Joy**. Reopen Quick start anytime for **Repeat this
+measure**. It sets the current measure to repeat and returns you to **Play**
+at the same speed.
 
 ## What to practice next
 
