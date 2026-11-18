@@ -122,12 +122,16 @@ row = ('C4 C4 C4 D4 | E4:8 E4 D4 | E4 F4 G4:8 | C5 C5 C5 G4 | '
        'G4 G4 E4 E4 | E4 C4 C4 C4 | G4 F4 E4 D4 | C4:16')
 add('row_your_boat', 'Row, Row, Row Your Boat - straight rhythm, twice', 'Traditional', f'{row} | {row}', tempo=96)
 
-jingle = ('E4 E4 E4:8 | E4 E4 E4:8 | E4 G4 C4 D4 | E4:16 | '
-          'F4 F4 F4 F4 | F4 E4 E4:8 | E4 D4 D4 E4 | D4:8 G4:8')
-jingle_end = ('E4 E4 E4:8 | E4 E4 E4:8 | E4 G4 C4 D4 | E4:16 | '
-              'F4 F4 F4 F4 | F4 E4 E4:8 | G4 G4 F4 D4 | C4:16')
-add('jingle_bells', 'Jingle Bells - simplified refrain', 'James Lord Pierpont',
-    f'{jingle} | {jingle_end}', tempo=116)
+jingle_open = 'G3 E4 D4 C4'
+jingle_verse = (f'{jingle_open} | G3:12 G3:2 G3:2 | {jingle_open} | A3:16 | '
+                'A3 F4 E4 D4 | B3:16 | G4 G4 F4 D4 | E4:16 | '
+                f'{jingle_open} | G3:16 | {jingle_open} | A3:12 A3 | '
+                'A3 F4 E4 D4 | G4 G4 G4 G4 | A4 G4 F4 D4 | C4:8 R:8')
+jingle_refrain = ('E4 E4 E4:8 | E4 E4 E4:8 | E4 G4 C4:6 D4:2 | E4:16 | '
+                  'F4 F4 F4:6 F4:2 | F4 E4 E4 E4:2 E4:2')
+add('jingle_bells', 'Jingle Bells - verse and refrain', 'James Lord Pierpont',
+    f'{jingle_verse} | {jingle_refrain} | E4 D4 D4 E4 | D4:8 G4:8 | '
+    f'{jingle_refrain} | G4 G4 F4 D4 | C4:16', tempo=116)
 
 # Both sections of the traditional melody; padded quarter-note pickup.
 greensleeves = ('R:8 A4 | C5:8 D5 | E5:6 F5:2 E5 | D5:8 B4 | G4:6 A4:2 B4 | '
@@ -182,12 +186,17 @@ add('silent_night', 'Silent Night - melody', 'Franz Xaver Gruber',
     'D5:8 D5:4 | F5:6 D5:2 B4:4 | C5:12 | E5:12 | '
     'C5:4 G4:4 E4:4 | G4:6 F4:2 D4:4 | C4:12 | ~:8 R:4', (6, 8), 72, transpose=-12)
 
-camptown = ('G4:2 G4:2 E4:2 G4:2 | A4:2 G4:2 E4:4 | E4:2 D4:6 | E4:2 D4:6 | '
-            'G4:2 G4:2 E4:2 G4:2 | A4:2 G4:2 E4:4 | D4:2 D4:2 E4:2 D4:2 | C4:6 R:2 | '
-            'C4:2 C4:2 E4:2 G4:2 | C5:8 | A4:2 A4:2 C5:2 A4:2 | G4:8 | '
-            'G4:2 G4:2 E4:2 G4:2 | A4:2 G4:2 E4:4 | D4:2 D4:2 E4:2 D4:2 | C4:6 R:2')
-add('camptown_races', 'Camptown Races - melody study, twice', 'Stephen Foster',
-    f'{camptown} | {camptown}', (2, 4), 96)
+camptown_line = 'G4:2 G4:2 E4:2 G4:2 | A4:2 G4:2 E4:2 R:2'
+camptown_answer = 'E4:2 D4:6 | E4:2 D4:4 G4:2'
+add('camptown_races', 'Camptown Races - verse and chorus', 'Stephen Foster',
+    f'R:6 G4:2 | {camptown_line} | {camptown_answer} | {camptown_line} | '
+    'D4:4 E4:2 D4:2 | C4:4 R:2 G4:2 | '
+    f'G4:2 G4:2 E4:2 G4:1 G4:1 | A4:2 G4:2 E4:2 R:2 | {camptown_answer} | '
+    'G4:2 G4:2 E4:2 G4:1 G4:1 | A4:1 A4:1 G4:1 G4:1 E4:2 R:2 | '
+    'D4:4 E4:2 D4:2 | C4:6 R:2 | '
+    'C4:3 C4:1 E4:2 G4:2 | C5:6 R:2 | A4:3 A4:1 C5:2 A4:2 | G4:6 E4:1 F4:1 | '
+    'G4:2 G4:2 E4:1 E4:1 G4:1 G4:1 | A4:2 G4:2 E4:4 | '
+    'D4:2 E4:1 F4:1 E4:1 D4:2 D4:1 | C4:8', (2, 4), 96)
 
 clair = ('C4 C4 C4 D4 | E4:8 D4:8 | C4 E4 D4 D4 | C4:16')
 add('au_clair_de_la_lune', 'Au Clair de la Lune - melody', 'French traditional',
@@ -317,7 +326,8 @@ BASS_ROOTS = {
     'minuet_in_g': [43, 43, 48, 43, 48, 43, 50, 43, 43, 48, 43, 48, 43, 50, 43, 43,
                     43, 50, 43, 45, 43, 50, 43, 50, 43, 48, 43, 48, 43, 50, 43, 43],
     'row_your_boat': [48, 48, 41, 48, 48, 48, 43, 48] * 2,
-    'jingle_bells': [48, 48, 48, 48, 41, 48, 43, 43, 48, 48, 48, 48, 41, 48, 43, 48],
+    'jingle_bells': [48, 48, 48, 41, 41, 43, 43, 48, 48, 48, 48, 41, 41, 43, 43, 48,
+                     48, 48, 48, 48, 41, 48, 43, 43, 48, 48, 48, 48, 41, 48, 43, (48,)],
     'greensleeves': [45, 45, 48, 43, 43, 45, 41, 40, 40, 45, 48, 43, 43, 45, 40, 45, 45,
                       48, 48, 43, 43, 45, 41, 40, 40, 48, 48, 43, 43, 45, 40, 45, 45],
     'amazing_grace': [48, 48, 48, 45, 43, 48, 48, 43, 43, 48, 48, 45, 43, 48, 43, 48, 48],
@@ -327,7 +337,7 @@ BASS_ROOTS = {
     'aura_lee': [48, 50, 43, 48, 48, 50, 43, 48, 48, 48, 48, 48, 41, 50, 50, 48],
     'silent_night': [48, 48, 48, 48, 43, 43, 48, 48, 41, 41, 48, 48,
                      41, 41, 48, 48, 43, 43, 48, 48, 48, 43, 48, 48],
-    'camptown_races': [48, 48, 43, 43, 48, 48, 43, 48, 48, 48, 41, 48, 48, 48, 43, 48] * 2,
+    'camptown_races': [43] + [48, 48, 43, 43, 48, 48, 43, 48] * 2 + [48, 48, 41, 48, 48, 48, 43, (48,)],
     'au_clair_de_la_lune': [48, 48, 43, 48, 48, 48, 43, 48, 50, 50, 43, 43, 48, 48, 43, 48],
     'hot_cross_buns': [48, 48, 43, 48] * 3,
     'simple_gifts': [43, 48, 48, 43, 43, 48, 48, 43, 43, 48, 48, 48, 43, 48, 48, 43, 48],

@@ -41,7 +41,7 @@ gaps are deliberate; no swing or human timing is added.
 | minuet_in_g | Both 16-bar sections, without repeats or ornaments, down one octave | 3/4 · 100 |
 | piano_study | Original eight-bar two-hand C-major exercise with a quarter-note melody and alternating low half notes on separate treble and bass MIDI parts | 4/4 · 88 |
 | row_your_boat | Common eight-bar teaching round in C, played twice; rhythm simplified to quarter, half and whole notes | 4/4 · 96 |
-| jingle_bells | Familiar refrain twice in C, with an authored closing cadence and simplified quarter-, half- and whole-note rhythm | 4/4 · 116 |
+| jingle_bells | Sixteen-bar verse and sixteen-bar familiar refrain in C, with dotted rhythms and paired eighth notes | 4/4 · 116 |
 | greensleeves | Both sixteen-bar melody sections in A minor plus a padded pickup, down one octave; dotted-quarter/eighth pairs and chromatic notes retained; accompaniment replaced | 3/4 · 90 |
 | amazing_grace | Seventeen-bar New Britain melody in C, with a padded pickup, dotted-quarter/eighth pairs and tied phrase endings | 3/4 · 80 |
 | london_bridge | Eight-bar familiar melody in C, played twice; opening dotted-eighth/sixteenth pair simplified to even eighths | 2/4 · 80 |
@@ -49,7 +49,7 @@ gaps are deliberate; no swing or human timing is added.
 | when_the_saints | Sixteen-bar straight-time melody study in C, with padded pickups and held notes; no jazz improvisation | 4/4 · 100 |
 | aura_lee | Sixteen-bar verse and refrain in C; historical 2/4 note values doubled into 4/4 teaching bars, with dotted refrain rhythm; closing notes shortened for phrase-ending rests; grace note omitted | 4/4 · 88 |
 | silent_night | Twenty-four-bar familiar melody in C, down one octave for guitar; six eighth notes per measure, dotted rhythm and a tied closing note | 6/8 · 72 |
-| camptown_races | Sixteen-bar shortened verse and refrain in C, played twice; starts on the main beat, evens some long–short pairs and extends some endings over source rests, without lyrics | 2/4 · 96 |
+| camptown_races | Padded pickup, full sixteen-bar verse and eight-bar chorus from the 1850 print, lowered from D to C | 2/4 · 96 |
 | au_clair_de_la_lune | Complete sixteen-bar classroom melody in C, with the contrasting middle phrase and returning opening | 4/4 · 88 |
 | hot_cross_buns | Four-bar, three-note classroom melody in C, played three times; eighth-note middle phrase retained | 4/4 · 80 |
 | simple_gifts | Seventeen-bar Shaker melody study in C, with an eighth-note pickup padded to a full opening measure; two eight-bar sections without repeats | 4/4 · 88 |
@@ -112,7 +112,7 @@ with downloaded MIDI without a file-level license and attribution review.
   recipe, with a simplified rhythm and an original practice bass.
 - James Lord Pierpont's *Jingle Bells* was published as *The One Horse Open
   Sleigh* in 1857; see the [Library of Congress chronology](https://www.loc.gov/collections/american-sheet-music-1820-to-1860/articles-and-essays/greatest-hits-1820-60-variety-music-cavalcade/1850-to-1860/).
-  The recipe is a simplified refrain, not the complete historical score.
+  The 32-bar practice version follows the familiar later tune. The verse and refrain were checked against the public-domain [Kinder wollen singen melody setting](https://www.kinder-wollen-singen.de/song/sources/jingle-bells-jinglebells.ly) dated 29 November 2010, transposed from G to C with note lengths doubled from 2/4 into 4/4. The [1857 print](https://tile.loc.gov/storage-services/public/music/mussm2-sm1857-620520/mussm2-sm1857-620520.pdf) has a different chorus. Only the underlying melody is used, with a new practice bass.
 - *Greensleeves* is a traditional sixteenth-century melody; the [Library of
   Congress historical note](https://www.loc.gov/static/events/concerts-from-the-library-of-congress/documents/programs/2324-Jordi-Savall-Hesperion-Apr2-program.pdf)
   describes its early history. The [Mutopia listing](https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=109)
@@ -140,7 +140,7 @@ listed in the table above; musician review remains open.
 | when_the_saints | Traditional spiritual, documented in a November 1923 Paramount Jubilee Singers recording as *When All the Saints Go Marching In*; [Library of Congress historical essay](https://www.loc.gov/static/programs/national-recording-preservation-board/documents/When-the-Saint-Go-Marching-In_Riccardi.pdf) | Common melody only, in straight 4/4. No recording, Armstrong/Russell jazz arrangement, solo or modern harmonization is used. |
 | aura_lee | George R. Poulton, *Aura Lea*, John Church Jr. (1861); [Morgan Library probable first-edition record](https://www.themorgan.org/music-manuscripts-and-printed-music/222259), also [Levy collection 024.002](https://levysheetmusic.mse.jhu.edu/collection/024/002) | Historical composition identity; single-line melody in C. No later *Love Me Tender* lyrics, arrangement or recording is used. |
 | silent_night | Franz Xaver Gruber, *Stille Nacht* (1818); [Silent Night Association history](https://www.stillenacht.at/en/history-of-the-song) | Historical authorship/date reference; familiar melody in C at 6/8, with original practice bass. No historical manuscript, vocal arrangement or modern edition is used. |
-| camptown_races | Stephen Collins Foster, *Gwine to Run All Night, or, De Camptown Races*, F. D. Benteen / W. T. Mayo (1850), first edition; [Library of Congress 2011564470](https://www.loc.gov/item/2011564470/) | Single-line instrumental teaching version in C, played twice with even eighths. No historical lyrics, choral refrain arrangement, piano accompaniment or score images are used. |
+| camptown_races | Stephen Collins Foster, *Gwine to Run All Night, or, De Camptown Races*, F. D. Benteen / W. T. Mayo (1850), first edition; [Library of Congress 2011564470](https://www.loc.gov/item/2011564470/) | Vocal melody and chorus “Air” from pp. 3–4 of the [Levy 071.014 print](https://levysheetmusic.mse.jhu.edu/collection/071/014), in C with the pickup, rests and short repeated notes retained. No historical lyrics, choral refrain arrangement, piano accompaniment or score images are used. |
 | au_clair_de_la_lune | French traditional melody, documented in Édouard-Léon Scott de Martinville's 9 April 1860 phonautogram; [Library of Congress recording-history essay](https://blogs.loc.gov/now-see-hear/2021/08/from-the-recording-registry-phonautograms-c-1853-61/) | Historical melody identity only; common sixteen-bar classroom form in C. No recording, restoration audio, Debussy work or modern arrangement is used. |
 
 ## Further repertoire references checked 2026-10-05

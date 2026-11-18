@@ -80,7 +80,7 @@ msgid "LIBRARY_ROW_YOUR_BOAT"
 msgstr "Row, Row, Row Your Boat · straight rhythm · traditional"
 
 msgid "LIBRARY_JINGLE_BELLS"
-msgstr "Jingle Bells · simplified refrain · James Lord Pierpont"
+msgstr "Jingle Bells · verse and refrain · James Lord Pierpont"
 
 msgid "LIBRARY_GREENSLEEVES"
 msgstr "Greensleeves · melody study · traditional"
@@ -104,7 +104,7 @@ msgid "LIBRARY_SILENT_NIGHT"
 msgstr "Silent Night · Franz Xaver Gruber"
 
 msgid "LIBRARY_CAMPTOWN_RACES"
-msgstr "Camptown Races · twice · Stephen Foster"
+msgstr "Camptown Races · verse and chorus · Stephen Foster"
 
 msgid "LIBRARY_AU_CLAIR_DE_LA_LUNE"
 msgstr "Au Clair de la Lune · French traditional"
@@ -2774,7 +2774,7 @@ msgid "SONG_HISTORY_ROW_YOUR_BOAT"
 msgstr "Versions of these words appeared in American sheet music in 1852 with a different melody. The familiar tune appeared in 1881 with a credit to E. O. Lyte, although that credit does not establish whether he composed or adapted it. As a round, the melody can overlap with itself when singers enter in turn."
 
 msgid "SONG_ARRANGEMENT_JINGLE_BELLS"
-msgstr "The familiar refrain is played twice in C. Rhythm is simplified to quarter, half and whole notes, lasting one, two and four main beats, with a newly written ending."
+msgstr "A low G opens the verse. Listen for the leap up to E, then two steps back down. The familiar refrain begins halfway through on three repeated E notes. Both sections are in C, with a new practice bass."
 
 msgid "SONG_HISTORY_JINGLE_BELLS"
 msgstr "James Lord Pierpont published this song in 1857 as “The One Horse Open Sleigh”, renaming it “Jingle Bells” in 1859. Its earliest documented performance was by Johnny Pell at Boston’s Ordway Hall in September 1857. That performance belonged to blackface minstrelsy, a popular entertainment built around racist caricatures of Black people."
@@ -2822,7 +2822,7 @@ msgid "SONG_HISTORY_SILENT_NIGHT"
 msgstr "Joseph Mohr wrote the German poem in 1816, and Franz Xaver Gruber composed its melody on Christmas Eve in 1818. Mohr and Gruber first performed the song that evening at St. Nicholas Church in Oberndorf, near Salzburg. Mohr sang and played guitar, while Gruber supplied the bass voice."
 
 msgid "SONG_ARRANGEMENT_CAMPTOWN_RACES"
-msgstr "A shortened verse and refrain are played twice in C, starting directly on the main beat. Some long–short pairs become equal short notes, and held endings replace some rests. Historical minstrel lyrics, choir parts and piano accompaniment are omitted."
+msgstr "One full verse leads into the chorus from the 1850 print. A short G before the first main beat leads you in. The second half of the verse fits more notes into the same beat. The tune is lowered from D to C and paired with a new practice bass."
 
 msgid "SONG_HISTORY_CAMPTOWN_RACES"
 msgstr "Stephen Foster wrote the words and music for Camptown Races, published in 1850. Early editions advertised performances by the Christy and Campbell Minstrels and the New Orleans Serenaders. It originated in blackface minstrelsy, a form of stage entertainment built on racist caricatures of African Americans."

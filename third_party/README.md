@@ -201,3 +201,14 @@ claim boundaries and edition caveats are detailed in
 [the library notes](../content/library/README.md#score-based-additions--2026-11-02).
 No archive page's present availability is treated as a license to bundle its
 modern material.
+
+The Jingle Bells recipe and MIDI use Pierpont's public-domain melody. The
+public-domain [Kinder wollen singen engraving](https://www.kinder-wollen-singen.de/song/sources/jingle-bells-jinglebells.ly)
+dated 29 November 2010 supplied the familiar verse and refrain for comparison.
+The LibreTabs realization moves G to C, doubles the note values for 4/4 and adds
+a practice bass. Camptown Races follows the vocal line and the chorus marked
+“Air” in the 1850 Benteen/Mayo [Levy print 071.014](https://levysheetmusic.mse.jhu.edu/collection/071/014),
+music pp. 3–4, lowered from D to C. The independently encoded recipes in
+`scripts/library_scores.py` generate `content/library/jingle_bells.mid` and
+`content/library/camptown_races.mid`. No source files, lyrics or historical
+accompaniment are distributed.

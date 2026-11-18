@@ -41,7 +41,10 @@ class LibraryScores(unittest.TestCase):
         self.assertEqual(SONGS['minuet_in_g']['notes'][:5], [(62, 480), (55, 240), (57, 240), (59, 240), (60, 240)])
         self.assertEqual(SONGS['mary_had_a_little_lamb']['notes'][25], (60, 1920))
         self.assertEqual(SONGS['row_your_boat']['notes'][:4], [(60, 480), (60, 480), (60, 480), (62, 480)])
-        self.assertEqual(SONGS['jingle_bells']['notes'][:3], [(64, 480), (64, 480), (64, 960)])
+        jingle = SONGS['jingle_bells']['bars'].split('|')
+        self.assertEqual(len(jingle), 32)
+        self.assertEqual(notes(jingle[0], (4, 4)), [(55, 480), (64, 480), (62, 480), (60, 480)])
+        self.assertEqual(notes(jingle[16], (4, 4)), [(64, 480), (64, 480), (64, 960)])
         self.assertEqual(SONGS['greensleeves']['meter'], (3, 4))
 
     def test_reviewed_complete_phrases(self):
@@ -86,7 +89,7 @@ class LibraryScores(unittest.TestCase):
             'when_the_saints': [(None, 480), (60, 480), (64, 480), (65, 480)],
             'aura_lee': [(55, 480), (60, 480), (59, 480), (60, 480)],
             'silent_night': [(55, 720), (57, 240), (55, 480), (52, 1440)],
-            'camptown_races': [(67, 240), (67, 240), (64, 240), (67, 240)],
+            'camptown_races': [(None, 720), (67, 240), (67, 240), (67, 240)],
             'au_clair_de_la_lune': [(60, 480), (60, 480), (60, 480), (62, 480)],
         }
         for key, expected in openings.items():
