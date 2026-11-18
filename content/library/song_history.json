@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "reviewed": "2026-11-01",
+  "reviewed": "2026-11-18",
   "entries": {
     "ode_to_joy": {
       "history_key": "SONG_HISTORY_ODE_TO_JOY",
@@ -10,6 +10,16 @@
           "title_key": "SONG_SOURCE_ODE_TO_JOY_1",
           "url": "https://www.beethoven.de/en/work/view/5556714292117504/",
           "supports": "Composer, completion, Vienna premiere, Schiller text and choral finale."
+        },
+        {
+          "title_key": "SONG_SOURCE_ODE_TO_JOY_2",
+          "url": "https://www.esm.rochester.edu/beethoven/symphony-no-9/",
+          "supports": "Introduction of the theme by cellos and basses before the vocal settings of Schiller’s text."
+        },
+        {
+          "title_key": "SONG_SOURCE_ODE_TO_JOY_3",
+          "url": "https://european-union.europa.eu/principles-countries-history/symbols/european-anthem_en",
+          "supports": "Council of Europe and European Union anthem adoptions and the wordless setting."
         }
       ],
       "research_notes": "None material to this blurb."
@@ -34,6 +44,11 @@
           "title_key": "SONG_SOURCE_SPRING_1",
           "url": "https://www.laphil.com/works/the-four-seasons",
           "supports": "Composer, 1725 publication, Opus 8 context, violin instrumentation and descriptive poems and score directions."
+        },
+        {
+          "title_key": "SONG_SOURCE_SPRING_2",
+          "url": "https://www.loc.gov/static/programs/national-recording-preservation-board/documents/The-Four-Seasons_Furuya.pdf",
+          "supports": "Facsimiles of the 1725 print show the descriptive markings, the quieter second phrase and the entry of the birdsong."
         }
       ],
       "research_notes": "Composition dates differ between program notes. Use the secure publication date; do not credit Vivaldi as the poems’ author without qualification."
@@ -51,6 +66,11 @@
           "title_key": "SONG_SOURCE_CANON_IN_D_2",
           "url": "https://resolver.staatsbibliothek-berlin.de/SBB0000A73000000000",
           "supports": "Opening violin pitches and the dotted end of the first moving variation."
+        },
+        {
+          "title_key": "SONG_SOURCE_CANON_IN_D_3",
+          "url": "https://rism.info/rism_a_z/2018/01/18/johann-pachelbel-16531706.html",
+          "supports": "Dating and location of the surviving manuscript copy."
         }
       ],
       "research_notes": "Avoid stating an exact composition year or a wedding origin. The surviving manuscript is a nineteenth-century copy."
@@ -66,8 +86,8 @@
         },
         {
           "title_key": "SONG_SOURCE_TWINKLE_2",
-          "url": "https://dme.mozarteum.at/DME/nma/nma_toc.php?l=2&vsep=199",
-          "supports": "Mozart’s twelve variations are explicitly described as based on the French song."
+          "url": "https://kv.mozarteum.at/de/work/zwolf-variationen-in-c-uber-4057",
+          "supports": "Mozart’s twelve variations on the French tune and the current dating of the work."
         },
         {
           "title_key": "SONG_SOURCE_TWINKLE_3",
@@ -90,6 +110,16 @@
           "title_key": "SONG_SOURCE_THE_ENTERTAINER_2",
           "url": "https://www.grammy.com/artists/marvin-hamlisch/2766/",
           "supports": "Hamlisch’s Grammy for Best Pop Instrumental Performance for The Entertainer."
+        },
+        {
+          "title_key": "SONG_SOURCE_THE_ENTERTAINER_3",
+          "url": "https://www.loc.gov/item/2023864238/",
+          "supports": "1902 John Stark piano print and dedication to James Brown and his mandolin club."
+        },
+        {
+          "title_key": "SONG_SOURCE_THE_ENTERTAINER_4",
+          "url": "https://blogs.loc.gov/nls-music-notes/2020/08/from-baroque-to-bluegrass-a-globe-trotting-instrument/",
+          "supports": "Mandolin history and John Stark’s version for two mandolins and guitar."
         }
       ],
       "research_notes": "Do not imply that the song originated in The Sting or that Joplin made the soundtrack recording. The Recording Academy dates Hamlisch’s award for The Entertainer to its 1975 ceremony; do not infer 1974 from the Library of Congress finding aid’s grouped awards summary."
@@ -107,6 +137,11 @@
           "title_key": "SONG_SOURCE_MARY_HAD_A_LITTLE_LAMB_2",
           "url": "https://www.nps.gov/edis/learn/historyculture/origins-of-sound-recording-edisons-path-to-the-phonograph.htm",
           "supports": "Edison’s 1877 phonograph demonstration using the rhyme."
+        },
+        {
+          "title_key": "SONG_SOURCE_MARY_HAD_A_LITTLE_LAMB_3",
+          "url": "https://archive.org/details/poemsforourchild00hale",
+          "supports": "Boston Public Library’s original 1830 print of Poems for Our Children, including “Mary’s Lamb”."
         }
       ],
       "research_notes": "Do not credit Lowell Mason with the familiar melody: his early setting differs. Stories identifying a particular schoolgirl and lamb are disputed. Edison’s original recording does not survive."
@@ -122,7 +157,7 @@
         },
         {
           "title_key": "SONG_SOURCE_FRERE_JACQUES_2",
-          "url": "https://academic.oup.com/em/article-abstract/44/4/553/3068009",
+          "url": "https://doi.org/10.1093/em/caw082",
           "supports": "Published scholarly argument attributing Frère Jacques to Rameau using manuscript evidence."
         }
       ],
@@ -141,6 +176,11 @@
           "title_key": "SONG_SOURCE_AULD_LANG_SYNE_2",
           "url": "https://blogs.loc.gov/music/2018/12/auld-lang-syne-sharing-a-cup-of-kindness-with-old-friends/",
           "supports": "Scots language, title meaning and the song’s treatment of friendship and memory."
+        },
+        {
+          "title_key": "SONG_SOURCE_AULD_LANG_SYNE_3",
+          "url": "https://www.nts.org.uk/stories/auld-lang-syne",
+          "supports": "Scots title meaning and Scottish New Year’s Eve tradition."
         }
       ],
       "research_notes": "Avoid crediting Burns with composing the familiar tune. Its precise earlier source is uncertain."
@@ -156,8 +196,8 @@
         },
         {
           "title_key": "SONG_SOURCE_YANKEE_DOODLE_2",
-          "url": "https://www.loc.gov/collections/songs-of-america/articles-and-essays/musical-styles/ethnic/english-american-song/",
-          "supports": "British use during the French and Indian War and American answering verses during the Revolution."
+          "url": "https://www.metmuseum.org/perspectives/coxcombs-and-macaronis-fashion-gender-canon-of-art-history",
+          "supports": "Eighteenth-century macaroni fashion and the word’s use in the song."
         }
       ],
       "research_notes": "Do not state Richard Schackburg/Shuckburgh’s authorship or a particular European tune ancestry as proven."
@@ -173,8 +213,8 @@
         },
         {
           "title_key": "SONG_SOURCE_BRAHMS_LULLABY_2",
-          "url": "https://festspiele-mv.de/fileadmin/user_upload/Programmhefte/2024_Festspielsommer/24-07-13_Landsdorf_WEB.pdf",
-          "supports": "Gift for the Fabers’ newborn Hans and Brahms’s dated accompanying letter."
+          "url": "https://www1.wdr.de/stichtag/stichtag8774.amp",
+          "supports": "Brahms’s dated letter, the gift for newborn Hans Faber and the first documented concert."
         }
       ],
       "research_notes": "The institute spells the singer Louise Dustmann; some English references use Luise. Avoid speculative claims about Brahms’s romantic intentions."
@@ -209,6 +249,11 @@
           "title_key": "SONG_SOURCE_ROW_YOUR_BOAT_3",
           "url": "https://archive.org/details/franklinsquares04mccagoog/page/n73/mode/1up",
           "supports": "1881 title/copyright leaves and printed page 69: 6/8 melody, repeated third-bar note, Lyte credit and numbered round entrances."
+        },
+        {
+          "title_key": "SONG_SOURCE_ROW_YOUR_BOAT_4",
+          "url": "https://www.loc.gov/item/2023805773/",
+          "supports": "1852 print of The Old Log Hut with an early form of the words and a different tune."
         }
       ],
       "research_notes": "Lyte’s exact role is uncertain. The 1852 title The Old Log Hut / Row, Row Your Boat must not be treated as proof that its melody was today’s tune."
@@ -231,9 +276,14 @@
           "title_key": "SONG_SOURCE_JINGLE_BELLS_3",
           "url": "https://www.kinder-wollen-singen.de/lieder/jingle-bells/",
           "supports": "The public-domain 2010 G-major setting linked as LilyPond provides the verse and familiar refrain."
+        },
+        {
+          "title_key": "SONG_SOURCE_JINGLE_BELLS_4",
+          "url": "https://tile.loc.gov/storage-services/public/music/mussm2-sm1857-620520/mussm2-sm1857-620520.pdf",
+          "supports": "The 1857 piano-and-voice print, including its different refrain melody."
         }
       ],
-      "research_notes": "Use earliest documented performance, not an absolute first performance. The place where Pierpont composed it remains uncertain; avoid the Medford tavern and Thanksgiving origin stories."
+      "research_notes": "Use earliest documented performance, not an absolute first performance. The place where Pierpont composed it remains uncertain; avoid the Medford tavern and Thanksgiving origin stories. The original print’s refrain differs from the later familiar refrain used in the practice score."
     },
     "greensleeves": {
       "history_key": "SONG_HISTORY_GREENSLEEVES",
@@ -243,6 +293,11 @@
           "title_key": "SONG_SOURCE_GREENSLEEVES_1",
           "url": "https://www.loc.gov/static/events/concerts-from-the-library-of-congress/documents/programs/2324-Jordi-Savall-Hesperion-Apr2-program.pdf",
           "supports": "Anonymous Renaissance tune, English ground-bass practice, variations and improvisation, and the named performers’ concert."
+        },
+        {
+          "title_key": "SONG_SOURCE_GREENSLEEVES_2",
+          "url": "https://www.folger.edu/explore/shakespeares-works/the-merry-wives-of-windsor/read/2/1/",
+          "supports": "Shakespeare names the tune in Act 2, Scene 1 of The Merry Wives of Windsor."
         }
       ],
       "research_notes": "No verified composer. Do not credit Henry VIII or connect its creation to Anne Boleyn. Avoid conflating the 1580 ballad registration with surviving printed music."
@@ -297,8 +352,8 @@
         },
         {
           "title_key": "SONG_SOURCE_OLD_MACDONALD_3",
-          "url": "https://www.teachingenglish.org.uk/teaching-resources/teaching-primary/teaching-tools/classroom-posters-old-macdonald-had-farm",
-          "supports": "Modern verse form: opening farm line, second farm/animal line, calls and returning opening; D150 teacher notes, page 4."
+          "url": "https://www.library.ucsb.edu/1925-recordings-digitized-ucsb-entering-public-domain-january-1-2026",
+          "supports": "UCSB catalog and recording links for the Sam Patterson Trio’s 1925 recording, Edison 51644."
         }
       ],
       "research_notes": "This is an early printed relative, not proof of the exact modern version's first appearance or sole authorship. The Morgan page sometimes returns 403 but its complete catalog record is searchable. The teaching recipe now restores the missing second farm/animal line. Paul Hardy Songs Tunebook, 1 June 2026 with edits to 6 August 2026, X:15902, corroborates the 16-bar form and low-G pickup after transposition. Its CC BY-NC-SA 4.0 source is reference-only; the added phrase repeats existing project-authored data, and the simplified calls and phrase endings remain editorial. No code, harmonization or source asset is copied."
@@ -310,7 +365,7 @@
         {
           "title_key": "SONG_SOURCE_WHEN_THE_SAINTS_1",
           "url": "https://www.loc.gov/static/programs/national-recording-preservation-board/documents/When-the-Saint-Go-Marching-In_Riccardi.pdf",
-          "supports": "Traditional spiritual origins, New Orleans context, 1923 recording, Armstrong and Russell's 1938 recording."
+          "supports": "Spiritual origins, 1923 recording, Blind Willie Davis’s 1928 guitar recording and parade-style drumming in the 1938 Armstrong recording."
         }
       ],
       "research_notes": "Exact composition date and authorship are unknown. Armstrong recorded it in May 1938; the record was released in February 1939. The similarly titled 1896 hymn uses a different melody."
@@ -326,8 +381,8 @@
         },
         {
           "title_key": "SONG_SOURCE_AURA_LEE_2",
-          "url": "https://www.themorgan.org/music-manuscripts-and-printed-music/222259",
-          "supports": "Writers and publication; Love Me Tender uses its melody."
+          "url": "https://www.loc.gov/collections/songs-of-america/articles-and-essays/timeline/1850-to-1899/",
+          "supports": "Aura Lea’s 1861 publication and later use of the tune in Elvis Presley’s Love Me Tender."
         }
       ],
       "research_notes": "Dedication does not establish a premiere performer. Aura Lea is the original publication spelling. The Morgan catalog is searchable but sometimes blocks direct opening."
@@ -340,6 +395,11 @@
           "title_key": "SONG_SOURCE_SILENT_NIGHT_1",
           "url": "https://www.stillenacht.at/en/history-of-the-song",
           "supports": "Poem and melody dates, creators, premiere location, original performers and accompaniment."
+        },
+        {
+          "title_key": "SONG_SOURCE_SILENT_NIGHT_2",
+          "url": "https://sammlung-online.salzburgmuseum.at/detail/collection/c6be0c0f-2a40-4ddc-82c4-0e7b1a5113f3",
+          "supports": "Surviving autograph by Joseph Mohr specifies two voices and guitar."
         }
       ],
       "research_notes": "The familiar broken-organ explanation is explicitly identified by this source as supposition; omit it."
@@ -360,8 +420,13 @@
         },
         {
           "title_key": "SONG_SOURCE_CAMPTOWN_RACES_3",
-          "url": "https://en.wikisource.org/wiki/File:Camptown_Races_(1850).pdf",
-          "supports": "Levy 071.014 scan of Benteen/Mayo 1850 print, music pages 3-4: Foster credit, longer verse, separate choir voices, pickup and phrase-ending rests."
+          "url": "https://levysheetmusic.mse.jhu.edu/collection/071/014",
+          "supports": "Levy 071.014 facsimile of the 1850 print, including the verse melody and chorus line marked Air."
+        },
+        {
+          "title_key": "SONG_SOURCE_CAMPTOWN_RACES_4",
+          "url": "https://www.loc.gov/item/2023805524/",
+          "supports": "An 1852 edition for voice and guitar, held by the Library of Congress."
         }
       ],
       "research_notes": "The Benteen/Mayo 1850 print, Levy 071.014, supplies the full vocal verse and the chorus line marked Air. No particular real racecourse or town is securely established as its inspiration."
@@ -372,8 +437,8 @@
       "sources": [
         {
           "title_key": "SONG_SOURCE_AU_CLAIR_DE_LA_LUNE_1",
-          "url": "https://eduscol.education.gouv.fr/chansonsquifontlhistoire/Au-clair-de-la-lune.html",
-          "supports": "French traditional attribution and Scott's dated performance."
+          "url": "https://www.firstsounds.org/sounds/scott.php",
+          "supports": "April 1860 phonautogram, restoration methods and playable audio."
         },
         {
           "title_key": "SONG_SOURCE_AU_CLAIR_DE_LA_LUNE_2",
@@ -396,6 +461,11 @@
           "title_key": "SONG_SOURCE_HOT_CROSS_BUNS_2",
           "url": "https://www.gutenberg.org/cache/epub/25432/pg25432-images.html",
           "supports": "Primary printed setting, illustration and arrangement credits, longer words."
+        },
+        {
+          "title_key": "SONG_SOURCE_HOT_CROSS_BUNS_3",
+          "url": "https://www.metmuseum.org/art/collection/search/739498",
+          "supports": "1799 print depicts a hot cross bun seller on a London street."
         }
       ],
       "research_notes": "Avoid a definitive first-publication date: sources variously distinguish earlier street cries from later song printings. The Cranes collected and arranged existing material; they did not originate the song."
@@ -413,6 +483,11 @@
           "title_key": "SONG_SOURCE_SIMPLE_GIFTS_2",
           "url": "https://www.loc.gov/collections/songs-of-america/articles-and-essays/articles-about-songs/boatmens-dance-simple-gifts/",
           "supports": "Shaker origin, Appalachian Spring in 1944 and later vocal setting."
+        },
+        {
+          "title_key": "SONG_SOURCE_SIMPLE_GIFTS_3",
+          "url": "https://www.loc.gov/collections/martha-graham/articles-and-essays/works-listing-by-title/a/",
+          "supports": "Martha Graham’s 1944 Appalachian Spring premiere at the Library of Congress."
         }
       ],
       "research_notes": "1848 and Alfred, Maine are common attributions, but historical sources differ on dating and community. Conservative wording avoids asserting them as certain. LOC direct access sometimes returns 403; the article text is search indexed."
@@ -447,6 +522,11 @@
           "title_key": "SONG_SOURCE_POP_GOES_THE_WEASEL_2",
           "url": "https://violinsheetmusic.org/files/download/collections/ryans-mammoth-collection.pdf#page=264",
           "supports": "Higher second strain of the dance, checked against the 1883 score."
+        },
+        {
+          "title_key": "SONG_SOURCE_POP_GOES_THE_WEASEL_3",
+          "url": "https://tile.loc.gov/storage-services/public/music/mussm2-sm1853-220280/mussm2-sm1853-220280.pdf",
+          "supports": "1853 Philadelphia score and country-dance instructions on the final page."
         }
       ],
       "research_notes": "The source does not establish an original composer. Do not turn the various proposed slang meanings of weasel into historical fact; named sheet-music arrangers are not necessarily composers."
@@ -458,15 +538,20 @@
         {
           "title_key": "SONG_SOURCE_HOME_ON_THE_RANGE_1",
           "url": "https://kslegislature.gov/li_2012/b2011_12/year2/measures/documents/sr1822_enrolled.pdf",
-          "supports": "Poem title and 1873 publication; Kelley and Harlan credits; 1947 state-song adoption."
+          "supports": "Poem title, Kelley and Harlan credits, and 1947 state-song adoption."
         },
         {
           "title_key": "SONG_SOURCE_HOME_ON_THE_RANGE_2",
-          "url": "https://blogs.loc.gov/folklife/2021/07/we-are-americans-songs/",
-          "supports": "Western repertoire context and Dom Flemons's 2020 complete-verse performance."
+          "url": "https://blogs.loc.gov/loc/2022/03/black-cowboys-at-home-on-the-range/",
+          "supports": "John Lomax’s 1908 recording from a Black saloonkeeper and former cowboy in San Antonio."
+        },
+        {
+          "title_key": "SONG_SOURCE_HOME_ON_THE_RANGE_3",
+          "url": "https://www.loc.gov/collections/songs-of-america/articles-and-essays/articles-about-songs/home-on-the-range/",
+          "supports": "Early newspaper publication evidence, Lomax’s 1910 collection and the song’s later popularity."
         }
       ],
-      "research_notes": "Sources disagree between 1871 and 1872 for the poem's writing; publication in 1873 is the safer date. Kelley also appears as Kelly in some sources. This wording credits the Harlan family without claiming every familiar melodic detail is unchanged."
+      "research_notes": "The publication year varies across accounts. The state resolution gives 1873, the Kansas Historical Society dates early printings to 1874, and the Library of Congress describes a surviving 1876 printing and earlier evidence. The card uses the 1870s. Kelley also appears as Kelly in some sources."
     },
     "oh_susanna": {
       "history_key": "SONG_HISTORY_OH_SUSANNA",
@@ -481,6 +566,11 @@
           "title_key": "SONG_SOURCE_OH_SUSANNA_2",
           "url": "https://archive.org/details/OhSusannaOriginal1848SheetMusic",
           "supports": "Visually checked C. Holt Jr. print, copyright 1848 on cover, music pages 2-3: two-beat vocal bars and rhythmic differences from this teaching version."
+        },
+        {
+          "title_key": "SONG_SOURCE_OH_SUSANNA_3",
+          "url": "https://americanmusic.library.pitt.edu/content/foster-stephen-c-collins",
+          "supports": "1847 Pittsburgh Daily Commercial Journal advertisement announcing the song."
         }
       ],
       "research_notes": "Do not call the Peters printing the first edition. Direct access was inconsistent, but the complete university article was available in indexed search results. The separately linked scan is the C. Holt Jr. 1848 print (publisher/year checked on its cover), not the Peters printing. The uploader title is not evidence that it is the first edition. Its two-beat vocal bars have shorter values and some equal note pairs where this common classroom recipe uses four-beat bars and long-short pairs. Choir harmony and piano accompaniment are not used."
@@ -508,6 +598,11 @@
           "title_key": "SONG_SOURCE_ROW_YOUR_BOAT_3",
           "url": "https://archive.org/details/franklinsquares04mccagoog/page/n73/mode/1up",
           "supports": "1881 title/copyright leaves and printed page 69: 6/8 melody, repeated third-bar note, Lyte credit and numbered round entrances."
+        },
+        {
+          "title_key": "SONG_SOURCE_ROW_YOUR_BOAT_4",
+          "url": "https://www.loc.gov/item/2023805773/",
+          "supports": "1852 print of The Old Log Hut with an early form of the words and a different tune."
         }
       ],
       "research_notes": "The 1881 third bar repeats the same pitch three times; do not silently replace it with the later familiar descending middle note. Historical Lyte credit does not settle authorship. Source is printed page 69, not the Archive volume metadata."
@@ -519,7 +614,7 @@
         {
           "title_key": "SONG_SOURCE_SKYE_BOAT_SONG_1",
           "url": "https://www.nms.ac.uk/discover-catalogue/flora-macdonald-an-unlikely-jacobite-heroine",
-          "supports": "1884 publication and Flora MacDonald’s help taking Charles Edward Stuart to Skye after Culloden in 1746."
+          "supports": "Flora MacDonald’s help taking Charles Edward Stuart to Skye in disguise after Culloden in 1746."
         },
         {
           "title_key": "SONG_SOURCE_SKYE_BOAT_SONG_2",
@@ -528,11 +623,11 @@
         },
         {
           "title_key": "SONG_SOURCE_SKYE_BOAT_SONG_3",
-          "url": "https://archive.org/details/31761034118778",
-          "supports": "Songs of the North historical score: collected melody with added music by A. C. MacLeod and words by Harold Boulton."
+          "url": "https://archive.org/details/31761034118778/page/n36/mode/1up",
+          "supports": "Songs of the North, p. 16, credits the boatmen, Annie Campbell MacLeod, Harold Boulton and Malcolm Lawson."
         }
       ],
-      "research_notes": "Do not call the entire tune an anonymous eighteenth-century song. Preserve the 1888 solo variants and D chorus ending; do not attribute a later television or recording arrangement to the historical source. Smithsonian identifies its 1888 copy as public domain: https://library.si.edu/digital-library/book/musicwaters00smit ."
+      "research_notes": "Do not call the entire tune an anonymous eighteenth-century song. Preserve the 1888 solo variants and D chorus ending; do not attribute a later television or recording arrangement to the historical source. Smithsonian identifies its 1888 copy as public domain: https://library.si.edu/digital-library/book/musicwaters00smit . National Museums Scotland dates Songs of the North to 1884. The Leadenhall Press bibliography identifies it as 1885.26. The card uses the 1880s and separately identifies the 1888 source for the practice melody."
     },
     "long_long_ago": {
       "history_key": "SONG_HISTORY_LONG_LONG_AGO",
@@ -563,7 +658,7 @@
         {
           "title_key": "SONG_SOURCE_DAISY_BELL_1",
           "url": "https://levysheetmusic.mse.jhu.edu/collection/140/090",
-          "supports": "T. B. Harms & Co., New York, 1892; Harry Dacre words/music credit. Cover and first music page confirm 1892 copyright. Chorus melody on printed page 5 (PDF page 4) in G, 3/4; lower G→C, omit small-note triplet decoration in chorus bar 19, preserve principal notes/rests/ties. No claim that this copy is a first printing."
+          "supports": "T. B. Harms & Co., New York, 1892; Harry Dacre words/music credit. Printed pages 3–5 contain the G-major verse and chorus. The practice melody is lowered G→C and retains the principal notes of a small chorus decoration."
         },
         {
           "title_key": "SONG_SOURCE_DAISY_BELL_2",
@@ -573,10 +668,10 @@
         {
           "title_key": "SONG_SOURCE_DAISY_BELL_3",
           "url": "https://www.computerhistory.org/timeline/1961/",
-          "supports": "1961 computer performance; John Kelly and Carol Lochbaum programmed vocals, Max Mathews accompaniment. Hardware and first-ever claims omitted."
+          "supports": "1961 computer performance; John Kelly and Carol Lochbaum programmed vocals, Max Mathews accompaniment. Hardware and first-ever claims omitted. Relates the recording to HAL’s performance in 2001: A Space Odyssey."
         }
       ],
-      "research_notes": "Use the 1892 chorus only, not a complete song or the Bell Labs arrangement. Source bar 19 principal A4 quarter/G4 half becomes D4/C4 in C; enlarged primary-score inspection resolved an initial one-step pitch-reading disagreement. The small B4/A4 upper-neighbor decoration is omitted. Practice bass, articulation and tempo are editorial. No source engraving, code, lyrics, piano, recording or downloaded MIDI is bundled."
+      "research_notes": "The practice melody uses one 32-bar verse and one 32-bar chorus from the 1892 print. The chorus had already been verified against the source; its bar 19 principal A4 quarter/G4 half becomes D4/C4, without the small B4/A4 decoration. Practice bass, articulation and tempo are editorial. Recording references are historical context."
     },
     "londonderry_air": {
       "history_key": "SONG_HISTORY_LONDONDERRY_AIR",
@@ -590,7 +685,7 @@
         {
           "title_key": "SONG_SOURCE_LONDONDERRY_AIR_2",
           "url": "https://www.tcd.ie/library/exhibitions/in-tune/irish_folk_music.php",
-          "supports": "Untitled air supplied by Jane Ross of Limavady; Petrie or daughter Maryanne supplied piano harmonization. Does not establish a named composer or an unchanged ancient original."
+          "supports": "Untitled air supplied by Jane Ross of Limavady, unusually long phrases and wide range; Petrie or daughter Maryanne supplied piano harmonization."
         },
         {
           "title_key": "SONG_SOURCE_LONDONDERRY_AIR_3",

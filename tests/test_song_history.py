@@ -60,7 +60,8 @@ class SongHistoryTests(unittest.TestCase):
         skye = translations[data['skye_boat_song']['history_key']]
         self.assertIn('Annie Campbell MacLeod', skye)
         self.assertIn('Harold Boulton', skye)
-        self.assertIn('1884', skye)
+        self.assertIn('Songs of the North in the 1880s', skye)
+        self.assertIn('1888', translations[data['skye_boat_song']['arrangement_key']])
         long_ago = translations[data['long_long_ago']['history_key']]
         self.assertIn('probably between 1835 and 1837', long_ago)
         self.assertIn('Elsie Baker', long_ago)

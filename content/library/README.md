@@ -248,9 +248,10 @@ Historical summaries distinguish publication evidence from exact origin claims:
 [Morgan’s early Boston Bayly edition](https://www.themorgan.org/music-manuscripts-and-printed-music/137814)
 is dated *probably* 1835–1837, so the blurb does not assert an exact composition or
 first-publication year. [Elsie Baker’s 11 April 1913 Victor recording](https://www.loc.gov/item/jukebox-133022/)
-is credited as a performance, not an arrangement source. [National Museums Scotland](https://www.nms.ac.uk/discover-catalogue/flora-macdonald-an-unlikely-jacobite-heroine)
-supports Skye’s 1884 publication and the 1746 escape context; the song is not
-presented as an unchanged eighteenth-century composition.
+is credited as a performance. The Skye card dates *Songs of the North* to the
+1880s. The museum dates it to 1884 and the publisher bibliography catalogs it
+under 1885. The practice melody follows the separate 1888 source in the table.
+[National Museums Scotland](https://www.nms.ac.uk/discover-catalogue/flora-macdonald-an-unlikely-jacobite-heroine), [Leadenhall Press bibliography, entry 1885.26](https://www.bsanz.org/wp-content/uploads/simple-file-list/Script-and-Print-2004_2020/Script-and-Print_36_2012/Volume-36_No-3/SP_2012-Vol36-No3-2.pdf#page=21)
 
 Existing melody checks found Greensleeves and Sakura consistent with their
 declared reference editions. Neither check proves a unique original folk form.
