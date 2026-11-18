@@ -341,7 +341,7 @@ const BUILT_IN_LIBRARY: Array[Dictionary] = [
 	{"file": "sakura_sakura", "title_key": "LIBRARY_SAKURA_SAKURA", "level": 1, "seconds": 42, "bpm": 80, "views": ["guitar", "piano"]},
 	{"file": "pop_goes_the_weasel", "title_key": "LIBRARY_POP_GOES_THE_WEASEL", "level": 1, "seconds": 32, "bpm": 90, "views": ["guitar", "piano"]},
 	{"file": "home_on_the_range", "title_key": "LIBRARY_HOME_ON_THE_RANGE", "level": 1, "seconds": 71, "bpm": 84, "views": ["guitar", "piano"]},
-	{"file": "oh_susanna", "title_key": "LIBRARY_OH_SUSANNA", "level": 1, "seconds": 41, "bpm": 100, "views": ["guitar", "piano"]},
+	{"file": "oh_susanna", "title_key": "LIBRARY_OH_SUSANNA", "level": 1, "seconds": 60, "bpm": 100, "views": ["guitar", "piano"]},
 	{"file": "row_your_boat_compound", "title_key": "LIBRARY_ROW_YOUR_BOAT_COMPOUND", "level": 1, "seconds": 36, "bpm": 80, "views": ["guitar", "piano"]},
 	{"file": "skye_boat_song", "title_key": "LIBRARY_SKYE_BOAT_SONG", "level": 2, "seconds": 54, "bpm": 80, "views": ["guitar", "piano"]},
 	{"file": "long_long_ago", "title_key": "LIBRARY_LONG_LONG_AGO", "level": 1, "seconds": 44, "bpm": 88, "views": ["guitar", "piano"]},

@@ -119,7 +119,7 @@ msgid "LIBRARY_SAKURA_SAKURA"
 msgstr "Sakura Sakura · melody study · Japanese traditional"
 
 msgid "LIBRARY_POP_GOES_THE_WEASEL"
-msgstr "Pop Goes the Weasel · twice · English traditional"
+msgstr "Pop Goes the Weasel · two dance phrases · English traditional"
 
 msgid "LIBRARY_HOME_ON_THE_RANGE"
 msgstr "Home on the Range · verse and chorus · Daniel E. Kelley"
@@ -2810,7 +2810,7 @@ msgid "SONG_HISTORY_WHEN_THE_SAINTS"
 msgstr "This traditional Christian spiritual became a fixture of New Orleans jazz and brass-band culture. The Paramount Jubilee Singers recorded it in 1923; Louis Armstrong's 1938 recording, arranged by pianist Luis Russell, helped make it internationally familiar. Armstrong popularized the song rather than composing it."
 
 msgid "SONG_ARRANGEMENT_AURA_LEE"
-msgstr "The verse and refrain melody are in C. Note lengths are doubled from the 1861 score's two-beat bars into four-beat teaching bars. A small decorative lead-in note is omitted, and some closing notes are shortened to leave rests. The practice bass is new. No Love Me Tender lyrics or later recording arrangement is included."
+msgstr "The verse and refrain melody are in C. Note lengths are doubled from the 1861 score's two-beat bars into four-beat teaching bars. Listen for the long then short opening notes. The first line ends with a rest, while the second holds C right up to the refrain. A small decorative note is omitted. The practice bass is new. No Love Me Tender lyrics or later recording arrangement is included."
 
 msgid "SONG_HISTORY_AURA_LEE"
 msgstr "George R. Poulton wrote the music and W. W. Fosdick the words for Aura Lea, published in Cincinnati in 1861. The original sheet music was for voice and piano and dedicated to S. C. Campbell of Hooley & Campbell's Minstrels. Its melody later became the basis of Love Me Tender."
@@ -2852,7 +2852,7 @@ msgid "SONG_HISTORY_SAKURA_SAKURA"
 msgstr "Sakura means cherry blossoms. This Japanese melody is associated with teaching the koto, a string instrument, and its composer and lyricist are not securely identified. Research into its nineteenth-century publication and later use in schools challenges the often repeated claim that it is an ancient folk tune."
 
 msgid "SONG_ARRANGEMENT_POP_GOES_THE_WEASEL"
-msgstr "The familiar eight-bar classroom melody is in C and is played twice. The high A and nearby rests are retained; the complete historical dance and piano variations are not included."
+msgstr "The familiar eight-bar tune leads into a higher dance tune from an 1883 collection. Each is played once in C. Listen for the short, high “pop” and the silence that follows in both halves."
 
 msgid "SONG_HISTORY_POP_GOES_THE_WEASEL"
 msgstr "Pop Goes the Weasel circulated as a country dance before becoming a familiar children's song. Library of Congress sheet music from 1853 and 1856 preserves dance directions, while later editions add lyrics and instrumental variations. Virginia fiddler Henry Reed was recorded playing the tune in 1966."
@@ -2864,7 +2864,7 @@ msgid "SONG_HISTORY_HOME_ON_THE_RANGE"
 msgstr "Brewster Higley's poem My Western Home was published in Kansas in 1873; Daniel Kelley and the Harlan brothers helped turn it into a song. It became Kansas's official state song in 1947. Dom Flemons performed all its verses for the Library of Congress in 2020, continuing its life in Western music."
 
 msgid "SONG_ARRANGEMENT_OH_SUSANNA"
-msgstr "This C-major teaching version uses four-beat bars and longer note values than the early two-beat vocal print. Some equal pairs in that print become long–short notes here. Opening rests align the lead-in, and phrase endings include rests. Historical minstrel lyrics, choir harmony and piano accompaniment are omitted."
+msgstr "This C-major teaching version uses four-beat bars and longer note values than the early two-beat vocal print. Some equal pairs in that print become long–short notes here. Two short notes lead into the second half of the verse, before the refrain. Historical minstrel lyrics, choir harmony and piano accompaniment are omitted."
 
 msgid "SONG_HISTORY_OH_SUSANNA"
 msgstr "Stephen Foster's song was originally titled Susanna and appeared in print in 1848. W. C. Peters's 1848 edition was prepared from Foster's own manuscript, although it was not the first printing. The song originated in blackface minstrelsy, a stage tradition built on racist caricatures of African Americans."

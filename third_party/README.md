@@ -212,3 +212,13 @@ music pp. 3–4, lowered from D to C. The independently encoded recipes in
 `scripts/library_scores.py` generate `content/library/jingle_bells.mid` and
 `content/library/camptown_races.mid`. No source files, lyrics or historical
 accompaniment are distributed.
+
+The contrasting eight bars in `content/library/pop_goes_the_weasel.mid`
+use the melody from William Bradbury Ryan’s *Ryan’s Mammoth Collection*
+(Boston, Elias Howe, 1883), printed p. 264, lowered from G to C, once through
+with an original bass. The second half of the verse in
+`content/library/oh_susanna.mid` follows the phrase order of the
+[Holt 1848 print, Levy 068.045](https://levysheetmusic.mse.jhu.edu/collection/068/045),
+retaining the project's four-beat classroom rhythm. Both historical melodies
+are public domain. Only the new realizations and their readable note recipes
+are bundled.

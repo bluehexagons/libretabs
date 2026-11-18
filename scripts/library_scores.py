@@ -172,9 +172,9 @@ add('when_the_saints', 'When the Saints Go Marching In - melody study', 'Traditi
     'R:8 E4 D4 | C4:8 C4:8 | E4:8 G4 G4 | F4:16 | '
     'R:4 E4 F4 G4 | E4:8 C4:8 | D4:8 C4:8 | C4:12 R:4', tempo=100)
 
-aura = ('G3 C4 B3 C4 | D4 A3 D4:8 | C4 B3 A3 B3 | C4:12 R:4')
+aura = 'G3:6 C4:2 B3 C4 | D4 A3 D4:8 | C4 B3 A3 B3'
 add('aura_lee', 'Aura Lee - verse and refrain', 'George R. Poulton',
-    f'{aura} | {aura} | E4 E4 E4:8 | E4 E4 E4:8 | E4:6 D4:2 C4 D4 | E4:16 | '
+    f'{aura} | C4:12 R:4 | {aura} | C4:16 | E4 E4 E4:8 | E4 E4 E4:8 | E4:6 D4:2 C4 D4 | E4:16 | '
     'E4 E4 F4:6 E4:2 | D4 A3 D4:6 D4:2 | D4:2 C4:6 E4:6 D4:2 | C4:12 R:4',
     tempo=88)
 
@@ -229,8 +229,12 @@ weasel = ('C4:4 C4:2 D4:4 D4:2 | E4:2 G4:2 E4:2 C4:6 | '
           'C4:4 C4:2 D4:4 D4:2 | E4:6 C4:2 R:4 | '
           'C4:4 C4:2 D4:4 D4:2 | E4:2 G4:2 E4:2 C4:6 | '
           'A4:2 R:4 D4:4 F4:2 | E4:6 C4:2 R:4')
-add('pop_goes_the_weasel', 'Pop Goes the Weasel - twice', 'English traditional',
-    f'{weasel} | {weasel}', (6, 8), 90)
+weasel_high = ('C5:6 A4:4 C5:2 | B4:2 D5:2 B4:2 G4:6 | '
+               'C5:4 C5:2 A4:4 C5:2 | B4:6 G4:4 E4:2 | '
+               'F4:4 E4:2 F4:4 G4:2 | A4:4 B4:2 C5:4 R:2 | '
+               'A4:2 R:4 D4:4 F4:2 | E4:6 C4:4 R:2')
+add('pop_goes_the_weasel', 'Pop Goes the Weasel - two strains', 'English traditional',
+    f'{weasel} | {weasel_high}', (6, 8), 90)
 
 add('home_on_the_range', 'Home on the Range - verse and chorus', 'Daniel E. Kelley',
     'R:8 G3 | G3 C4 D4 | E4:8 C4:2 B3:2 | A3 F4 F4 | F4:8 E4:2 F4:2 | '
@@ -245,7 +249,9 @@ add('home_on_the_range', 'Home on the Range - verse and chorus', 'Daniel E. Kell
 susanna_open = ('E4 G4 G4:6 A4:2 | G4 E4 C4:6 D4:2')
 add('oh_susanna', 'Oh! Susanna - melody study', 'Stephen Foster',
     f'R:12 C4:2 D4:2 | {susanna_open} | E4 E4 D4 C4 | D4:12 C4:2 D4:2 | '
-    f'{susanna_open} | E4 E4 D4 D4 | C4:12 R:4 | '
+    f'{susanna_open} | E4 E4 D4 D4 | C4:12 C4:2 D4:2 | '
+    'E4 G4 G4 A4 | G4 E4 C4:6 D4:2 | E4 E4 D4 C4 | D4:12 C4:2 D4:2 | '
+    'E4 G4 G4 A4 | G4 E4 C4:6 D4:2 | E4 E4 D4 D4 | C4:12 R:4 | '
     'F4:8 F4:8 | A4 C5:8 A4 | G4 G4 E4 C4 | D4:12 C4:2 D4:2 | '
     f'{susanna_open} | E4 E4 D4 D4 | C4:12 R:4', tempo=100)
 
@@ -316,7 +322,7 @@ BASS_ROOTS = {
     # The final study bar uses an authored tonic/fifth cadence.
     'canon_in_d': ([(50, 45, 47, 42), (43, 38, 43, 45)] * 3
                    + [(50, 45, 47, 42), 50]) * 2,
-    'twinkle': [48, 48, 41, 48, 43, 48, 43, 48, 48, 48, 41, 48],
+    'twinkle': [48, (41, 48), (41, 48), (43, 48), 48, 43, 48, 43, 48, (41, 48), (41, 48), (43, 48)],
     'the_entertainer': [48, 48, 43, 48, 41, 48, 43, 48, 43, 48, 43, 48, 41, 48, 43, 48, 48],
     'mary_had_a_little_lamb': [48, 48, 43, 48, 48, 48, 43, 48] * 2,
     'frere_jacques': [48, 48, 43, 43, 41, 41, 48, 48] * 2,
@@ -342,15 +348,15 @@ BASS_ROOTS = {
     'hot_cross_buns': [48, 48, 43, 48] * 3,
     'simple_gifts': [43, 48, 48, 43, 43, 48, 48, 43, 43, 48, 48, 48, 43, 48, 48, 43, 48],
     'sakura_sakura': [40] * 14,
-    'pop_goes_the_weasel': [48, 48, 43, 48, 48, 48, 41, 48] * 2,
+    'pop_goes_the_weasel': [48, 48, 43, 48, 48, 48, (41, 43), 48, 41, 43, 41, 43, 41, 41, (41, 43), (48,)],
     'home_on_the_range': [43, 48, 48, 41, 41, 48, 48, 43, 43, 48, 48, 41, 41, 48, 43, 48, 48,
                           48, 43, 48, 48, 48, 48, 43, 43, 48, 48, 41, 41, 48, 43, 48, 48],
-    'oh_susanna': [48, 48, 48, 48, 43, 48, 48, 43, 48, 41, 41, 48, 43, 48, 48, 43, 48],
+    'oh_susanna': [48] + [48, 48, 48, 43, 48, 48, 43, 48] * 2 + [41, 41, 48, 43, 48, 48, 43, (48,)],
     'row_your_boat_compound': [48, 48, 48, 43, 48, 48, 43, 48] * 2,
     'skye_boat_song': [43] * 8 + [40] * 8 + [43] * 8,
     'long_long_ago': [48, 48, 43, 48, 48, 48, 43, 48, 43, 48, 43, 48, 48, 48, 43, 48],
-    'daisy_bell': [48, 48, 48, 43, 48, 48, 43, 43, 48, 48, 48, 48, 48, 43, 43, 43,
-                   50, 48, 43, 43, 48, 41, 43, 43, 48, 43, 48, 43, 48, 43, 48, 48],
+    'daisy_bell': [48, 48, 48, 43, 41, 41, 48, 48, 48, 48, 48, 48, 48, 43, 43, 43,
+                   50, 48, 48, 48, 48, 41, 43, 43, 48, 43, 48, 43, 48, 43, 48, (48,)],
     'londonderry_air': [43, 48, 41, 43, 43, 48, 45, 43, 48, 48, 48, 41, 43, 48, 48, 43, 48],
 }
 for key, song in SONGS.items():
