@@ -192,7 +192,7 @@ Modern archive interfaces, metadata, articles and scans keep their own rights.
 
 | Work / exact version | Source and rights | Used paths and modifications |
 | --- | --- | --- |
-| Harry Dacre, *Daisy Bell*, T. B. Harms & Co., New York, copyright 1892; chorus printed p. 5, PDF p. 4; [Levy 140.090](https://levysheetmusic.mse.jhu.edu/collection/140/090) | Nineteenth-century published composition, public domain; cover and music-page copyright visually checked. Reference PDF SHA-256 `78ea8fc28cd4a5cdfde02ebaf53125e69ad15bd7806fb4b02477597b3718098b`. No claim of first printing. | `scripts/library_scores.py` recipe and `content/library/daisy_bell.mid`: upper vocal chorus only, G→C (-7 semitones), one small triplet decoration omitted, principal notes/rests/ties retained. No verse, piano, engraved page or later recording arrangement. New practice bass, steady tempo and bass release gaps. |
+| Harry Dacre, *Daisy Bell*, T. B. Harms & Co., New York, copyright 1892; printed pp. 3–5, PDF pp. 2–4. [Levy 140.090](https://levysheetmusic.mse.jhu.edu/collection/140/090) | Nineteenth-century published composition, public domain. Reference PDF SHA-256 `78ea8fc28cd4a5cdfde02ebaf53125e69ad15bd7806fb4b02477597b3718098b`. | `scripts/library_scores.py` and `content/library/daisy_bell.mid` realize the upper vocal line for one verse and one chorus, G→C (-7 semitones), with phrase-ending rests and ties. The chorus plays the principal notes of a small triplet decoration. The practice bass uses selected harmony changes from the print. |
 | *Name unknown* (now Londonderry Air), George Petrie, *The Ancient Music of Ireland*, vol. I, Dublin: University Press/M. H. Gill, 1855, p. 57; [Boston Public Library scan](https://archive.org/details/petriecollection01petr/page/57/mode/1up) | Nineteenth-century traditional melody, public domain. Visually checked dated title and full score; same-page [Wikimedia crop](https://commons.wikimedia.org/wiki/File:Londonderry_Air,_first_print_1855,_sheet_music_edited_by_George_Petrie.jpg) consulted for legibility only. No modern edition or harmonization used. | `scripts/library_scores.py` recipe and `content/library/londonderry_air.mid`: upper melody E-flat→C (-3 semitones), source chromatic note/range/rests retained, final tie one attack. Added leading/closing padding, new bass, steady tempo and bass release gaps. Lower voices, piano and expressive marks omitted. No later *Danny Boy* setting or lyrics. |
 
 Historical source links and original summaries are in
@@ -239,3 +239,9 @@ The Aura Lee refrain in `content/library/aura_lee.mid` uses the solo melody on
 p. 3 of the previously recorded 1861 Church print, including the descent from
 scale degree 1 to 7 in the penultimate bar. The print's p. 4 choral setting is
 a separate version of that passage.
+
+The practice bass in `content/library/brahms_lullaby.mid` takes its repeated
+tonic downbeat from the piano part of Brahms's *Wiegenlied* (Op. 49 No. 4),
+checked against the public-domain [Mutopia
+2007/11/04-1037 edition](https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1037).
+The bass is written as a single line in C in `scripts/library_scores.py`.

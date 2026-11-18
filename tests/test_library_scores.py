@@ -110,6 +110,9 @@ class LibraryScores(unittest.TestCase):
         self.assertEqual([(pitch + minuet['transpose'], duration) for pitch, duration in bar],
                          [(61, 480), (59, 240), (61, 240), (57, 480)])
         self.assertEqual(minuet['bass_roots'][19], 45)
+        # Brahms's piano starts each full vocal bar on the tonic.
+        lullaby_roots = SONGS['brahms_lullaby']['bass_roots']
+        self.assertTrue(all(bar[0] == 48 for bar in lullaby_roots[1:]))
 
     def test_added_melodies_keep_their_openings_and_meter(self):
         openings = {
@@ -156,7 +159,7 @@ class LibraryScores(unittest.TestCase):
         sakura = SONGS['sakura_sakura']
         self.assertEqual(sakura['notes'][:3], [(69, 480), (69, 480), (71, 960)])
         self.assertEqual({pitch % 12 for pitch, _ in sakura['notes']}, {0, 2, 4, 5, 9, 11})
-        self.assertEqual(sakura['bass_roots'], [40] * 14)
+        self.assertEqual(sakura['bass_roots'], [40] * 13 + [(40,)])
         self.assertEqual(SONGS['pop_goes_the_weasel']['meter'], (6, 8))
         self.assertEqual(notes(SONGS['pop_goes_the_weasel']['bars'].split('|')[6], (6, 8)),
                          [(69, 240), (None, 480), (62, 480), (65, 240)])
@@ -210,24 +213,31 @@ class LibraryScores(unittest.TestCase):
                          [(67, 240), (65, 240), (65, 240), (64, 240), (62, 480), (55, 240), (55, 240)])
         self.assertEqual(long_ago['notes'][-2:], [(60, 960), (None, 960)])
 
-    def test_daisy_chorus_preserves_source_phrasing_without_triplet_decoration(self):
+    def test_daisy_verse_leads_into_chorus_from_same_edition(self):
         song = SONGS['daisy_bell']
         self.assertEqual(song['meter'], (3, 4))
-        self.assertEqual(len(song['bars'].split('|')), 32)
-        self.assertEqual(sum(duration for _, duration in song['notes']), 46080)
-        self.assertEqual(len([pitch for pitch, _ in song['notes'] if pitch is not None]), 50)
-        self.assertEqual(song['notes'][:5],
+        self.assertEqual(len(song['bars'].split('|')), 64)
+        self.assertEqual(sum(duration for _, duration in song['notes']), 92160)
+        bars = song['bars'].split('|')
+        verse, chorus = bars[:32], bars[32:]
+        self.assertEqual(notes(verse[0], (3, 4)), [(67, 480), (66, 480), (67, 480)])
+        self.assertEqual(notes(verse[21], (3, 4)), [(62, 960), (63, 480)])
+        # Verse and chorus meet on G with two distinct attacks.
+        self.assertEqual(notes('|'.join(verse[-2:] + chorus[:1]), (3, 4)),
+                         [(67, 2880), (67, 1440)])
+        chorus_notes = notes('|'.join(chorus), (3, 4))
+        self.assertEqual(len([pitch for pitch, _ in chorus_notes if pitch is not None]), 50)
+        self.assertEqual(chorus_notes[:5],
                          [(67, 1440), (64, 1440), (60, 1440), (55, 960), (None, 480)])
         # Source p. 5, bars 13 and 17: F# in G becomes B, and the next line
-        # starts C5-B4-A4 (F-E-D in C), not one scale step below.
-        bars = song['bars'].split('|')
-        self.assertEqual(notes(bars[12], (3, 4)), [(57, 480), (59, 480), (60, 480)])
-        self.assertEqual(notes(bars[16], (3, 4)), [(65, 480), (64, 480), (62, 480)])
+        # starts C5-B4-A4 (F-E-D in C).
+        self.assertEqual(notes(chorus[12], (3, 4)), [(57, 480), (59, 480), (60, 480)])
+        self.assertEqual(notes(chorus[16], (3, 4)), [(65, 480), (64, 480), (62, 480)])
         # Omit only the small triplet: principal D-C stays, C tied four beats.
         self.assertIn([(62, 480), (60, 1920), (62, 480)],
-                      [song['notes'][i:i + 3] for i in range(len(song['notes']) - 2)])
-        self.assertIn((55, 2400), song['notes'])
-        self.assertEqual(song['notes'][-2:], [(60, 1920), (None, 960)])
+                      [chorus_notes[i:i + 3] for i in range(len(chorus_notes) - 2)])
+        self.assertIn((55, 2400), chorus_notes)
+        self.assertEqual(chorus_notes[-2:], [(60, 1920), (None, 960)])
 
     def test_petrie_air_preserves_edition_variants_and_padded_pickup(self):
         song = SONGS['londonderry_air']

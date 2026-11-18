@@ -2756,7 +2756,7 @@ msgid "SONG_HISTORY_YANKEE_DOODLE"
 msgstr "This marching song was already known before the American Revolution, although its exact origins remain obscure. British soldiers used it to mock American colonists, who adopted it and supplied verses celebrating their own side. Its history preserves an exchange of musical insults that became part of American patriotic tradition."
 
 msgid "SONG_ARRANGEMENT_BRAHMS_LULLABY"
-msgstr "The complete sung melody is in C, with lead-in notes, rests and long–short rhythms retained. The original piano introduction is omitted."
+msgstr "The sung melody is in C, with the lead-in notes, rests and long–short rhythms retained. Brahms anchors each full bar with the same low note, so the practice bass starts each full bar on low C. The arrangement begins with the sung melody."
 
 msgid "SONG_HISTORY_BRAHMS_LULLABY"
 msgstr "Johannes Brahms wrote this lullaby in 1868 for Bertha and Arthur Faber’s baby son Hans. Originally for voice and piano, it appeared as Opus 49, No. 4. Its first documented public performance followed in Vienna in December 1869, with Louise Dustmann singing and Clara Schumann at the piano."
@@ -2846,7 +2846,7 @@ msgid "SONG_HISTORY_SIMPLE_GIFTS"
 msgstr "Simple Gifts is a Shaker dance song generally credited to Elder Joseph Brackett of Maine. Its words about bowing, bending and turning connect the song with movement in Shaker worship. Aaron Copland introduced the melody to new audiences through his 1944 ballet Appalachian Spring and later arranged it for voice."
 
 msgid "SONG_ARRANGEMENT_SAKURA_SAKURA"
-msgstr "The melody and note lengths were checked against the 1894 Nippon Gakufu version and lowered five semitones (piano-key steps). A new bass alternates E and B. Historical piano accompaniment, words and expressive markings are omitted."
+msgstr "The melody and note lengths follow the 1894 Nippon Gakufu version, lowered five semitones (piano-key steps). The practice bass alternates E and B, then holds E through the last bar."
 
 msgid "SONG_HISTORY_SAKURA_SAKURA"
 msgstr "Sakura means cherry blossoms. This Japanese melody is associated with teaching the koto, a string instrument, and its composer and lyricist are not securely identified. Research into its nineteenth-century publication and later use in schools challenges the often repeated claim that it is an ancient folk tune."
@@ -3107,10 +3107,10 @@ msgid "SONG_SOURCE_LONG_LONG_AGO_3"
 msgstr "Long, long ago — Elsie Baker, Victor recording, 1913, Library of Congress"
 
 msgid "LIBRARY_DAISY_BELL"
-msgstr "Daisy Bell · 1892 chorus · Harry Dacre"
+msgstr "Daisy Bell · 1892 verse and chorus · Harry Dacre"
 
 msgid "LIBRARY_DAISY_BELL_NAME"
-msgstr "Daisy Bell · 1892 chorus"
+msgstr "Daisy Bell · 1892 verse and chorus"
 
 msgid "LIBRARY_DAISY_BELL_CREDIT"
 msgstr "Harry Dacre"
@@ -3119,7 +3119,7 @@ msgid "SONG_HISTORY_DAISY_BELL"
 msgstr "British songwriter Harry Dacre wrote Daisy Bell, published in 1892 during a bicycle craze. Early recordings included versions by Dan Quinn and Edward Favor. In 1961 a Bell Laboratories computer sang the song, with vocals programmed by John Kelly and Carol Lochbaum and accompaniment by Max Mathews."
 
 msgid "SONG_ARRANGEMENT_DAISY_BELL"
-msgstr "The 32-bar chorus from an 1892 print is lowered from G to C. Three quarter-note beats fill each bar. Held notes, rests and notes tied across bars retain the printed phrasing. A small triplet decoration in bar 19 is omitted, keeping its main notes. Verses, piano introduction, original accompaniment, accents and tempo changes are omitted. The steady practice tempo and low bass part are new; no historical recording is used."
+msgstr "One verse and chorus from the 1892 print are lowered from G to C. Each section has 32 bars. To practice the familiar chorus, start at bar 33. The arrangement keeps the printed melody’s held notes and rests, and plays the main notes in place of a small decoration in the chorus. The practice bass is new."
 
 msgid "SONG_SOURCE_DAISY_BELL_1"
 msgstr "Daisy Bell — T. B. Harms, 1892, Levy Collection 140.090"

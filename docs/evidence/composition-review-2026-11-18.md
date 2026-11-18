@@ -97,3 +97,30 @@ pack while the service worker downloaded the update. On the next navigation,
 the player initialized with the new pack both online and offline, with matching
 checksums and no page errors. Selected receipts and logs are retained under
 `artifacts/archive/2026-11-18--composition-followup/`.
+
+## Verse and accompaniment pass
+
+- **Daisy Bell** now plays the complete 32-bar verse followed by the original
+  arrangement's 32-bar chorus. The verse begins G–F-sharp–G and closes on a G
+  tied across two full bars before the chorus takes a new attack. The practice
+  bass uses selected harmony changes from the print, including a low G that
+  leads into the chorus's C. The unchanged chorus starts at bar 33, one minute
+  into the arrangement. [T. B. Harms print, 1892, pp. 3–5](https://levysheetmusic.mse.jhu.edu/collection/140/090)
+- **Brahms’s Lullaby** takes its low first beat from Brahms’s piano part. Each
+  full bar starts on low C in the practice key. [Mutopia voice and piano edition](https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1037)
+- **Sakura Sakura** keeps the E–B accompaniment through the first thirteen
+  bars. Holding low E through the final bar lets the melody return to E
+  over the same pitch in a lower octave. [Dittrich melody via Potter](https://www.daisyfield.com/music/jpm/pdf/NGS04-Sakura-Koto.pdf)
+
+Godot confirmed that Daisy Bell has 64 bars and takes 120 seconds as listed in
+the catalog. Both parts of its chorus match the prior MIDI after shifting them
+by 32 bars. MuseScore's converted parts match the pitch and onset of all
+3,847 notes in the 35 library files. The 34 historical melody recipes kept
+their meter and tempo. The external converter adjusted 16 melody note endings,
+the same discrepancies as in the preceding pass. Quick, practice, audio and
+UI smoke checks passed.
+
+The managed guide opened the player in Chromium. Its online and offline pack
+checksums matched the published pack, which contains all 35 checked-in MIDIs.
+The player initialized both times with no page errors. Selected evidence
+is retained under `artifacts/archive/2026-11-18--phrase-review/`.

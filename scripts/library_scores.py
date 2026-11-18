@@ -225,7 +225,7 @@ add('simple_gifts', 'Simple Gifts - Shaker melody study', 'Joseph Brackett',
     'D4 D4 E4 E4:2 D4:2 | C4 C4 C4:8', tempo=88)
 
 # Single-line 1894 Sakura melody, transposed down a perfect fourth.
-# The fixed E/B practice bass avoids imposing a major-key chord progression.
+# The E/B practice bass uses open fifths and holds E for the last phrase.
 add('sakura_sakura', 'Sakura Sakura - melody study', 'Japanese traditional',
     'A4 A4 B4:8 | A4 A4 B4:8 | A4 B4 C5 B4 | A4 B4:2 A4:2 F4:8 | '
     'E4 C4 E4 F4 | E4 E4:2 C4:2 B3:8 | '
@@ -293,10 +293,15 @@ add('long_long_ago', 'Long, Long Ago - 1845 melody study', 'Thomas Haynes Bayly'
     f'{long_ago_a} | {long_ago_end} | {long_ago_bridge} | {long_ago_bridge} | '
     f'{long_ago_a} | {long_ago_end}', tempo=88)
 
-# Dacre, T. B. Harms 1892, printed p. 5: chorus only, G lowered to C.
-# The small-note triplet decoration in bar 19 is omitted; principal notes,
-# rests and ties remain. No piano accompaniment or relative tempo changes.
-add('daisy_bell', 'Daisy Bell - 1892 chorus', 'Harry Dacre',
+# Dacre, T. B. Harms 1892, printed pp. 3–5: one verse and chorus, G lowered to C.
+# Omit the small triplet decoration in chorus bar 19 and keep the principal notes.
+daisy_verse_open = 'G4 F#4 G4 | E4 D4 C4 | D4:8 B3 | G3:8 R:4'
+daisy_verse_answer = 'E4 F4 E4 | D4 C4 B3 | E4:8 C4'
+add('daisy_bell', 'Daisy Bell - 1892 verse and chorus', 'Harry Dacre',
+    f'{daisy_verse_open} | D4:12 | G3:12 | G4:12 | E4:8 R:4 | {daisy_verse_open} | '
+    f'C4 G4 C4 | B3 G3 D4 | C4:12 | ~:4 R:8 | {daisy_verse_answer} | A3:8 R:4 | '
+    f'G4 F4 E4 | D4:8 D#4 | E4:12 | ~:4 R:8 | {daisy_verse_answer} | A3:8 E4 | '
+    'D4 A4 F#4 | E4:8 D4 | G4:12 | ~:12 | '
     'G4:12 | E4:12 | C4:12 | G3:8 R:4 | A3 B3 C4 | A3:8 C4 | G3:12 | ~:8 R:4 | '
     'D4:12 | G4:12 | E4:12 | C4:8 R:4 | A3 B3 C4 | D4:8 E4 | D4:12 | ~:4 R:4 E4 | '
     'F4 E4 D4 | G4:8 E4 | D4 C4:8 | ~:8 D4 | E4:8 C4 | A3:8 C4 | A3 G3:8 | ~:4 R:4 G3 | '
@@ -337,7 +342,12 @@ BASS_ROOTS = {
     'frere_jacques': [48, 48, 43, 43, 41, 41, 48, 48] * 2,
     'auld_lang_syne': [48, 48, 43, 48, 41, 48, 43, 48, 48, 48, 43, 48, 41, 48, 43, 48, 48],
     'yankee_doodle': [48, 43, 48, 43, 48, 41, 43, 48, 41, 48, 43, 48, 41, 48, 43, 48] * 2,
-    'brahms_lullaby': [48, 48, 43, 48, 41, 43, 48, 43, 48, 41, 48, 41, 48, 41, 48, (48, 50, 43), (48,)],
+    # Brahms gives each vocal bar a low tonic downbeat. Use that anchor with
+    # a simple practice line and let F and G enter on the following beats.
+    'brahms_lullaby': [(48,), (48, 40, 43), (48, 40, 43), (48, 43, 43), (48, 41, 43),
+                       (48, 50, 43), (48, 50, 43), (48, 50, 43), (48, 43, 48),
+                       (48, 41, 41), (48, 40, 43), (48, 43, 43), (48, 43, 48),
+                       (48, 41, 41), (48, 40, 43), (48, 50, 43), (48,)],
     'minuet_in_g': [43, 43, 48, 43, 48, 43, 50, 50, 43, 43, 48, 43, 45, 43, (48, 50, 50), 43,
                     43, (42,), (40, 43, 40), 45, 45, (47, 50, 49), (50, 42, 45), 50,
                     (47,), (48,), (47, 45, 43), 50, 50, (40, 43, 42), (43, 47, 50), (43,)],
@@ -358,7 +368,7 @@ BASS_ROOTS = {
     'au_clair_de_la_lune': [48, 48, 43, 48, 48, 48, 43, 48, 50, 50, 43, 43, 48, 48, 43, 48],
     'hot_cross_buns': [(48,), (48,), (48, 43), (43, 48)] * 3,
     'simple_gifts': [43, 48, 48, 43, 43, 48, 48, 43, 43, 48, 48, 48, 43, 48, 48, 43, 48],
-    'sakura_sakura': [40] * 14,
+    'sakura_sakura': [40] * 13 + [(40,)],
     'pop_goes_the_weasel': [48, 48, 43, 48, 48, 48, (41, 43), 48, 41, 43, 41, 43, 41, 41, (41, 43), (48,)],
     'home_on_the_range': [43, 48, 48, 41, 41, 48, 48, 43, 43, 48, 48, 41, 41, 48, 43, 48, 48,
                           48, 43, 48, 48, 48, 48, 43, 43, 48, 48, 41, 41, 48, 43, 48, 48],
@@ -366,7 +376,9 @@ BASS_ROOTS = {
     'row_your_boat_compound': [48, 48, 48, 43, 48, 48, 43, 48] * 2,
     'skye_boat_song': [43] * 8 + [40] * 8 + [43] * 8,
     'long_long_ago': [48, 48, 43, 48, 48, 48, 43, 48, 43, 48, 43, 48, 48, 48, 43, 48],
-    'daisy_bell': [48, 48, 48, 43, 41, 41, 48, 48, 48, 48, 48, 48, 48, 43, 43, 43,
+    'daisy_bell': [48, 48, (47,), 43, (47,), 43, 48, 43, 48, 48, (47,), 43, 48, 43, (48, 43, 40), (48,),
+                   45, 40, 45, (45,), (47, 43, 43), 43, 48, (48,), 45, 40, 45, (45,), 38, 38, 43, (43,),
+                   48, 48, 48, 43, 41, 41, 48, 48, 48, 48, 48, 48, 48, 43, 43, 43,
                    50, 48, 48, 48, 48, 41, 43, 43, 48, 43, 48, 43, 48, 43, 48, (48,)],
     'londonderry_air': [43, 48, 41, 43, 43, 48, 45, 43, 48, 48, 48, 41, 43, 48, 48, (48, 40, 41, 43), (48,)],
 }
