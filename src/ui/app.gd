@@ -199,6 +199,8 @@ var preferences_ready: bool = false
 var count_check: CheckButton
 var metro_check: CheckButton
 var mute_check: CheckButton
+var hear_part_check: CheckButton
+var part_audio_button: Button
 var backing_box: HFlowContainer
 var panel: VBoxContainer
 var cancel_button: Button
@@ -1385,6 +1387,10 @@ func build_drawers() -> void:
 	panel_speed.set_percentage(100)
 	bind_speed_slider(panel_speed)
 	tempo_primary.add_child(panel_speed)
+	hear_part_check = check("HEAR_MY_PART", true)
+	hear_part_check.tooltip_text = tr("TIP_HEAR_MY_PART")
+	hear_part_check.toggled.connect(func(enabled: bool) -> void: set_part_enabled(part, enabled))
+	tempo_primary.add_child(hear_part_check)
 	tempo_primary.add_child(label("SPEED_EXACT", 18))
 	speed_input = SpinBox.new()
 	speed_input.min_value = RelativeSpeedSlider.MIN_PERCENT
@@ -1401,7 +1407,7 @@ func build_drawers() -> void:
 	for item: Button in [slower_button, faster_button, original_button]: speed_steps.add_child(item)
 	speed_steps.add_child(button("STOP", func() -> void: stop_practice(); close_menu()))
 	speed_steps.add_child(button("RESTART", func() -> void: close_menu(); restart_song()))
-	tempo_primary.move_child(speed_steps, 2)
+	tempo_primary.move_child(speed_steps, hear_part_check.get_index() + 1)
 	tempo_primary.add_child(label("SPEED_PRESETS", 18))
 	speed_picker = CaptionOption.new()
 	speed_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
@@ -2592,6 +2598,7 @@ func update_quick_listening() -> void:
 	quick_mute.visible = listening.listener.capture.enabled or listening.playback_mute.button_pressed
 	style_quick_listening()
 	if dock != null:
+		PracticeLayout.fit_part_audio_shortcut(self)
 		update_play_control()
 		update_loop_controls()
 		adapt_flow(dock)
@@ -2929,7 +2936,6 @@ func finish_import() -> void:
 	speed_picker.select(SPEEDS.find(1.0))
 	update_tempo()
 	muted.clear()
-	mute_check.set_pressed_no_signal(false)
 	part_picker.clear()
 	for index: int in range(song.parts.size()):
 		var info: Dictionary = song.parts[index]
@@ -2966,7 +2972,7 @@ func select_part(index: int) -> void:
 	if song == null or index < 0 or index >= song.parts.size() or bool(song.parts[index].percussion): return
 	pause()
 	part = index
-	mute_check.set_pressed_no_signal(muted.has(part))
+	update_part_audio_controls()
 	mute_check.text = tr("MUTE_FOCUSED_PART") % [part_display_name(part), part + 1]
 	var first_measure: int = song.first_sounding_measure(part)
 	source_tick = float(song.measures[first_measure].start) if not song.measures.is_empty() else 0.0
@@ -2987,8 +2993,23 @@ func set_part_enabled(index: int, enabled: bool) -> void:
 	if song == null or index < 0 or index >= song.parts.size(): return
 	if enabled: muted.erase(index)
 	elif not muted.has(index): muted.append(index)
-	if index == part: mute_check.set_pressed_no_signal(not enabled)
+	if index == part: update_part_audio_controls()
 	audio.set_part_enabled(index, enabled)
+
+func toggle_part_audio() -> void:
+	set_part_enabled(part, muted.has(part))
+
+func update_part_audio_controls() -> void:
+	var part_muted: bool = muted.has(part)
+	mute_check.set_pressed_no_signal(part_muted)
+	hear_part_check.disabled = song == null
+	hear_part_check.set_pressed_no_signal(not part_muted)
+	part_audio_button.disabled = song == null
+	part_audio_button.set_pressed_no_signal(part_muted)
+	part_audio_button.icon = UIIcons.get_icon("PART_AUDIO_OFF" if part_muted else "PART_AUDIO")
+	var action: String = "HEAR_MY_PART" if part_muted else "MUTE_MY_PART"
+	part_audio_button.set_meta("hover_caption", tr(action))
+	part_audio_button.tooltip_text = tr("TIP_" + action)
 
 func set_arrangement_style(_index: int) -> void:
 	if song == null: return

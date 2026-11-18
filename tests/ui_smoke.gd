@@ -62,6 +62,10 @@ func run() -> void:
 		for key: String in ["play_button", "menu_button", "main_speed", "loop_button"]:
 			var control: Control = app.get(key)
 			check(control.is_visible_in_tree() and viewport.encloses(control.get_global_rect()) and control.size.y >= 44, key + " remains reachable")
+		var part_audio: Button = app.get("part_audio_button")
+		if config[2] == 1.0:
+			check(part_audio.is_visible_in_tree() and viewport.encloses(part_audio.get_global_rect()) and part_audio.size.y >= 44, "focused-part shortcut stays reachable")
+			check(absf(part_audio.get_global_rect().get_center().y - app.get("speed_control").get_global_rect().get_center().y) < 2, "focused-part shortcut shares the speed row")
 		var play: Button = app.get("play_button")
 		if not play.text.is_empty():
 			var font: Font = play.get_theme_font("font")
@@ -103,6 +107,19 @@ func run() -> void:
 	await settle(app)
 	check(app.get("song_title").visible and app.get("reading_help_button").is_visible_in_tree(), "phone keeps the song title and reading help visible")
 	check(absf(app.get("play_button").get_global_rect().get_center().y - app.get("loop_button").get_global_rect().get_center().y) < 2, "Play and Repeat share a compact row at phone width")
+	var focused_part: int = app.get("part")
+	var shortcut: Button = app.get("part_audio_button")
+	var hear_part: CheckButton = app.get("hear_part_check")
+	var audible_icon: Texture2D = shortcut.icon
+	app.get("play_button").pressed.emit()
+	var part_stream: AudioStreamGeneratorPlayback = audio.playback
+	var count_frames: int = audio.transport.count_frames
+	shortcut.pressed.emit()
+	check(audio.transport.mute_parts == [focused_part] and audio.playing_practice and audio.playback == part_stream and audio.transport.count_frames == count_frames and count_frames > 0, "quick part mute keeps backing, stream and count-in")
+	check(shortcut.button_pressed and shortcut.icon != audible_icon and not hear_part.button_pressed and app.get("mute_check").button_pressed, "part audio controls agree after muting")
+	shortcut.pressed.emit()
+	check(audio.transport.mute_parts.is_empty() and not shortcut.button_pressed and shortcut.icon == audible_icon and audio.playback == part_stream, "quick part unmute restores the part on the same stream")
+	app.call("pause")
 	app.get("reading_help_button").pressed.emit()
 	check(app.get("opened_drawer") == "HELP", "reading help opens directly from practice")
 	app.call("close_menu")
@@ -116,6 +133,14 @@ func run() -> void:
 	root.size = Vector2i(844, 390)
 	await settle(app)
 	check(app.get("source_tick") == repeat_tick and app.get("speed") == 0.5 and app.get("loop_button").button_pressed, "rotation preserves the selected position, speed and repeat range")
+	app.get("tempo_button").pressed.emit()
+	await settle(app)
+	check(app.get("opened_drawer") == "TEMPO" and app.get("menu_scroll").get_global_rect().encloses(hear_part.get_global_rect()), "Playback exposes the part switch on short landscape")
+	hear_part.button_pressed = false
+	check(app.get("muted") == [focused_part] and shortcut.button_pressed and app.get("mute_check").button_pressed, "Playback mutes the same focused part")
+	app.get("mute_check").button_pressed = false
+	check(hear_part.button_pressed and not shortcut.button_pressed, "mixer restores the part in both places")
+	app.call("close_menu")
 	app.get("loop_button").pressed.emit()
 	app.get("repeat_off_button").pressed.emit()
 	check(app.get("opened_drawer") == "" and not app.get("loop_button").button_pressed and app.get("loop_from").value == 2, "quick off returns to practice and remembers the range")

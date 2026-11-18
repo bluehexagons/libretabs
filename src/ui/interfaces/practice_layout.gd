@@ -264,6 +264,7 @@ static func fit(app: Control) -> void:
 		app.metro_button.visible = expanded_controls
 		app.metro_button.text = ""
 	app.style_quick_listening()
+	fit_part_audio_shortcut(app)
 	app.adapt_flow(app.menu_overlay)
 	app.adapt_flow(app.root_box)
 	# Listening adds two actions. At wide sizes their text can still exceed one
@@ -287,6 +288,12 @@ static func fit(app: Control) -> void:
 	if app.fitting_layout: app.fit_pending = true
 	else: app.update_main_scroll.call_deferred()
 
+static func fit_part_audio_shortcut(app: Control) -> void:
+	var plain_dock: bool = not app.controls_on_side and not app.tv_active and not app.tight_controls and not app.presentation.inline_transport
+	var room_for_shortcut: bool = app.size.x >= 360 and app.theme.default_font_size < 30 and not app.presentation.console
+	app.part_audio_button.visible = plain_dock and room_for_shortcut and not app.quick_tuner.visible and not app.quick_mute.visible
+	app.part_audio_button.text = app.tr("PART_AUDIO") if app.size.x >= 760 else ""
+
 static func arrange_controls(app: Control, position: String) -> void:
 	var side_dock: bool = position in ["left", "right"]
 	var header_parent: Node = app.tv_controls_layer if app.tv_active else app.root_box
@@ -305,6 +312,7 @@ static func arrange_controls(app: Control, position: String) -> void:
 	app.header.move_child(app.brand_label, app.header.get_child_count() - 1 if app.handedness == "left" else 0)
 	app.set_child_order(app.header_actions, [app.menu_button, app.tuner_button, app.reading_help_button, app.fullscreen_button, app.tv_button, app.import_button, app.songs_button] if app.handedness == "left" else [app.songs_button, app.import_button, app.tv_button, app.fullscreen_button, app.reading_help_button, app.tuner_button, app.menu_button])
 	app.set_child_order(app.transport_row, [app.metro_button, app.loop_button, app.play_button, app.stop_button] if app.handedness == "left" else [app.play_button, app.loop_button, app.metro_button, app.stop_button])
+	app.set_child_order(app.quick_row, [app.part_audio_button, app.speed_control, app.quick_tuner, app.quick_mute] if app.handedness == "left" else [app.speed_control, app.part_audio_button, app.quick_tuner, app.quick_mute])
 	app.set_child_order(app.dock, [app.quick_row, app.transport_row] if app.handedness == "left" else [app.transport_row, app.quick_row])
 	app.set_child_order(app.seek_navigation, [app.seek_label, app.seek] if app.handedness == "left" else [app.seek, app.seek_label])
 	app.seek_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT if app.handedness == "left" else HORIZONTAL_ALIGNMENT_RIGHT

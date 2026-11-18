@@ -67,6 +67,11 @@ layouts; a final redesign has not been selected.
    range**, set **From** to **1** and **Through** to **2**, then choose **Play
    selected section**. Choose **Turn repeat off** to continue through the song.
    If the practice controls are condensed, open **Menu → Practice → Repeat**.
+6. Once you can follow the notes, choose **My part** next to Speed to play them
+   yourself while the other parts and beat clicks keep their settings. On compact
+   screens, look for the music-note button or select the speed number and turn off
+   **Hear my part** in Playback. A note with an × indicates that your part is
+   muted. Turn it back on to listen again.
 
 For another tune, choose **Songs** (also in the Theater header). Search by title
 or composer, or open **Show filters & sort** to narrow by suggested level,

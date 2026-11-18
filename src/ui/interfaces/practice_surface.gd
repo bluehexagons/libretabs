@@ -301,6 +301,13 @@ static func build(app: Control) -> void:
 	app.quick_row = app.flow(app.dock)
 	app.quick_row.add_child(app.quick_tuner)
 	app.quick_row.add_child(app.quick_mute)
+	app.part_audio_button = app.button("PART_AUDIO", app.toggle_part_audio)
+	app.part_audio_button.toggle_mode = true
+	app.part_audio_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	app.part_audio_button.disabled = true
+	# Restore the mixer state even if touch-and-hold help suppressed the action.
+	app.part_audio_button.pressed.connect(app.update_part_audio_controls)
+	app.quick_row.add_child(app.part_audio_button)
 	app.quick_row.alignment = FlowContainer.ALIGNMENT_CENTER
 	app.quick_row.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	app.speed_control = PanelContainer.new()
@@ -350,3 +357,4 @@ static func build(app: Control) -> void:
 	app.transport_row.move_child(app.loop_button, app.transport_row.get_children().find(app.metro_button))
 	app.update_metronome()
 	app.update_loop_controls()
+	app.update_part_audio_controls()

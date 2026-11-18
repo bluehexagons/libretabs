@@ -409,8 +409,20 @@ msgstr "Count in before playing"
 msgid "METRONOME"
 msgstr "Beat clicks (metronome)"
 
+msgid "PART_AUDIO"
+msgstr "My part"
+
+msgid "HEAR_MY_PART"
+msgstr "Hear my part"
+
+msgid "TIP_HEAR_MY_PART"
+msgstr "Hear the notes shown for you. This leaves the other parts and beat clicks as set."
+
 msgid "MUTE_MY_PART"
 msgstr "Mute my part"
+
+msgid "TIP_MUTE_MY_PART"
+msgstr "Silence the notes shown for you so you can play them yourself. The other parts and beat clicks keep their settings."
 
 msgid "MUTE_FOCUSED_PART"
 msgstr "Mute focused part: %s (part %d)"
