@@ -3,6 +3,12 @@
 (() => {
   let chooser, generation = 0, fullscreenFailure;
   const displayChoiceKeys = new Set(['interface', 'motion', 'font', 'shape_cues', 'startup_help', 'control_position', 'handedness', 'background_style', 'tv_zoom', 'theater_controls', 'music_lines', 'music_spacing', 'music_staff', 'tv_music_lines', 'tv_music_spacing', 'tv_music_staff', 'notation_rows', 'capture_notation', 'capture_background', 'capture_title', 'capture_zoom', 'capture_position']);
+  function cancelPick() {
+    generation++;
+    chooser?.remove();
+    chooser = null;
+  }
+
   window.libretabsHost = {
     isFullscreen() { return !!(document.fullscreenElement || document.webkitFullscreenElement); },
     onFullscreen(callback) {
@@ -28,9 +34,10 @@
       window.addEventListener('resize', () => requestAnimationFrame(() => callback()));
       window.visualViewport?.addEventListener('resize', () => requestAnimationFrame(() => callback()));
     },
+    cancelPick,
     pick(callback, limit) {
-      const ticket = ++generation;
-      if (chooser) chooser.remove();
+      cancelPick();
+      const ticket = generation;
       const input = document.createElement('input');
       chooser = input;
       input.type = 'file'; input.accept = '.mid,.midi'; input.hidden = true;

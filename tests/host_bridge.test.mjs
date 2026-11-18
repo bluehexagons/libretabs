@@ -97,6 +97,25 @@ test('superseded asynchronous reads cannot complete or remove a newer picker', a
   }
 });
 
+test('canceling a picker for a built-in selection discards an outstanding read', async () => {
+  const {api, inputs} = host();
+  const results = [];
+  let complete;
+  api.pick((...args) => results.push(args), 2);
+  inputs[0].files = [file('old.mid', 1, () => new Promise(resolve => { complete = resolve; }))];
+  const pending = inputs[0].dispatch('change');
+  api.cancelPick();
+  complete(new ArrayBuffer(1));
+  await pending;
+  inputs[0].dispatch('cancel');
+  assert.deepEqual(results, []);
+  assert.equal(inputs[0].removed, true);
+  api.pick((...args) => results.push(args), 2);
+  inputs[1].files = [file('new.mid')];
+  await inputs[1].dispatch('change');
+  assert.equal(results.length, 1);
+  assert.equal(results[0][0], 'new.mid');
+});
 
 test('print download keeps a bounded song basename and rejects paths', () => {
   for (const [name, expected] of [

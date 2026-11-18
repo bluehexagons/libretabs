@@ -1,6 +1,20 @@
 # SPDX-License-Identifier: Apache-2.0
 extends SceneTree
 
+class DelayedPicker extends HostAdapter:
+	var pending: bool = false
+
+	func pick() -> void:
+		pending = true
+
+	func cancel_pick() -> void:
+		pending = false
+
+	func deliver(bytes: PackedByteArray, error: String = "") -> void:
+		if not pending: return
+		pending = false
+		picked.emit("selected.mid", bytes, error)
+
 var checks: int = 0
 var failures: int = 0
 func check(value: bool, message: String) -> void:
@@ -78,6 +92,8 @@ func run() -> void:
 	await process_frame
 	var app: Control = load("res://src/ui/main.tscn").instantiate()
 	app.set("persist_preferences", false)
+	var picker_host: DelayedPicker = DelayedPicker.new()
+	app.set("host", picker_host)
 	root.add_child(app)
 	for _frame: int in range(35): await process_frame
 	app.call("close_menu")
@@ -188,6 +204,21 @@ func run() -> void:
 	app.call("start", false)
 	check(audio.transport.end_seconds == app.get("song").seconds_at(app.get("song").end_tick) and app.get("source_tick") == 0, "loop playback bounds the padded final bar and displays its restart immediately")
 	app.call("pause")
+	var original_song: SongDocument = app.get("song")
+	app.call("load_library_item", 0)
+	check(app.get("importer") != null, "a library selection starts a new import job")
+	app.call("open_midi")
+	check(picker_host.pending and app.get("importer") == null and not app.get("cancel_button").visible, "opening the file chooser supersedes the pending library import")
+	picker_host.deliver(PackedByteArray(), "CANCELLED")
+	for _frame: int in range(6): await process_frame
+	check(app.get("song") == original_song, "canceling the replacement chooser retains the previously committed song")
+	app.call("open_midi")
+	app.call("load_demo", 1)
+	picker_host.deliver(original_song.source.bytes_copy())
+	for _frame: int in range(6): await process_frame
+	var expected_demo: String = app.get("fixtures")[1]
+	var selected_song: SongDocument = app.get("song")
+	check(app.get("active_demo") == 1 and selected_song.source.bytes_copy() == FileAccess.get_file_as_bytes("res://content/fixtures/%s.mid" % expected_demo), "a built-in selection wins over a late file chooser result and keeps its own MIDI")
 	app.queue_free()
 	for _frame: int in range(6): await process_frame
 	print("Practice navigation: %d checks, %d failures" % [checks,failures])

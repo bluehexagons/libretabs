@@ -85,6 +85,12 @@ func pick() -> void:
 	else:
 		dialog.popup_centered_ratio(0.8)
 
+func cancel_pick() -> void:
+	if web != null:
+		web.cancelPick()
+	elif dialog.visible:
+		dialog.hide()
+
 func _web_file(args: Array) -> void:
 	var error: String = String(args[2])
 	if not error.is_empty():

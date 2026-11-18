@@ -2753,22 +2753,16 @@ func set_activity(active: bool) -> void:
 	host.configure_activity(active)
 
 func load_demo(index: int) -> void:
-	stop_song_preview()
-	pause()
-	pending_demo = index
-	pending_library = -1
+	host.cancel_pick()
 	var bytes: PackedByteArray = FileAccess.get_file_as_bytes("res://content/fixtures/%s.mid" % fixtures[index])
-	_file_picked(tr("DEMO_%d" % index), bytes, "")
+	begin_song_import(tr("DEMO_%d" % index), bytes, index)
 
 func load_library_item(index: int) -> void:
 	if index < 0 or index >= BUILT_IN_LIBRARY.size(): return
-	stop_song_preview()
-	pause()
-	pending_demo = -1
-	pending_library = index
+	host.cancel_pick()
 	var item: Dictionary = BUILT_IN_LIBRARY[index]
 	var bytes: PackedByteArray = FileAccess.get_file_as_bytes("res://content/library/%s.mid" % item.file)
-	_file_picked(tr(String(item.title_key)), bytes, "")
+	begin_song_import(tr(String(item.title_key)), bytes, -1, index)
 
 func toggle_song_preview(index: int) -> void:
 	if index < 0 or index >= BUILT_IN_LIBRARY.size(): return
@@ -2840,9 +2834,9 @@ func finish_song_preview_import() -> void:
 
 func open_midi() -> void:
 	stop_song_preview()
+	cancel_seek_drag()
 	pause()
-	pending_demo = -1
-	pending_library = -1
+	if importer != null: cancel_import()
 	host.pick()
 
 func update_song_picker() -> void:
@@ -2860,6 +2854,14 @@ func _file_picked(name_value: String, bytes: PackedByteArray, error: String) -> 
 		set_status(error)
 		if drawer.visible: close_menu()
 		return
+	begin_song_import(name_value, bytes)
+
+func begin_song_import(name_value: String, bytes: PackedByteArray, demo: int = -1, library: int = -1) -> void:
+	stop_song_preview()
+	cancel_seek_drag()
+	pause()
+	pending_demo = demo
+	pending_library = library
 	import_name = name_value
 	importer = MidiImport.new(bytes)
 	set_activity(true)
