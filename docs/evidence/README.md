@@ -4,6 +4,9 @@ Follow [artifact retention](../artifact-retention.md) when curating local build,
 export and review files. Keep dated records here even when newer work supersedes
 them; local media archives remain separate from published evidence.
 
+Practice flow: [half-speed start, quick Repeat and responsive practice controls,
+2026-11-18](practice-flow-2026-11-18.md).
+
 Speed and playback follow-up: [drag snapping, fraction captions, 10% minimum and
 Play/Restart count-in, 2026-11-08](speed-detents-playback-2026-11-08.md).
 
