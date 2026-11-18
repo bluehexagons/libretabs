@@ -4,6 +4,8 @@ Follow [artifact retention](../artifact-retention.md) when curating local build,
 export and review files. Keep dated records here even when newer work supersedes
 them; local media archives remain separate from published evidence.
 
+Focused-part audio: [switch from listening to playing your part, 2026-11-18](focused-part-shortcut-2026-11-18.md).
+
 Practice flow: [half-speed start, quick Repeat and responsive practice controls,
 2026-11-18](practice-flow-2026-11-18.md).
 
