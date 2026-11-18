@@ -68,3 +68,32 @@ The managed guide opened the player in Chromium, and the player initialized
 again after an offline reload. All 35 MIDI byte sequences were present in the
 served pack. Selected results are retained locally under
 `artifacts/archive/2026-11-18--composition-review/`.
+
+## Follow-up pass
+
+| Piece | What changed in the second pass |
+| --- | --- |
+| Für Elise | Bars 13–15 now carry the notes the piano hands exchange on the way back to the theme. The lead-in climbs to high E and continues in even E–D-sharp sixteenths. Where the hands overlap in bar 15, the opening E releases early so the one-line guitar version can play each onset. Low E underpins the lead-in. [Breitkopf & Härtel edition via Mutopia](https://www.mutopiaproject.org/ftp/BeethovenLv/WoO59/fur_Elise_WoO59/fur_Elise_WoO59.ly) |
+| Aura Lee | The solo melody dips to B from C before the last phrase. The new bass follows the printed move toward D minor in the verse and sets up the final G-to-C cadence. [Church edition, 1861, p. 3](https://levysheetmusic.mse.jhu.edu/collection/024/002) |
+| Minuet in G | A G–F-sharp–E descent opens the second half. Later bass motion through B, C and A helps lead the melody back to G. [Anna Magdalena Bach notebook via Mutopia](https://www.mutopiaproject.org/ftp/BachJS/BWVAnh114/anna-magdalena-04/anna-magdalena-04.ly) |
+| The Entertainer | The bass walks from G back to C in the middle of the strain. A descent through B-flat, A and A-flat leads into the final G-to-C cadence. [Joplin score via Mutopia](https://www.mutopiaproject.org/ftp/JoplinS/entertainer/entertainer.ly) |
+| Londonderry Air | The bass moves through C, E, F and G beneath the last running phrase, then lands on C with the held closing note. [Petrie, 1855, p. 57](https://archive.org/details/petriecollection01petr/page/57/mode/1up) |
+| Amazing Grace | The last two bars keep C in the bass while the tune holds its final note. |
+| Hot Cross Buns | Each repetition starts over a held C. The bass changes with the groups of repeated eighth notes and returns to C under the final melody note. |
+
+The follow-up also rechecked the opening violin phrases in **Spring** and
+**Canon in D** and the verse structure in **Jingle Bells** and **Oh! Susanna**.
+Their existing arrangements were retained.
+
+MuseScore converted all 35 MIDIs again. Comparing the converted parts with the
+Godot import found matching pitch and onset for all 3,716 notes in 70 parts.
+All 34 melody recipes kept their authored meter and tempo in the conversion.
+The external importer adjusted 16 melody note endings across six pieces.
+The quick, UI smoke, practice and audio checks passed with Godot 4.7.2.
+
+The managed player pack contained all 35 MIDI files byte for byte. The local
+guide opened the player in Chromium. The browser initially served the previous
+pack while the service worker downloaded the update. On the next navigation,
+the player initialized with the new pack both online and offline, with matching
+checksums and no page errors. Selected receipts and logs are retained under
+`artifacts/archive/2026-11-18--composition-followup/`.
