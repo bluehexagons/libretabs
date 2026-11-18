@@ -144,6 +144,16 @@ func run() -> void:
 	app.get("count_length").set_value_no_signal(1)
 	app.get("pause_navigation_check").set_pressed_no_signal(true)
 	app.call("seek_tick",0)
+	app.call("start", true)
+	player.transport.take_events(1000)
+	app.get("loop_to").value = 3
+	check(player.playing_practice and not player.transport.repeat and player.transport.rendered_frames == 1000 and player.transport.count_frames > 0, "editing a disabled loop range preserves the active count-in")
+	app.get("loop_check").button_pressed = true
+	check(player.playing_practice and player.transport.repeat and player.transport.end_seconds == song.seconds_at(song.measures[2].end), "enabling the edited range applies it to the active transport")
+	app.get("loop_check").button_pressed = false
+	check(player.playing_practice and not player.transport.repeat and player.transport.end_seconds == song.seconds_at(song.end_tick), "disabling an active loop restores the full transport range")
+	app.call("pause")
+	app.call("seek_tick", 0)
 	app.call("set_speed",0)
 	app.call("toggle_play")
 	check(app.get("speed") == 0.1 and player.transport.speed == 0.1, "ten percent floor always configures a positive-rate transport")

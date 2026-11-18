@@ -148,6 +148,31 @@ func run() -> void:
 	app.call("seek_tick", 0)
 	app.call("seek_tick", app.get("song").end_tick)
 	check(app.get("state") == "STATE_COMPLETE" and app.get("play_button").get_meta("hover_caption") == TranslationServer.translate("REPLAY"), "paused seeking to the end offers Replay immediately")
+	var seek: HSlider = app.get("seek")
+	var seek_press: InputEventMouseButton = InputEventMouseButton.new()
+	seek_press.button_index = MOUSE_BUTTON_LEFT
+	seek_press.pressed = true
+	var seek_release: InputEventMouseButton = seek_press.duplicate()
+	seek_release.pressed = false
+	for pause_on_seek: bool in [true, false]:
+		app.get("pause_navigation_check").set_pressed_no_signal(pause_on_seek)
+		app.call("seek_tick", 0)
+		app.call("start", false)
+		app.call("seek_input", seek_press)
+		seek.value = app.get("song").end_tick
+		app.call("seek_input", seek_release)
+		check(not audio.playing_practice and app.get("play_control_key") == "REPLAY", "a timeline drag to the end offers Replay with pause-after-seeking %s" % pause_on_seek)
+		app.call("activate_play_control")
+		check(audio.playing_practice and app.get("source_tick") == 0, "one press replays from the beginning after scrubbing to the end")
+		app.call("pause")
+	app.get("pause_navigation_check").set_pressed_no_signal(false)
+	app.call("start", false)
+	app.call("seek_input", seek_press)
+	seek.value = app.get("song").division
+	app.get("host").focus_lost.emit()
+	app.call("seek_input", seek_release)
+	check(not audio.playing_practice and not app.get("seek_dragging"), "window blur cancels a scrub without resuming on the delayed release")
+	app.get("pause_navigation_check").set_pressed_no_signal(true)
 	app.call("seek_tick", 0)
 	app.call("start", true)
 	app.set_process(false)

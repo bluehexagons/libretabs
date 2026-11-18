@@ -366,6 +366,7 @@ func _ready() -> void:
 	host.focus_lost.connect(func() -> void:
 		if is_instance_valid(main_speed): main_speed.cancel_pointer()
 		if is_instance_valid(panel_speed): panel_speed.cancel_pointer()
+		cancel_seek_drag()
 		HoverHelp.pointer_down = false
 		release_playing_inputs()
 		# A permission prompt may temporarily take focus while connecting. Every
@@ -3100,11 +3101,6 @@ func restart_song() -> void:
 	stop_practice()
 	start(count_check.button_pressed)
 
-func restart_if_playing() -> void:
-	var was_playing: bool = audio.playing_practice
-	pause()
-	if was_playing: start(false)
-
 func repeat_measure() -> void:
 	if song == null: return
 	updating = true
@@ -3175,7 +3171,11 @@ func loop_changed(end_edited: bool = false) -> void:
 		else: loop_to.value = loop_from.value
 	updating = false
 	update_loop_controls()
-	restart_if_playing()
+	# Editing a disabled range changes only the next loop. Disabling a loop
+	# that's already running still needs to restore the full playback range.
+	if audio.playing_practice and (loop_check.button_pressed or audio.transport.repeat):
+		pause()
+		start(false)
 
 func update_play_control(frame: int = -1) -> void:
 	if count_badge == null: return
@@ -3274,11 +3274,14 @@ func begin_seek_drag() -> void:
 func end_seek_drag(_changed: bool) -> void:
 	if not seek_dragging:
 		return
-	seek_dragging = false
-	var resume: bool = seek_resume_playback and not pause_navigation_check.button_pressed
-	seek_resume_playback = false
+	var resume: bool = seek_resume_playback and state != "STATE_COMPLETE" and not pause_navigation_check.button_pressed
+	cancel_seek_drag()
 	if resume: start(false)
 	update_position()
+
+func cancel_seek_drag() -> void:
+	seek_dragging = false
+	seek_resume_playback = false
 
 func seek_tick(value: float) -> void:
 	if updating or song == null:
@@ -3296,26 +3299,21 @@ func seek_tick(value: float) -> void:
 	if state == "STATE_COMPLETE" and next_tick < song.end_tick:
 		state = "STATE_READY"
 		update_play_control()
-	if seek_dragging:
-		source_tick = next_tick
-		update_position()
-		return
 	var was_playing: bool = audio.playing_practice
-	pause()
+	if not seek_dragging: pause()
 	source_tick = next_tick
 	if next_tick >= song.end_tick and not loop_check.button_pressed:
 		state = "STATE_COMPLETE"
 		update_play_control()
-	elif was_playing and not pause_navigation_check.button_pressed:
+	elif not seek_dragging and was_playing and not pause_navigation_check.button_pressed:
 		start(false)
 	update_position()
-	score.animate_seek(previous_offset, previous_page)
+	if not seek_dragging: score.animate_seek(previous_offset, previous_page)
 
 func _suspended() -> void:
 	stop_song_preview()
 	if listening != null: listening.suspend_capture()
-	seek_dragging = false
-	seek_resume_playback = false
+	cancel_seek_drag()
 	main_speed.cancel_pointer()
 	panel_speed.cancel_pointer()
 	speed_dragging = false
