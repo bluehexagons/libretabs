@@ -158,6 +158,7 @@ func bass_staff_input(app: Control, listening: ListeningControls) -> void:
 	var observation: Dictionary = {"valid": true, "fresh": true, "hz": 97.9989, "pitch": 43.0, "rms": 0.1, "peak": 0.2}
 	listening.listener.observation.emit(observation)
 	check(score.live_notes.size() == 1 and app.get("audio").live_notes.is_empty(), "detected bass pitch reaches the score without being replayed through the mixer")
+	check(playing.message.text == app.tr("INPUT_RESULT_DETECTED") % LivePlaying.note_name(43), "a stable bass note replaces the uncertain input message while paused")
 	if not score.live_notes.is_empty():
 		var played: Dictionary = score.live_notes[0]
 		check(score.row_accepts_live("mini_bass", played) and not score.row_accepts_live("treble", played), "G2 appears on compact bass while treble is selected")

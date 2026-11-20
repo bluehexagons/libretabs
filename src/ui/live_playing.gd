@@ -58,6 +58,7 @@ func _ready() -> void:
 	message = StableMessageLabel.new()
 	message.examples = func() -> Array[String]:
 		var values: Array[String] = [tr("INPUT_IDLE"), tr("INPUT_RESULT_POLYPHONIC"), tr("INPUT_RESULT_UNCERTAIN"), tr("INPUT_RESULT_REST")]
+		values.append(tr("INPUT_RESULT_DETECTED") % note_name(109))
 		for kind: String in ["match", "octave", "wrong"]:
 			for cents: float in [-99.0, 99.0]:
 				for timing: String in ["unknown", "early", "late", "on_time"]:
@@ -86,13 +87,13 @@ func press(id: String, pitch: int, velocity: int = 100, source: String = "keys",
 	assess(note, float(pitch), delay_ms, precise, true)
 	refresh()
 
-func assess(note: Dictionary, pitch: float, delay_ms: float, precise: bool, onset: bool) -> void:
-	if not context.is_valid(): return
+func assess(note: Dictionary, pitch: float, delay_ms: float, precise: bool, onset: bool) -> bool:
+	if not context.is_valid(): return false
 	var position: Dictionary = context.call(delay_ms)
 	if str(position.get("epoch", "")) != epoch:
 		epoch = str(position.get("epoch", ""))
 		feedback.reset()
-	if not bool(position.get("playing", false)) or not feedback_enabled: return
+	if not bool(position.get("playing", false)) or not feedback_enabled: return false
 	latest = feedback.compare(pitch, float(position.seconds), float(position.speed), note.source == "microphone", precise, onset)
 	latest_until = Time.get_ticks_msec() + 2200
 	if notes.held.has(note.id):
@@ -101,6 +102,7 @@ func assess(note: Dictionary, pitch: float, delay_ms: float, precise: bool, onse
 		else: notes.held[note.id].erase("expected")
 	message.text = describe(latest)
 	set_process(true)
+	return true
 
 func observe_pitch(result: Dictionary, delay_ms: float, timing: bool) -> void:
 	if not bool(result.get("valid", false)):
@@ -113,7 +115,8 @@ func observe_pitch(result: Dictionary, delay_ms: float, timing: bool) -> void:
 	if not notes.held.has("microphone:0"): notes.press("microphone:0", nearest, 100, "microphone")
 	var note: Dictionary = notes.held.get("microphone:0", {})
 	if note.is_empty(): return
-	assess(note, pitch, delay_ms + float(result.get("age_ms", 0)), timing, bool(result.get("onset", false)))
+	var assessed: bool = assess(note, pitch, delay_ms + float(result.get("age_ms", 0)), timing, bool(result.get("onset", false)))
+	if not assessed and feedback_enabled: message.text = tr("INPUT_RESULT_DETECTED") % note_name(nearest)
 	refresh()
 
 func release(id: String) -> void:

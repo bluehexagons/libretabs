@@ -1106,7 +1106,7 @@ msgid "KEYBOARD_HELP_HOME"
 msgstr "Keyboard: A S D F G H J K play C D E F G A B C. W E T Y U play the black piano keys (sharps/flats). Z/X or −/= lower/raise the octave. Hold a key to sustain; release to stop. Notes work in practice, including while paused, and are disabled in menus."
 
 msgid "LIVE_NOTE"
-msgstr "Keyboard"
+msgstr "Your notes"
 
 msgid "CARD_SONG_MENU"
 msgstr "Songs\nImport a MIDI file or choose an exercise"
@@ -1737,6 +1737,9 @@ msgstr "This passage has overlapping notes. Listening checks one note at a time;
 
 msgid "INPUT_RESULT_UNCERTAIN"
 msgstr "Can’t identify a clear note. Try one note at a time."
+
+msgid "INPUT_RESULT_DETECTED"
+msgstr "Detected %s"
 
 msgid "INPUT_RESULT_REST"
 msgstr "No note is expected here."
