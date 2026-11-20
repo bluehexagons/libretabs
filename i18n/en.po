@@ -713,7 +713,7 @@ msgid "TEMPO"
 msgstr "Playback"
 
 msgid "SOUND"
-msgstr "Volume & parts"
+msgstr "Volume & instruments"
 
 msgid "LOOP_TOOL"
 msgstr "Repeat"
@@ -860,37 +860,37 @@ msgid "PRESET_EXPLAIN"
 msgstr "Choose a layout, then try another without leaving this menu. Treble shows higher notes; bass shows lower notes. Guitar tabs use six-string tuning."
 
 msgid "LAYOUT_DONE"
-msgstr "Done · return to practice"
+msgstr "Done"
 
 msgid "PRESET_CURRENT"
 msgstr "Current · %s"
 
 msgid "PRESET_GUITAR"
-msgstr "Guitar · tabs + staff"
+msgstr "Guitar tabs + staff"
 
 msgid "PRESET_PICK"
-msgstr "Guitar · strum with a pick"
+msgstr "Pick strumming"
 
 msgid "PRESET_FINGER"
-msgstr "Guitar · fingerpick"
+msgstr "Fingerpicking"
 
 msgid "PRESET_BASS"
-msgstr "Bass / low notes · bass staff"
+msgstr "Bass staff"
 
 msgid "PRESET_PIANO"
-msgstr "Piano · treble + bass staffs"
+msgstr "Piano staffs"
 
 msgid "PRESET_PIANO_KEYS"
-msgstr "Piano · staffs + playable keys"
+msgstr "Piano staffs + keys"
 
 msgid "PRESET_TREBLE_FOCUS"
-msgstr "Treble focus · mini bass"
+msgstr "Treble focus"
 
 msgid "PRESET_BASS_FOCUS"
-msgstr "Bass focus · mini treble"
+msgstr "Bass focus"
 
 msgid "PRESET_PIANO_EXAMPLE"
-msgstr "Try a two-hand piano exercise"
+msgstr "Try the piano example"
 
 msgid "PICKER_CHOICE"
 msgstr "Choose"
@@ -1016,13 +1016,13 @@ msgid "PLAYBACK_QUICK"
 msgstr "Speed & click"
 
 msgid "SLOWER"
-msgstr "Slower −5%"
+msgstr "−5%"
 
 msgid "FASTER"
-msgstr "Faster +5%"
+msgstr "+5%"
 
 msgid "ORIGINAL_SPEED"
-msgstr "100% of base tempo"
+msgstr "100%"
 
 msgid "CLICK_ON"
 msgstr "Click: on"
@@ -1151,13 +1151,13 @@ msgid "WELCOME_READ_TITLE"
 msgstr "2. Follow a few notes"
 
 msgid "WELCOME_READ_BODY"
-msgstr "Read guitar tabs from left to right. The top line is the thinnest string. A number tells you which fret, or metal strip, to press just behind. For 0, pluck the string without pressing."
+msgstr "Each tab line is a string. 0 means open. Other numbers tell you which fret to press behind."
 
 msgid "WELCOME_READ_ODE"
-msgstr "For the first four notes of Ode to Joy, read 0–0–1–3 on the top line, the thinnest string. Pluck twice without pressing. Then press just behind the first and third metal strips, called frets."
+msgstr "On the thinnest string, play 0–0–1–3. Pluck the open string twice, then press behind frets 1 and 3."
 
 msgid "WELCOME_READ_STAFF"
-msgstr "Read the five-line staff from left to right. A higher note on the same staff sounds higher. Try following the notes with your eyes before you play along."
+msgstr "Read left to right. The higher a note sits on the staff, the higher it sounds."
 
 msgid "WELCOME_PLAY_TITLE"
 msgstr "1. Listen"
@@ -1178,7 +1178,7 @@ msgid "LIBRARY_PIANO_STUDY"
 msgstr "Two-hand piano study · original exercise"
 
 msgid "WELCOME_STARTUP"
-msgstr "Show on startup"
+msgstr "Show Quick start at launch"
 
 msgid "WELCOME_STARTUP_HELP"
 msgstr "Open Help & app in Menu, then Quick start, to return here or turn startup help back on."
@@ -1283,7 +1283,7 @@ msgid "PRINT_CANCEL"
 msgstr "Cancel preparation"
 
 msgid "PRINT_LOCAL"
-msgstr "Created on your device. Nothing is uploaded. The pages keep the prototype’s notation limitations."
+msgstr "Creates a printable HTML file."
 
 msgid "PRINT_PROGRESS"
 msgstr "Preparing page %d of %d…"
@@ -1400,7 +1400,7 @@ msgid "TIP_CAPTURE_BACK"
 msgstr "Return to the player without changing playback. Escape and F8 also return."
 
 msgid "CAPTURE_ENTER"
-msgstr "Preview overlay"
+msgstr "Open capture view"
 
 msgid "CAPTURE_NOTATION"
 msgstr "Music to show"
@@ -1598,7 +1598,7 @@ msgid "THEATER_TRY"
 msgstr "Try Theater"
 
 msgid "THEATER_KEEP_CONTROLS"
-msgstr "Keep controls visible while playing"
+msgstr "Keep controls visible"
 
 msgid "THEATER_CONTROLS_HELP"
 msgstr "Keep the playback controls on screen for frequent adjustments. With this off, controls tuck into the edge as soon as you press Play. The count-in beats and Pause stay visible. Show controls or F10 brings the controls back without pausing."
@@ -1679,7 +1679,7 @@ msgid "INPUT_EXPLAIN"
 msgstr "Play using the on-screen piano, computer keys, a MIDI controller, or single-note listening. Playback continues while you practice. Input and feedback stay in this session."
 
 msgid "INPUT_PANIC"
-msgstr "Stop all input notes"
+msgstr "Release stuck notes"
 
 msgid "INPUT_RETURN"
 msgstr "Show keyboard & return to practice"
@@ -1763,7 +1763,7 @@ msgid "INPUT_MIDI_CONNECT"
 msgstr "Connect MIDI"
 
 msgid "INPUT_MIDI_DISCONNECT"
-msgstr "Disconnect MIDI"
+msgstr "Disconnect"
 
 msgid "INPUT_MIDI_OFF"
 msgstr "MIDI is off."
@@ -1901,7 +1901,7 @@ msgid "INPUT_LEVEL_CALIBRATING"
 msgstr "Measuring room noise…"
 
 msgid "INPUT_TUNER_START"
-msgstr "Start listening to tune a note."
+msgstr "Ready to tune"
 
 msgid "INPUT_TUNER_NO_AUDIO"
 msgstr "Waiting for audio…"
@@ -1922,7 +1922,7 @@ msgid "INPUT_TUNER_TARGET"
 msgstr "Target note"
 
 msgid "INPUT_TUNER_AUTO"
-msgstr "Nearest note"
+msgstr "Automatic"
 
 msgid "INPUT_TUNER_STRING"
 msgstr "String %d · %s"
@@ -1982,7 +1982,7 @@ msgid "INPUT_SENSITIVITY_HELP"
 msgstr "Higher sensitivity accepts softer notes. Run room setup to keep the threshold above background noise. Electronic piano is for a clean speaker heard through a microphone; use MIDI input for a direct MIDI connection."
 
 msgid "INPUT_LISTEN"
-msgstr "Show microphone notes on score"
+msgstr "Show notes on score"
 
 msgid "INPUT_LISTEN_HELP"
 msgstr "Uses the microphone to show the note you play on the score. Close the tuner to see it. During playback, the app compares single notes with your selected part."
@@ -1997,10 +1997,10 @@ msgid "INPUT_MIC_PRIVACY"
 msgstr "Audio is processed locally in short temporary buffers. It is never saved or uploaded. Capture stops when the app is hidden; press Start to resume. Setup and input choices last only for this session."
 
 msgid "AUDIO_COMMANDS"
-msgstr "Hands-free note commands"
+msgstr "Note commands"
 
 msgid "AUDIO_COMMANDS_ENABLE"
-msgstr "Enable hands-free note commands"
+msgstr "Listen for commands"
 
 msgid "AUDIO_COMMANDS_HELP"
 msgstr "Optional controls while the microphone is active. Start the microphone in Tuner & listening first. Use headphones or mute the speakers so playback cannot trigger commands. This switch is saved on this device; it never starts the microphone."
@@ -2012,7 +2012,7 @@ msgid "AUDIO_COMMANDS_LIMIT"
 msgstr "Play separate notes, never a chord. After the menu opens, you have eight seconds to choose a command. Play its note twice, silencing it between repetitions; the second release confirms the action. A different note, a timeout or interrupted detection cancels. This unusual phrase reduces accidental activation but cannot guarantee it. Disable these controls whenever you prefer ordinary tuning."
 
 msgid "AUDIO_COMMANDS_OFF"
-msgstr "Note commands are off."
+msgstr "Commands are off."
 
 msgid "AUDIO_COMMANDS_UNAVAILABLE"
 msgstr "Commands need an active microphone and steady detection. They are unavailable during setup, import, capture presentation or other menus."
@@ -2033,7 +2033,7 @@ msgid "AUDIO_COMMANDS_COOLDOWN"
 msgstr "Waiting before the next phrase. Allow three seconds and a quiet gap."
 
 msgid "AUDIO_COMMANDS_CANCEL"
-msgstr "Cancel pending note command"
+msgstr "Cancel command"
 
 msgid "AUDIO_COMMANDS_CHOICE_PLAY_PAUSE"
 msgstr "%s twice — Play or pause"
@@ -2333,10 +2333,10 @@ msgid "INPUT_PLAYBACK_UNMUTE"
 msgstr "Unmute song notes"
 
 msgid "INPUT_SETTINGS"
-msgstr "Input settings"
+msgstr "Settings"
 
 msgid "INPUT_TUNER_HELP"
-msgstr "Tuner help"
+msgstr "Tuning help"
 
 msgid "INPUT_INSTRUMENT_HELP"
 msgstr "Choose the instrument you are playing. This sets the detection range and string targets. Choose Electronic piano when using its speakers with a microphone."
@@ -2381,7 +2381,7 @@ msgid "TIP_INTERFACE"
 msgstr "Try another interface without resetting your song or playback."
 
 msgid "INTERFACE_EDGE_AUTO"
-msgstr "This interface places controls automatically. Preferred hand still applies; your saved screen edge is used in Classic and Theater."
+msgstr "This interface places controls automatically. Classic and Theater use your chosen edge."
 
 msgid "RESET_SETTINGS"
 msgstr "Reset settings"
@@ -2466,46 +2466,46 @@ msgid "MENU_PRACTICE"
 msgstr "Practice"
 
 msgid "MENU_PRACTICE_HINT"
-msgstr "Speed, count-in, repeat and practice layouts."
+msgstr "Speed & repeat"
 
 msgid "MENU_READING"
 msgstr "Score & print"
 
 msgid "MENU_READING_HINT"
-msgstr "Scrolling, pages, notation and printed copies."
+msgstr "Notation & printing"
 
 msgid "MENU_SOUND_INPUT"
 msgstr "Sound & input"
 
 msgid "MENU_SOUND_INPUT_HINT"
-msgstr "Volume, instruments, tuner, microphone and keyboard."
+msgstr "Volume & tuner"
 
 msgid "MENU_APPEARANCE"
 msgstr "Screen & interface"
 
 msgid "MENU_APPEARANCE_HINT"
-msgstr "Theme, text size, interface, Theater and capture view."
+msgstr "Theme & text"
 
 msgid "MENU_LIBRARY_PROGRESS"
 msgstr "Songs & progress"
 
 msgid "MENU_LIBRARY_PROGRESS_HINT"
-msgstr "Choose music and review your learned marks."
+msgstr "Library & progress"
 
 msgid "MENU_HELP_APP"
 msgstr "Help & app"
 
 msgid "MENU_HELP_APP_HINT"
-msgstr "Quick start, reading help, app information and resets."
+msgstr "Guide and app info"
 
 msgid "MENU_FIND_OPTION"
 msgstr "Find an option…"
 
 msgid "MENU_NO_RESULTS"
-msgstr "No matching options. Try a shorter search or clear it to browse categories."
+msgstr "No matches. Try a shorter search."
 
 msgid "MENU_HINT_TEMPO"
-msgstr "Speed, count-in and beat clicks (metronome)."
+msgstr "Adjust playback speed."
 
 msgid "MENU_HINT_LOOP_TOOL"
 msgstr "Repeat a measure or a range of measures."
@@ -2514,7 +2514,7 @@ msgid "MENU_HINT_LAYOUTS"
 msgstr "Guitar, piano and other practice layouts."
 
 msgid "MENU_HINT_SCORE_VIEW"
-msgstr "Scrolling, pages, note spacing and notation rows."
+msgstr "Scrolling, pages, note spacing and staff height."
 
 msgid "MENU_HINT_DETAILS"
 msgstr "Practice part, guitar arrangement and source limitations."
@@ -2523,7 +2523,7 @@ msgid "MENU_HINT_PRINT"
 msgstr "Choose a range and save a printable copy."
 
 msgid "MENU_HINT_SOUND"
-msgstr "Instrument sound, volume and part muting."
+msgstr "Choose the instrument sound and set volume."
 
 msgid "MENU_HINT_SOUND_EFFECTS"
 msgstr "Room echo (reverb) and chorus."
@@ -2532,7 +2532,7 @@ msgid "MENU_HINT_TUNER"
 msgstr "Tuning, instrument profile and microphone sensitivity."
 
 msgid "MENU_HINT_INPUTS"
-msgstr "On-screen keyboard, MIDI devices and playing feedback."
+msgstr "On-screen keyboard and playing feedback."
 
 msgid "MENU_HINT_KEYBOARD"
 msgstr "Computer-keyboard note layout and octave."
@@ -2544,7 +2544,7 @@ msgid "MENU_HINT_INTERFACE"
 msgstr "Classic, Focus, Touch and Workspace interfaces."
 
 msgid "MENU_HINT_DISPLAY"
-msgstr "Light/dark theme, background, font, text size, motion and control placement."
+msgstr "Theme, background, lettering and text size."
 
 msgid "MENU_HINT_TV_VIEW"
 msgstr "Theater music layout, zoom and visible controls."
@@ -2593,7 +2593,7 @@ msgid "NOTE_SHAPE_CUES_SUMMARY"
 msgstr "Shapes distinguish note groups without relying on color."
 
 msgid "CONTROL_LAYOUT_SUMMARY"
-msgstr "Choose the control edge and your preferred hand. Small screens adapt the placement."
+msgstr "Choose the control edge and your preferred hand."
 
 msgid "PAUSE_NAVIGATION"
 msgstr "Pause after seeking"
@@ -2644,7 +2644,7 @@ msgid "SCORE_PLAYHEAD"
 msgstr "Show playback line"
 
 msgid "NOTE_STYLES_PLAIN"
-msgstr "Plain score — turn off highlights"
+msgstr "Turn off highlights"
 
 
 msgid "BPM_USE_SONG"
@@ -3200,7 +3200,7 @@ msgid "SONG_SOURCE_LONDONDERRY_AIR_4"
 msgstr "Petrie’s collection and publication context — Irish Traditional Music Archive"
 
 msgid "SPEED_EXACT"
-msgstr "Exact speed · percent"
+msgstr "Exact speed (%)"
 
 msgid "BPM_SETTINGS"
 msgstr "Base tempo settings"
@@ -3243,3 +3243,90 @@ msgstr "%s speed"
 
 msgid "SPEED_DRAG_SNAPPED"
 msgstr "Snapped · slide to adjust"
+
+msgid "PLAYBACK_TIMING"
+msgstr "Clicks & transport"
+
+msgid "SPEED_SETTINGS"
+msgstr "Tempo & slider range"
+
+msgid "SCORE_ROWS"
+msgstr "Score rows"
+
+msgid "MIDI_FILES"
+msgstr "Import & exercises"
+
+msgid "MIDI_DEVICES"
+msgstr "MIDI devices"
+
+msgid "PLAYBACK_PARTS"
+msgstr "Parts to hear"
+
+msgid "DISPLAY_CONTROLS"
+msgstr "Control placement"
+
+msgid "THEATER_HELP"
+msgstr "TV setup guide"
+
+msgid "CAPTURE_HELP_PAGE"
+msgstr "Recording guide"
+
+msgid "AUDIO_COMMANDS_GUIDE"
+msgstr "Note commands guide"
+
+msgid "AUDIO_COMMANDS_WAKE_SHORT"
+msgstr "Play E4, B-flat4, F4, B4 to open commands."
+
+msgid "INTERFACE_CLASSIC_SUMMARY"
+msgstr "Full controls"
+
+msgid "INTERFACE_FOCUS_SUMMARY"
+msgstr "More room for music"
+
+msgid "INTERFACE_TOUCH_SUMMARY"
+msgstr "Large touch targets"
+
+msgid "INTERFACE_WORKSPACE_SUMMARY"
+msgstr "Controls on a side rail"
+
+msgid "SCORE_SCROLL_MODE"
+msgstr "Reading mode"
+
+msgid "MUSIC_FIELD_LINES"
+msgstr "Lines per page"
+
+msgid "MUSIC_FIELD_SPACING"
+msgstr "Note spacing"
+
+msgid "MUSIC_FIELD_STAFF"
+msgstr "Staff height"
+
+msgid "ADD_SCORE_ROW"
+msgstr "Add a row"
+
+msgid "TIP_SLOWER"
+msgstr "Lower speed by 5 percentage points"
+
+msgid "TIP_FASTER"
+msgstr "Raise speed by 5 percentage points"
+
+msgid "TIP_ORIGINAL_SPEED"
+msgstr "Reset speed to 100%"
+
+msgid "HELP_GUIDE_TOPICS"
+msgstr "Reading guide, tabs, frets, rhythm, staff notation and shortcuts"
+
+msgid "SCORE_MODE_SCROLL"
+msgstr "Scroll"
+
+msgid "SCORE_MODE_PAGES"
+msgstr "Manual pages"
+
+msgid "SCORE_MODE_FOLLOW"
+msgstr "Follow pages"
+
+msgid "SCORE_ONE_LINE"
+msgstr "1 line"
+
+msgid "SCORE_LINE_COUNT"
+msgstr "%d lines"

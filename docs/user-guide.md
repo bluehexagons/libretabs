@@ -38,7 +38,7 @@ review; treat them as practice suggestions.
 keeps the notes at the same pitch. You can change speed anytime with the slider
 or select its number for **Playback** options.
 
-If you need to restore the tabs, choose **Guitar · tabs + staff** under
+If you need to restore the tabs, choose **Guitar tabs + staff** under
 **Practice layouts**. Outside Quick start, find it under **Menu → Practice**.
 Quick start shows the opening tab numbers when the default guitar tab is on
 the first note of **Ode to Joy**. Reopen Quick start anytime for **Repeat this
@@ -59,11 +59,11 @@ history and sources. **Filters** can show pieces tagged **First steps**.
 | **Twinkle, Twinkle Little Star** | Practice the opening jump from C to G. Listen for the opening to return in bar 9. |
 | **Row Your Boat** | Compare the straight-rhythm setting with **Row Your Boat · lilting 1881**. Tap along to the two main beats per bar in the lilting one, each divided into three. |
 
-For piano, open **Menu → Practice → Practice layouts → Try a two-hand piano
-exercise**. In **Volume & parts**, turn off **Hear Bass** to listen to and play
+For piano, open **Menu → Practice → Practice layouts → Try the piano example**.
+In **Volume & instruments → Parts to hear**, turn off **Hear Bass** to practice
 the right-hand melody first. Then bring back the bass. The left hand plays on
 beats 1 and 3. Practice one bar at a time before joining both hands. If you want
-to play on the screen, choose **Piano · staffs + playable keys** in Practice
+to play on the screen, choose **Piano staffs + keys** in Practice
 layouts.
 
 Use **Learned** in Songs when you feel ready to keep a record. You could try the
@@ -126,10 +126,9 @@ so unusually detailed rhythms may not line up exactly with the simplified symbol
 ## Find an option
 
 Open **Menu** for six groups: **Practice**, **Score & print**, **Sound & input**,
-**Screen & interface**, **Songs & progress**, and **Help & app**. Each card
-describes what it contains. Songs and Tuner also have direct buttons at the top.
-Cards use fewer columns on narrow screens or with larger text; scroll to reach
-the remaining choices.
+**Screen & interface**, **Songs & progress**, and **Help & app**. The shortcuts
+above the groups open Songs and the tuner. On phones, the arrow goes back one
+menu and the × closes the menu.
 
 Use **Find an option** to search for a setting or instrument, such as “count in,”
 “ukulele,” “MIDI channel” or “text size.” Spaces and punctuation are interchangeable.
@@ -145,7 +144,7 @@ pauses any playing practice audio. Tap the song title to open it for practice.
 Search by title or composer, or expand the filters to browse by suggested level,
 length, starting tempo, and instrument. Open **About** for practice cues, history,
 and sources. **Practice this song** selects it and **Back** returns to browsing.
-Use **Import MIDI** to load your own music.
+Choose **Import MIDI** from the player or under **Songs → Import & exercises**.
 Enable **Pin songs to practice** to keep a compact scrolling browser above the
 music. Tap a title to switch in one action; playback waits for Play. The browser
 keeps its scroll position and keyboard focus. The information button beside each title opens its details without switching songs. Search narrows this list, **Songs**
@@ -153,7 +152,7 @@ opens the full catalog, and **Unpin** removes the browser. Pinning is remembered
 imported songs are never added to a saved list. Both search fields have a clear
 button and Enter opens the first matching song.
 
-The built-in examples below the catalog demonstrate features such as tempo
+The built-in examples under **Songs → Import & exercises** demonstrate features such as tempo
 changes, multiple parts and held notes. For practice pieces, start with the
 [song suggestions above](#what-to-practice-next).
 
@@ -213,7 +212,7 @@ values may return next time.
 In **Menu → Score & print → Score view → Note highlights**, choose the current
 and next note styles separately: outlines, curved underlines or Off. Current
 notes can also use bold noteheads with outlined tab numbers. Note-start ripples
-and the playback line have separate switches. **Plain score — turn off highlights**
+and the playback line have separate switches. **Turn off highlights**
 turns all four off; navigation, music and input feedback keep working. Choices
 apply to regular practice, Theater, continuation lines and capture. Reduced
 motion always suppresses ripples. Printed music remains undecorated.
@@ -227,9 +226,9 @@ height, so choose fewer Music lines if you need taller notes.
 - **Playback speed:** 100% is the base tempo; **1/2×** means half that tempo
   (50%). Quarter and eighth speed appear as **1/4×** and **1/8×**. Other readouts
   show the selected percentage with up to two decimal places.
-  **Slower −5%**
-  and **Faster +5%** make small changes without losing decimal precision.
-  **100% of base tempo** restores 100%. The minimum is 10%; lower the base tempo
+  **−5%**
+  and **+5%** make small changes without losing decimal precision.
+  **100%** restores the song’s current base speed. The minimum is 10%; lower the base tempo
   for slower practice. Dragging previews the new speed in a floating readout
   and snaps near visible marks. The readout says **Snapped** when a mark holds;
   keep sliding to leave it. Release applies the preview once. **Pull upward while holding the slider**
@@ -240,7 +239,7 @@ height, so choose fewer Music lines if you need taller notes.
   change speed. Escape, focus loss or resizing cancels an unfinished drag.
   Outside menus, Space cancels the preview and plays or pauses at the original speed.
 - **Slider range:** tap the speed, or open **Menu → Practice → Playback**,
-  then choose **Slider range**. Automatic uses 10–150% on short tracks and
+  then open **Tempo & slider range → Slider range**. Automatic uses 10–150% on short tracks and
   10–200% on wider tracks. Other choices cover 10–100%, 10–150%, 10–200%, 10–400%,
   or 10–999%; **Custom range** lets you enter a maximum from 11 to 999%.
   This setting changes the track, not playback speed. An exact speed outside
@@ -251,8 +250,7 @@ height, so choose fewer Music lines if you need taller notes.
   speed; all three remain available in presets. Arrow keys adjust one percentage
   point; Page Up/Down adjust five; Home/End select 10/999%.
 - **Base tempo:** the BPM readout counts quarter notes per minute. Tap the
-  speed number or open **Menu → Practice → Playback**. Expand **Base tempo
-  settings** and enter a base BPM to make it the new 100%. For example, 80 BPM
+  speed number or open **Menu → Practice → Playback**. Open **Tempo & slider range** and enter a base BPM to make it the new 100%. For example, 80 BPM
   at 50% starts at 40 BPM. **Use song BPM** restores the song’s tempo and 100%
   speed. Later tempo changes keep their proportions. The override lasts until
   you open another song. Changing speed keeps the notes at the same pitch.
@@ -268,7 +266,7 @@ height, so choose fewer Music lines if you need taller notes.
   time. Small score jumps ease into place; Reduced Motion makes them immediate.
   **Restart** returns to the beginning of the song, or the beginning of an enabled loop.
   Restart plays automatically with the enabled count-in. Seeking leaves playback
-  paused by default. Turn off **Pause after seeking** in Playback to resume
+  paused by default. Turn off **Pause after seeking** in **Playback → Clicks & transport** to resume
   automatically after a seek if already playing.
   Changing speed or other playback settings keeps its existing playback behavior.
 - **Repeat:** **Repeat this measure** returns to the beginning of the current
@@ -285,21 +283,21 @@ height, so choose fewer Music lines if you need taller notes.
   Choose Replay to start again, tap an earlier passage and Play to practice from
   there, or choose **Songs** to switch tunes. A new song waits for you to press
   Play, with keyboard focus on that button.
-- **Volume & parts:** choose **Synth piano** (the default), **Soft keys**,
+- **Volume & instruments:** choose **Synth piano** (the default), **Soft keys**,
   **Plucked strings**, or **Pure tone**, and adjust instrument and click volume
   separately. Your sound choice is saved on this device and applies to new notes
   in all enabled song parts and computer-keyboard previews. These generated
   practice sounds do not reproduce the original MIDI instruments. Use
   **Mute focused part** to play that part yourself while hearing the other one.
   **Hear Melody/Treble/Bass** controls the other part in a built-in song.
-  The part switches appear first in this menu and keep playback and any count-in
-  moving. Unmuting a held note brings it back at its current position instead of
+  Open **Parts to hear** for the part switches. Changing them keeps playback
+  and the count-in moving. Unmuting a held note brings it back at its current position instead of
   repeating its attack.
   Already queued audio and the short room echo may take a moment to fade.
   Each mute choice is kept when you switch focus; muting changes sound, not the
   displayed notes.
 - **Sound effects:** open **Menu → Sound & input → Sound effects**, also reachable
-  from Volume & parts. **Room ambience (reverb)** adds a short room echo and
+  from Volume & instruments. **Room ambience (reverb)** adds a short room echo and
   starts at a gentle 18%; its amount slider ranges from 0 to 40%.
   **Soft chorus** blends gently moving copies of each note for a wider sound
   and starts off. Effects apply to every instrument and keyboard preview, while
@@ -329,17 +327,16 @@ transcription of someone's guitar performance.
 
 Open **Menu → Practice → Practice layouts** (or choose a layout in **Quick start**) for
 one-step guitar tabs, pick strumming, fingerpicking, bass-staff reading, or
-piano treble-plus-bass staff reading. Choose **Piano · staffs + playable keys**
+piano treble-plus-bass staff reading. Choose **Piano staffs + keys**
 to show both staffs and the on-screen keyboard. The layout menu stays open as
-you compare choices; choose **Done · return to practice** when ready.
+you compare choices; choose **Done** when ready.
 **Treble focus** and **Bass focus** give
 the selected part more room and show the other part on a smaller five-line
 **mini staff**. The built-in songs store melody and bass on separate MIDI parts.
 Most bass lines were written for practice. Canon in D uses Pachelbel’s
 repeating bass pattern.
-**Try a two-hand piano exercise** loads an original short piece with separately
-selectable treble and bass parts. Piano keys
-can also show which notes sound now. Piano and bass staffs show actual sounding
+**Try the piano example** loads an original short piece with separately
+selectable treble and bass parts. Piano keys can also show which notes sound now. Piano and bass staffs show actual sounding
 pitches; guitar tabs still describe six-string E-standard guitar and are not
 bass-guitar fingering. A two-part piano layout places the higher and lower
 parts on the respective staffs. With a single MIDI part, it splits notes at
@@ -352,8 +349,8 @@ through a choice list to browse it, then tap a choice to select it.
 
 Open **Menu → Score & print → Score view** for reading and layout choices:
 
-- **Smooth scrolling** follows the music. **Manual pages** lets you read at your
-  own pace. **Pages · follow playback** turns pages with the sound.
+- **Scroll** follows the music. **Manual pages** lets you read at your own pace.
+  **Follow pages** turns pages with the sound.
 - Use the page arrows or swipe horizontally to turn a page. Turning pages
   manually turns off following without moving playback. Enable **Follow playback**
   to resume automatic turns. Tapping a position on the music does move playback.
@@ -366,7 +363,7 @@ Open **Menu → Score & print → Score view** for reading and layout choices:
   following playback. Fewer lines give each line more height.
   **Note spacing** changes the horizontal gaps;
   **Staff height** changes the height of the five-line sheet music reference.
-- Add, reorder or resize guitar, concert-pitch treble or bass, compact mini-staff, guitar-tab, and
+- Open **Score rows** to add, reorder or resize guitar, concert-pitch treble or bass, compact mini-staff, guitar-tab, and
   piano rows. The piano row
   shows sounding notes; it is not a connected MIDI keyboard or a playing test.
   **Restore default rows** returns to the initial row layout.
@@ -374,13 +371,14 @@ Open **Menu → Score & print → Score view** for reading and layout choices:
 **Theater** uses the window for more music and remembers a separate layout.
 Try it on a desktop or tablet as well as a larger screen. Controls normally hide
 when playback starts; **Show controls** or **F10** brings them back. In
-**Menu → Screen & interface → Theater**, enable **Keep controls visible while playing** if you prefer.
+**Menu → Screen & interface → Theater**, enable **Keep controls visible** if you prefer.
 **Fullscreen** is a separate button; press it again or Escape to leave fullscreen.
 Theater does not connect to a TV itself; use your device's screen-mirroring controls.
 
-**Menu → Screen & interface → Appearance & text** groups **Text & readability**,
-**Theme & background**, **Control placement**, and **Motion**. Text size comes first.
-Fields share a row on wider screens and stack on phones or with enlarged text.
+**Menu → Screen & interface → Appearance & text** groups **Text & readability**
+and **Theme & background**. Open **Control placement** or **Motion** for those
+options. Text size comes first. Fields stack when there is too little room to
+show them side by side.
 Theme choices include Device setting, Light, Dark and Midnight. Device setting follows the device's light or dark
 preference. Midnight uses black around and behind the music for OLED screens.
 Choose a backdrop for the space around the music in Light and Dark. Solid color,
@@ -454,7 +452,7 @@ arrows move one beat, Page Up/Down one measure, and Home/End to the start/end.
 
 | Problem | Try this |
 | --- | --- |
-| No sound | Press Play, check device/browser volume, raise Instrument volume in Volume & parts, and enable the part you want to hear. Try a built-in exercise. |
+| No sound | Press Play, check device/browser volume, raise Instrument volume in Volume & instruments, and enable the part you want to hear. Try a built-in exercise. |
 | Playback will not advance | Press Play and wait for the enabled count-in. Returning from a hidden browser tab also requires Play. |
 | The tune keeps repeating | Open Repeat and choose Turn repeat off. |
 | The page stopped following | Turning a page manually disables following. Enable Follow playback in Score view. |
@@ -474,8 +472,8 @@ built-in song or a redistributable example so someone else can reproduce it.
 
 ## Playing along with keys
 
-Open Menu → Sound & input → Playing inputs → Show keyboard & return to practice, or choose the
-**Piano · staffs + playable keys** layout. Tap or hold
+Open **Menu → Sound & input → Playing inputs**, enable **Show playable keyboard**,
+then close the menu. You can also choose **Piano staffs + keys**. Tap or hold
 keys, or use the existing computer-keyboard note layout. On the focused piano,
 Left/Right selects a note and Space/Enter holds it. Higher/lower range presets and
 the −/+ octave buttons change the visible range without transposing the song.
@@ -485,11 +483,12 @@ Playback continues while pitch and approximate attack timing are compared with
 the selected practice part. Different notes and octave errors are distinguished.
 Staff diamonds show your pitch, with a hollow expected pitch when different.
 Tab positions are suggestions, not evidence of which string you actually played.
-Use Stop all input notes to release input sound. Input state is session-only.
+Use **Release stuck notes** to release input sound. Input state is session-only.
 
 ## MIDI controllers
 
-Menu → Sound & input → Playing inputs → Connect MIDI requests access to connected controllers.
+Under **Menu → Sound & input → Playing inputs → MIDI devices**, choose
+**Connect MIDI** to request access to connected controllers.
 Choose one device/channel or all inputs. The on-screen piano opens automatically;
 return to practice to play it. Notes, velocity and sustain are supported. Turn off
 “Play MIDI notes through the app” if your electronic instrument already produces

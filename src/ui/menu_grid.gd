@@ -3,7 +3,7 @@ class_name MenuGrid
 extends GridContainer
 
 var max_columns: int = 3
-var minimum_ems: float = 6.0
+var minimum_ems: float = 5.5
 
 func _ready() -> void:
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL

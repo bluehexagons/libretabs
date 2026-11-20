@@ -128,8 +128,8 @@ func run(app: Control, tree: SceneTree, settle: Callable) -> void:
 	check(RelativeSpeedSlider.speed_caption(83.37) == "83.37%" and RelativeSpeedSlider.speed_caption(83.0) == "83%", "ordinary captions preserve hundredths without adding trailing zeroes")
 	app.call("set_speed", 0)
 	check(app.get("speed") == 0.1 and app.get("speed_input").min_value == 10, "numeric entry enforces the ten percent floor")
-	# A scrolled slider may geometrically overlap the fixed drawer header.
-	tree.root.size = Vector2i(390,844)
+	# A short window keeps the slider drawer scrollable for the header overlap case.
+	tree.root.size = Vector2i(390,390)
 	app.call("set_speed", 0.8337)
 	app.call("toggle_drawer", "TEMPO")
 	await settle.call(app)

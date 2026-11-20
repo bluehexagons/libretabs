@@ -21,13 +21,12 @@ func _ready() -> void:
 			live.press(id, pitch, velocity, "midi", age + midi_offset.value, age < 100))
 	midi.note_released.connect(func(id: String) -> void:
 		if is_instance_valid(live): live.release(id))
-	caption("INPUT_MIDI_TITLE")
-	caption("INPUT_MIDI_HELP")
 	var actions: HFlowContainer = HFlowContainer.new()
 	add_child(actions)
-	action(actions, "INPUT_MIDI_CONNECT", func() -> void:
+	var connect_button: Button = action(actions, "INPUT_MIDI_CONNECT", func() -> void:
 		midi.start()
 		show_keyboard.emit())
+	connect_button.tooltip_text = tr("INPUT_MIDI_HELP")
 	action(actions, "INPUT_MIDI_DISCONNECT", midi.stop)
 	midi_status = caption("INPUT_MIDI_OFF")
 	midi_picker = choice("INPUT_MIDI_DEVICE", ["INPUT_MIDI_ALL"], func(index: int) -> void: midi.select_device(str(midi_picker.get_item_metadata(index))))
@@ -39,8 +38,7 @@ func _ready() -> void:
 		midi.panic()
 		live.midi_sound = enabled)
 	midi_offset = number("INPUT_OFFSET", 0, 500, 0)
-	caption("INPUT_OFFSET_HELP")
-	caption("INPUT_MIDI_LIMIT")
+	midi_offset.tooltip_text = tr("INPUT_OFFSET_HELP")
 
 func update_midi() -> void:
 	if midi_status == null: return

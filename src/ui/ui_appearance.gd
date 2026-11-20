@@ -242,7 +242,7 @@ static func make_theme(dark: bool, font_size: int, font_style: String = "rounded
 	link_padding.content_margin_bottom = 4
 	result.set_stylebox("normal", "SourceLinkText", link_padding)
 	result.set_type_variation("TunerReading", "PanelContainer")
-	var reading: StyleBoxFlat = panel_style(dark, 16, midnight)
+	var reading: StyleBoxFlat = panel_style(dark, 8, midnight)
 	reading.bg_color = reading.bg_color.lerp(color("sound", dark, midnight), 0.3)
 	result.set_stylebox("panel", "TunerReading", reading)
 	result.set_type_variation("TunerStart", "Button")

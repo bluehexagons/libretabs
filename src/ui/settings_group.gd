@@ -20,9 +20,10 @@ func configure(title: String, graphic: Texture2D) -> void:
 	glyph.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	header.add_child(glyph)
 	header.add_child(caption(title))
+	header.visible = not title.is_empty()
 	fields = MenuGrid.new()
 	fields.max_columns = 2
-	fields.minimum_ems = 10
+	fields.minimum_ems = 5.5
 	add_child(fields)
 	fields.hide()
 	theme_changed.connect(func() -> void: refresh_theme.call_deferred())

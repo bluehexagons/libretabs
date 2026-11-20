@@ -12,18 +12,21 @@ func configure(title: String, detail: String, graphic: Texture2D) -> void:
 	set_meta("hover_caption", "")
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	mouse_filter = Control.MOUSE_FILTER_PASS
+	accessibility_name = title
 	content = MarginContainer.new()
 	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	content.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	for edge: String in ["left", "right", "top", "bottom"]: content.add_theme_constant_override("margin_" + edge, 12)
+	for edge: String in ["left", "right", "top", "bottom"]: content.add_theme_constant_override("margin_" + edge, 8)
 	add_child(content)
 	var column: VBoxContainer = VBoxContainer.new()
 	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	column.add_theme_constant_override("separation", 6)
+	column.add_theme_constant_override("separation", 2)
+	column.alignment = BoxContainer.ALIGNMENT_CENTER
 	content.add_child(column)
 	var row: HBoxContainer = HBoxContainer.new()
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_theme_constant_override("separation", 8)
+	row.add_theme_constant_override("separation", 6)
 	column.add_child(row)
 	glyph = TextureRect.new()
 	glyph.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -36,6 +39,7 @@ func configure(title: String, detail: String, graphic: Texture2D) -> void:
 	row.add_child(heading)
 	description = make_label(detail)
 	column.add_child(description)
+	description.visible = not detail.is_empty()
 	content.minimum_size_changed.connect(fit_content)
 	resized.connect(fit_content)
 	# The theme signal precedes the native control's cached-color refresh.
@@ -62,8 +66,9 @@ func refresh_theme() -> void:
 	if glyph == null: return
 	var ink: Color = get_theme_color("font_color")
 	glyph.modulate = ink
-	glyph.custom_minimum_size = Vector2.ONE * maxi(24, get_theme_default_font_size())
-	description.add_theme_font_size_override("font_size", maxi(14, roundi(get_theme_default_font_size() * 0.8)))
+	glyph.custom_minimum_size = Vector2.ONE * 20
+	heading.add_theme_font_size_override("font_size", roundi(get_theme_default_font_size() * 0.9))
+	description.add_theme_font_size_override("font_size", maxi(14, roundi(get_theme_default_font_size() * 0.7)))
 	if category != null:
 		category.add_theme_font_size_override("font_size", maxi(14, roundi(get_theme_default_font_size() * 0.7)))
 	fit_content()
@@ -72,5 +77,5 @@ func fit_content() -> void:
 	# Button owns its native minimum-size calculation. Mirror the wrapped child
 	# height into its public minimum so the whole card remains the hit target.
 	if content == null: return
-	var needed: float = maxf(64, content.get_combined_minimum_size().y)
+	var needed: float = maxf(52, content.get_combined_minimum_size().y)
 	if not is_equal_approx(custom_minimum_size.y, needed): custom_minimum_size.y = needed

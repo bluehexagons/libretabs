@@ -131,11 +131,21 @@ static func build(app: Control) -> void:
 	app.menu_overlay.add_child(app.drawer)
 	var menu_column: VBoxContainer = VBoxContainer.new()
 	app.drawer.add_child(menu_column)
-	var drawer_header: HFlowContainer = app.flow(menu_column)
+	var drawer_header: HBoxContainer = HBoxContainer.new()
+	drawer_header.add_theme_constant_override("separation", 8)
+	menu_column.add_child(drawer_header)
 	app.menu_back = app.button("MENU_BACK", app.go_back)
 	drawer_header.add_child(app.menu_back)
+	app.drawer_title = app.label("MENU", 20)
+	app.drawer_title.add_theme_font_override("font", UIAppearance.ui_font("rounded", true))
+	app.drawer_title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	drawer_header.add_child(app.drawer_title)
 	app.menu_close = app.button("CLOSE", app.close_menu)
 	drawer_header.add_child(app.menu_close)
+	for action: Button in [app.menu_back, app.menu_close]:
+		action.custom_minimum_size = Vector2(48, 48)
+		action.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		action.accessibility_name = action.text
 	app.menu_scroll = TouchScrollContainer.new()
 	app.menu_scroll.input_allowed = func() -> bool: return not app.speed_dragging
 	app.menu_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -146,10 +156,6 @@ static func build(app: Control) -> void:
 	app.drawer_body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	app.drawer_body.add_theme_constant_override("separation", 14)
 	app.menu_scroll.add_child(app.drawer_body)
-	app.drawer_title = app.label("MENU", 24)
-	# Keep the section name visible while its long help/settings content scrolls.
-	menu_column.add_child(app.drawer_title)
-	menu_column.move_child(app.drawer_title, 1)
 	app.song_shelf = SongShelf.new()
 	app.panel.add_child(app.song_shelf)
 	app.panel.move_child(app.song_shelf, 0)

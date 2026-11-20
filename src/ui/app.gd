@@ -72,6 +72,7 @@ var print_first: SpinBox
 var print_last: SpinBox
 var print_status: Label
 var print_prepare: Button
+var print_cancel: Button
 var print_save: Button
 var printer: PrintRenderer
 var print_html: String = ""
@@ -161,7 +162,6 @@ var loop_check: CheckButton
 var loop_button: Button
 var repeat_current_button: Button
 var repeat_off_button: Button
-var repeat_measure_help: Label
 var loop_summary: Label
 var loop_toggle: Button
 var count_length: SpinBox
@@ -172,7 +172,6 @@ var speed_range_limit: SpinBox
 var speed_range_custom: VBoxContainer
 var speed_range_caption: Label
 const SPEED_RANGE_LIMITS: Array[float] = [0, 100, 150, 200, 400, 999]
-var tempo_columns: GridContainer
 var panel_speed: RelativeSpeedSlider
 var speed_input: SpinBox
 var main_speed: RelativeSpeedSlider
@@ -232,9 +231,6 @@ var metro_button: Button
 var stop_button: Button
 var layout_button: Button
 var preset_choice_buttons: Dictionary = {}
-var welcome_step_pair: BoxContainer
-var welcome_cards: Array[PanelContainer] = []
-var layout_preset_grid: GridContainer
 var active_preset: String = "guitar"
 var quick_row: HFlowContainer
 var slower_button: Button
@@ -533,7 +529,9 @@ func close_choice_picker() -> void:
 	picker_source = null
 
 func set_status(key: String) -> void:
-	if key in ["STORAGE_SESSION", "SETTINGS_RECOVERY"] and settings_notice != null: settings_notice.text = tr("SETTINGS_RECOVERY")
+	if key in ["STORAGE_SESSION", "SETTINGS_RECOVERY"] and settings_notice != null:
+		settings_notice.text = tr("SETTINGS_RECOVERY")
+		settings_notice.show()
 	status_key = key
 	status.text = tr(key)
 	status.hide()
@@ -760,6 +758,27 @@ func number_field(parent: Node, field: SpinBox, key: String) -> void:
 	parent.add_child(row)
 	row.configure(field, less, more)
 
+func menu_fields(parent: Node, minimum_ems: float = 5.5) -> MenuGrid:
+	var fields: MenuGrid = MenuGrid.new()
+	fields.max_columns = 2
+	fields.minimum_ems = minimum_ems
+	parent.add_child(fields)
+	return fields
+
+func menu_field(parent: Node, key: String) -> VBoxContainer:
+	var field: VBoxContainer = VBoxContainer.new()
+	field.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	field.add_theme_constant_override("separation", 2)
+	field.add_child(label(key, 16))
+	parent.add_child(field)
+	return field
+
+func menu_link(parent: Node, key: String) -> void:
+	var action: Button = button(key, func() -> void: toggle_drawer(key))
+	action.custom_minimum_size.y = 48
+	action.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	parent.add_child(action)
+
 func flow(parent: Node) -> HFlowContainer:
 	var row: HFlowContainer = HFlowContainer.new()
 	row.add_theme_constant_override("h_separation", 8)
@@ -777,10 +796,9 @@ func set_songs_pinned(enabled: bool) -> void:
 	save_preferences()
 
 func build_note_styles(parent: VBoxContainer) -> void:
-	parent.add_child(label("NOTE_STYLES", 22))
-	parent.add_child(label("NOTE_STYLES_HELP", 18))
+	var styles: MenuGrid = menu_fields(parent)
 	for key: String in ["current", "next"]:
-		parent.add_child(label("NOTE_STYLE_CURRENT" if key == "current" else "NOTE_STYLE_NEXT", 18))
+		var field: VBoxContainer = menu_field(styles, "NOTE_STYLE_CURRENT" if key == "current" else "NOTE_STYLE_NEXT")
 		var picker: OptionButton = CaptionOption.new()
 		picker.fit_to_longest_item = false
 		picker.custom_minimum_size.y = 48
@@ -790,7 +808,7 @@ func build_note_styles(parent: VBoxContainer) -> void:
 			picker.set_item_metadata(picker.item_count - 1, style)
 		picker.item_selected.connect(func(_index: int) -> void: update_note_styles(); save_preferences())
 		note_style_controls[key] = picker
-		parent.add_child(picker)
+		field.add_child(picker)
 	note_ripples_check = check("NOTE_RIPPLES", true)
 	score_playhead_check = check("SCORE_PLAYHEAD", true)
 	for toggle: CheckButton in [note_ripples_check, score_playhead_check]:
@@ -1033,11 +1051,12 @@ func change_interface(id: String) -> void:
 
 func build_interface_menu() -> void:
 	var choices: VBoxContainer = section("INTERFACE")
-	choices.add_child(label("INTERFACE_HELP", 18))
+	var cards: MenuGrid = menu_fields(choices)
 	for id: String in PracticeInterfaces.IDS:
 		var card: VBoxContainer = VBoxContainer.new()
-		card.add_theme_constant_override("separation", 4)
-		choices.add_child(card)
+		card.add_theme_constant_override("separation", 2)
+		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		cards.add_child(card)
 		var action: Button = button(PracticeInterfaces.LABELS[id], func() -> void: change_interface(id))
 		action.toggle_mode = true
 		action.alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -1048,12 +1067,12 @@ func build_interface_menu() -> void:
 		action.pressed.connect(func() -> void: action.set_pressed_no_signal(interface_id == id))
 		card.add_child(action)
 		interface_choices[id] = action
-		card.add_child(label(PracticeInterfaces.HELP[id], 16))
+		card.add_child(label(PracticeInterfaces.LABELS[id] + "_SUMMARY", 16))
 	choices.add_child(button("LAYOUT_DONE", close_menu))
 
 func section(key: String) -> VBoxContainer:
 	var content: VBoxContainer = VBoxContainer.new()
-	content.add_theme_constant_override("separation", 12)
+	content.add_theme_constant_override("separation", 8)
 	drawer_body.add_child(content)
 	drawers[key] = content
 	content.hide()
@@ -1061,56 +1080,33 @@ func section(key: String) -> VBoxContainer:
 
 func build_welcome_menu() -> void:
 	var welcome: VBoxContainer = section("WELCOME")
+	welcome.add_theme_constant_override("separation", 6)
 	var begin_practice: Callable = func() -> void:
 		close_menu()
 		play_button.grab_focus()
 	welcome_practice = button("WELCOME_PRACTICE", begin_practice)
 	welcome.add_child(welcome_practice)
-	welcome.add_child(button("WELCOME_HALF_SPEED", func() -> void:
+	var half_speed: Button = button("WELCOME_HALF_SPEED", func() -> void:
 		set_speed(0.5)
-		begin_practice.call()))
-	var welcome_steps: VBoxContainer = VBoxContainer.new()
-	welcome_steps.add_theme_constant_override("separation", 10)
-	welcome.add_child(welcome_steps)
-	welcome_step_pair = BoxContainer.new()
-	welcome_step_pair.add_theme_constant_override("separation", 10)
-	welcome_steps.add_child(welcome_step_pair)
-	for step: String in ["PLAY", "READ", "PACE"]:
-		var card: PanelContainer = PanelContainer.new()
-		card.add_theme_stylebox_override("panel", UIAppearance.role_style("reading", dark_mode, "normal"))
-		card.set_meta("welcome_card", true)
-		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		var content: VBoxContainer = VBoxContainer.new()
-		content.add_theme_constant_override("separation", 5)
-		content.add_child(label("WELCOME_" + step + "_TITLE", 20))
-		var instructions: Label = label("WELCOME_" + step + "_BODY", 18)
-		content.add_child(instructions)
-		if step == "READ": welcome_read = instructions
-		card.add_child(content)
-		welcome_cards.append(card)
-		if step == "PACE":
-			welcome_steps.add_child(card)
-			welcome_repeat = button("REPEAT_MEASURE", func() -> void:
-				if importer != null: return
-				repeat_measure()
-				begin_practice.call())
-			content.add_child(welcome_repeat)
-		else:
-			welcome_step_pair.add_child(card)
-	welcome.add_child(label("WELCOME_MORE", 18))
-	var actions: HFlowContainer = flow(welcome)
-	actions.add_child(button("LAYOUTS", func() -> void: toggle_drawer("LAYOUTS")))
-	actions.add_child(button("SONG_MENU", func() -> void: toggle_drawer("SONG_MENU")))
-	actions.add_child(button("HELP", func() -> void: toggle_drawer("HELP")))
-	welcome.add_child(label("THEATER_RECOMMEND", 18))
-	welcome.add_child(button("THEATER_TRY", func() -> void:
-		if not tv_active: enter_tv()
-		else: close_menu()))
+		begin_practice.call())
+	half_speed.custom_minimum_size.y = 48
+	welcome.add_child(half_speed)
+	welcome_read = label("WELCOME_READ_ODE", 18)
+	welcome.add_child(welcome_read)
+	welcome_repeat = button("REPEAT_MEASURE", func() -> void:
+		if importer != null: return
+		repeat_measure()
+		begin_practice.call())
+	welcome_repeat.custom_minimum_size.y = 48
+	welcome.add_child(welcome_repeat)
+	var actions: MenuGrid = menu_fields(welcome, 5)
+	menu_link(actions, "LAYOUTS")
+	menu_link(actions, "HELP")
 	startup_help_check = CheckBox.new()
 	startup_help_check.text = tr("WELCOME_STARTUP")
 	startup_help_check.tooltip_text = tr("WELCOME_STARTUP_HELP")
 	startup_help_check.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	startup_help_check.custom_minimum_size.y = 56
+	startup_help_check.custom_minimum_size.y = 48
 	startup_help_check.set_pressed_no_signal(startup_help_enabled)
 	startup_help_check.toggled.connect(set_startup_help)
 	welcome.add_child(startup_help_check)
@@ -1131,16 +1127,12 @@ func update_welcome() -> void:
 	welcome_repeat.disabled = song == null or importer != null
 
 func build_preset_grid(parent: VBoxContainer, targets: Dictionary) -> GridContainer:
-	var grid: GridContainer = GridContainer.new()
-	grid.columns = 2
-	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	grid.add_theme_constant_override("h_separation", 8)
-	grid.add_theme_constant_override("v_separation", 8)
-	parent.add_child(grid)
+	var grid: MenuGrid = menu_fields(parent)
 	for preset: Dictionary in PRACTICE_PRESETS:
 		var id: String = str(preset.id)
 		var choice: Button = button(str(preset.key), func() -> void: apply_preset(id))
 		choice.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		choice.toggle_mode = true
 		grid.add_child(choice)
 		targets[id] = choice
 	update_preset_buttons()
@@ -1149,7 +1141,9 @@ func build_preset_grid(parent: VBoxContainer, targets: Dictionary) -> GridContai
 func update_preset_buttons() -> void:
 	for id: String in preset_choice_buttons:
 		var choice: Button = preset_choice_buttons[id]
-		choice.text = tr("PRESET_CURRENT") % tr(preset_key(id)) if id == active_preset else tr(preset_key(id))
+		var selected: bool = id == active_preset
+		choice.set_pressed_no_signal(selected)
+		choice.icon = UIIcons.get_icon("INTERFACE_SELECTED") if selected else null
 
 func sync_preset_marker() -> void:
 	active_preset = ""
@@ -1159,11 +1153,6 @@ func sync_preset_marker() -> void:
 			active_preset = str(preset.id)
 			break
 	update_preset_buttons()
-
-func preset_key(id: String) -> String:
-	for preset: Dictionary in PRACTICE_PRESETS:
-		if preset.id == id: return str(preset.key)
-	return "PRESET_GUITAR"
 
 func apply_preset(id: String) -> void:
 	for preset: Dictionary in PRACTICE_PRESETS:
@@ -1236,25 +1225,24 @@ func build_drawers() -> void:
 	build_capture_menu()
 	build_tv_menu()
 	var presets: VBoxContainer = section("LAYOUTS")
-	presets.add_child(label("PRESET_EXPLAIN", 18))
-	layout_preset_grid = build_preset_grid(presets, preset_choice_buttons)
-	presets.add_child(button("LAYOUT_DONE", close_menu))
+	build_preset_grid(presets, preset_choice_buttons)
 	presets.add_child(button("PRESET_PIANO_EXAMPLE", open_piano_example))
-	presets.add_child(button("SCORE_VIEW", func() -> void: toggle_drawer("SCORE_VIEW")))
+	presets.add_child(button("LAYOUT_DONE", close_menu))
 	var views: VBoxContainer = section("SCORE_VIEW")
-	views.add_child(button("LAYOUTS", func() -> void: toggle_drawer("LAYOUTS")))
+	var view_fields: MenuGrid = menu_fields(views)
 	view_picker = CaptionOption.new()
 	view_picker.tooltip_text = tr("VIEW_HELP")
 	view_picker.custom_minimum_size.y = 56
 	view_picker.fit_to_longest_item = false
-	view_picker.add_icon_item(UIIcons.get_icon("VIEW_SCROLL"), tr("VIEW_SCROLL"))
-	view_picker.add_icon_item(UIIcons.get_icon("VIEW_PAGES"), tr("VIEW_PAGES"))
-	view_picker.add_icon_item(UIIcons.get_icon("PAGE_FOLLOW"), tr("VIEW_FOLLOW_PAGES"))
+	for key: String in ["SCORE_MODE_SCROLL", "SCORE_MODE_PAGES", "SCORE_MODE_FOLLOW"]:
+		view_picker.add_item(tr(key))
 	view_picker.item_selected.connect(func(_index: int) -> void: change_view())
-	views.add_child(view_picker)
-	views.add_child(button("TV_VIEW", func() -> void: toggle_drawer("TV_VIEW")))
-	views.add_child(label("MUSIC_LAYOUT_HELP", 18))
-	build_music_layout_controls(views, false)
+	menu_field(view_fields, "SCORE_SCROLL_MODE").add_child(view_picker)
+	build_music_layout_controls(view_fields, false)
+	var score_links: MenuGrid = menu_fields(views)
+	for key: String in ["LAYOUTS", "SCORE_ROWS", "NOTE_STYLES", "PRINT"]:
+		menu_link(score_links, key)
+	var rows: VBoxContainer = section("SCORE_ROWS")
 	notation_picker = CaptionOption.new()
 	notation_picker.custom_minimum_size.y = 56
 	notation_picker.fit_to_longest_item = false
@@ -1262,24 +1250,30 @@ func build_drawers() -> void:
 	OptionMenuFit.set_disabled(notation_picker, true)
 	notation_picker.hide()
 	notation_picker.item_selected.connect(func(_index: int) -> void: change_view())
-	views.add_child(notation_picker)
-	views.add_child(label("NOTATION_ROWS_HELP", 18))
+	rows.add_child(notation_picker)
 	notation_rows_box = VBoxContainer.new()
 	notation_rows_box.add_theme_constant_override("separation", 8)
-	views.add_child(notation_rows_box)
-	var row_actions: HFlowContainer = flow(views)
-	row_actions.add_child(button("ADD_STAFF_ROW", func() -> void: add_notation_row("staff")))
-	row_actions.add_child(button("ADD_TAB_ROW", func() -> void: add_notation_row("tab")))
-	row_actions.add_child(button("ADD_PIANO_ROW", func() -> void: add_notation_row("piano")))
-	row_actions.add_child(button("ADD_MINI_TREBLE_ROW", func() -> void: add_notation_row("mini_treble")))
-	row_actions.add_child(button("ADD_MINI_BASS_ROW", func() -> void: add_notation_row("mini_bass")))
-	views.add_child(button("RESTORE_NOTATION_ROWS", restore_notation_rows))
-	notation_rows_notice = label("NOTATION_ROWS_SAVED", 16)
-	if notation_rows_load_status != "ok": notation_rows_notice.text = tr("NOTATION_ROWS_RECOVERED")
-	views.add_child(notation_rows_notice)
+	rows.add_child(notation_rows_box)
+	var add_row: OptionButton = CaptionOption.new()
+	add_row.fit_to_longest_item = false
+	add_row.custom_minimum_size.y = 48
+	add_row.accessibility_name = tr("ADD_SCORE_ROW")
+	for key: String in ["ADD_STAFF_ROW", "ADD_TAB_ROW", "ADD_PIANO_ROW", "ADD_MINI_TREBLE_ROW", "ADD_MINI_BASS_ROW"]:
+		add_row.add_item(tr(key))
+	add_row.select(-1)
+	add_row.text = tr("ADD_SCORE_ROW")
+	add_row.item_selected.connect(func(index: int) -> void:
+		add_notation_row(["staff", "tab", "piano", "mini_treble", "mini_bass"][index])
+		add_row.select(-1)
+		add_row.text = tr("ADD_SCORE_ROW"))
+	rows.add_child(add_row)
+	rows.move_child(add_row, notation_rows_box.get_index())
+	rows.add_child(button("RESTORE_NOTATION_ROWS", restore_notation_rows))
+	notation_rows_notice = label("NOTATION_ROWS_RECOVERED", 16)
+	notation_rows_notice.visible = notation_rows_load_status != "ok"
+	rows.add_child(notation_rows_notice)
 	rebuild_notation_rows_editor()
-	views.add_child(button("PRINT", func() -> void: toggle_drawer("PRINT")))
-	build_note_styles(views)
+	build_note_styles(section("NOTE_STYLES"))
 	var library: VBoxContainer = section("SONG_MENU")
 	songs_pin_check = check("SONGS_PIN", false)
 	songs_pin_check.tooltip_text = tr("SONGS_PIN_HELP")
@@ -1305,11 +1299,8 @@ func build_drawers() -> void:
 		var matches: Array[int] = catalog_indices()
 		if not matches.is_empty(): load_library_item(matches[0]))
 	library.add_child(catalog_search)
-	var catalog_actions: HFlowContainer = flow(library)
-	var import_short: Button = button("SONG_IMPORT_SHORT", open_midi)
-	import_short.tooltip_text = tr("OPEN")
-	import_short.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	catalog_actions.add_child(import_short)
+	var catalog_actions: MenuGrid = menu_fields(library, 5)
+	menu_link(catalog_actions, "MIDI_FILES")
 	catalog_filter_toggle = button("SONG_FILTERS_SHOW", func() -> void:
 		catalog_filter_panel.visible = not catalog_filter_panel.visible
 		catalog_filter_toggle.text = tr("SONG_FILTERS_CLOSE" if catalog_filter_panel.visible else "SONG_FILTERS_SHORT"))
@@ -1363,9 +1354,9 @@ func build_drawers() -> void:
 	preview_status.hide()
 	more_song_grid = build_song_grid(library)
 	refresh_song_catalog()
-	library.add_child(label("SONG_FILE_BRIEF", 16))
-	library.add_child(label("SONG_FILE_HELP", 18))
-	library.add_child(label("DEMOS", 18))
+	var files: VBoxContainer = section("MIDI_FILES")
+	files.add_child(button("IMPORT_MIDI", open_midi))
+	files.add_child(label("DEMOS", 18))
 	demo_picker = CaptionOption.new()
 	demo_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	demo_picker.fit_to_longest_item = false
@@ -1373,32 +1364,24 @@ func build_drawers() -> void:
 	demo_picker.custom_minimum_size.y = 56
 	for index: int in range(fixtures.size()): demo_picker.add_item(tr("DEMO_%d" % index))
 	demo_picker.item_selected.connect(load_demo)
-	library.add_child(demo_picker)
+	files.add_child(demo_picker)
 	cancel_button = button("CANCEL", cancel_import)
 	cancel_button.hide()
-	library.add_child(cancel_button)
-	library.add_child(label("PART_PICKER", 18))
+	files.add_child(cancel_button)
+	files.add_child(label("PART_PICKER", 18))
 	part_picker = CaptionOption.new()
 	part_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	part_picker.fit_to_longest_item = false
 	part_picker.clip_text = true
 	part_picker.custom_minimum_size.y = 56
 	part_picker.item_selected.connect(select_part)
-	library.add_child(part_picker)
-	library.add_child(button("DETAILS", func() -> void: toggle_drawer("DETAILS")))
+	files.add_child(part_picker)
+	menu_link(files, "DETAILS")
 
-	var tempo: VBoxContainer = section("TEMPO")
-	tempo_columns = GridContainer.new()
-	tempo_columns.add_theme_constant_override("h_separation", 24)
-	tempo_columns.add_theme_constant_override("v_separation", 16)
-	tempo.add_child(tempo_columns)
-	var tempo_primary: VBoxContainer = VBoxContainer.new()
-	var tempo_secondary: VBoxContainer = VBoxContainer.new()
-	for column: VBoxContainer in [tempo_primary, tempo_secondary]:
-		column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		column.add_theme_constant_override("separation", 8)
-		tempo_columns.add_child(column)
-	tempo_caption = label("PLAYBACK_RATE", 22)
+	var tempo_primary: VBoxContainer = section("TEMPO")
+	var tempo_secondary: VBoxContainer = section("PLAYBACK_TIMING")
+	var speed_settings: VBoxContainer = section("SPEED_SETTINGS")
+	tempo_caption = label("PLAYBACK_RATE", 18)
 	tempo_primary.add_child(tempo_caption)
 	panel_speed = RelativeSpeedSlider.new()
 	panel_speed.min_value = 0
@@ -1414,7 +1397,7 @@ func build_drawers() -> void:
 	hear_part_check.tooltip_text = tr("TIP_HEAR_MY_PART")
 	hear_part_check.toggled.connect(func(enabled: bool) -> void: set_part_enabled(part, enabled))
 	tempo_primary.add_child(hear_part_check)
-	tempo_primary.add_child(label("SPEED_EXACT", 18))
+	var exact: VBoxContainer = menu_field(tempo_primary, "SPEED_EXACT")
 	speed_input = SpinBox.new()
 	speed_input.min_value = RelativeSpeedSlider.MIN_PERCENT
 	speed_input.max_value = 999
@@ -1422,16 +1405,26 @@ func build_drawers() -> void:
 	speed_input.suffix = "%"
 	speed_input.custom_minimum_size.y = 56
 	speed_input.value_changed.connect(func(percent: float) -> void: set_speed(percent / 100))
-	number_field(tempo_primary, speed_input, "SPEED_EXACT")
-	var speed_steps: HFlowContainer = flow(tempo_primary)
+	number_field(exact, speed_input, "SPEED_EXACT")
+	var speed_steps: MenuGrid = menu_fields(tempo_primary, 3.2)
+	speed_steps.max_columns = 3
 	slower_button = button("SLOWER", func() -> void: step_speed(-1))
 	faster_button = button("FASTER", func() -> void: step_speed(1))
 	original_button = button("ORIGINAL_SPEED", func() -> void: set_speed(1.0))
-	for item: Button in [slower_button, faster_button, original_button]: speed_steps.add_child(item)
-	speed_steps.add_child(button("STOP", func() -> void: stop_practice(); close_menu()))
-	speed_steps.add_child(button("RESTART", func() -> void: close_menu(); restart_song()))
+	slower_button.accessibility_name = tr("TIP_SLOWER")
+	faster_button.accessibility_name = tr("TIP_FASTER")
+	original_button.accessibility_name = tr("TIP_ORIGINAL_SPEED")
+	for item: Button in [slower_button, faster_button, original_button]:
+		item.custom_minimum_size.y = 48
+		item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		speed_steps.add_child(item)
+	var transport_actions: MenuGrid = menu_fields(tempo_secondary)
+	for action: Button in [button("STOP", func() -> void: stop_practice(); close_menu()),
+			button("RESTART", func() -> void: close_menu(); restart_song())]:
+		action.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		transport_actions.add_child(action)
 	tempo_primary.move_child(speed_steps, hear_part_check.get_index() + 1)
-	tempo_primary.add_child(label("SPEED_PRESETS", 18))
+	var presets_field: VBoxContainer = menu_field(tempo_primary, "SPEED_PRESETS")
 	speed_picker = CaptionOption.new()
 	speed_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	speed_picker.fit_to_longest_item = false
@@ -1441,9 +1434,12 @@ func build_drawers() -> void:
 	speed_picker.add_item(tr("SPEED_CUSTOM"))
 	speed_picker.select(SPEEDS.find(1.0))
 	speed_picker.item_selected.connect(change_speed)
-	tempo_primary.add_child(speed_picker)
+	presets_field.add_child(speed_picker)
 
-	tempo_primary.add_child(label("SPEED_RANGE", 18))
+	var playback_links: MenuGrid = menu_fields(tempo_primary)
+	menu_link(playback_links, "PLAYBACK_TIMING")
+	menu_link(playback_links, "SPEED_SETTINGS")
+	speed_settings.add_child(label("SPEED_RANGE", 18))
 	speed_range_picker = CaptionOption.new()
 	speed_range_picker.custom_minimum_size.y = 56
 	speed_range_picker.fit_to_longest_item = false
@@ -1454,9 +1450,9 @@ func build_drawers() -> void:
 		speed_range_picker.add_item(tr("SPEED_RANGE_VALUE") % RelativeSpeedSlider.percentage_text(limit))
 	speed_range_picker.add_item(tr("SPEED_RANGE_CUSTOM"))
 	speed_range_picker.item_selected.connect(change_speed_range)
-	tempo_primary.add_child(speed_range_picker)
+	speed_settings.add_child(speed_range_picker)
 	speed_range_custom = VBoxContainer.new()
-	tempo_primary.add_child(speed_range_custom)
+	speed_settings.add_child(speed_range_custom)
 	speed_range_custom.add_child(label("SPEED_RANGE_MAX", 18))
 	speed_range_limit = SpinBox.new()
 	speed_range_limit.min_value = RelativeSpeedSlider.MIN_PERCENT + 1
@@ -1468,7 +1464,7 @@ func build_drawers() -> void:
 	number_field(speed_range_custom, speed_range_limit, "SPEED_RANGE_MAX")
 	speed_range_custom.hide()
 	speed_range_caption = label("SPEED_RANGE", 18)
-	tempo_primary.add_child(speed_range_caption)
+	speed_settings.add_child(speed_range_caption)
 
 	metro_check = check("METRONOME", true)
 	metro_check.tooltip_text = tr("CLICK_HELP")
@@ -1482,40 +1478,33 @@ func build_drawers() -> void:
 	pause_navigation_check.tooltip_text = tr("PAUSE_NAVIGATION_HELP")
 	pause_navigation_check.toggled.connect(func(_enabled: bool) -> void: save_preferences())
 	tempo_secondary.add_child(pause_navigation_check)
-	tempo_secondary.add_child(label("COUNT_LENGTH", 18))
+	var count_field: VBoxContainer = menu_field(tempo_secondary, "COUNT_LENGTH")
 	count_length = SpinBox.new()
 	count_length.min_value = 1
 	count_length.max_value = 4
 	count_length.step = 1
 	count_length.custom_minimum_size.y = 56
 	count_length.value_changed.connect(func(_value: float) -> void: save_preferences())
-	number_field(tempo_secondary, count_length, "COUNT_LENGTH")
+	number_field(count_field, count_length, "COUNT_LENGTH")
 
-	var base_toggle: CheckButton = check("BPM_SETTINGS", false)
-	tempo_secondary.add_child(base_toggle)
-	var base_controls: VBoxContainer = VBoxContainer.new()
-	base_controls.add_theme_constant_override("separation", 8)
-	tempo_secondary.add_child(base_controls)
-	base_controls.hide()
-	base_toggle.toggled.connect(func(expanded: bool) -> void: base_controls.visible = expanded)
-	base_controls.add_child(label("BPM_LABEL", 18))
+	speed_settings.add_child(label("BPM_LABEL", 18))
 	bpm_input = SpinBox.new()
 	bpm_input.min_value = 10
 	bpm_input.max_value = 400
 	bpm_input.step = 1
 	bpm_input.custom_minimum_size.y = 56
 	bpm_input.value_changed.connect(change_bpm)
-	number_field(base_controls, bpm_input, "BPM_LABEL")
+	number_field(speed_settings, bpm_input, "BPM_LABEL")
 	source_bpm_button = button("BPM_USE_SONG", restore_song_bpm)
-	base_controls.add_child(source_bpm_button)
-	base_controls.add_child(label("TEMPO_HELP", 18))
+	speed_settings.add_child(source_bpm_button)
+	bpm_input.tooltip_text = tr("TEMPO_HELP")
 
 	var sound: VBoxContainer = section("SOUND")
-	sound.add_child(label("SOUND_HELP", 18))
+	var parts: VBoxContainer = section("PLAYBACK_PARTS")
 	mute_check = check("MUTE_MY_PART", false)
-	sound.add_child(mute_check)
-	sound.add_child(label("BACKING", 18))
-	backing_box = flow(sound)
+	parts.add_child(mute_check)
+	parts.add_child(label("BACKING", 18))
+	backing_box = flow(parts)
 	mute_check.toggled.connect(func(pressed: bool) -> void: set_part_enabled(part, not pressed))
 	sound.add_child(label("PRACTICE_INSTRUMENT"))
 	instrument_picker = CaptionOption.new()
@@ -1527,14 +1516,15 @@ func build_drawers() -> void:
 		audio.set_instrument(PracticeSynth.INSTRUMENTS[index])
 		save_preferences())
 	sound.add_child(instrument_picker)
-	sound.add_child(label("PRACTICE_INSTRUMENT_HELP", 18))
-	sound.add_child(button("SOUND_EFFECTS", func() -> void: toggle_drawer("SOUND_EFFECTS")))
+	var sound_links: MenuGrid = menu_fields(sound)
+	menu_link(sound_links, "PLAYBACK_PARTS")
+	menu_link(sound_links, "SOUND_EFFECTS")
 	instrument_slider = volume_control(sound, "INSTRUMENT_VOLUME", 85, true)
 	click_slider = volume_control(sound, "CLICK_VOLUME", 35, false)
 
 	var effects: VBoxContainer = section("SOUND_EFFECTS")
-	effects.add_child(label("REVERB_HELP", 18))
 	reverb_check = check("ROOM_REVERB", true)
+	reverb_check.tooltip_text = tr("REVERB_HELP")
 	effects.add_child(reverb_check)
 	reverb_caption = label("REVERB_AMOUNT", 18)
 	effects.add_child(reverb_caption)
@@ -1546,10 +1536,9 @@ func build_drawers() -> void:
 	reverb_amount.custom_minimum_size.y = 44
 	reverb_amount.scrollable = false
 	effects.add_child(reverb_amount)
-	effects.add_child(label("CHORUS_HELP", 18))
 	chorus_check = check("SOFT_CHORUS", false)
+	chorus_check.tooltip_text = tr("CHORUS_HELP")
 	effects.add_child(chorus_check)
-	effects.add_child(label("EFFECTS_HELP", 18))
 	effects.add_child(button("EFFECTS_DRY", func() -> void:
 		reverb_check.set_pressed_no_signal(false)
 		chorus_check.set_pressed_no_signal(false)
@@ -1568,16 +1557,14 @@ func build_drawers() -> void:
 		loop_check.button_pressed = false
 		close_menu())
 	repeat.add_child(repeat_off_button)
-	repeat_measure_help = label("REPEAT_MEASURE_HELP", 18)
-	repeat.add_child(repeat_measure_help)
+	repeat_current_button.tooltip_text = tr("REPEAT_MEASURE_HELP")
 
 	var loops: VBoxContainer = section("LOOP_RANGE_EDITOR")
-	loops.add_child(label("LOOP_HELP", 18))
-	var loop_actions: HFlowContainer = flow(loops)
+	var loop_actions: MenuGrid = menu_fields(loops, 5)
 	loop_toggle = button("ENABLE_LOOP", func() -> void: loop_check.button_pressed = not loop_check.button_pressed)
-	loop_actions.add_child(loop_toggle)
-	loop_actions.add_child(button("PLAY_SECTION", play_section))
-	loops.add_child(button("REPEAT_SONG", func() -> void: repeat_song(); close_menu()))
+	for action: Button in [loop_toggle, button("PLAY_SECTION", play_section)]:
+		action.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		loop_actions.add_child(action)
 	loop_check = check("LOOP", false)
 	loops.add_child(loop_check)
 	# The named action above is also available to touch-and-hold help.
@@ -1585,18 +1572,21 @@ func build_drawers() -> void:
 	loop_from = SpinBox.new()
 	loop_to = SpinBox.new()
 	for item: SpinBox in [loop_from, loop_to]:
-		loops.add_child(label("FROM" if item == loop_from else "THROUGH", 18))
+		var field: VBoxContainer = menu_field(loops, "FROM" if item == loop_from else "THROUGH")
 		item.min_value = 1
 		item.max_value = 4
 		item.value = 1 if item == loop_from else 2
 		item.custom_minimum_size.y = 56
 		item.tooltip_text = tr("LOOP_RANGE")
 		item.value_changed.connect(func(_value: float) -> void: loop_changed(item == loop_to))
-		number_field(loops, item, "LOOP_FIRST" if item == loop_from else "LOOP_LAST")
+		number_field(field, item, "LOOP_FIRST" if item == loop_from else "LOOP_LAST")
 	loop_check.toggled.connect(func(_pressed: bool) -> void: loop_changed())
-	var endpoints: HFlowContainer = flow(loops)
-	endpoints.add_child(button("LOOP_START_HERE", func() -> void: set_loop_boundary(true)))
-	endpoints.add_child(button("LOOP_END_HERE", func() -> void: set_loop_boundary(false)))
+	var endpoints: MenuGrid = menu_fields(loops, 5)
+	for action: Button in [button("LOOP_START_HERE", func() -> void: set_loop_boundary(true)),
+			button("LOOP_END_HERE", func() -> void: set_loop_boundary(false))]:
+		action.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		endpoints.add_child(action)
+	loops.add_child(button("REPEAT_SONG", func() -> void: repeat_song(); close_menu()))
 
 	var details: VBoxContainer = section("DETAILS")
 	details.add_child(label("ARRANGEMENT_STYLE", 18))
@@ -1612,7 +1602,8 @@ func build_drawers() -> void:
 	details.add_child(summary)
 	warning = label("PROTOTYPE_LIMIT", 18)
 	details.add_child(warning)
-	settings_notice = label("SETTINGS_SAVED", 18)
+	settings_notice = label("SETTINGS_SAVED", 16)
+	settings_notice.hide()
 	menu_index.add_child(settings_notice)
 	var reset_section: VBoxContainer = section("RESET_SETTINGS")
 	reset_section.add_child(label("RESET_SETTINGS_CONFIRM", 18))
@@ -1621,8 +1612,8 @@ func build_drawers() -> void:
 	var progress_section: VBoxContainer = section("LEARNING_PROGRESS")
 	learning_summary = label("LEARNING_COUNTS", 20)
 	progress_section.add_child(learning_summary)
-	progress_section.add_child(label("LEARNING_EXPLAIN", 18))
-	learning_settings_notice = label("LEARNING_SAVED", 16)
+	learning_settings_notice = label("LEARNING_RECOVERY", 16)
+	learning_settings_notice.hide()
 	progress_section.add_child(learning_settings_notice)
 	progress_section.add_child(button("SONG_MENU", func() -> void: toggle_drawer("SONG_MENU")))
 	progress_section.add_child(button("LEARNING_CLEAR", func() -> void: toggle_drawer("LEARNING_CLEAR")))
@@ -1631,7 +1622,6 @@ func build_drawers() -> void:
 	clear_section.add_child(button("LEARNING_CLEAR_DO", clear_learning_progress))
 	clear_section.add_child(button("SETTINGS_CANCEL", go_back))
 	var inputs: VBoxContainer = section("INPUTS")
-	inputs.add_child(label("INPUT_EXPLAIN", 18))
 	input_show = check("INPUT_SHOW", false)
 	input_show.text = tr("INPUT_SHOW")
 	input_show.custom_minimum_size.y = 48
@@ -1650,16 +1640,14 @@ func build_drawers() -> void:
 		save_preferences())
 	inputs.add_child(feedback_check)
 	inputs.add_child(button("INPUT_PANIC", release_playing_inputs))
-	inputs.add_child(button("INPUT_RETURN", func() -> void:
-		input_show.button_pressed = true
-		close_menu()))
-	inputs.add_child(label("INPUT_PIANO_HELP", 18))
-	inputs.add_child(label("INPUT_TAB_HELP", 18))
+	var input_links: MenuGrid = menu_fields(inputs)
+	for key: String in ["MIDI_DEVICES", "KEYBOARD", "TUNER"]:
+		menu_link(input_links, key)
+	var midi: VBoxContainer = section("MIDI_DEVICES")
 	playing_devices = PlayingDevices.new()
 	playing_devices.allow_notes = func() -> bool: return not menu_overlay.visible and importer == null
 	playing_devices.show_keyboard.connect(func() -> void: input_show.button_pressed = true)
-	inputs.add_child(playing_devices)
-	inputs.add_child(button("TUNER", func() -> void: toggle_drawer("TUNER")))
+	midi.add_child(playing_devices)
 	var tuner_section: VBoxContainer = section("TUNER")
 	listening = ListeningControls.new()
 	listening.allow_notes = func() -> bool: return not menu_overlay.visible and importer == null
@@ -1692,7 +1680,11 @@ func build_drawers() -> void:
 		listening.command_status.visible = audio_commands.enabled
 		listening.command_status.text = audio_commands.status_label.text)
 	command_section.add_child(audio_commands)
-	command_section.add_child(button("TUNER", func() -> void: toggle_drawer("TUNER")))
+	var command_help: VBoxContainer = section("AUDIO_COMMANDS_GUIDE")
+	for key: String in ["AUDIO_COMMANDS_WAKE", "AUDIO_COMMANDS_HELP", "AUDIO_COMMANDS_LIMIT"]:
+		command_help.add_child(label(key, 18))
+	menu_link(command_section, "AUDIO_COMMANDS_GUIDE")
+	menu_link(command_section, "TUNER")
 	listening.listener.observation.connect(audio_commands.observe)
 	var keys: VBoxContainer = section("KEYBOARD")
 	keys.add_child(label("KEYBOARD_LAYOUT"))
@@ -1717,7 +1709,7 @@ func build_drawers() -> void:
 		keyboard.octave = int(value)
 		save_preferences())
 	number_field(keys, octave_picker, "KEYBOARD_OCTAVE")
-	keys.add_child(label("KEYBOARD_EXPLAIN", 18))
+	menu_link(keys, "HELP")
 	var help: VBoxContainer = section("HELP")
 	help.add_child(button("WELCOME", func() -> void: toggle_drawer("WELCOME")))
 	keyboard_help = label("KEYBOARD_HELP_LOWER", 18)
@@ -1725,30 +1717,33 @@ func build_drawers() -> void:
 		help.add_child(label(key, 20))
 	help.add_child(label("TOUCH_HELP"))
 	help.add_child(label("PLAYER_SHORTCUTS"))
+	for key: String in ["INPUT_PIANO_HELP", "INPUT_TAB_HELP", "KEYBOARD_EXPLAIN"]:
+		help.add_child(label(key, 18))
 	help.add_child(keyboard_help)
 	help.add_child(button("KEYBOARD", func() -> void: toggle_drawer("KEYBOARD")))
 	var about: VBoxContainer = section("ABOUT")
 	var version_label: Label = label("ABOUT_VERSION", 18)
 	version_label.text = tr("ABOUT_VERSION") % ProjectSettings.get_setting("application/config/version")
 	about.add_child(version_label)
-	about.add_child(label("ABOUT_TEXT", 18))
-	about.add_child(button("OPEN_SOURCE", func() -> void: host.open_url("https://github.com/bluehexagons/libretabs")))
-	about.add_child(button("REPORT_ISSUE", func() -> void: host.open_url("https://github.com/bluehexagons/libretabs/issues")))
-	about.add_child(button("REPORT_SECURITY", func() -> void: host.open_url("https://github.com/bluehexagons/libretabs/security/advisories/new")))
+	var links: MenuGrid = menu_fields(about)
+	links.add_child(button("OPEN_SOURCE", func() -> void: host.open_url("https://github.com/bluehexagons/libretabs")))
+	links.add_child(button("REPORT_ISSUE", func() -> void: host.open_url("https://github.com/bluehexagons/libretabs/issues")))
+	links.add_child(button("REPORT_SECURITY", func() -> void: host.open_url("https://github.com/bluehexagons/libretabs/security/advisories/new")))
 	build_display_menu()
-	about.add_child(button("NOTICES", show_notices))
+	links.add_child(button("NOTICES", show_notices))
+	for action: Button in links.get_children(): action.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	offline = label("OFFLINE_PENDING", 18)
 	about.add_child(offline)
 
 func settings_group(parent: Node, key: String, icon_key: String) -> SettingsGroup:
 	var group: SettingsGroup = SettingsGroup.new()
 	parent.add_child(group)
-	group.configure(tr(key), UIIcons.get_icon(icon_key))
+	group.configure(tr(key) if not key.is_empty() else "", UIIcons.get_icon(icon_key))
 	return group
 
 func build_display_menu() -> void:
 	var display: VBoxContainer = section("DISPLAY")
-	display.add_theme_constant_override("separation", 20)
+	display.add_theme_constant_override("separation", 10)
 	var readability: SettingsGroup = settings_group(display, "DISPLAY_READABILITY", "SCORE_VIEW")
 	scale_picker = CaptionOption.new()
 	scale_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
@@ -1775,7 +1770,6 @@ func build_display_menu() -> void:
 	shape_cue_check.tooltip_text = tr("NOTE_SHAPE_CUES_HELP")
 	shape_cue_check.toggled.connect(set_shape_cues)
 	readability.add_child(shape_cue_check)
-	readability.add_child(label("NOTE_SHAPE_CUES_SUMMARY", 18))
 	var colors: SettingsGroup = settings_group(display, "DISPLAY_COLORS", "DISPLAY")
 	appearance_picker = CaptionOption.new()
 	appearance_picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
@@ -1792,8 +1786,10 @@ func build_display_menu() -> void:
 	background_picker.item_selected.connect(change_background_style)
 	background_picker.tooltip_text = tr("BACKGROUND_STYLE_HELP")
 	colors.field(tr("BACKGROUND_STYLE")).add_child(background_picker)
-	colors.add_child(label("BACKGROUND_STYLE_HELP", 18))
-	var placement: SettingsGroup = settings_group(display, "DISPLAY_PLACEMENT", "INTERFACE")
+	var display_links: MenuGrid = menu_fields(display)
+	menu_link(display_links, "DISPLAY_CONTROLS")
+	menu_link(display_links, "DISPLAY_MOTION")
+	var placement: SettingsGroup = settings_group(section("DISPLAY_CONTROLS"), "", "")
 	control_position_picker = CaptionOption.new()
 	control_position_picker.custom_minimum_size.y = 56
 	control_position_picker.fit_to_longest_item = false
@@ -1817,9 +1813,9 @@ func build_display_menu() -> void:
 		if persist_preferences and not host.save_display_choice("handedness", handedness): set_status("STORAGE_SESSION"))
 	handedness_picker.tooltip_text = tr("CONTROL_LAYOUT_HELP")
 	placement.field(tr("HANDEDNESS")).add_child(handedness_picker)
-	control_layout_note = label("CONTROL_LAYOUT_SUMMARY", 18)
+	control_layout_note = label("INTERFACE_EDGE_AUTO", 16)
 	placement.add_child(control_layout_note)
-	var motion: SettingsGroup = settings_group(display, "DISPLAY_MOTION", "PAGE_FOLLOW")
+	var motion: VBoxContainer = section("DISPLAY_MOTION")
 	motion_check = check("REDUCED_MOTION", false)
 	motion_check.tooltip_text = tr("MOTION_HELP")
 	motion_check.toggled.connect(func(value: bool) -> void:
@@ -1862,20 +1858,19 @@ func volume_control(parent: Node, key: String, initial: float, instrument: bool)
 
 func build_tv_menu() -> void:
 	var content: VBoxContainer = section("TV_VIEW")
-	content.add_child(label("TV_INTRO", 18))
-	content.add_child(label("TV_ZOOM_HELP", 18))
-	build_tv_zoom(content)
 	theater_toggle = button("TV_ENTER", enter_tv)
 	content.add_child(theater_toggle)
+	build_tv_zoom(content)
 	theater_keep_check = check("THEATER_KEEP_CONTROLS", theater_keep_controls)
 	theater_keep_check.tooltip_text = tr("THEATER_CONTROLS_HELP")
 	theater_keep_check.toggled.connect(set_theater_controls)
 	content.add_child(theater_keep_check)
-	content.add_child(label("THEATER_CONTROLS_HELP", 16))
-	content.add_child(label("TV_SETUP", 18))
-	content.add_child(button("TV_APPLE_HELP", func() -> void: host.open_url("https://support.apple.com/102661")))
-	content.add_child(button("TV_ANDROID_HELP", func() -> void: host.open_url("https://support.google.com/googlehome/answer/7169790")))
-	content.add_child(label("TV_TIMING", 18))
+	menu_link(content, "THEATER_HELP")
+	var help: VBoxContainer = section("THEATER_HELP")
+	help.add_child(label("TV_SETUP", 18))
+	help.add_child(button("TV_APPLE_HELP", func() -> void: host.open_url("https://support.apple.com/102661")))
+	help.add_child(button("TV_ANDROID_HELP", func() -> void: host.open_url("https://support.google.com/googlehome/answer/7169790")))
+	help.add_child(label("TV_TIMING", 18))
 
 func enter_tv() -> void:
 	if song == null or importer != null: return
@@ -1918,8 +1913,10 @@ func update_fullscreen() -> void:
 
 func build_capture_menu() -> void:
 	var content: VBoxContainer = section("CAPTURE")
-	content.add_child(label("CAPTURE_HELP", 18))
-	content.add_child(button("CAPTURE_ENTER", enter_capture))
+	var start: Button = button("CAPTURE_ENTER", enter_capture)
+	start.tooltip_text = tr("CAPTURE_HELP")
+	content.add_child(start)
+	var fields: MenuGrid = menu_fields(content)
 	var definitions: Dictionary = {
 		"capture_notation": [["both", "tab", "staff"], ["NOTATION_BOTH", "NOTATION_TAB", "NOTATION_STAFF"]],
 		"capture_background": [["transparent", "green", "solid"], ["CAPTURE_TRANSPARENT", "CAPTURE_GREEN", "CAPTURE_SOLID"]],
@@ -1928,7 +1925,7 @@ func build_capture_menu() -> void:
 		"capture_title": [["off", "on"], ["CAPTURE_TITLE_OFF", "CAPTURE_TITLE_ON"]]
 	}
 	for key: String in definitions:
-		content.add_child(label(key.to_upper(), 18))
+		var field: VBoxContainer = menu_field(fields, key.to_upper())
 		var picker: OptionButton = CaptionOption.new()
 		picker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 		picker.fit_to_longest_item = false
@@ -1946,8 +1943,11 @@ func build_capture_menu() -> void:
 		picker.item_selected.connect(func(index: int) -> void:
 			if persist_preferences and not host.save_display_choice(key, str(values[index])): set_status("STORAGE_SESSION"))
 		capture_choices[key] = picker
-		content.add_child(picker)
-	content.add_child(label("CAPTURE_SETUP", 18))
+		field.add_child(picker)
+	var help: VBoxContainer = section("CAPTURE_HELP_PAGE")
+	for key: String in ["CAPTURE_HELP", "CAPTURE_SETUP"]:
+		help.add_child(label(key, 18))
+	menu_link(content, "CAPTURE_HELP_PAGE")
 
 func build_capture_toolbar() -> void:
 	capture_toolbar = PanelContainer.new()
@@ -2076,7 +2076,7 @@ func toggle_drawer(key: String, remember: bool = true) -> void:
 	if key in ["WELCOME", "TUNER"]: pause()
 	release_playing_inputs()
 	if not menu_overlay.visible: previous_focus = get_viewport().gui_get_focus_owner()
-	menu_back.visible = key != "MENU"
+	menu_back.visible = key not in ["MENU", "SETTINGS"] or not drawer_history.is_empty()
 	if printer != null and key != "PRINT": printer.cancelled = true
 	opened_drawer = key
 	menu_overlay.show()
@@ -2273,20 +2273,28 @@ func change_view() -> void:
 func build_music_layout_controls(parent: Control, quick: bool) -> void:
 	for key: String in MUSIC_LAYOUT_VALUES:
 		var picker: OptionButton = CaptionOption.new()
-		picker.custom_minimum_size = Vector2(220 if quick else 150, 56)
+		picker.custom_minimum_size = Vector2(220 if quick else 0, 48 if not quick else 56)
 		picker.fit_to_longest_item = false
 		picker.tooltip_text = tr("MUSIC_" + key.to_upper() + "_HELP")
-		if key == "lines": picker.add_icon_item(UIIcons.get_icon("VIEW_SCROLL"), tr("VIEW_SCROLL"))
+		if key == "lines":
+			if quick: picker.add_icon_item(UIIcons.get_icon("VIEW_SCROLL"), tr("VIEW_SCROLL"))
+			else: picker.add_item(tr("SCORE_MODE_SCROLL"))
 		for value: int in MUSIC_LAYOUT_VALUES[key]:
-			var caption: String = tr("MUSIC_PAGE_LINE") if key == "lines" and value == 1 else tr("MUSIC_PAGE_LINES" if key == "lines" else "MUSIC_" + key.to_upper() + ("_SHORT" if quick else "")) % value
-			picker.add_icon_item(UIIcons.get_icon("MUSIC_" + key.to_upper()), caption)
+			if quick:
+				var caption: String = tr("MUSIC_PAGE_LINE") if key == "lines" and value == 1 else tr("MUSIC_PAGE_LINES" if key == "lines" else "MUSIC_" + key.to_upper() + "_SHORT") % value
+				picker.add_icon_item(UIIcons.get_icon("MUSIC_" + key.to_upper()), caption)
+			elif key == "lines":
+				picker.add_item(tr("SCORE_ONE_LINE") if value == 1 else tr("SCORE_LINE_COUNT") % value)
+			else:
+				picker.add_item(tr("SCALE_VALUE") % value)
 		picker.item_selected.connect(func(index: int) -> void:
 			if key == "lines" and index == 0:
 				view_picker.select(0)
 				change_view()
 				apply_music_layout()
 			else: change_music_layout(key, int(MUSIC_LAYOUT_VALUES[key][index - (1 if key == "lines" else 0)])))
-		parent.add_child(picker)
+		if quick: parent.add_child(picker)
+		else: menu_field(parent, "MUSIC_FIELD_" + key.to_upper()).add_child(picker)
 		if not music_layout_controls.has(key): music_layout_controls[key] = []
 		music_layout_controls[key].append(picker)
 		if quick: quick_music_layout.append(picker)
@@ -2356,25 +2364,21 @@ func rebuild_notation_rows_editor() -> void:
 			notation_rows[index].type = NotationRows.TYPES[selected]
 			apply_notation_rows())
 		header.add_child(type)
-		var actions: VBoxContainer = VBoxContainer.new()
-		actions.add_theme_constant_override("separation", 8)
-		row.add_child(actions)
-		var order_actions: HFlowContainer = HFlowContainer.new()
-		order_actions.add_theme_constant_override("h_separation", 8)
-		order_actions.add_theme_constant_override("v_separation", 8)
-		actions.add_child(order_actions)
+		var order_actions: MenuGrid = menu_fields(row, 3.5)
+		order_actions.max_columns = 3
 		var up: Button = button("MOVE_ROW_UP", func() -> void: move_notation_row(index, -1))
 		var down: Button = button("MOVE_ROW_DOWN", func() -> void: move_notation_row(index, 1))
 		up.text = tr("ROW_UP")
 		down.text = tr("ROW_DOWN")
 		up.disabled = index == 0
 		down.disabled = index == notation_rows.size() - 1
-		order_actions.add_child(up)
-		order_actions.add_child(down)
-		var size_actions: HFlowContainer = HFlowContainer.new()
-		size_actions.add_theme_constant_override("h_separation", 8)
-		size_actions.add_theme_constant_override("v_separation", 8)
-		actions.add_child(size_actions)
+		var remove: Button = button("REMOVE_NOTATION_ROW", func() -> void: remove_notation_row(index))
+		remove.text = tr("REMOVE")
+		remove.disabled = notation_rows.size() == 1
+		for action: Button in [up, down, remove]:
+			action.custom_minimum_size.y = 48
+			action.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			order_actions.add_child(action)
 		var height: SpinBox = SpinBox.new()
 		height.min_value = NotationRows.MIN_HEIGHT
 		height.max_value = NotationRows.MAX_HEIGHT
@@ -2383,11 +2387,7 @@ func rebuild_notation_rows_editor() -> void:
 		height.suffix = tr("PIXELS_SHORT")
 		height.tooltip_text = tr("NOTATION_ROW_HEIGHT")
 		height.value_changed.connect(func(value: float) -> void: update_notation_height(index, int(value)))
-		number_field(size_actions, height, "NOTATION_ROW_HEIGHT")
-		var remove: Button = button("REMOVE_NOTATION_ROW", func() -> void: remove_notation_row(index))
-		remove.text = tr("REMOVE")
-		remove.disabled = notation_rows.size() == 1
-		size_actions.add_child(remove)
+		number_field(row, height, "NOTATION_ROW_HEIGHT")
 
 func add_notation_row(type: String) -> void:
 	if notation_rows.size() >= NotationRows.MAX_ROWS: return
@@ -2428,9 +2428,11 @@ func apply_notation_rows() -> void:
 		score.set_notation_rows(notation_rows)
 		update_main_scroll.call_deferred()
 	if persist_preferences and not host.save_notation_rows(notation_rows):
-		if notation_rows_notice != null: notation_rows_notice.text = tr("NOTATION_ROWS_SESSION")
+		if notation_rows_notice != null:
+			notation_rows_notice.text = tr("NOTATION_ROWS_SESSION")
+			notation_rows_notice.show()
 	elif notation_rows_notice != null:
-		notation_rows_notice.text = tr("NOTATION_ROWS_SAVED")
+		notation_rows_notice.hide()
 
 func turn_page(direction: int) -> void:
 	var previous_page: int = score.page_index
@@ -2504,8 +2506,6 @@ func apply_appearance() -> void:
 	if catalog_search != null:
 		catalog_search.right_icon = UIIcons.get_tinted_icon("SONG_SEARCH", UIAppearance.color("ink", dark_mode, midnight))
 		catalog_search.add_theme_color_override("font_placeholder_color", UIAppearance.color("muted", dark_mode, midnight))
-	for card: PanelContainer in welcome_cards:
-		card.add_theme_stylebox_override("panel", UIAppearance.role_style("reading", dark_mode, "normal", midnight))
 	backdrop.set_palette(dark_mode, midnight, background_style)
 	brand_label.add_theme_font_override("font", UIAppearance.ui_font(font_style, true))
 	song_title.add_theme_font_override("font", UIAppearance.ui_font(font_style, true))
@@ -2516,7 +2516,8 @@ func apply_appearance() -> void:
 	appearance_picker.select(["system", "light", "dark", "midnight"].find(appearance_mode))
 	background_picker.select(ThemeBackdrop.STYLES.find(background_style))
 	OptionMenuFit.set_disabled(background_picker, midnight)
-	drawer.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 16, midnight))
+	drawer.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 12, midnight))
+	drawer_title.add_theme_font_override("font", UIAppearance.ui_font(font_style, true))
 	picker_panel.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 12, midnight))
 	paper.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 8, midnight))
 	dock_panel.add_theme_stylebox_override("panel", UIAppearance.panel_style(dark_mode, 12, midnight))
@@ -3218,7 +3219,6 @@ func update_loop_controls() -> void:
 	var range_text: String = tr("LOOP_SELECTED_MEASURE") % first if first == last else tr("LOOP_SELECTED") % [first, last]
 	loop_summary.text = (tr("LOOP_ENABLED_MEASURE") % first if first == last else tr("LOOP_ENABLED_RANGE") % [first, last]) if enabled else tr("LOOP_OFF")
 	repeat_off_button.visible = enabled
-	repeat_measure_help.visible = not enabled
 	loop_toggle.text = tr("DISABLE_LOOP" if enabled else "ENABLE_LOOP")
 	loop_toggle.tooltip_text = tr("TIP_DISABLE_LOOP" if enabled else "TIP_ENABLE_LOOP")
 	loop_button.set_pressed_no_signal(enabled)
@@ -3602,11 +3602,13 @@ func load_preferences() -> void:
 	var result: Dictionary = host.load_practice_settings() if persist_preferences else {"values": PracticeSettings.DEFAULTS, "status": "ok"}
 	apply_preferences(result.values)
 	settings_notice.text = tr("SETTINGS_SAVED" if result.status == "ok" else "SETTINGS_RECOVERY")
+	settings_notice.visible = result.status != "ok"
 
 func save_preferences() -> void:
 	if not preferences_ready or not persist_preferences: return
 	var saved: bool = host.save_practice_settings(preference_values())
 	settings_notice.text = tr("SETTINGS_SAVED" if saved else "SETTINGS_RECOVERY")
+	settings_notice.visible = not saved
 	if not saved: set_status("SETTINGS_RECOVERY")
 
 func reset_preferences() -> void:
@@ -3656,6 +3658,7 @@ func reset_preferences() -> void:
 	apply_preferences(PracticeSettings.DEFAULTS)
 	persist_preferences = previous_persistence
 	settings_notice.text = tr("SETTINGS_RESET" if success else "SETTINGS_RESET_FAILED")
+	settings_notice.show()
 	if not success: set_status("SETTINGS_RESET_FAILED")
 	if opened_drawer == "RESET_SETTINGS": go_back()
 	else: toggle_drawer("SETTINGS", false)
@@ -3693,7 +3696,7 @@ func update_learning_controls() -> void:
 	catalog_learned_count.text = tr("LEARNING_LIBRARY_COUNT") % [songs_learned, BUILT_IN_LIBRARY.size()]
 	learning_notice.visible = not progress_saved
 	if learning_settings_notice != null:
-		learning_settings_notice.text = tr("LEARNING_SAVED" if progress_saved else "LEARNING_RECOVERY")
+		learning_settings_notice.visible = not progress_saved
 		var exercises: int = 0
 		var imports: int = 0
 		for id: String in learning.ids():
@@ -3775,36 +3778,39 @@ func animate_page() -> void:
 
 func build_print_menu() -> void:
 	var menu: VBoxContainer = section("PRINT")
-	menu.add_child(label("PRINT_HELP", 18))
-	menu.add_child(label("PRINT_CONTENT"))
+	var format: MenuGrid = menu_fields(menu)
 	print_notation = CaptionOption.new()
 	print_notation.fit_to_longest_item = false
 	print_notation.custom_minimum_size.y = 56
 	for key: String in ["NOTATION_BOTH", "NOTATION_TAB", "NOTATION_STAFF"]: print_notation.add_item(tr(key))
-	menu.add_child(print_notation)
-	menu.add_child(label("PRINT_PAPER"))
+	menu_field(format, "PRINT_CONTENT").add_child(print_notation)
 	print_paper = CaptionOption.new()
 	print_paper.fit_to_longest_item = false
 	print_paper.custom_minimum_size.y = 56
 	for key: String in ["PAPER_A4", "PAPER_LETTER"]: print_paper.add_item(tr(key))
-	menu.add_child(print_paper)
+	menu_field(format, "PRINT_PAPER").add_child(print_paper)
 	print_first = SpinBox.new()
 	print_last = SpinBox.new()
 	for item: SpinBox in [print_first, print_last]:
-		menu.add_child(label("FROM" if item == print_first else "THROUGH", 18))
+		var field: VBoxContainer = menu_field(menu, "FROM" if item == print_first else "THROUGH")
 		item.min_value = 1
 		item.max_value = 512
 		item.custom_minimum_size.y = 56
-		number_field(menu, item, "LOOP_FIRST" if item == print_first else "LOOP_LAST")
+		number_field(field, item, "LOOP_FIRST" if item == print_first else "LOOP_LAST")
+	var actions: MenuGrid = menu_fields(menu)
 	print_prepare = button("PRINT_PREPARE", prepare_print)
-	menu.add_child(print_prepare)
+	print_prepare.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	actions.add_child(print_prepare)
 	print_save = button("PRINT_SAVE", func() -> void: host.export_print(print_html, title))
 	print_save.disabled = true
-	menu.add_child(print_save)
-	print_status = label("PRINT_LOCAL", 18)
+	print_save.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	actions.add_child(print_save)
+	print_status = label("PRINT_LOCAL", 16)
 	menu.add_child(print_status)
-	menu.add_child(button("PRINT_CANCEL", func() -> void:
-		if printer != null: printer.cancelled = true))
+	print_cancel = button("PRINT_CANCEL", func() -> void:
+		if printer != null: printer.cancelled = true)
+	print_cancel.hide()
+	menu.add_child(print_cancel)
 	for picker: OptionButton in [print_notation, print_paper]:
 		picker.item_selected.connect(func(_value: int) -> void: invalidate_print())
 	for item: SpinBox in [print_first, print_last]:
@@ -3824,6 +3830,7 @@ func prepare_print() -> void:
 	var plan: Dictionary = PrintLayout.plan(song, part, notation, paper_size, int(print_first.value) - 1, int(print_last.value) - 1)
 	if not String(plan.error).is_empty(): print_status.text = tr(plan.error); return
 	print_prepare.disabled = true
+	print_cancel.show()
 	printer = PrintRenderer.new()
 	add_child(printer)
 	printer.progress.connect(func(page: int, total: int) -> void: print_status.text = tr("PRINT_PROGRESS") % [page, total])
@@ -3833,6 +3840,7 @@ func prepare_print() -> void:
 	printer.queue_free()
 	printer = null
 	print_prepare.disabled = false
+	print_cancel.hide()
 	if images.is_empty():
 		print_status.text = tr("CANCELLED" if cancelled else "PRINT_FAILED")
 		return

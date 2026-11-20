@@ -145,8 +145,9 @@ static func fit(app: Control) -> void:
 	app.status.custom_minimum_size.y = 0
 	app.dock.vertical = side_dock or (app.size.x < 900 and not app.tight_controls)
 	var menu_width: float = 800 if app.opened_drawer in ["MENU", "SETTINGS"] and app.size.x >= 1000 else 560
-	if app.opened_drawer == "TEMPO" and app.size.x >= 700 and expanded_controls: menu_width = 800
-	app.tempo_columns.columns = 2 if minf(app.size.x, menu_width) >= 700 and expanded_controls else 1
+	var compact_menu_header: bool = minf(app.size.x, menu_width) < 480 or not expanded_controls
+	app.menu_back.text = "" if compact_menu_header else app.tr("MENU_BACK")
+	app.menu_close.text = "" if compact_menu_header else app.tr("CLOSE")
 	var menu_height: float = app.size.y
 	if app.opened_drawer == "LOOP_TOOL" and expanded_controls:
 		menu_width = 416
@@ -156,15 +157,13 @@ static func fit(app: Control) -> void:
 	var song_columns: int = 2 if app.size.x >= 600 and app.theme.default_font_size < 30 else 1
 	if app.catalog_filter_grid != null: app.catalog_filter_grid.columns = song_columns
 	app.more_song_grid.columns = song_columns
-	if app.welcome_step_pair != null: app.welcome_step_pair.vertical = song_columns == 1
-	if app.layout_preset_grid != null: app.layout_preset_grid.columns = song_columns
 	if app.layout_button != null: app.layout_button.visible = not app.tv_active and app.size.x >= 900
 	if app.tuner_button != null: app.tuner_button.visible = not app.tv_active and app.size.x >= 900 and app.size.y >= 600
 	app.interface_button.visible = not app.tv_active and not side_dock and app.size.x >= 1440 and expanded_controls
 	app.interface_navigation.visible = app.presentation.rail
 	var automatic_edge: bool = app.presentation.minimal or app.presentation.touch or app.presentation.rail
 	OptionMenuFit.set_disabled(app.control_position_picker, automatic_edge)
-	app.control_layout_note.text = app.tr("INTERFACE_EDGE_AUTO" if automatic_edge else "CONTROL_LAYOUT_SUMMARY")
+	app.control_layout_note.visible = automatic_edge
 	if app.presentation.minimal or app.presentation.touch or app.presentation.rail:
 		app.import_button.hide()
 		app.tv_button.hide()
@@ -240,9 +239,6 @@ static func fit(app: Control) -> void:
 		var inset: float = 8 if app.size.x < 600 else 24
 		app.drawer.size = Vector2(minf(app.size.x - inset * 2, 720), minf(app.size.y - inset * 2, 760))
 		app.drawer.position = (app.size - app.drawer.size) / 2
-	var small_menu_header: bool = app.theme.default_font_size >= 30 and (app.size.x < 600 or app.size.y < 500)
-	app.menu_back.text = "" if small_menu_header else app.tr("MENU_BACK")
-	app.menu_close.text = "" if small_menu_header else app.tr("CLOSE")
 	for control: Control in [app.header_margin, app.dock_margin]:
 		control.show()
 		control.modulate.a = 0.0 if app.tv_tucked else 1.0
@@ -451,6 +447,7 @@ static func fit_controls(app: Control, node: Node) -> void:
 	if node != app.page_navigation and (node is HFlowContainer or (node is BoxContainer and not node.vertical)):
 		for child: Node in node.get_children():
 			if child is Button:
+				if child in [app.menu_back, app.menu_close]: continue
 				# OptionButton owns its selected label; never expand a compact row
 				# to the full translated item width. Its picker retains the full text.
 				if child is OptionButton: continue

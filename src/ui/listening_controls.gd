@@ -38,7 +38,7 @@ var target_octave: SpinBox
 var lock_target: Button
 
 func _ready() -> void:
-	add_theme_constant_override("separation", 10)
+	add_theme_constant_override("separation", 6)
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	listener = PitchListener.new()
 	add_child(listener)
@@ -46,17 +46,14 @@ func _ready() -> void:
 	listener.capture.changed.connect(func() -> void: quick_controls_changed.emit())
 	listener.observation.connect(show_observation)
 	listener.setup_changed.connect(update_setup)
-	var tuning_fields: MenuGrid = MenuGrid.new()
-	tuning_fields.max_columns = 2
-	tuning_fields.minimum_ems = 10
+	var tuning_fields: VBoxContainer = VBoxContainer.new()
+	tuning_fields.add_theme_constant_override("separation", 4)
 	add_child(tuning_fields)
 	instrument_picker = choice("INPUT_MIC_INSTRUMENT", PitchListener.PROFILE_KEYS, func(index: int) -> void:
 		listener.set_profile(index)
 		refresh_targets()
 		timing_check.button_pressed = false
 		preference_changed.emit())
-	for index: int in range(instrument_picker.item_count):
-		instrument_picker.set_item_icon(index, UIIcons.get_icon("INPUT_RANGE" if index <= 1 else ("INPUT_MIC_START" if index == PitchListener.Profile.VOICE else "SONG_INSTRUMENT")))
 	instrument_picker.tooltip_text = tr("INPUT_INSTRUMENT_HELP")
 	group_field(tuning_fields, get_child(instrument_picker.get_index() - 1), instrument_picker)
 	target_picker = choice("INPUT_TUNER_TARGET", [], func(index: int) -> void:
@@ -65,7 +62,7 @@ func _ready() -> void:
 		if target == -2: update_custom_target()
 		update_reading())
 	var targets: HBoxContainer = HBoxContainer.new()
-	var target_label: Node = get_child(target_picker.get_index() - 1)
+	var target_label: Label = get_child(target_picker.get_index() - 1)
 	add_child(targets)
 	target_picker.reparent(targets)
 	target_picker.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -79,6 +76,7 @@ func _ready() -> void:
 		target_picker.select(index))
 	lock_target.text = ""
 	lock_target.tooltip_text = tr("INPUT_TUNER_LOCK")
+	lock_target.accessibility_name = lock_target.tooltip_text
 	lock_target.custom_minimum_size.x = 56
 	group_field(tuning_fields, target_label, targets)
 	custom_target = HBoxContainer.new()
@@ -186,14 +184,34 @@ func _ready() -> void:
 	for control: Node in get_children().slice(help_start): control.reparent(help)
 	help.hide()
 	help_toggle.toggled.connect(func(enabled: bool) -> void: help.visible = enabled)
+	var related: MenuGrid = MenuGrid.new()
+	related.max_columns = 2
+	related.minimum_ems = 5
+	add_child(related)
+	move_child(related, settings_toggle.get_index())
+	for button: Button in [settings_toggle, help_toggle]:
+		button.reparent(related)
+		button.icon = null
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	update_microphone()
 
-func group_field(grid: MenuGrid, title: Node, control: Control) -> void:
-	var field: VBoxContainer = VBoxContainer.new()
-	field.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	grid.add_child(field)
+func group_field(parent: VBoxContainer, title: Label, control: Control) -> void:
+	var field: BoxContainer = BoxContainer.new()
+	field.add_theme_constant_override("separation", 6)
+	parent.add_child(field)
 	title.reparent(field)
+	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	title.size_flags_horizontal = Control.SIZE_FILL
 	control.reparent(field)
+	control.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var reflow: Callable = func() -> void:
+		var font_size: int = title.get_theme_font_size("font_size")
+		var width: float = title.get_theme_font("font").get_string_size(title.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+		field.vertical = field.size.x < width + font_size * 9
+		title.custom_minimum_size.x = 0 if field.vertical else ceilf(width)
+	field.resized.connect(reflow)
+	field.theme_changed.connect(reflow)
+	reflow.call()
 
 func preference_values() -> Dictionary:
 	return {"tuner_profile": PitchListener.PROFILE_IDS[listener.profile], "tuner_sensitivity": roundi(sensitivity.value), "tuner_reference": listener.reference}

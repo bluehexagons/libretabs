@@ -86,7 +86,7 @@ func run() -> void:
 	check(app.get("title") == TranslationServer.translate("LIBRARY_ODE_TO_JOY"), "default library opens with Ode to Joy")
 	check(app.get("preset_choice_buttons").size() == 8, "all eight practice layouts remain available in their own menu")
 	check(app.get("opened_drawer") == "WELCOME" and app.get("startup_help_check").button_pressed, "first startup opens quick start with the opt-out enabled")
-	check(app.get("welcome_cards").size() == 3 and not app.get("welcome_step_pair").vertical, "wide quick start shows three short guidance cards")
+	check(app.get("welcome_read").is_visible_in_tree(), "Quick start includes a short reading cue")
 	for factor: float in [1.0, 2.0]:
 		app.call("apply_scale", factor)
 		for viewport: Vector2i in [Vector2i(360, 640), Vector2i(480, 320), Vector2i(1280, 720)]:
@@ -98,7 +98,6 @@ func run() -> void:
 			var drawer: PanelContainer = app.get("drawer")
 			check(drawer.get_global_rect().position.y >= -1 and drawer.get_global_rect().end.y <= viewport.y + 1, "quick start dialog stays inside %s and %s text scale: %s" % [viewport, factor, drawer.get_global_rect()])
 			check(practice.get_global_rect().end.y <= scroll.get_global_rect().end.y + 1 and practice.get_global_rect().end.x <= viewport.x + 1, "first practice action is visible before scrolling at %s and %s text scale" % [viewport, factor])
-			check(app.get("welcome_step_pair").vertical == (viewport.x < 600 or factor >= 2), "guidance cards reflow at %s and %s text scale" % [viewport, factor])
 	root.size = Vector2i(1100, 850)
 	app.call("apply_scale", 1.0)
 	app.call("responsive")
@@ -904,9 +903,9 @@ func run() -> void:
 	for _frame: int in range(10): await process_frame
 	check(app.get("header_actions").get_child(0) == app.get("menu_button") and app.get("seek_navigation").get_child(0) == app.get("seek_label"), "left-handed layout mirrors header and seek reach order")
 	check(app.get("dock").get_child(0) == app.get("quick_row") and app.get("transport_row").get_child(0) == app.get("metro_button"), "left-handed layout mirrors both player-control groups")
-	app.call("toggle_drawer", "DISPLAY")
+	app.call("toggle_drawer", "DISPLAY_CONTROLS")
 	for _frame: int in range(20): await process_frame
-	check(app.get("drawer").position.x == 0 and app.get("control_layout_note").text == TranslationServer.translate("CONTROL_LAYOUT_SUMMARY"), "left-handed menu edge and concise placement explanation are visible")
+	check(app.get("drawer").position.x == 0 and app.get("control_position_picker").is_visible_in_tree(), "left-handed menu edge and placement controls are visible")
 	check(app.get("control_position_picker").tooltip_text == TranslationServer.translate("CONTROL_LAYOUT_HELP") and app.get("handedness_picker").tooltip_text == TranslationServer.translate("CONTROL_LAYOUT_HELP"), "placement fields retain full handedness and small-screen help")
 	app.call("close_menu")
 	root.size = Vector2i(640, 320)
@@ -985,8 +984,7 @@ func run() -> void:
 	var tick_before: float = app.get("source_tick")
 	app.call("apply_appearance")
 	check(app.get("dark_mode") and app.get_theme_color("ink", "LibreTabs") == UIAppearance.color("ink", true), "dark palette applied to app and score")
-	for card: PanelContainer in app.get("welcome_cards"):
-		check((card.get_theme_stylebox("panel") as StyleBoxFlat).bg_color == UIAppearance.role_style("reading", true, "normal").bg_color, "quick start cards follow dark appearance")
+	check(app.get("welcome_read").get_theme_color("font_color") == UIAppearance.color("ink", true), "Quick start reading cue follows dark appearance")
 	check(score.get_theme_color("paper", "LibreTabs") == UIAppearance.color("paper", true), "engraving inherits dark paper")
 	check(app.get("source_tick") == tick_before and not app.is_processing(), "theme change preserves transport and idle processing")
 	app.call("change_appearance", 3)

@@ -21,11 +21,9 @@ func _ready() -> void:
 		set_enabled(value)
 		preference_changed.emit())
 	instructions.append(enabled_check)
-	instructions.append(caption("AUDIO_COMMANDS_HELP"))
-	instructions.append(caption("AUDIO_COMMANDS_WAKE"))
+	instructions.append(caption("AUDIO_COMMANDS_WAKE_SHORT"))
 	for _index: int in range(4): choices.append(caption("AUDIO_COMMANDS_OFF"))
 	action(self, "AUDIO_COMMANDS_CANCEL", cancel)
-	instructions.append(caption("AUDIO_COMMANDS_LIMIT"))
 	set_process(false)
 	refresh()
 
@@ -72,7 +70,6 @@ func refresh() -> void:
 	var root_pitch: int = model.anchor if model.anchor >= 0 else 64
 	var index: int = 0
 	for offset: int in AudioCommands.CHOICES:
-		var prefix: String = "AUDIO_COMMANDS_SHORT_" if model.phase in ["armed", "confirm"] else "AUDIO_COMMANDS_CHOICE_"
-		choices[index].text = tr(prefix + str(AudioCommands.CHOICES[offset]).to_upper()) % LivePlaying.note_name(root_pitch + offset)
+		choices[index].text = tr("AUDIO_COMMANDS_SHORT_" + str(AudioCommands.CHOICES[offset]).to_upper()) % LivePlaying.note_name(root_pitch + offset)
 		index += 1
 	status_changed.emit()
