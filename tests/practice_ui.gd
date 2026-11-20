@@ -1437,12 +1437,8 @@ func run() -> void:
 	listening.lock_target.pressed.emit()
 	check(listening.target == 69 and listening.target_picker.selected == listening.target_picker.item_count - 1, "lock target works without a guitar-specific menu index")
 	listening.listener.capture.stop()
-	# Entering practice waits for permission/connection; failures remain in view.
+	# Replace only capture so the form still sees the real startup transitions.
 	app.get("input_show").button_pressed = false
-	var practice_requests: Array[int] = [0]
-	listening.practice_requested.connect(func() -> void: practice_requests[0] += 1)
-	# Keep the real form/listener consumers, replacing only device access with
-	# a capture that reproduces the synchronous OFF during first startup.
 	var previous_capture: MicrophoneInput = listening.listener.capture
 	var starting_capture: StartingMicrophone = StartingMicrophone.new()
 	listening.listener.add_child(starting_capture)
@@ -1452,40 +1448,21 @@ func run() -> void:
 			previous_capture.disconnect(signal_name, connection.callable)
 	listening.listener.capture = starting_capture
 	previous_capture.queue_free()
-	listening.practice_button.pressed.emit()
-	check(listening.practice_pending and practice_requests[0] == 0 and not listening.listen_check.button_pressed, "first microphone startup retains the practice request through its internal OFF status")
-	starting_capture.status = "INPUT_MIC_READY"
+	app.call("toggle_drawer", "TUNER")
+	listening.listen_check.button_pressed = true
+	check(listening.listen_check.button_pressed and not listening.practice_listening_active(), "the score switch stays on while capture connects")
+	starting_capture.enabled = false
+	starting_capture.status = "INPUT_MIC_DENIED"
 	starting_capture.changed.emit()
-	starting_capture.changed.emit()
-	check(not listening.practice_pending and practice_requests[0] == 1 and listening.listen_check.button_pressed and not app.get("menu_overlay").visible, "first successful microphone connection enables feedback and returns to practice exactly once")
-	listening.listen_check.button_pressed = false
-	app.get("input_show").button_pressed = false
-	starting_capture.stop()
-	listening.practice_button.pressed.emit()
-	starting_capture.stop()
+	check(not listening.listen_check.button_pressed and not app.get("input_show").button_pressed and listening.mic_status.visible, "denied access clears score listening and displays recovery")
 	starting_capture.enabled = true
 	starting_capture.status = "INPUT_MIC_READY"
 	starting_capture.changed.emit()
-	check(not listening.practice_pending and practice_requests[0] == 1 and not listening.listen_check.button_pressed, "canceling microphone startup prevents a late ready status from entering practice")
+	listening.tuner_check.button_pressed = false
+	listening.listen_check.button_pressed = true
+	check(not listening.listener.paused and listening.practice_listening_active() and app.get("opened_drawer") == "TUNER", "turning score listening on resumes the microphone and keeps the tuner open")
 	starting_capture.stop()
-	practice_requests[0] = 0
-	listening.listener.capture.enabled = true
-	listening.listener.capture.status = "INPUT_MIC_CONNECTING"
-	listening.listener.capture.changed.emit()
-	listening.practice_button.pressed.emit()
-	check(listening.practice_pending and practice_requests[0] == 0 and not app.get("input_show").button_pressed and not listening.listen_check.button_pressed, "microphone practice waits before enabling feedback or opening the keyboard")
-	listening.listener.capture.enabled = false
-	listening.listener.capture.status = "INPUT_MIC_DENIED"
-	listening.listener.capture.changed.emit()
-	check(not listening.practice_pending and not listening.listen_check.button_pressed and not app.get("input_show").button_pressed and practice_requests[0] == 0, "failed access retains tuner error and cancels practice request")
-	listening.listener.capture.enabled = true
-	listening.listener.capture.status = "INPUT_MIC_READY"
-	listening.listener.capture.changed.emit()
-	listening.listener.set_paused(true)
-	listening.tuner_check.set_pressed_no_signal(false)
-	listening.practice_button.pressed.emit()
-	check(not listening.listener.paused and listening.listen_check.button_pressed and not listening.practice_pending and practice_requests[0] == 1, "one practice action resumes listening, enables feedback and returns once")
-	listening.listener.capture.stop()
+	app.call("close_menu")
 	# Exercise invalidation while a print renderer is pending, without requiring
 	# a GPU frame in the headless suite. Native render completion is audited separately.
 	var print_changes: Array[Callable] = [

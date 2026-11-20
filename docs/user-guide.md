@@ -512,8 +512,8 @@ actions. Keyboard focus also scrolls controls into view.
    access. Choose **Acoustic piano** for a traditional piano or **Electronic piano**
    for an electronic piano heard through its speakers. A direct MIDI connection
    uses MIDI input instead. Room setup is optional.
-2. Sound one clear, steady note. The tuner shows a target note and needle: left
-   means low/flat, right means high/sharp. Aim for the center diamond. Uncertain
+2. Sound one clear, steady note. The tuner shows a target note and needle. Left
+   means low (flat), and right means high (sharp). Aim for the center. Uncertain
    input clears the needle. Choose automatic nearest-note tuning, a standard
    open string, or **Choose a note** to select a note and octave (C4 is middle C).
    The lock icon holds the current detected note as the target.
@@ -521,13 +521,14 @@ actions. Keyboard focus also scrolls controls into view.
    keeping the metronome and count-in audible. Saved volumes and playback position
    are preserved. The same switch is available beside the practice controls.
    Use headphones if the microphone picks up the clicks.
-4. **Use microphone in practice** starts or resumes listening and enables pitch
-   feedback together, then returns to the score. On paired piano staffs,
+4. Turn on **Show microphone notes on score**, then close the tuner. The switch
+   starts or resumes listening if needed, and the on-screen keyboard is a
+   separate choice. Turn the switch off to use the tuner by itself. On paired piano staffs,
    detected notes below middle C appear on the bass staff and matching notes
    appear beside their reference. Choose **Bass focus** to compare what you play
-   with the bass part. Press Play to start the comparison. Overlapping notes
-   in the selected part show the single-note limitation. You can turn feedback
-   off in **Input settings** and keep tuning.
+   with the bass part. Press Play to start the comparison. When notes overlap
+   in the selected part, comparison waits for a single note. **Playing inputs**
+   has a separate setting for comparison feedback.
 5. **Pause listening** temporarily pauses analysis and feedback without repeating
    permissions. **Resume listening** waits for a fresh note. The microphone icons
    beside the player provide the same actions, with help on long press or hover.

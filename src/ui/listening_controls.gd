@@ -2,8 +2,6 @@
 class_name ListeningControls
 extends PlayingInputForm
 
-signal practice_requested
-signal show_keyboard
 var live: LivePlaying
 var allow_notes: Callable
 signal stop_playback
@@ -33,8 +31,6 @@ var instrument_picker: OptionButton
 var settings_toggle: Button
 var settings_body: VBoxContainer
 var stop_button: Button
-var practice_button: Button
-var practice_pending: bool = false
 var playback_mute: CheckButton
 var custom_target: HBoxContainer
 var target_note: OptionButton
@@ -42,7 +38,7 @@ var target_octave: SpinBox
 var lock_target: Button
 
 func _ready() -> void:
-	add_theme_constant_override("separation", 8)
+	add_theme_constant_override("separation", 10)
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	listener = PitchListener.new()
 	add_child(listener)
@@ -50,6 +46,10 @@ func _ready() -> void:
 	listener.capture.changed.connect(func() -> void: quick_controls_changed.emit())
 	listener.observation.connect(show_observation)
 	listener.setup_changed.connect(update_setup)
+	var tuning_fields: MenuGrid = MenuGrid.new()
+	tuning_fields.max_columns = 2
+	tuning_fields.minimum_ems = 10
+	add_child(tuning_fields)
 	instrument_picker = choice("INPUT_MIC_INSTRUMENT", PitchListener.PROFILE_KEYS, func(index: int) -> void:
 		listener.set_profile(index)
 		refresh_targets()
@@ -58,12 +58,14 @@ func _ready() -> void:
 	for index: int in range(instrument_picker.item_count):
 		instrument_picker.set_item_icon(index, UIIcons.get_icon("INPUT_RANGE" if index <= 1 else ("INPUT_MIC_START" if index == PitchListener.Profile.VOICE else "SONG_INSTRUMENT")))
 	instrument_picker.tooltip_text = tr("INPUT_INSTRUMENT_HELP")
+	group_field(tuning_fields, get_child(instrument_picker.get_index() - 1), instrument_picker)
 	target_picker = choice("INPUT_TUNER_TARGET", [], func(index: int) -> void:
 		target = int(target_picker.get_item_metadata(index))
 		custom_target.visible = target == -2
 		if target == -2: update_custom_target()
 		update_reading())
 	var targets: HBoxContainer = HBoxContainer.new()
+	var target_label: Node = get_child(target_picker.get_index() - 1)
 	add_child(targets)
 	target_picker.reparent(targets)
 	target_picker.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -78,6 +80,7 @@ func _ready() -> void:
 	lock_target.text = ""
 	lock_target.tooltip_text = tr("INPUT_TUNER_LOCK")
 	lock_target.custom_minimum_size.x = 56
+	group_field(tuning_fields, target_label, targets)
 	custom_target = HBoxContainer.new()
 	add_child(custom_target)
 	target_note = CaptionOption.new()
@@ -95,28 +98,21 @@ func _ready() -> void:
 	target_octave.value_changed.connect(func(_value: float) -> void: update_custom_target())
 	custom_target.add_child(target_octave)
 	refresh_targets()
+	var reading: PanelContainer = PanelContainer.new()
+	reading.theme_type_variation = "TunerReading"
+	add_child(reading)
+	gauge = TunerGauge.new()
+	reading.add_child(gauge)
 	tuner_check = action(self, "INPUT_MIC_START", func() -> void: pass)
 	tuner_check.toggle_mode = true
 	tuner_check.toggled.connect(set_listening)
 	mic_status = caption("INPUT_MIC_OFF")
-	mic_level_text = caption("INPUT_LEVEL_UNAVAILABLE")
-	mic_level = ProgressBar.new()
-	mic_level.show_percentage = false
-	mic_level.custom_minimum_size.y = 12
-	mic_level.tooltip_text = tr("INPUT_LEVEL_HELP")
-	add_child(mic_level)
-	gauge = TunerGauge.new()
-	add_child(gauge)
+	listen_check = toggle("INPUT_LISTEN", false, set_practice_listening)
+	listen_check.tooltip_text = tr("INPUT_LISTEN_HELP")
 	playback_mute = toggle("INPUT_PLAYBACK_MUTE", false, func(muted: bool) -> void:
 		playback_mute_changed.emit(muted)
 		quick_controls_changed.emit())
 	playback_mute.tooltip_text = tr("INPUT_PLAYBACK_MUTE_HELP")
-	practice_button = action(self, "INPUT_PRACTICE_START", func() -> void:
-		if not listener.capture.enabled or listener.paused: tuner_check.button_pressed = true
-		# Starting capture first emits OFF while releasing the previous stream.
-		# Arm the request afterward so that internal reset cannot cancel it.
-		practice_pending = true
-		update_microphone())
 	settings_toggle = action(self, "INPUT_SETTINGS", func() -> void: pass)
 	settings_toggle.toggle_mode = true
 	settings_body = VBoxContainer.new()
@@ -125,6 +121,12 @@ func _ready() -> void:
 	settings_body.hide()
 	settings_toggle.toggled.connect(func(enabled: bool) -> void: settings_body.visible = enabled)
 	var settings_start: int = get_child_count()
+	mic_level_text = caption("INPUT_LEVEL_UNAVAILABLE")
+	mic_level = ProgressBar.new()
+	mic_level.show_percentage = false
+	mic_level.custom_minimum_size.y = 12
+	mic_level.tooltip_text = tr("INPUT_LEVEL_HELP")
+	add_child(mic_level)
 	mic_picker = choice("INPUT_MIC_DEVICE", ["INPUT_MIC_DEFAULT"], func(index: int) -> void:
 		listener.capture.stop()
 		listener.capture.selected = str(mic_picker.get_item_metadata(index))
@@ -136,6 +138,7 @@ func _ready() -> void:
 	sensitivity.min_value = 0
 	sensitivity.max_value = 100
 	sensitivity.value = 50
+	sensitivity.scrollable = false
 	sensitivity.custom_minimum_size.y = 44
 	sensitivity.tooltip_text = tr("INPUT_SENSITIVITY_HELP")
 	sensitivity.value_changed.connect(func(value: float) -> void:
@@ -162,11 +165,6 @@ func _ready() -> void:
 		listener.reference = value
 		listener.reset()
 		preference_changed.emit())
-	listen_check = toggle("INPUT_LISTEN", false, func(enabled: bool) -> void:
-		if live != null: live.release("microphone:0")
-		listener.reset()
-		if enabled: show_keyboard.emit())
-	listen_check.tooltip_text = tr("INPUT_LISTEN_HELP")
 	timing_check = toggle("INPUT_MIC_TIMING", false, func(_enabled: bool) -> void: listener.reset())
 	timing_check.tooltip_text = tr("INPUT_MIC_TIMING_HELP")
 	latency = number("INPUT_OFFSET", 0, 500, 0)
@@ -190,6 +188,13 @@ func _ready() -> void:
 	help_toggle.toggled.connect(func(enabled: bool) -> void: help.visible = enabled)
 	update_microphone()
 
+func group_field(grid: MenuGrid, title: Node, control: Control) -> void:
+	var field: VBoxContainer = VBoxContainer.new()
+	field.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid.add_child(field)
+	title.reparent(field)
+	control.reparent(field)
+
 func preference_values() -> Dictionary:
 	return {"tuner_profile": PitchListener.PROFILE_IDS[listener.profile], "tuner_sensitivity": roundi(sensitivity.value), "tuner_reference": listener.reference}
 
@@ -208,7 +213,6 @@ func apply_preferences(values: Dictionary) -> void:
 	update_reading()
 
 func set_listening(enabled: bool) -> void:
-	if not enabled: practice_pending = false
 	listener.set_paused(not enabled)
 	if enabled and not listener.capture.enabled:
 		stop_playback.emit()
@@ -218,6 +222,19 @@ func set_listening(enabled: bool) -> void:
 		listener.capture.start()
 	update_microphone()
 	quick_controls_changed.emit()
+
+func set_practice_listening(enabled: bool) -> void:
+	if enabled and (not listener.capture.enabled or listener.paused):
+		tuner_check.button_pressed = true
+		# Capture startup synchronously stops the previous stream first.
+		listen_check.set_pressed_no_signal(listener.capture.enabled)
+	sync_practice_listening()
+
+func practice_listening_active() -> bool:
+	return listen_check.button_pressed and listener.capture.enabled and listener.capture.status == "INPUT_MIC_READY" and not suspended and not listener.paused
+
+func sync_practice_listening() -> void:
+	if is_instance_valid(live): live.set_microphone_feedback(practice_listening_active())
 
 func refresh_targets() -> void:
 	if target_picker == null: return
@@ -241,8 +258,10 @@ func update_custom_target() -> void:
 func update_microphone() -> void:
 	if mic_status == null: return
 	mic_status.text = tr(listener.capture.status)
+	mic_status.visible = listener.capture.status not in ["INPUT_MIC_OFF", "INPUT_MIC_READY"]
 	var key: String = "INPUT_MIC_START" if not listener.capture.enabled else ("INPUT_MIC_RESUME" if listener.paused else "INPUT_MIC_PAUSE")
 	tuner_check.set_pressed_no_signal(listener.capture.enabled and not listener.paused)
+	tuner_check.theme_type_variation = &"Button" if tuner_check.button_pressed else &"TunerStart"
 	tuner_check.text = tr(key)
 	tuner_check.icon = UIIcons.get_icon("INPUT_MIC_START" if not listener.capture.enabled or listener.paused else "PAUSE")
 	stop_button.disabled = not listener.capture.enabled
@@ -258,15 +277,8 @@ func update_microphone() -> void:
 		mic_picker.add_item(tr("INPUT_MIC_MISSING"))
 		mic_picker.set_item_metadata(mic_picker.item_count - 1, listener.capture.selected)
 		mic_picker.select(mic_picker.item_count - 1)
-	# Keep permission/errors in view; enter practice only with a usable stream.
-	if practice_pending:
-		if listener.capture.enabled and listener.capture.status == "INPUT_MIC_READY" and not listener.paused:
-			practice_pending = false
-			listen_check.button_pressed = true
-			practice_requested.emit()
-		elif not listener.capture.enabled:
-			practice_pending = false
-	practice_button.disabled = practice_pending
+	if not listener.capture.enabled: listen_check.set_pressed_no_signal(false)
+	sync_practice_listening()
 	# Capture status may change without a new pitch observation.
 	update_reading()
 
@@ -280,7 +292,7 @@ func show_observation(result: Dictionary) -> void:
 	last_result = result.duplicate()
 	update_reading()
 	if not is_instance_valid(live): return
-	var permitted: bool = listen_check != null and listen_check.button_pressed and not suspended and (not allow_notes.is_valid() or allow_notes.call())
+	var permitted: bool = practice_listening_active() and (not allow_notes.is_valid() or allow_notes.call())
 	if listener.setup_state in ["INPUT_SETUP_QUIET", "INPUT_SETUP_NOTES"]: permitted = false
 	if permitted: live.observe_pitch(result, latency.value, timing_check.button_pressed)
 	else: live.release("microphone:0")
@@ -305,7 +317,6 @@ func update_reading() -> void:
 	elif receiving and listener.setup_state == "INPUT_SETUP_QUIET": tuner_key = "INPUT_SETUP_QUIET"
 	gauge.observe(valid, expected_pitch, deviation, tuner_key)
 	if lock_target != null: lock_target.disabled = not gauge.active
-	gauge.queue_redraw()
 
 func suspend_capture() -> void:
 	suspended = true

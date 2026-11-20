@@ -102,7 +102,7 @@ static func build(app: Control) -> void:
 		for pitch: int in range(128):
 			var name_text: String = LivePlaying.note_name(pitch)
 			if font.get_string_size(name_text).x > font.get_string_size(widest).x: widest = name_text
-		return [app.tr("CUE_READY"), app.tr("CUE_REST"), app.tr("CUE_PICK_OMITTED"), app.tr("CUE_UNPLACED"), app.tr("CUE_NOTE") % [6, 22], app.tr("CUE_MANY_PITCHES") % 128, app.tr("CUE_PITCHES") % ", ".join([widest, widest, widest])]
+		return [app.tr("CUE_READY"), app.tr("CUE_PICK_OMITTED"), app.tr("CUE_UNPLACED"), app.tr("CUE_NOTE") % [6, 22], app.tr("CUE_MANY_PITCHES") % 128, app.tr("CUE_PITCHES") % ", ".join([widest, widest, widest])]
 	# Share the compact cue row with the arrangement disclosure.
 	details.add_child(app.cue)
 	app.notice_button = app.button("ARRANGEMENT_SHORT", func() -> void: app.toggle_drawer("DETAILS"))
@@ -199,6 +199,7 @@ static func build(app: Control) -> void:
 	app.listening.live = app.live
 	app.panel.add_child(app.live)
 	app.live.settings_requested.connect(func() -> void: app.toggle_drawer("INPUTS"))
+	app.live.input_layout_changed.connect(func() -> void: app.update_main_scroll.call_deferred())
 	app.live.note_on.connect(app.audio.live_on)
 	app.live.note_off.connect(app.audio.live_off)
 	app.live.live_changed.connect(func(notes: Array[Dictionary]) -> void:

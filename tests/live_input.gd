@@ -125,15 +125,32 @@ func run() -> void:
 	audio.transport.repeat = false
 	var listening: ListeningControls = app.get("listening")
 	check(not listening.listener.capture.enabled and not listening.listen_check.button_pressed, "tuner opening never requests microphone or enables listening")
+	listening.settings_toggle.button_pressed = true
+	await process_frame
+	var menu_scroll: ScrollContainer = app.get("menu_scroll")
+	menu_scroll.ensure_control_visible(listening.sensitivity)
+	await process_frame
+	var wheel: InputEventMouseButton = InputEventMouseButton.new()
+	wheel.button_index = MOUSE_BUTTON_WHEEL_UP
+	wheel.pressed = true
+	wheel.position = listening.sensitivity.get_global_rect().get_center()
+	var previous_scroll: int = menu_scroll.scroll_vertical
+	var sensitivity: float = listening.sensitivity.value
+	root.push_input(wheel)
+	await process_frame
+	check(listening.sensitivity.value == sensitivity and menu_scroll.scroll_vertical < previous_scroll, "wheel over listening sensitivity scrolls the drawer without changing the value")
+	for slider: HSlider in app.get("tv_zoom_controls"):
+		check(not slider.scrollable, "Theater zoom cannot change with the wheel")
+	listening.settings_toggle.button_pressed = false
 	listening.listener.capture.enabled = true
 	listening.listener.capture.status = "INPUT_MIC_READY"
 	listening.show_observation({"valid": true, "fresh": true, "hz": 442.0, "pitch": PitchDetector.midi_pitch(442), "rms": 0.1, "peak": 0.2})
 	check(listening.gauge.active and listening.gauge.cents > 7, "tuner shows independent frequency and detuning")
-	var gauge_height: float = listening.gauge.custom_minimum_size.y
+	var gauge_height: float = listening.gauge.get_combined_minimum_size().y
 	var first_cents: float = listening.gauge.cents
 	listening.show_observation({"valid": true, "fresh": true, "hz": 445.0, "pitch": 69.20, "rms": 0.1, "peak": 0.2})
 	check(listening.gauge.pitch == 69 and listening.gauge.cents > first_cents and listening.gauge.cents < 20, "same-note tuner changes smooth the visual needle without a frequency sentence")
-	check(listening.gauge.custom_minimum_size.y == gauge_height, "tuner updates keep fixed geometry")
+	check(listening.gauge.get_combined_minimum_size().y == gauge_height, "tuner updates keep fixed geometry")
 	listening.show_observation({"valid": false})
 	check(not listening.gauge.active, "uncertain capture clears the tuner needle")
 	app.call("close_menu")
@@ -158,6 +175,7 @@ func bass_staff_input(app: Control, listening: ListeningControls) -> void:
 	var observation: Dictionary = {"valid": true, "fresh": true, "hz": 97.9989, "pitch": 43.0, "rms": 0.1, "peak": 0.2}
 	listening.listener.observation.emit(observation)
 	check(score.live_notes.size() == 1 and app.get("audio").live_notes.is_empty(), "detected bass pitch reaches the score without being replayed through the mixer")
+	check(playing.message.is_visible_in_tree() and not playing.piano.visible and not playing.keyboard_actions.visible, "microphone feedback is visible with the playable keyboard hidden")
 	check(playing.message.text == app.tr("INPUT_RESULT_DETECTED") % LivePlaying.note_name(43), "a stable bass note replaces the uncertain input message while paused")
 	if not score.live_notes.is_empty():
 		var played: Dictionary = score.live_notes[0]
@@ -181,10 +199,13 @@ func bass_staff_input(app: Control, listening: ListeningControls) -> void:
 	context.seconds = 999.0
 	listening.listener.observation.emit(observation)
 	check(playing.latest.get("kind") == "rest" and not playing.notes.held.get("microphone:0", {}).has("expected"), "a sustained bass tone clears its old reference when there is no target")
+	check(playing.message.text == app.tr("INPUT_RESULT_DETECTED") % LivePlaying.note_name(roundi(observation.pitch)), "a rest leaves the detected pitch as feedback")
 	listening.listener.observation.emit({"valid": false})
 	check(score.live_notes.is_empty(), "uncertain input clears the bass staff marker")
 	playing.context = previous_context
 	listening.listen_check.button_pressed = false
+	listening.listener.observation.emit(observation)
+	check(score.live_notes.is_empty() and listening.gauge.active and not playing.visible, "switch off hides score feedback and keeps the tuner reading")
 
 func midi_status_transitions() -> void:
 	var controls: PlayingDevices = PlayingDevices.new()

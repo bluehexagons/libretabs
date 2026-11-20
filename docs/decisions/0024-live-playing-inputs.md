@@ -82,8 +82,11 @@ echo cancellation or speaker/instrument separation is claimed.
 
 Start listening is one action; instrument and target selection precede it. Room
 calibration is optional, with device, sensitivity, reference and timing controls
-under an expandable Input settings group. Use microphone in practice starts or
-resumes capture and enables pitch feedback together. Pause retains capture; Stop
+under an expandable Input settings group. The **Show microphone notes on score**
+switch starts or resumes capture when needed. It controls the score overlay and
+its feedback independently of the playable keyboard. The tuner stays open
+so the learner can confirm the input. Turning the switch off leaves the tuner
+listening. Pause retains capture; Stop
 releases it. Both clear stale observations. No capture is automatically started
 on app load or restored from preferences.
 

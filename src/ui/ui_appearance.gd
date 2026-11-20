@@ -223,6 +223,15 @@ static func make_theme(dark: bool, font_size: int, font_style: String = "rounded
 	result.set_stylebox("hover", "PopupMenu", box(color("hover", dark, midnight), 8))
 	result.set_stylebox("panel", "TooltipPanel", box(color("control", dark, midnight), 8))
 	result.set_color("font_color", "TooltipLabel", color("ink", dark, midnight))
+	result.set_type_variation("TunerReading", "PanelContainer")
+	var reading: StyleBoxFlat = panel_style(dark, 16, midnight)
+	reading.bg_color = reading.bg_color.lerp(color("sound", dark, midnight), 0.3)
+	result.set_stylebox("panel", "TunerReading", reading)
+	result.set_type_variation("TunerStart", "Button")
+	for state: String in ["normal", "hover", "pressed", "hover_pressed"]:
+		result.set_stylebox(state, "TunerStart", primary_style(dark, state, midnight))
+	for state: String in ["font_color", "font_focus_color", "font_hover_color", "font_pressed_color", "font_hover_pressed_color", "icon_normal_color", "icon_focus_color", "icon_hover_color", "icon_pressed_color", "icon_hover_pressed_color"]:
+		result.set_color(state, "TunerStart", Color.WHITE)
 	return result
 
 static func primary_style(dark: bool, state: String, midnight: bool = false) -> StyleBoxFlat:

@@ -485,23 +485,24 @@ func run() -> void:
 			previous.disconnect(signal_name, connection.callable)
 	listening.listener.capture = capture
 	previous.queue_free()
-	var requests: Array[int] = [0]
-	listening.practice_requested.connect(func() -> void: requests[0] += 1)
-	listening.practice_button.pressed.emit()
-	check(listening.practice_pending and requests[0] == 0, "internal OFF during microphone startup retains the practice request")
+	app.get("input_show").button_pressed = false
+	app.call("toggle_drawer", "TUNER")
+	listening.listen_check.button_pressed = true
+	check(listening.listen_check.button_pressed and not listening.practice_listening_active(), "internal OFF during microphone startup keeps the switch on while waiting for audio")
 	capture.status = "INPUT_MIC_READY"
 	capture.changed.emit()
-	capture.changed.emit()
-	check(requests[0] == 1 and listening.listen_check.button_pressed and app.get("input_show").button_pressed, "READY enters microphone practice exactly once")
+	check(listening.practice_listening_active() and app.get("opened_drawer") == "TUNER" and not app.get("live").piano.visible, "ready microphone leaves the tuner open and the keyboard hidden")
 	listening.listen_check.button_pressed = false
+	check(capture.enabled and not listening.practice_listening_active(), "switching off score notes keeps the tuner listening")
 	capture.stop()
-	listening.practice_button.pressed.emit()
-	capture.stop()
+	listening.listen_check.button_pressed = true
+	listening.listen_check.button_pressed = false
 	capture.enabled = true
 	capture.status = "INPUT_MIC_READY"
 	capture.changed.emit()
-	check(requests[0] == 1 and not listening.practice_pending and not listening.listen_check.button_pressed, "canceling startup rejects a late READY")
+	check(not listening.listen_check.button_pressed and not listening.practice_listening_active(), "a late READY respects the off switch")
 	capture.stop()
+	app.call("close_menu")
 	check(app.get("song").source.bytes_copy() == source, "practice actions preserve exact source MIDI")
 	var speed_audit: RefCounted = load("res://tests/helpers/speed_controls.gd").new()
 	await speed_audit.run(app, self, Callable(self, "settle"))

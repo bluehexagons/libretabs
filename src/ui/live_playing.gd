@@ -6,11 +6,14 @@ signal live_changed(notes: Array[Dictionary])
 signal note_on(note: Dictionary)
 signal note_off(note: Dictionary)
 signal settings_requested
+signal input_layout_changed
 var notes: LiveNotes = LiveNotes.new()
 var feedback: PracticeFeedback = PracticeFeedback.new()
 var context: Callable
 var piano: PlayablePiano
+var keyboard_actions: HBoxContainer
 var message: Label
+var microphone_feedback: bool = false
 var latest: Dictionary = {}
 var latest_until: int = 0
 var epoch: String = ""
@@ -23,6 +26,7 @@ func _ready() -> void:
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	add_theme_constant_override("separation", 6)
 	var actions: HBoxContainer = HBoxContainer.new()
+	keyboard_actions = actions
 	actions.add_theme_constant_override("separation", 4)
 	actions.set_meta("input_actions", true)
 	add_child(actions)
@@ -57,7 +61,7 @@ func _ready() -> void:
 	actions.add_child(settings)
 	message = StableMessageLabel.new()
 	message.examples = func() -> Array[String]:
-		var values: Array[String] = [tr("INPUT_IDLE"), tr("INPUT_RESULT_POLYPHONIC"), tr("INPUT_RESULT_UNCERTAIN"), tr("INPUT_RESULT_REST")]
+		var values: Array[String] = [tr("INPUT_IDLE"), tr("INPUT_MIC_PRACTICE_IDLE"), tr("INPUT_RESULT_POLYPHONIC"), tr("INPUT_RESULT_UNCERTAIN")]
 		values.append(tr("INPUT_RESULT_DETECTED") % note_name(109))
 		for kind: String in ["match", "octave", "wrong"]:
 			for cents: float in [-99.0, 99.0]:
@@ -67,14 +71,44 @@ func _ready() -> void:
 	message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	message.add_theme_font_size_override("font_size", 16)
 	message.set_meta("base_font_size", 16)
-	message.text = tr("INPUT_IDLE")
 	add_child(message)
 	piano = PlayablePiano.new()
 	piano.note_pressed.connect(func(id: String, pitch: int) -> void: press(id, pitch))
 	piano.note_released.connect(release)
 	add_child(piano)
-	hide()
+	set_keyboard_visible(false)
 	set_process(false)
+
+func set_keyboard_visible(enabled: bool) -> void:
+	if not enabled: piano.release_all()
+	keyboard_actions.visible = enabled
+	piano.visible = enabled
+	if notes.held.is_empty(): message.text = idle_message()
+	update_input_visibility()
+
+func set_microphone_feedback(enabled: bool) -> void:
+	if microphone_feedback == enabled: return
+	microphone_feedback = enabled
+	if not enabled: release("microphone:0")
+	if notes.held.is_empty():
+		latest.clear()
+		latest_until = 0
+		message.text = idle_message()
+		set_process(false)
+	update_input_visibility()
+
+func set_feedback_enabled(enabled: bool) -> void:
+	feedback_enabled = enabled
+	clear()
+	update_input_visibility()
+
+func update_input_visibility() -> void:
+	message.visible = piano.visible or (microphone_feedback and feedback_enabled)
+	visible = message.visible
+	input_layout_changed.emit()
+
+func idle_message() -> String:
+	return tr("INPUT_MIC_PRACTICE_IDLE" if microphone_feedback else "INPUT_IDLE")
 
 func configure(song: SongDocument, part: int) -> void:
 	clear()
@@ -100,14 +134,14 @@ func assess(note: Dictionary, pitch: float, delay_ms: float, precise: bool, onse
 		notes.held[note.id]["feedback_kind"] = latest.kind
 		if latest.has("expected"): notes.held[note.id]["expected"] = latest.expected
 		else: notes.held[note.id].erase("expected")
-	message.text = describe(latest)
+	message.text = detected_message(roundi(pitch)) if latest.kind == "rest" else describe(latest)
 	set_process(true)
 	return true
 
 func observe_pitch(result: Dictionary, delay_ms: float, timing: bool) -> void:
 	if not bool(result.get("valid", false)):
 		release("microphone:0")
-		if visible and feedback_enabled: message.text = tr("INPUT_RESULT_UNCERTAIN")
+		if visible and feedback_enabled: message.text = idle_message()
 		return
 	var pitch: float = float(result.pitch)
 	var nearest: int = roundi(pitch)
@@ -116,7 +150,7 @@ func observe_pitch(result: Dictionary, delay_ms: float, timing: bool) -> void:
 	var note: Dictionary = notes.held.get("microphone:0", {})
 	if note.is_empty(): return
 	var assessed: bool = assess(note, pitch, delay_ms + float(result.get("age_ms", 0)), timing, bool(result.get("onset", false)))
-	if not assessed and feedback_enabled: message.text = tr("INPUT_RESULT_DETECTED") % note_name(nearest)
+	if not assessed and feedback_enabled: message.text = detected_message(nearest)
 	refresh()
 
 func release(id: String) -> void:
@@ -131,7 +165,7 @@ func clear() -> void:
 	feedback.reset()
 	latest.clear()
 	latest_until = 0
-	if message != null: message.text = tr("INPUT_IDLE")
+	if message != null: message.text = idle_message()
 	set_process(false)
 
 func refresh() -> void:
@@ -150,15 +184,18 @@ func _process(_delta: float) -> void:
 	if latest_until > 0 and Time.get_ticks_msec() >= latest_until:
 		latest.clear()
 		latest_until = 0
-		message.text = tr("INPUT_IDLE")
+		message.text = idle_message()
 		set_process(false)
 
 static func note_name(pitch: int) -> String:
 	return TranslationServer.translate("INPUT_NOTE_NAME") % [["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"][posmod(pitch, 12)], pitch / 12 - 1]
 
+func detected_message(pitch: int) -> String:
+	return tr("INPUT_RESULT_DETECTED") % note_name(pitch)
+
 func describe(result: Dictionary) -> String:
 	var kind: String = str(result.kind)
-	if kind in ["polyphonic", "uncertain", "rest"]: return tr("INPUT_RESULT_" + kind.to_upper())
+	if kind in ["polyphonic", "uncertain"]: return tr("INPUT_RESULT_" + kind.to_upper())
 	var pitch_text: String = tr("INPUT_RESULT_MATCH") % note_name(int(result.expected))
 	if kind != "match": pitch_text = tr("INPUT_RESULT_OCTAVE" if kind == "octave" else "INPUT_RESULT_WRONG") % [note_name(roundi(result.played)), note_name(int(result.expected))]
 	elif absf(float(result.cents)) > 10:

@@ -227,7 +227,7 @@ func run() -> void:
 		app.call("responsive")
 		await settle_layout(app, score)
 		var stable_height: float = app.get("score_frame").size.y
-		for prompt: String in [app.tr("CUE_PITCHES") % "C#4, D#4, F#4", app.tr("CUE_REST"), app.tr("CUE_PITCHES") % "A4"]:
+		for prompt: String in [app.tr("CUE_PITCHES") % "C#4, D#4, F#4", "", app.tr("CUE_PITCHES") % "A4"]:
 			app.get("cue").text = prompt
 			for _frame: int in range(12):
 				await process_frame

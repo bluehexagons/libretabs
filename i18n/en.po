@@ -454,9 +454,6 @@ msgstr "Choose the first and last measure to repeat"
 msgid "CUE_READY"
 msgstr "Your next note"
 
-msgid "CUE_REST"
-msgstr "No notes in this part here"
-
 msgid "CUE_NOTE"
 msgstr "String %d · fret %d"
 
@@ -1711,6 +1708,9 @@ msgstr "%s%d"
 msgid "INPUT_IDLE"
 msgstr "Tap a key to hear it. Outlined keys show your input; circles show notes in the song."
 
+msgid "INPUT_MIC_PRACTICE_IDLE"
+msgstr "Play one clear note."
+
 msgid "INPUT_PIANO_HELP"
 msgstr "Tap or hold piano keys; several fingers can play together. Focus the piano and use Left/Right to choose a key, then hold Space or Enter to play. Octave controls move the visible range by twelve notes."
 
@@ -1733,16 +1733,13 @@ msgid "INPUT_RESULT_HIGH"
 msgstr "%s is high by %d cents"
 
 msgid "INPUT_RESULT_POLYPHONIC"
-msgstr "This passage has overlapping notes. Listening checks one note at a time; playback continues."
+msgstr "This passage has overlapping notes. The microphone can check one note at a time."
 
 msgid "INPUT_RESULT_UNCERTAIN"
 msgstr "Can’t identify a clear note. Try one note at a time."
 
 msgid "INPUT_RESULT_DETECTED"
 msgstr "Detected %s"
-
-msgid "INPUT_RESULT_REST"
-msgstr "No note is expected here."
 
 msgid "INPUT_TIME_UNKNOWN"
 msgstr "Timing not assessed"
@@ -1892,7 +1889,7 @@ msgid "INPUT_MIC_ELECTRIC"
 msgstr "Electric guitar · clean tone"
 
 msgid "INPUT_MIC_RANGE"
-msgstr "Listen to one clear note at a time. Piano: A1–C7; guitar: D2–F6; voice: A1–F6; bass: A0–F5; violin: F#3–C7; ukulele: F#3–F6. Distortion, effects and overlapping sounds may confuse the tuner. Instrument choices never change song pitches."
+msgstr "Piano: A0–C7; guitar: D2–F6; voice: A1–F6; bass: A0–F5; violin: F#3–C7; ukulele: F#3–F6. Distortion, effects and overlapping sounds may confuse the tuner."
 
 msgid "INPUT_LEVEL_QUIET"
 msgstr "Quiet input"
@@ -1907,10 +1904,10 @@ msgid "INPUT_LEVEL_CALIBRATING"
 msgstr "Measuring room noise…"
 
 msgid "INPUT_TUNER_START"
-msgstr "Choose Start microphone to tune a note."
+msgstr "Start listening to tune a note."
 
 msgid "INPUT_TUNER_NO_AUDIO"
-msgstr "Waiting for microphone audio. Check the microphone status above."
+msgstr "Waiting for audio…"
 
 msgid "INPUT_LEVEL_OK"
 msgstr "Input level OK"
@@ -1922,7 +1919,7 @@ msgid "INPUT_LEVEL_HELP"
 msgstr "Current input level. Sound detected does not mean a note has been identified."
 
 msgid "INPUT_TUNER_WAIT"
-msgstr "Waiting for a clear, steady note…"
+msgstr "Play one clear note."
 
 msgid "INPUT_TUNER_TARGET"
 msgstr "Target note"
@@ -1988,10 +1985,10 @@ msgid "INPUT_SENSITIVITY_HELP"
 msgstr "Higher sensitivity accepts softer notes. Run room setup to keep the threshold above background noise. Electronic piano is for a clean speaker heard through a microphone; use MIDI input for a direct MIDI connection."
 
 msgid "INPUT_LISTEN"
-msgstr "Practice feedback"
+msgstr "Show microphone notes on score"
 
 msgid "INPUT_LISTEN_HELP"
-msgstr "Return to practice and press Play. Listening checks single notes in the selected part while playback continues. Chords and overlapping source notes are not assessed. Piano sustain, ringing strings and other sounds can still confuse detection; unclear readings are not marked correct or wrong."
+msgstr "Uses the microphone to show the note you play on the score. Close the tuner to see it. During playback, the app compares single notes with your selected part."
 
 msgid "INPUT_MIC_TIMING"
 msgstr "Estimate attack timing for this measured setup"
@@ -2117,7 +2114,7 @@ msgid "INPUT_TARGET_CLASS"
 msgstr "%s"
 
 msgid "INPUT_TUNER_PAUSED"
-msgstr "Tuner paused — switch Tuner on to listen again"
+msgstr "Listening paused."
 
 msgid "RECENTER"
 msgstr "Follow"
@@ -2128,23 +2125,8 @@ msgstr "Return to the current position without starting or pausing playback. Spa
 msgid "MUSIC_PAGE_LINES"
 msgstr "Pages: up to %d lines"
 
-msgid "INPUT_GAUGE_OFF"
-msgstr "Microphone off"
-
-msgid "INPUT_GAUGE_PAUSED"
-msgstr "Tuner paused"
-
-msgid "INPUT_GAUGE_NO_AUDIO"
-msgstr "No input"
-
-msgid "INPUT_GAUGE_WAIT"
-msgstr "Waiting for a note"
-
-msgid "INPUT_GAUGE_QUIET"
-msgstr "Measuring room noise"
-
 msgid "INPUT_GAUGE_CENTER"
-msgstr "Centered"
+msgstr "In tune"
 
 msgid "INPUT_GAUGE_LOW"
 msgstr "Below target"
@@ -2352,9 +2334,6 @@ msgstr "Resume listening"
 
 msgid "INPUT_PLAYBACK_UNMUTE"
 msgstr "Unmute song notes"
-
-msgid "INPUT_PRACTICE_START"
-msgstr "Use microphone in practice"
 
 msgid "INPUT_SETTINGS"
 msgstr "Input settings"
