@@ -108,7 +108,7 @@ func run() -> void:
 	check(not app.get("menu_overlay").visible and not app.get("audio").playing_practice, "welcome practice action returns to the player without unexpected audio")
 	var menu_index: OptionsMenu = app.get("options_menu")
 	check((menu_index.shortcuts.get_child(0) as Button).text == TranslationServer.translate("SONG_MENU"), "Songs is the first Menu shortcut for compact Theater")
-	check((menu_index.shortcuts.get_child(1) as Button).text == TranslationServer.translate("TUNER") and menu_index.entry_buttons.has("LAYOUTS"), "tuner is a direct shortcut and layouts remain in Practice")
+	check((menu_index.shortcuts.get_child(1) as Button).text == TranslationServer.translate("TUNER_SHORT") and menu_index.entry_buttons.has("LAYOUTS"), "tuner is a direct shortcut and layouts remain in Practice")
 	app.call("toggle_drawer", "SONG_MENU")
 	check(app.get("catalog_filter_toggle").is_visible_in_tree() and not app.get("catalog_filter_panel").visible, "song results are not hidden behind filters on first open")
 	app.get("catalog_filter_toggle").pressed.emit()
@@ -477,14 +477,20 @@ func run() -> void:
 	app.call("toggle_drawer", "ABOUT")
 	check(app.get("drawers")["ABOUT"].visible, "about section is available from the menu")
 	var about: VBoxContainer = app.get("drawers")["ABOUT"]
-	check("Apache License 2.0" in (about.get_child(1) as Label).text and "CC0 1.0" in (about.get_child(1) as Label).text, "about section explains the software and content licenses")
 	check((about.get_child(0) as Label).text == TranslationServer.translate("ABOUT_VERSION") % ProjectSettings.get_setting("application/config/version"), "About identifies the running build for feedback")
 	var about_actions: Array[String] = []
-	for child: Node in about.get_children():
-		if child is Button: about_actions.append(child.text)
+	var about_buttons: Array[Node] = about.find_children("*", "Button", true, false)
+	for child: Node in about_buttons:
+		about_actions.append(child.text)
 	var expected_about: Array[String] = []
 	for key: String in ["OPEN_SOURCE", "REPORT_ISSUE", "REPORT_SECURITY", "NOTICES"]: expected_about.append(TranslationServer.translate(key))
 	check(about_actions == expected_about, "About keeps source, reporting and license links together")
+	if about_actions == expected_about:
+		about_buttons.back().pressed.emit()
+		var notices: AcceptDialog = app.get_children().back()
+		var license_text: TextEdit = notices.get_child(0, false)
+		check("Apache-2.0" in license_text.text and "CC0-1.0" in license_text.text, "license notices include the software and original music licenses")
+		notices.free()
 	check(app.get("offline").get_parent() == about, "About includes app offline readiness")
 	app.call("seek_measure", 2)
 	before = app.get("position_updates")
