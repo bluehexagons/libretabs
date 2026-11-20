@@ -595,7 +595,15 @@ func draw_live(surface: Control) -> void:
 	for note: Dictionary in live_notes:
 		for row: Dictionary in visual_rows():
 			var row_index: int = int(row.index)
-			if row.type in ["staff", "treble", "bass", "mini_treble", "mini_bass"] and row_accepts_live(str(row.type), int(note.pitch)): draw_live_staff(surface, note, x, origin.y, row_index, color, NotationRows.clef(str(row.type)))
+			var type: String = str(row.type)
+			if type in ["staff", "treble", "bass", "mini_treble", "mini_bass"]:
+				var clef: String = NotationRows.clef(type)
+				var expected: int = int(note.get("expected", -1))
+				if expected >= 0 and expected != int(note.pitch) and row_accepts_note(type, {"part": part, "pitch": expected}):
+					var native_y: float = ScoreLayout.staff_y(expected, clef)
+					if native_y >= 12 and native_y <= 172:
+						surface.draw_circle(Vector2(x + 15, origin.y + mapped_row_y(row_index, native_y)), 7, color, false, 2)
+				if row_accepts_live(type, note): draw_live_staff(surface, int(note.pitch), x, origin.y, row_index, color, clef)
 			elif row.type == "tab":
 				var y: float = origin.y + mapped_row_y(row_index, ScoreLayout.tab_y(int(note.get("string", 1)), drawing_notation()))
 				var text: String = str(note.fret) if note.has("fret") else "!"
@@ -606,12 +614,8 @@ func draw_live(surface: Control) -> void:
 				surface.draw_string(font, Vector2(x - half, y + (font.get_ascent(26) - font.get_descent(26)) / 2), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 26, color)
 	surface.draw_string(font, Vector2(48, origin.y + drawing_height() - 16), tr("LIVE_NOTE"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, color)
 
-func draw_live_staff(surface: Control, note: Dictionary, x: float, origin_y: float, row_index: int, color: Color, clef: String = "staff") -> void:
-	var y: float = origin_y + mapped_row_y(row_index, ScoreLayout.staff_y(int(note.pitch), clef))
-	if note.has("expected") and int(note.expected) != int(note.pitch):
-		var expected_y: float = origin_y + mapped_row_y(row_index, ScoreLayout.staff_y(int(note.expected), clef))
-		if expected_y >= origin_y and expected_y <= origin_y + drawing_height():
-			surface.draw_circle(Vector2(x + 15, expected_y), 7, color, false, 2)
+func draw_live_staff(surface: Control, pitch: int, x: float, origin_y: float, row_index: int, color: Color, clef: String) -> void:
+	var y: float = origin_y + mapped_row_y(row_index, ScoreLayout.staff_y(pitch, clef))
 	var center: float = origin_y + mapped_row_y(row_index, ScoreLayout.STAFF_BOTTOM)
 	var staff_top: float = origin_y + mapped_row_y(row_index, ScoreLayout.STAFF_TOP)
 	if y >= origin_y + mapped_row_y(row_index, 12) and y <= origin_y + mapped_row_y(row_index, 172):
@@ -620,9 +624,9 @@ func draw_live_staff(surface: Control, note: Dictionary, x: float, origin_y: flo
 				if (line_y > center and y >= line_y) or (line_y < staff_top and y <= line_y): surface.draw_line(Vector2(x - 11, line_y), Vector2(x + 11, line_y), color, 2)
 		var points: PackedVector2Array = PackedVector2Array([Vector2(x, y - 7), Vector2(x + 9, y), Vector2(x, y + 7), Vector2(x - 9, y), Vector2(x, y - 7)])
 		surface.draw_colored_polygon(points, color)
-		if int(note.pitch) % 12 in [1, 3, 6, 8, 10]: surface.draw_string(music_font, Vector2(x - 22, y), String.chr(0xe262), HORIZONTAL_ALIGNMENT_LEFT, -1, 26, color)
+		if pitch % 12 in [1, 3, 6, 8, 10]: surface.draw_string(music_font, Vector2(x - 22, y), String.chr(0xe262), HORIZONTAL_ALIGNMENT_LEFT, -1, 26, color)
 	else:
-		surface.draw_string(ui_font, Vector2(x + 12, origin_y + mapped_row_y(row_index, 60)), tr("PITCH_MARKER") % int(note.pitch), HORIZONTAL_ALIGNMENT_LEFT, -1, 16, color)
+		surface.draw_string(ui_font, Vector2(x + 12, origin_y + mapped_row_y(row_index, 60)), LivePlaying.note_name(pitch), HORIZONTAL_ALIGNMENT_LEFT, -1, 16, color)
 
 func visual_rows() -> Array[Dictionary]:
 	if not drawing_rows().is_empty():
@@ -641,7 +645,13 @@ func row_accepts_note(type: String, note: Dictionary) -> bool:
 	if not staff_pair.is_empty() or not NotationRows.has_staff_pair(drawing_rows()): return true
 	return int(note.pitch) >= 60 if NotationRows.clef(type) == "treble" else int(note.pitch) < 60 if NotationRows.clef(type) == "bass" else true
 
-func row_accepts_live(type: String, pitch: int) -> bool:
+func row_accepts_live(type: String, note: Dictionary) -> bool:
+	var pitch: int = int(note.pitch)
+	var clef: String = NotationRows.clef(type)
+	# Keep an exact match beside its reference even if the source part crosses middle C.
+	if int(note.get("expected", -1)) != pitch and NotationRows.has_staff_pair(drawing_rows()):
+		if clef == "treble": return pitch >= 60
+		if clef == "bass": return pitch < 60
 	return row_accepts_note(type, {"part": part, "pitch": pitch})
 
 func mapped_row_y(index: int, native_y: float) -> float:

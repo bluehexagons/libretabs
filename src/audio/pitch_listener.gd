@@ -60,7 +60,7 @@ func set_profile(value: int) -> void:
 	detector.maximum_hz = 1400
 	match profile:
 		Profile.ACOUSTIC_PIANO, Profile.ELECTRONIC_PIANO:
-			detector.minimum_hz = 55
+			detector.minimum_hz = 27.5
 			detector.maximum_hz = 2100
 		Profile.VOICE: detector.minimum_hz = 55
 		Profile.BASS:

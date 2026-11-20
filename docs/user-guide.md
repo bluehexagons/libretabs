@@ -522,9 +522,12 @@ actions. Keyboard focus also scrolls controls into view.
    are preserved. The same switch is available beside the practice controls.
    Use headphones if the microphone picks up the clicks.
 4. **Use microphone in practice** starts or resumes listening and enables pitch
-   feedback together, then returns to the score. Press Play to play along. Only
-   the selected part is compared; overlapping source notes show the single-note
-   limitation. You can turn feedback off in **Input settings** and keep tuning.
+   feedback together, then returns to the score. On paired piano staffs,
+   detected notes below middle C appear on the bass staff and matching notes
+   appear beside their reference. Choose **Bass focus** to compare what you play
+   with the bass part. Press Play to start the comparison. Overlapping notes
+   in the selected part show the single-note limitation. You can turn feedback
+   off in **Input settings** and keep tuning.
 5. **Pause listening** temporarily pauses analysis and feedback without repeating
    permissions. **Resume listening** waits for a fresh note. The microphone icons
    beside the player provide the same actions, with help on long press or hover.

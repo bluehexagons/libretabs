@@ -98,6 +98,7 @@ func assess(note: Dictionary, pitch: float, delay_ms: float, precise: bool, onse
 	if notes.held.has(note.id):
 		notes.held[note.id]["feedback_kind"] = latest.kind
 		if latest.has("expected"): notes.held[note.id]["expected"] = latest.expected
+		else: notes.held[note.id].erase("expected")
 	message.text = describe(latest)
 	set_process(true)
 

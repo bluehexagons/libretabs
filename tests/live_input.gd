@@ -136,6 +136,8 @@ func run() -> void:
 	check(listening.gauge.custom_minimum_size.y == gauge_height, "tuner updates keep fixed geometry")
 	listening.show_observation({"valid": false})
 	check(not listening.gauge.active, "uncertain capture clears the tuner needle")
+	app.call("close_menu")
+	await bass_staff_input(app, listening)
 	listening.listener.capture.enabled = true
 	listening.listener.capture.status = "INPUT_MIC_NO_SIGNAL"
 	app.get("host").focus_lost.emit()
@@ -144,6 +146,44 @@ func run() -> void:
 	await process_frame
 	print("Live input: %d checks, %d failures" % [checks, failures])
 	quit(1 if failures else 0)
+
+func bass_staff_input(app: Control, listening: ListeningControls) -> void:
+	app.call("load_library_item", 4)
+	for _frame: int in range(35): await process_frame
+	app.call("apply_preset", "treble_focus")
+	var score: ScoreView = app.get("score")
+	var playing: LivePlaying = app.get("live")
+	check(score.staff_pair.size() == 2 and score.part == score.staff_pair[0], "paired fixture starts with the treble part selected")
+	listening.listen_check.button_pressed = true
+	var observation: Dictionary = {"valid": true, "fresh": true, "hz": 97.9989, "pitch": 43.0, "rms": 0.1, "peak": 0.2}
+	listening.listener.observation.emit(observation)
+	check(score.live_notes.size() == 1 and app.get("audio").live_notes.is_empty(), "detected bass pitch reaches the score without being replayed through the mixer")
+	if not score.live_notes.is_empty():
+		var played: Dictionary = score.live_notes[0]
+		check(score.row_accepts_live("mini_bass", played) and not score.row_accepts_live("treble", played), "G2 appears on compact bass while treble is selected")
+		check(ScoreLayout.staff_y(int(played.pitch), "bass") == ScoreLayout.STAFF_BOTTOM, "detected G2 uses its sounding bass-clef position")
+	var treble_part: int = score.part
+	app.call("apply_preset", "piano")
+	listening.listener.observation.emit(observation)
+	check(score.part == treble_part and score.row_accepts_live("bass", observation) and not score.row_accepts_live("treble", observation), "full piano staff shows the bass detection with the same practice selection")
+	check(score.row_accepts_live("treble", {"pitch": 60}) and not score.row_accepts_live("bass", {"pitch": 60}), "middle C belongs to the treble row")
+	check(score.row_accepts_live("treble", {"pitch": 59, "expected": 59}), "an exact match follows a source part across middle C")
+	app.call("apply_preset", "bass_focus")
+	var target: Dictionary = playing.feedback.targets[0]
+	var context: Dictionary = {"playing": true, "epoch": "bass-test", "seconds": target.start, "speed": 1.0}
+	var previous_context: Callable = playing.context
+	playing.context = func(_delay_ms: float) -> Dictionary: return context
+	observation.pitch = float(target.pitch)
+	observation.hz = 440.0 * pow(2.0, (observation.pitch - 69.0) / 12.0)
+	listening.listener.observation.emit(observation)
+	check(playing.latest.get("kind") == "match" and playing.latest.get("note_id") == target.id, "Bass focus compares microphone pitch with the selected bass source note")
+	context.seconds = 999.0
+	listening.listener.observation.emit(observation)
+	check(playing.latest.get("kind") == "rest" and not playing.notes.held.get("microphone:0", {}).has("expected"), "a sustained bass tone clears its old reference when there is no target")
+	listening.listener.observation.emit({"valid": false})
+	check(score.live_notes.is_empty(), "uncertain input clears the bass staff marker")
+	playing.context = previous_context
+	listening.listen_check.button_pressed = false
 
 func midi_status_transitions() -> void:
 	var controls: PlayingDevices = PlayingDevices.new()
