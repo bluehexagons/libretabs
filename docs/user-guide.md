@@ -143,10 +143,9 @@ In **Songs** (also in the Theater header), use **Listen** to hear up to 12 secon
 from the first note of a built-in song. Listen keeps your current song open and
 pauses any playing practice audio. Tap the song title to open it for practice.
 Search by title or composer, or expand the filters to browse by suggested level,
-length, starting tempo, and instrument. **About** opens the full song details,
-including practice cues and sourced history. Source links open in your browser.
-The notes work offline. **Practice this song** selects it and **Back** returns
-to browsing. Use **Import MIDI** to load your own music.
+length, starting tempo, and instrument. Open **About** for practice cues, history,
+and sources. **Practice this song** selects it and **Back** returns to browsing.
+Use **Import MIDI** to load your own music.
 Enable **Pin songs to practice** to keep a compact scrolling browser above the
 music. Tap a title to switch in one action; playback waits for Play. The browser
 keeps its scroll position and keyboard focus. The information button beside each title opens its details without switching songs. Search narrows this list, **Songs**

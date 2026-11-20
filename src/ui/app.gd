@@ -946,7 +946,7 @@ func refresh_song_catalog() -> void:
 	for index: int in indices: add_song_button(more_song_grid, index)
 	catalog_count.text = tr("SONG_CATALOG_COUNT") % [indices.size(), BUILT_IN_LIBRARY.size()]
 	if indices.is_empty(): catalog_count.text = tr("SONG_CATALOG_EMPTY")
-	catalog_count.show()
+	catalog_count.visible = indices.size() < BUILT_IN_LIBRARY.size()
 	# Rebuilt cards need sizing at the current text scale without a window resize.
 	adapt_flow.call_deferred(more_song_grid)
 
@@ -1331,7 +1331,6 @@ func build_drawers() -> void:
 	catalog_filter_panel.add_theme_constant_override("separation", 10)
 	library.add_child(catalog_filter_panel)
 	catalog_filter_panel.hide()
-	catalog_filter_panel.add_child(label("SONG_CATALOG_INTRO", 18))
 	catalog_filter_grid = GridContainer.new()
 	catalog_filter_grid.columns = 2
 	catalog_filter_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -2084,7 +2083,7 @@ func toggle_drawer(key: String, remember: bool = true) -> void:
 	drawer.show()
 	for name_key: String in drawers: drawers[name_key].visible = drawers[name_key] == drawers[key]
 	if key == "WELCOME": update_welcome()
-	drawer_title.text = tr(key)
+	drawer_title.text = tr(str(BUILT_IN_LIBRARY[song_details.song_index].title_key)) if key == "SONG_DETAILS" else tr(key)
 	menu_scroll.scroll_vertical = 0
 	responsive()
 	menu_close.grab_focus()

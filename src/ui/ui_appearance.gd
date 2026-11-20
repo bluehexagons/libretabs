@@ -223,6 +223,24 @@ static func make_theme(dark: bool, font_size: int, font_style: String = "rounded
 	result.set_stylebox("hover", "PopupMenu", box(color("hover", dark, midnight), 8))
 	result.set_stylebox("panel", "TooltipPanel", box(color("control", dark, midnight), 8))
 	result.set_color("font_color", "TooltipLabel", color("ink", dark, midnight))
+	result.set_type_variation("SourceLink", "Button")
+	result.set_stylebox("normal", "SourceLink", StyleBoxEmpty.new())
+	for state: String in ["hover", "pressed", "hover_pressed"]:
+		var fill: Color = color("hover" if state == "hover" else "pressed", dark, midnight)
+		var highlight: StyleBoxFlat = box(fill.lerp(color("paper", dark, midnight), 0.55), 0)
+		highlight.set_corner_radius_all(8)
+		result.set_stylebox(state, "SourceLink", highlight)
+	var link_focus: StyleBoxFlat = focus_style(dark, 8, midnight)
+	link_focus.set_expand_margin_all(0)
+	result.set_stylebox("focus", "SourceLink", link_focus)
+	result.set_type_variation("SourceLinkText", "RichTextLabel")
+	result.set_color("default_color", "SourceLinkText", color("accent", dark, midnight))
+	var link_padding: StyleBoxEmpty = StyleBoxEmpty.new()
+	link_padding.content_margin_left = 4
+	link_padding.content_margin_right = 4
+	link_padding.content_margin_top = 4
+	link_padding.content_margin_bottom = 4
+	result.set_stylebox("normal", "SourceLinkText", link_padding)
 	result.set_type_variation("TunerReading", "PanelContainer")
 	var reading: StyleBoxFlat = panel_style(dark, 16, midnight)
 	reading.bg_color = reading.bg_color.lerp(color("sound", dark, midnight), 0.3)

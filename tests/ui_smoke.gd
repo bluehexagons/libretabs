@@ -388,6 +388,7 @@ func run() -> void:
 		await settle(app)
 		app.call("toggle_drawer", "SONG_MENU")
 		await settle(app)
+		check(not app.get("catalog_count").visible, "unfiltered Songs omits the redundant result count")
 		for card: Control in app.get("more_song_grid").get_children():
 			var content: VBoxContainer = card.get_child(0)
 			var level: Label = content.get_child(1).get_child(0)
@@ -399,6 +400,7 @@ func run() -> void:
 		await settle(app)
 		var about: SongDetails = app.get("song_details")
 		check(app.get("opened_drawer") == "SONG_DETAILS" and about.song_index == 11 and about.source_buttons.size() == 1, "expanded song details include bundled history and source links")
+		check(app.get("drawer_title").text == app.tr(str(app.BUILT_IN_LIBRARY[11].title_key)), "song name titles its details drawer")
 		check(app.get("song") == details_song and not audio.playing_practice, "reading song details preserves practice selection and silence")
 		check(about.size.x <= root.size.x and app.get("drawer").size.x <= root.size.x, "detail text wraps at representative viewport and scale")
 		var headings: Array[String] = []
@@ -407,6 +409,12 @@ func run() -> void:
 		check(headings.has(app.tr("SONG_ARRANGEMENT_HEADING")) and headings.find(app.tr("SONG_HISTORY_HEADING")) > headings.find(app.tr("SONG_ARRANGEMENT_HEADING")), "song details put practice guidance before history")
 		for source_button: Button in about.source_buttons:
 			check(source_button.focus_mode == Control.FOCUS_ALL and source_button.size.y >= 44, "source link remains keyboard and touch accessible")
+			var content: HBoxContainer = source_button.get_parent().get_child(1)
+			var caption: RichTextLabel = content.get_child(1)
+			check(caption.get_parsed_text() == source_button.accessibility_name and source_button.tooltip_text.begins_with("https://"), "source link exposes its title and destination")
+			check(content.size == source_button.size and caption.get_content_height() <= caption.size.y, "source link hit area covers the wrapped title")
+			if config[0] == 360:
+				check(caption.get_line_count() > 1 and source_button.size.x <= about.size.x, "source link wraps on narrow screens with large text")
 		app.call("go_back")
 		check(app.get("opened_drawer") == "SONG_MENU", "Back returns to the browsed catalog")
 		app.call("close_menu")

@@ -127,9 +127,6 @@ msgstr "Home on the Range · verse and chorus · Daniel E. Kelley"
 msgid "LIBRARY_OH_SUSANNA"
 msgstr "Oh! Susanna · melody study · Stephen Foster"
 
-msgid "SONG_CATALOG_INTRO"
-msgstr "Browse built-in songs by name, suggested practice level, playing time, starting speed, or instrument."
-
 msgid "SONG_PREVIEW_INTRO"
 msgstr "Hear the opening 12 seconds, then try the song when it sounds familiar."
 
@@ -260,7 +257,7 @@ msgid "SONG_SORT_BPM"
 msgstr "Slowest starting speed first"
 
 msgid "SONG_LEVEL_HELP"
-msgstr "The levels and instruments suggest where to start. These arrangements are awaiting musician review. The BPM number counts quarter notes per minute. You can change speed after opening a song."
+msgstr "BPM counts quarter notes per minute. These arrangements are awaiting musician review."
 
 msgid "SONG_CATALOG_COUNT"
 msgstr "%d of %d songs"
@@ -2662,29 +2659,23 @@ msgstr "100% is normal speed; 1/2× is half speed. Drag snaps near visible marks
 msgid "SONG_ABOUT"
 msgstr "About"
 
-msgid "SONG_DETAILS"
-msgstr "About this song"
-
 msgid "SONG_DETAILS_HELP"
 msgstr "About %s"
 
 msgid "SONG_HISTORY_HEADING"
-msgstr "History & people"
+msgstr "History"
 
 msgid "SONG_ARRANGEMENT_HEADING"
-msgstr "This practice arrangement"
+msgstr "Practice arrangement"
 
 msgid "SONG_SOURCES_HEADING"
 msgstr "Sources"
 
-msgid "SONG_SOURCES_HELP"
-msgstr "Song notes work offline. Source links open in your browser and may require internet access."
+msgid "SONG_SOURCE_EXTERNAL"
+msgstr "Opens in your browser"
 
 msgid "SONG_DETAILS_META"
-msgstr "%s · %s · practice tempo %d BPM · %s"
-
-msgid "SONG_ARRANGEMENT_COMMON"
-msgstr "The starting tempo is in quarter notes per minute. Canon in D uses Pachelbel’s repeating bass. The other bass lines were written for practice."
+msgstr "%s · %s · %d BPM · %s"
 
 msgid "SONG_ARRANGEMENT_ODE_TO_JOY"
 msgstr "Start with E–E–F–G in bar 1. Give each note one beat. The 16-bar melody is in C. The first two phrases begin alike and end differently. Listen for quicker notes in the third phrase and a drop to low G before the opening returns."
