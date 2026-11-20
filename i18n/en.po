@@ -1862,7 +1862,7 @@ msgid "INPUT_MIC_ENDED"
 msgstr "The microphone disconnected or access ended. Choose an available device and start again."
 
 msgid "INPUT_MIC_NO_SIGNAL"
-msgstr "No audio frames arrived. Check the device and microphone permissions, then stop and start again."
+msgstr "No sound is coming through. Check the microphone under Input settings."
 
 msgid "INPUT_MIC_DEVICE"
 msgstr "Microphone device"
@@ -1913,7 +1913,7 @@ msgid "INPUT_LEVEL_OK"
 msgstr "Input level OK"
 
 msgid "INPUT_LEVEL_CLIP"
-msgstr "Input is clipping"
+msgstr "Input is too loud"
 
 msgid "INPUT_LEVEL_HELP"
 msgstr "Current input level. Sound detected does not mean a note has been identified."
@@ -1964,7 +1964,7 @@ msgid "INPUT_SETUP_START_FIRST"
 msgstr "Start the microphone and wait for it to become active, then run setup."
 
 msgid "INPUT_SETUP_QUIET"
-msgstr "Stay quiet for three seconds while background noise is measured."
+msgstr "Stay quiet for three seconds."
 
 msgid "INPUT_SETUP_NOTES"
 msgstr "Play three separate, steady notes with silence between them."
