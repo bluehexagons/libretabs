@@ -63,3 +63,34 @@ considering a piano-specific tuning curve. If soft onsets still disappear,
 compare the same key at the same distance across a second microphone and
 browser. This distinguishes a capture-path problem from one reproducible in
 the detector and gives a target for any further filtering.
+
+## Published browser check
+
+Managed Chromium 155.0.8059.12 followed the local guide's **Open player** link.
+An isolated browser context supplied a 44.1 kHz Web Audio microphone stream
+with a 442.3 Hz oscillator at gain 0.001. Audio went through the published
+player's capture worklet, bridge, detector and visible tuner controls. With
+the default acoustic-piano profile and 440 Hz reference, Settings showed
+442.3 Hz and +9.0 cents.
+
+The first browser pass exposed an interrupted match at a low rendering rate.
+Revision `aaf0c93` discards all pitch evidence on a dropped buffer and lets
+a live match acquire fresh evidence until its original eight-second deadline.
+Pausing, stopping or changing the device cancels the match. A regression check
+uses 120 ms capture batches and different tones before and after a gap.
+
+The updated worker activated, and a reload loaded the new player. Matching
+saved 442.3 Hz and the same incoming note read +0.0 cents with the browser
+reporting 9 FPS. The saved reference survived a network-disabled reload with
+the microphone off. **Restore 440 Hz** worked with capture stopped. The page
+reported no console errors or failed requests during the final interaction.
+The guide matched both staged files, and all nine player asset hashes passed.
+
+The full local gate passed all 22 commands, including 111 pitch checks, 121
+tuner-response checks, 1,820 generated-WAV replay checks and 1,495 UI smoke
+checks. The pitch-match button received keyboard focus and scrolled fully into
+view at 360 × 740 with 200% text. Chromium also checked logical canvas widths
+in portrait and landscape at device pixel ratios 2 and 3. The runtime revision
+passed [hosted CI](https://github.com/bluehexagons/libretabs/actions/runs/44915008172).
+Physical phone microphones, the owner's piano and acoustic lock time still
+need comparison on hardware.
