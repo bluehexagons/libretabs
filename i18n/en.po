@@ -1970,7 +1970,34 @@ msgid "INPUT_TUNER_HIGH"
 msgstr "High / sharp"
 
 msgid "INPUT_TUNER_VALUE"
-msgstr "%s · %.1f Hz · %+.1f cents"
+msgstr "Heard %s · %.1f Hz · %+.1f cents from target"
+
+msgid "INPUT_REFERENCE_NO_READING"
+msgstr "Waiting for a pitch reading."
+
+msgid "INPUT_REFERENCE_MATCH"
+msgstr "Match my instrument"
+
+msgid "INPUT_REFERENCE_RESTORE"
+msgstr "Restore 440 Hz"
+
+msgid "INPUT_REFERENCE_CANCEL"
+msgstr "Cancel pitch match"
+
+msgid "INPUT_REFERENCE_IDLE"
+msgstr "To match a fixed-pitch instrument, start listening, then choose Match my instrument."
+
+msgid "INPUT_REFERENCE_PLAY"
+msgstr "Hold the A above middle C."
+
+msgid "INPUT_REFERENCE_WAIT"
+msgstr "Play A4, the A above middle C. Hold it on its own until the tuner confirms the match."
+
+msgid "INPUT_REFERENCE_DONE"
+msgstr "Matched your instrument. A4 is now %.1f Hz."
+
+msgid "INPUT_REFERENCE_FAILED"
+msgstr "Couldn’t find a steady A4. Play the A above middle C on its own and try again."
 
 msgid "INPUT_SETUP_RUN"
 msgstr "Check room noise"
@@ -2003,7 +2030,7 @@ msgid "INPUT_SENSITIVITY"
 msgstr "Listening sensitivity"
 
 msgid "INPUT_SENSITIVITY_HELP"
-msgstr "Higher sensitivity accepts softer notes. Run room setup to keep the threshold above background noise. Electronic piano is for a clean speaker heard through a microphone; use MIDI input for a direct MIDI connection."
+msgstr "Higher sensitivity accepts softer notes. Run room setup to keep the threshold above background noise. Electronic piano is for a clean speaker heard through a microphone. Use MIDI input for a direct MIDI connection."
 
 msgid "INPUT_LISTEN"
 msgstr "Show notes on score"

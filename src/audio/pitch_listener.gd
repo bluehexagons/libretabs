@@ -4,9 +4,15 @@ extends Node
 
 signal observation(result: Dictionary)
 signal setup_changed
+signal reference_matched(hz: float)
 var capture: MicrophoneInput
 var detector: PitchDetector = PitchDetector.new()
 var reference: float = 440
+var reference_status: String = "INPUT_REFERENCE_IDLE"
+var reference_deadline: int = 0
+var reference_since: int = 0
+var reference_last: int = -1
+var reference_samples: Array[float] = []
 enum Profile { ACOUSTIC_PIANO, ELECTRONIC_PIANO, ACOUSTIC_GUITAR, ELECTRIC_GUITAR, VOICE, BASS, VIOLIN, UKULELE }
 const PROFILE_KEYS: Array[String] = ["INPUT_MIC_PIANO", "INPUT_MIC_DIGITAL_PIANO", "INPUT_MIC_ACOUSTIC", "INPUT_MIC_ELECTRIC", "INPUT_MIC_VOICE", "INPUT_MIC_BASS", "INPUT_MIC_VIOLIN", "INPUT_MIC_UKULELE"]
 const PROFILE_IDS: Array[String] = ["acoustic_piano", "electronic_piano", "acoustic_guitar", "electric_guitar", "voice", "bass", "violin", "ukulele"]
@@ -45,6 +51,7 @@ func _ready() -> void:
 
 func reset() -> void:
 	detector.reset()
+	if reference_status != "INPUT_REFERENCE_IDLE": end_reference("INPUT_REFERENCE_IDLE")
 	candidate = -1
 	stable = 0
 	last_block = 0
@@ -123,6 +130,46 @@ func calibrate() -> void:
 	setup_until = Time.get_ticks_msec() + 3000
 	setup_changed.emit()
 
+func setup_active() -> bool:
+	return reference_deadline > 0 or setup_state in ["INPUT_SETUP_QUIET", "INPUT_SETUP_NOTES"]
+
+func begin_reference(now: int) -> void:
+	if paused or not capture.enabled or capture.status != "INPUT_MIC_READY" or setup_active(): return
+	reset()
+	reference_deadline = now + 8000
+	reference_status = "INPUT_REFERENCE_WAIT"
+	setup_changed.emit()
+
+func end_reference(status: String) -> void:
+	reference_deadline = 0
+	reference_last = -1
+	reference_samples.clear()
+	reference_status = status
+	setup_changed.emit()
+
+func sample_reference(result: Dictionary, sample_ms: int) -> void:
+	# Identify A4 against concert pitch, independently of any saved reference
+	# or selected tuner target. A neighboring key cannot redefine A4.
+	var hz: float = result.hz
+	if not result.valid or result.confidence < 0.95 or roundi(PitchDetector.midi_pitch(hz)) != 69:
+		reference_samples.clear()
+		return
+	if sample_ms <= reference_last or sample_ms - reference_last > 100: reference_samples.clear()
+	reference_last = sample_ms
+	if not reference_samples.is_empty():
+		var spread: float = maxf(hz, reference_samples.max()) / minf(hz, reference_samples.min())
+		if spread > pow(2.0, 6.0 / 1200.0): reference_samples.clear()
+	if reference_samples.is_empty(): reference_since = sample_ms
+	reference_samples.append(hz)
+	# Bounded even if a queued stream advances its timestamps very slowly.
+	if reference_samples.size() > 32: reference_samples.pop_front()
+	if reference_samples.size() >= 6 and sample_ms - reference_since >= 350:
+		reference_samples.sort()
+		var mid: int = reference_samples.size() / 2
+		reference = snappedf((reference_samples[mid] + reference_samples[(reference_samples.size() - 1) / 2]) / 2, 0.1)
+		end_reference("INPUT_REFERENCE_DONE")
+		reference_matched.emit(reference)
+
 func accept_samples(block: PackedFloat32Array, rate: float, age_ms: float, clock_msec: int = -1) -> void:
 	if paused: return
 	var now: int = Time.get_ticks_msec() if clock_msec < 0 else clock_msec
@@ -148,6 +195,7 @@ func _process(_delta: float) -> void:
 # Injected time for stability, attack and setup regression fixtures.
 func analyze_at(now: int) -> void:
 	if paused: return
+	if reference_deadline > 0 and now >= reference_deadline: end_reference("INPUT_REFERENCE_FAILED")
 	if setup_state == "INPUT_SETUP_QUIET" and now >= setup_until:
 		if setup_levels.size() < 10:
 			setup_state = "INPUT_SETUP_FAILED"
@@ -180,6 +228,12 @@ func analyze_at(now: int) -> void:
 	result["fresh"] = true
 	result["quiet"] = float(result.rms) < detector.gate * 0.8 and float(result.peak) < 0.98
 	max_analysis_ms = maxf(max_analysis_ms, (Time.get_ticks_usec() - started) / 1000.0)
+	if reference_deadline > 0:
+		sample_reference(result, last_block - roundi(last_age))
+		# A setup tone is never a score note, timed attack or hands-free command.
+		result["valid"] = false
+		result["quiet"] = false
+		last_onset = -1
 	if result.valid and result.confidence >= (0.85 if profile == Profile.ACOUSTIC_PIANO else 0.9):
 		var pitch: float = PitchDetector.midi_pitch(float(result.hz), reference)
 		var nearest: int = roundi(pitch)

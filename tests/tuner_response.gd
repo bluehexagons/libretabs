@@ -11,12 +11,12 @@ func check(value: bool, message: String) -> void:
 		failures += 1
 		printerr("FAIL: " + message)
 
-func signal_samples(hz: float, amplitude: float, duration: float, noise: float = 0, decay: float = 0) -> PackedFloat32Array:
+func signal_samples(hz: float, amplitude: float, duration: float, noise: float = 0, decay: float = 0, rate: int = 48000) -> PackedFloat32Array:
 	var samples: PackedFloat32Array = PackedFloat32Array()
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	rng.seed = 291
-	for index: int in range(roundi(duration * 48000)):
-		var at: float = index / 48000.0
+	for index: int in range(roundi(duration * rate)):
+		var at: float = float(index) / rate
 		var phase: float = TAU * hz * at + 0.7
 		var body: float = sin(phase) + 0.8 * sin(2 * phase) + 0.2 * sin(3 * phase)
 		samples.append(amplitude * exp(-decay * at) * body / 2 + noise * rng.randf_range(-1, 1))
@@ -73,6 +73,12 @@ func run() -> void:
 	check(first_lock >= 0 and first_lock <= 100, "default electronic piano locks a soft noisy note within 100 ms: %d" % first_lock)
 	check(accepted >= analyzed * 0.9, "default electronic piano retains soft note: %d/%d" % [accepted, analyzed])
 	var acquisition: int = first_lock
+	for rate: int in [44100, 48000, 96000]:
+		listener.reset()
+		var pcm16: PackedFloat32Array = signal_samples(440, 0.00025, 0.35, 0.00012, 0.4, rate)
+		for i: int in range(pcm16.size()): pcm16[i] = roundf(pcm16[i] * 32768) / 32768
+		var pcm_lock: int = acquire(listener, pcm16, 69, 2000, rate, 1024)
+		check(pcm_lock > 0 and pcm_lock <= 110 and listener.latest.valid, "default sensitivity locks quiet PCM16 keys with hiss at %d Hz in %d ms" % [rate, pcm_lock])
 	listener.set_sensitivity(100)
 	# Quiet but periodic speaker output, with deterministic background hiss.
 	var faint: PackedFloat32Array = signal_samples(440, 0.000005, 0.35, 0.000001)
@@ -103,7 +109,7 @@ func run() -> void:
 		if block == 165:
 			check(listener.setup_state == "INPUT_SETUP_NOTES" and not listener.latest.valid, "calibrated steady background alone stays uncertain")
 	check(listener.latest.valid and absf(listener.latest.pitch - 69) < 0.05, "DC and high-frequency room noise do not bury the quiet note during setup")
-	check(float(listener.latest.rms) > 0.005 and listener.noise_gate < 0.0001, "raw input meter and in-band room floor retain their distinct units of measurement")
+	check(float(listener.latest.rms) > 0.005 and listener.noise_gate < 0.0001, "raw input meter retains the offset while the calibrated floor measures the filtered signal")
 	listener.invalidate_setup()
 	listener.accept_samples(signal_samples(440, 0.1, 0.15), 48000, 0, clock + 100)
 	listener.analyze_at(clock + 100)
@@ -125,8 +131,49 @@ func run() -> void:
 	check(gauge.pitch == 70 and gauge.cents == -17, "new note clears previous-note smoothing")
 	gauge.observe(false, -1, 0, "INPUT_TUNER_PAUSED")
 	check(not gauge.active and gauge.recent.is_empty() and gauge.cents == 0, "pause or invalid input clears all visual history")
+	reference_checks(listener)
 	gauge.queue_free()
 	listener.queue_free()
 	await process_frame
 	print("Tuner response: %d checks, %d failures; maximum sweep error %.3f cents; soft-note acquisition %d ms" % [checks, failures, maximum_error, acquisition])
 	quit(1 if failures else 0)
+
+
+func reference_checks(listener: PitchListener) -> void:
+	listener.invalidate_setup()
+	listener.reference = 432.0
+	listener.capture.enabled = false
+	listener.begin_reference(10000)
+	check(not listener.setup_active(), "pitch match requires active microphone capture")
+	listener.capture.enabled = true
+	listener.capture.status = "INPUT_MIC_READY"
+	listener.noise_gate = 0.00002
+	listener.begin_reference(10000)
+	var wrong: int = acquire(listener, signal_samples(466.164, 0.02, 0.65), 70, 10000)
+	check(wrong == -1 and listener.reference == 432 and listener.reference_samples.is_empty(), "a neighboring key cannot calibrate or escape into practice feedback")
+	acquire(listener, signal_samples(442.3, 0.02, 0.18), 69, 10650)
+	for now: int in range(10850, 11070, 20): listener.analyze_at(now)
+	check(listener.reference == 432 and listener.setup_active(), "idle frames cannot complete a short reference tone")
+	listener.set_paused(true)
+	check(not listener.setup_active() and listener.reference == 432 and listener.noise_gate == 0.00002, "pause cancels a partial match and keeps room setup")
+	listener.set_paused(false)
+	listener.begin_reference(12000)
+	# Adjacent held frequencies within the A4 key but too far apart for a
+	# steady reference. An average over them would hide the pitch wobble.
+	for i: int in range(5):
+		acquire(listener, signal_samples(442.0 if i % 2 else 439.0, 0.02, 0.18), 69, 12000 + i * 180)
+	check(listener.setup_active() and listener.reference == 432, "pitch wobble restarts the stable reference window")
+	acquire(listener, signal_samples(442.3, 0.002, 0.65, 0.0001), 69, 12900)
+	check(listener.reference_status == "INPUT_REFERENCE_DONE" and absf(listener.reference - 442.3) <= 0.11, "steady noisy A4 sets the absolute measured reference to a tenth of a hertz")
+	check(listener.latest.valid and absf(listener.latest.pitch - 69) < 0.02, "the playing listener uses the measured reference")
+	acquire(listener, signal_samples(442.3 * pow(2, 17.0 / 1200), 0.002, 0.35), 69, 13550)
+	check(absf((listener.latest.pitch - 69) * 100 - 17) < 2, "later detuning remains audible to the calibrated listener")
+	var saved: float = listener.reference
+	listener.begin_reference(15000)
+	acquire(listener, signal_samples(220, 0.04, 0.4), 57, 22600)
+	listener.analyze_at(23000)
+	check(listener.reference_status == "INPUT_REFERENCE_FAILED" and listener.reference == saved, "wrong octave times out without overwriting the reference")
+	listener.begin_reference(24000)
+	acquire(listener, signal_samples(445, 0.04, 0.22), 69, 24000)
+	listener.capture.stop()
+	check(not listener.setup_active() and listener.reference == saved, "disconnect discards partial reference evidence")

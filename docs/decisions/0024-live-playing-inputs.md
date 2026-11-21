@@ -119,3 +119,19 @@ center-indicator hysteresis. Those display choices never modify pitch feedback
 or hands-free command evidence. Actual phone/piano sensitivity, guitar steadiness
 and singing accuracy still need hardware comparison; synthetic fixtures alone
 cannot establish them.
+
+## Fixed-pitch instrument reference (2026-11-21)
+
+The owner requested an explicit way to match an instrument that cannot be
+retuned. **Match my instrument** samples a held A4 while the tuner is listening.
+It takes the median of stable frequency readings and saves the result in the
+existing device-local A4 preference, at the manual control's 0.1 Hz precision.
+Automatic matching accepts the key nearest standard A4. The manual field
+retains its 400–480 Hz range. **Restore 440 Hz** restores concert pitch.
+Only microphone pitch interpretation uses this setting. Room setup continues
+to measure the background independently.
+
+The listener now compares the latest audio against the captured periods
+available for its instrument range. Fresh analyses can run 20 ms apart. Evidence
+and remaining hardware questions are in the
+[quiet-input evaluation](../evidence/quiet-input-2026-11-21.md).

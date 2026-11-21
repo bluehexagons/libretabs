@@ -18,6 +18,10 @@ var listen_check: CheckButton
 var timing_check: CheckButton
 var latency: SpinBox
 var mic_reference: SpinBox
+var match_reference: Button
+var restore_reference: Button
+var reference_feedback: Label
+var measured_pitch: Label
 var last_result: Dictionary = {}
 var suspended: bool = false
 var command_status: Label
@@ -157,12 +161,34 @@ func _ready() -> void:
 		quick_controls_changed.emit())
 	action(setup_actions, "INPUT_SETUP_CANCEL", func() -> void: listener.invalidate_setup())
 	setup_label = caption("INPUT_SETUP_IDLE")
+	measured_pitch = caption("INPUT_REFERENCE_NO_READING")
 	mic_reference = number("INPUT_REFERENCE", 400, 480, 440)
 	mic_reference.step = 0.1
 	mic_reference.value_changed.connect(func(value: float) -> void:
 		listener.reference = value
 		listener.reset()
+		update_reference_controls()
 		preference_changed.emit())
+	var reference_actions: MenuGrid = MenuGrid.new()
+	reference_actions.max_columns = 2
+	reference_actions.minimum_ems = 9
+	add_child(reference_actions)
+	match_reference = action(reference_actions, "INPUT_REFERENCE_MATCH", func() -> void:
+		if listener.reference_deadline > 0:
+			listener.reset()
+		else:
+			stop_playback.emit()
+			listener.begin_reference(Time.get_ticks_msec()))
+	restore_reference = action(reference_actions, "INPUT_REFERENCE_RESTORE", func() -> void: mic_reference.value = 440.0)
+	for button: Button in [match_reference, restore_reference]:
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	reference_feedback = caption("INPUT_REFERENCE_IDLE")
+	listener.reference_matched.connect(func(hz: float) -> void:
+		mic_reference.set_value_no_signal(hz)
+		preference_changed.emit())
+	settings_body.visibility_changed.connect(func() -> void:
+		if settings_body.is_visible_in_tree(): update_reading()
+		elif listener.reference_deadline > 0: listener.reset())
 	timing_check = toggle("INPUT_MIC_TIMING", false, func(_enabled: bool) -> void: listener.reset())
 	timing_check.tooltip_text = tr("INPUT_MIC_TIMING_HELP")
 	latency = number("INPUT_OFFSET", 0, 500, 0)
@@ -233,6 +259,7 @@ func apply_preferences(values: Dictionary) -> void:
 	listener.reset()
 	# Stored setup choices never grant permission or restore capture/calibration.
 	timing_check.set_pressed_no_signal(false)
+	update_reference_controls()
 	update_reading()
 
 func set_listening(enabled: bool) -> void:
@@ -302,11 +329,22 @@ func update_microphone() -> void:
 		mic_picker.select(mic_picker.item_count - 1)
 	if not listener.capture.enabled: listen_check.set_pressed_no_signal(false)
 	sync_practice_listening()
+	update_reference_controls()
 	# Capture status may change without a new pitch observation.
 	update_reading()
 
+func update_reference_controls() -> void:
+	if reference_feedback == null: return
+	var receiving: bool = listener.capture.enabled and listener.capture.status == "INPUT_MIC_READY"
+	var matching: bool = listener.reference_deadline > 0
+	match_reference.disabled = not receiving or listener.paused or (listener.setup_active() and not matching)
+	match_reference.text = tr("INPUT_REFERENCE_CANCEL" if matching else "INPUT_REFERENCE_MATCH")
+	restore_reference.disabled = matching or is_equal_approx(listener.reference, 440.0)
+	reference_feedback.text = tr(listener.reference_status) % listener.reference if listener.reference_status == "INPUT_REFERENCE_DONE" else tr(listener.reference_status)
+
 func update_setup() -> void:
 	if setup_label == null: return
+	update_reference_controls()
 	setup_label.text = tr("INPUT_SETUP_NOTE_COUNT") % listener.setup_notes if listener.setup_state == "INPUT_SETUP_NOTES" else tr(listener.setup_state)
 	update_reading()
 
@@ -316,7 +354,7 @@ func show_observation(result: Dictionary) -> void:
 	update_reading()
 	if not is_instance_valid(live): return
 	var permitted: bool = practice_listening_active() and (not allow_notes.is_valid() or allow_notes.call())
-	if listener.setup_state in ["INPUT_SETUP_QUIET", "INPUT_SETUP_NOTES"]: permitted = false
+	if listener.setup_active(): permitted = false
 	if permitted: live.observe_pitch(result, latency.value, timing_check.button_pressed)
 	else: live.release("microphone:0")
 
@@ -329,7 +367,7 @@ func update_reading() -> void:
 	if listener.capture.enabled and listener.paused: level_key = "INPUT_LEVEL_PAUSED"
 	elif receiving and listener.setup_state == "INPUT_SETUP_QUIET": level_key = "INPUT_LEVEL_CALIBRATING"
 	elif measured:
-		level_key = "INPUT_LEVEL_CLIP" if float(last_result.get("peak", 0)) >= 0.98 else ("INPUT_LEVEL_OK" if float(last_result.get("band_rms", 0)) >= listener.effective_gate() else "INPUT_LEVEL_QUIET")
+		level_key = "INPUT_LEVEL_CLIP" if float(last_result.get("peak", 0)) >= 0.98 else ("INPUT_LEVEL_OK" if float(last_result.get("band_rms", last_result.get("rms", 0))) >= listener.effective_gate() else "INPUT_LEVEL_QUIET")
 	mic_level_text.text = tr(level_key)
 	var valid: bool = measured and bool(last_result.get("valid", false))
 	var expected_pitch: int = roundi(last_result.pitch) if valid and target < 0 else target
@@ -338,7 +376,12 @@ func update_reading() -> void:
 	if not listener.capture.enabled: tuner_key = "INPUT_TUNER_START"
 	elif listener.paused: tuner_key = "INPUT_TUNER_PAUSED"
 	elif receiving and listener.setup_state == "INPUT_SETUP_QUIET": tuner_key = "INPUT_SETUP_QUIET"
+	elif listener.reference_deadline > 0: tuner_key = "INPUT_REFERENCE_PLAY"
 	gauge.observe(valid, expected_pitch, deviation, tuner_key)
+	if valid and settings_body.is_visible_in_tree():
+		measured_pitch.text = tr("INPUT_TUNER_VALUE") % [LivePlaying.note_name(roundi(last_result.pitch)), last_result.hz, deviation]
+	else:
+		measured_pitch.text = tr("INPUT_REFERENCE_NO_READING")
 	if lock_target != null: lock_target.disabled = not gauge.active
 
 func suspend_capture() -> void:

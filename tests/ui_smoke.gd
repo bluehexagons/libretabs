@@ -502,6 +502,35 @@ func run() -> void:
 	check(listening.practice_listening_active() and app.get("opened_drawer") == "TUNER" and not app.get("live").piano.visible, "ready microphone leaves the tuner open and the keyboard hidden")
 	listening.listen_check.button_pressed = false
 	check(capture.enabled and not listening.practice_listening_active(), "switching off score notes keeps the tuner listening")
+	root.size = Vector2i(360, 740)
+	app.call("apply_scale", 2.0)
+	listening.settings_toggle.button_pressed = true
+	await settle(app)
+	listening.match_reference.grab_focus()
+	await settle(app)
+	var menu_view: Rect2 = app.get("menu_scroll").get_global_rect()
+	check(listening.match_reference.has_focus() and menu_view.encloses(listening.match_reference.get_global_rect()), "pitch match is keyboard-reachable at phone width with 200 percent text")
+	check(not listening.match_reference.disabled and listening.restore_reference.disabled, "ready capture offers instrument matching at the standard reference")
+	listening.match_reference.pressed.emit()
+	check(listening.listener.setup_active() and not app.call("audio_commands_available"), "reference matching suspends hands-free note commands")
+	listening.match_reference.pressed.emit()
+	check(not listening.listener.setup_active() and listening.listener.reference == 440, "Cancel pitch match keeps the previous reference")
+	listening.match_reference.pressed.emit()
+	var match_time: int = Time.get_ticks_msec()
+	for block: int in range(28):
+		var pcm: PackedFloat32Array = PackedFloat32Array()
+		pcm.resize(960)
+		for i: int in range(pcm.size()): pcm[i] = 0.008 * sin(TAU * 442 * (block * 960 + i) / 48000.0)
+		match_time += 20
+		listening.listener.accept_samples(pcm, 48000, 0, match_time)
+		listening.listener.analyze_at(match_time)
+	check(is_equal_approx(listening.mic_reference.value, 442.0) and is_equal_approx(app.call("preference_values").tuner_reference, 442.0), "measured reference updates the visible value and saved preference")
+	check(listening.reference_feedback.text == app.tr("INPUT_REFERENCE_DONE") % 442.0 and not listening.restore_reference.disabled, "confirmed measurement names the new reference and offers a reset")
+	listening.restore_reference.pressed.emit()
+	check(listening.listener.reference == 440 and listening.restore_reference.disabled, "Restore 440 Hz resets only the reference")
+	listening.match_reference.pressed.emit()
+	listening.settings_toggle.button_pressed = false
+	check(not listening.listener.setup_active(), "closing reference controls cancels a pending match")
 	capture.stop()
 	listening.listen_check.button_pressed = true
 	listening.listen_check.button_pressed = false
@@ -511,6 +540,9 @@ func run() -> void:
 	check(not listening.listen_check.button_pressed and not listening.practice_listening_active(), "a late READY respects the off switch")
 	capture.stop()
 	app.call("close_menu")
+	root.size = Vector2i(1280, 800)
+	app.call("apply_scale", 1.0)
+	await settle(app)
 	check(app.get("song").source.bytes_copy() == source, "practice actions preserve exact source MIDI")
 	var speed_audit: RefCounted = load("res://tests/helpers/speed_controls.gd").new()
 	await speed_audit.run(app, self, Callable(self, "settle"))

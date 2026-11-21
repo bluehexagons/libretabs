@@ -200,7 +200,7 @@ layout/octave/visibility/feedback, regular reading mode, pinned songs, song sort
 pause after seeking, note highlights and tuner
 instrument/sensitivity/reference. It also keeps the existing appearance, text,
 interface, notation rows, handedness, control edge and regular/Theater layout
-preferences. Microphone/controller connections, calibration and temporary musical
+preferences. Microphone/controller connections, room setup and temporary musical
 muting still need an explicit action each session.
 
 Open **Menu → Help & app → Reset settings** to restore defaults after confirmation. It
@@ -555,16 +555,26 @@ actions. Keyboard focus also scrolls controls into view.
 6. Expand **Settings** to change the device, sensitivity, pitch reference or
    timing compensation. Changing devices stops capture; press Start again. A4
    defaults to 440 Hz. **Check room noise** measures three quiet seconds followed
-   by three separate steady notes; use it when background sound causes detections.
+   by three separate steady notes. Use it when background sound causes detections.
    Higher sensitivity accepts softer notes but never goes below a measured noise
-   floor. Setup does not change the tuning reference. **Tuning help** has the note
-   range, target and privacy details.
+   floor. The input meter shows how much sound reaches the microphone. Once a
+   note is clear, Settings also shows its measured frequency in hertz (cycles
+   per second) and its distance from the target in cents (100 cents is one
+   semitone, the distance between neighboring piano keys).
+7. To match a fixed-pitch instrument such as an electronic piano, leave the
+   microphone listening and choose **Settings → Match my instrument**. On the
+   piano, play **A4**, the A above middle C, on its own without the sustain pedal.
+   Hold it until the tuner confirms the measured frequency. LibreTabs remembers
+   that A4 on this device and uses it for the tuner and microphone practice.
+   **Restore 440 Hz** returns to standard concert pitch. The manual reference
+   field also accepts a known frequency. Room setup measures only background
+   sound. **Tuning help** has the note range, target and privacy details.
 
 Listening is designed for one note at a time. Dampen ringing guitar strings and
 avoid piano sustain during these exercises. Even when a song expects one note,
 other audible sounds can confuse the detector; it cannot reliably recognize and
 reject every chord. Clean electric guitar through an interface is a useful setup.
-Evaluation ranges are A1–C7 for both pianos, D2–F6 for guitars, A1–F6 for
+Evaluation ranges are A0–C7 for both pianos, D2–F6 for guitars, A1–F6 for
 voice, A0–F5 for bass, F#3–C7 for violin and F#3–F6 for ukulele. These are
 detector limits, not claims about a singer’s range.
 Distortion, effects, very low piano notes and real-device accuracy remain testing
@@ -579,7 +589,7 @@ microphone timing again. Keyboard/MIDI timing is also approximate.
 
 Stop microphone releases the stream. Hiding the app or leaving its window stops
 active capture; returning does not restart it automatically. Tuner instrument,
-sensitivity and reference are remembered. Devices, targets and calibration last
+sensitivity and pitch reference are remembered. Devices, targets and room setup last
 for this session; audio is never saved or uploaded.
 
 ## Hands-free note commands

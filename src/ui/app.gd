@@ -3088,7 +3088,7 @@ func update_arrangement() -> void:
 	for diagnostic: String in song.diagnostics: warning.text += "\n" + tr(diagnostic)
 
 func audio_commands_available() -> bool:
-	return listening != null and listening.listener.capture.enabled and listening.listener.capture.status == "INPUT_MIC_READY" and not listening.suspended and not listening.listener.paused and listening.listener.setup_state not in ["INPUT_SETUP_QUIET", "INPUT_SETUP_NOTES"] and song != null and importer == null and not capture_active and (not menu_overlay.visible or opened_drawer in ["TUNER", "AUDIO_COMMANDS"]) and (picker_overlay == null or not picker_overlay.visible)
+	return listening != null and listening.listener.capture.enabled and listening.listener.capture.status == "INPUT_MIC_READY" and not listening.suspended and not listening.listener.paused and not listening.listener.setup_active() and song != null and importer == null and not capture_active and (not menu_overlay.visible or opened_drawer in ["TUNER", "AUDIO_COMMANDS"]) and (picker_overlay == null or not picker_overlay.visible)
 
 func run_audio_command(command: String) -> void:
 	if audio_commands == null or not audio_commands.enabled or not audio_commands_available() or command not in AudioCommands.CHOICES.values(): return

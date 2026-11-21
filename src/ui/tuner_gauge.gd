@@ -39,7 +39,7 @@ func _ready() -> void:
 	reading_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	reading_label.examples = func() -> Array[String]:
 		var examples: Array[String] = []
-		for key: String in ["INPUT_TUNER_START", "INPUT_TUNER_PAUSED", "INPUT_TUNER_NO_AUDIO", "INPUT_TUNER_WAIT", "INPUT_SETUP_QUIET", "INPUT_GAUGE_CENTER", "INPUT_GAUGE_LOW", "INPUT_GAUGE_HIGH"]:
+		for key: String in ["INPUT_TUNER_START", "INPUT_TUNER_PAUSED", "INPUT_TUNER_NO_AUDIO", "INPUT_TUNER_WAIT", "INPUT_SETUP_QUIET", "INPUT_REFERENCE_PLAY", "INPUT_GAUGE_CENTER", "INPUT_GAUGE_LOW", "INPUT_GAUGE_HIGH"]:
 			examples.append(tr(key))
 		return examples
 	add_child(reading_label)
