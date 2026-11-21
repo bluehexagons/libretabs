@@ -44,14 +44,21 @@ func _ready() -> void:
 	capture.process_priority = process_priority - 1
 	add_child(capture)
 	capture.samples_ready.connect(accept_samples)
-	capture.interrupted.connect(reset)
+	capture.interrupted.connect(func() -> void:
+		reset(capture.enabled and capture.status == "INPUT_MIC_READY"))
 	capture.changed.connect(func() -> void: set_process(capture.enabled))
 	set_process(false)
 	set_profile(profile)
 
-func reset() -> void:
+func reset(capture_gap: bool = false) -> void:
 	detector.reset()
-	if reference_status != "INPUT_REFERENCE_IDLE": end_reference("INPUT_REFERENCE_IDLE")
+	if capture_gap:
+		# Discard every pre-gap reading, but keep the learner's request armed
+		# until its original deadline while the same microphone is still live.
+		reference_samples.clear()
+		reference_last = -1
+	elif reference_status != "INPUT_REFERENCE_IDLE":
+		end_reference("INPUT_REFERENCE_IDLE")
 	candidate = -1
 	stable = 0
 	last_block = 0
@@ -154,7 +161,7 @@ func sample_reference(result: Dictionary, sample_ms: int) -> void:
 	if not result.valid or result.confidence < 0.95 or roundi(PitchDetector.midi_pitch(hz)) != 69:
 		reference_samples.clear()
 		return
-	if sample_ms <= reference_last or sample_ms - reference_last > 100: reference_samples.clear()
+	if sample_ms <= reference_last or sample_ms - reference_last > 250: reference_samples.clear()
 	reference_last = sample_ms
 	if not reference_samples.is_empty():
 		var spread: float = maxf(hz, reference_samples.max()) / minf(hz, reference_samples.min())
@@ -174,11 +181,11 @@ func accept_samples(block: PackedFloat32Array, rate: float, age_ms: float, clock
 	if paused: return
 	var now: int = Time.get_ticks_msec() if clock_msec < 0 else clock_msec
 	if not is_finite(age_ms) or age_ms < 0 or age_ms > 250:
-		reset()
+		reset(true)
 		return
-	if last_block > 0 and (now - last_block > 250 or rate != detector.input_rate): reset()
+	if last_block > 0 and (now - last_block > 250 or rate != detector.input_rate): reset(true)
 	if not detector.push(block, rate):
-		reset()
+		reset(true)
 		return
 	last_block = now
 	last_age = age_ms
@@ -212,7 +219,7 @@ func analyze_at(now: int) -> void:
 		setup_changed.emit()
 	if last_block == 0 or now - last_block + last_age > 250 or setup_state == "INPUT_SETUP_QUIET":
 		if last_block > 0 and now - last_block + last_age > 250:
-			reset()
+			reset(true)
 			return
 		latest = {"valid": false}
 		observation.emit(latest)
