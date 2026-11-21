@@ -110,8 +110,9 @@ func update_input_visibility() -> void:
 func idle_message() -> String:
 	return tr("INPUT_MIC_PRACTICE_IDLE" if microphone_feedback else "INPUT_IDLE")
 
-func configure(song: SongDocument, part: int) -> void:
+func configure(song: SongDocument, part: int, bass: bool = false) -> void:
 	clear()
+	notes.bass = bass
 	feedback.configure(song, part)
 
 func press(id: String, pitch: int, velocity: int = 100, source: String = "keys", delay_ms: float = 0, precise: bool = true) -> void:

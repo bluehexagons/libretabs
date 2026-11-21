@@ -157,8 +157,10 @@ func run() -> void:
 	listener.analyze_at(clock + 200)
 	check(not listener.latest.valid, "resumed tuner must acquire a fresh pitch window")
 	clock += 1000
-	for profile: int in [PitchListener.Profile.ACOUSTIC_PIANO, PitchListener.Profile.ELECTRONIC_PIANO]:
-		for low_pitch: int in [21, 28]:
+	for profile: int in [PitchListener.Profile.ACOUSTIC_PIANO, PitchListener.Profile.ELECTRONIC_PIANO, PitchListener.Profile.BASS]:
+		var pitches: Array[int] = [21, 28]
+		if profile == PitchListener.Profile.BASS: pitches = TabProjection.BASS_TUNING
+		for low_pitch: int in pitches:
 			listener.set_profile(profile)
 			var low_hz: float = 440.0 * pow(2.0, (low_pitch - 69.0) / 12.0)
 			var bass_signal: PackedFloat32Array = tone(low_hz, 48000, true)
@@ -166,7 +168,7 @@ func run() -> void:
 				listener.accept_samples(bass_signal.slice(index, mini(bass_signal.size(), index + 1024)), 48000, 0, clock)
 				clock += 21
 				listener.analyze_at(clock)
-			check(listener.latest.valid and absf(listener.latest.get("pitch", -1.0) - low_pitch) < 0.05, "piano profile %d detects low MIDI pitch %d" % [profile, low_pitch])
+			check(listener.latest.valid and absf(listener.latest.get("pitch", -1.0) - low_pitch) < 0.05, "profile %d detects low MIDI pitch %d" % [profile, low_pitch])
 	listener.set_profile(PitchListener.Profile.BASS)
 	check(listener.open_strings() == [28, 33, 38, 43] and listener.detector.minimum_hz == 27.5, "bass targets include low E in the detection range")
 	listener.set_profile(PitchListener.Profile.VIOLIN)

@@ -203,6 +203,15 @@ func bass_staff_input(app: Control, listening: ListeningControls) -> void:
 	listening.listener.observation.emit({"valid": false})
 	check(score.live_notes.is_empty(), "uncertain input clears the bass staff marker")
 	playing.context = previous_context
+	app.call("apply_preset", "electric_bass")
+	check(score.part == score.staff_pair[1] and score.projection.string_count() == 4 and listening.listener.profile == PitchListener.Profile.BASS, "Electric bass selects four-string tab, the lower part and the tuner profile")
+	check(NotationRows.has_bass_tab(score.notation_rows) and not playing.piano.visible, "electric bass uses bass tabs without showing piano keys")
+	listening.listener.observation.emit({"valid": true, "fresh": true, "hz": 41.2034, "pitch": 28.0, "rms": 0.1, "peak": 0.2})
+	var low_e: Dictionary = playing.notes.held.get("microphone:0", {})
+	check(low_e.get("string") == 4 and low_e.get("fret") == 0 and score.row_accepts_live("bass", low_e), "detected E1 appears as the open fourth string and belongs to the bass staff")
+	var bass_tick: float = app.get("source_tick")
+	app.call("apply_preset", "guitar")
+	check(score.part == score.staff_pair[0] and score.projection.string_count() == 6 and app.get("source_tick") == bass_tick, "guitar returns to the higher part at the same song position")
 	listening.listen_check.button_pressed = false
 	listening.listener.observation.emit(observation)
 	check(score.live_notes.is_empty() and listening.gauge.active and not playing.visible, "switch off hides score feedback and keeps the tuner reading")

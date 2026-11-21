@@ -65,7 +65,7 @@ func draw_shape_cue(center: Vector2, token: String, color: Color, radius: float 
 func draw_measure(index: int, origin: Vector2, width: float) -> void:
 	var has_staff: bool = notation != "tab"
 	var has_tab: bool = notation in ["both", "tab"]
-	var clef: String = notation if notation in ["treble", "bass"] else "staff"
+	var clef: String = notation if notation in ["treble", "bass"] else ("bass" if projection != null and projection.bass else "staff")
 	var bar: Dictionary = song.measures[index]
 	var left: float = origin.x if continuous else origin.x + 44
 	var right: float = origin.x + width if continuous or joined_print else origin.x + width - 12
@@ -92,12 +92,15 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 		if not continuous: text_at(Vector2(left + 2, top + 13), str(bar.numerator), 13)
 		if not continuous: text_at(Vector2(left + 2, top + 29), str(bar.denominator), 13)
 	if has_tab:
-		for string_index: int in range(6):
+		var strings: int = projection.string_count() if projection != null else TabProjection.TUNING.size()
+		for string_index: int in range(strings):
 			var y: float = tab_top + string_index * 21
-			if not continuous: text_at(Vector2(origin.x + 12, y + 5), str(string_index + 1), 13, muted)
+			if not continuous:
+				var caption: String = projection.string_label(string_index + 1) if projection != null else str(string_index + 1)
+				text_at(Vector2(origin.x + 12, y + 5), caption, 13, muted)
 			draw_line(Vector2(left, y), Vector2(right, y), muted, 1, true)
 		if has_staff: draw_line(Vector2(right, top), Vector2(right, top + 4 * ScoreLayout.STAFF_SPACE), ink, 1.5)
-		draw_line(Vector2(right, tab_top), Vector2(right, tab_top + 105), ink, 1.5)
+		draw_line(Vector2(right, tab_top), Vector2(right, tab_top + (strings - 1) * 21), ink, 1.5)
 	if has_staff and not has_tab: draw_line(Vector2(right, top), Vector2(right, top + 4 * ScoreLayout.STAFF_SPACE), ink, 1.5)
 	var music_left: float = origin.x + (16 if continuous else 68)
 	var span: float = width if continuous else width - 92
@@ -119,7 +122,7 @@ func draw_measure(index: int, origin: Vector2, width: float) -> void:
 		var color: Color = get_theme_color("ink" if clef in ["treble", "bass"] else ScoreLayout.placement_color_token(projection, note), "LibreTabs")
 		if has_staff:
 			if y >= origin.y + 12 and y <= origin.y + 172:
-				# Ledger lines in octave-transposing guitar treble.
+				# Ledger lines for notes beyond the five staff lines.
 				for ledger: int in range(1, 12):
 					var below: float = top + 4 * ScoreLayout.STAFF_SPACE + ledger * ScoreLayout.STAFF_SPACE
 					var above: float = top - ledger * ScoreLayout.STAFF_SPACE

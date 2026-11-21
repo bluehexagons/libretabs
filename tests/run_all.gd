@@ -326,6 +326,20 @@ func _initialize() -> void:
 		if projection.placements.has(note.id):
 			var p: Dictionary = projection.placements[note.id]
 			check(TabProjection.TUNING[6 - int(p.string)] + int(p.fret) == int(note.pitch), "fret reproduces source pitch")
+	var bass_song: SongDocument = SongDocument.new()
+	var bass_pitches: Array[int] = [28, 33, 38, 43, 63, 64, 27]
+	for index: int in range(bass_pitches.size()):
+		bass_song.notes.append({"id": index, "part": 0, "pitch": bass_pitches[index], "start": index * 480, "end": (index + 1) * 480})
+	var bass_source: Array[Dictionary] = bass_song.notes.duplicate(true)
+	projection.build(bass_song, 0, TabProjection.PICK, true)
+	check(projection.string_count() == 4 and projection.style == TabProjection.BASIC and projection.barres.is_empty(), "bass uses four strings without guitar picking annotations")
+	for index: int in range(4):
+		check(projection.placements[index].string == 4 - index and projection.placements[index].fret == 0, "bass open string uses G–D–A–E tab order")
+	check(projection.placements[4].fret == 20 and projection.omitted == [5, 6], "bass keeps fret 20 and reports pitches outside its range")
+	check(bass_song.notes == bass_source, "bass projection preserves sounding pitches and timing")
+	var bass_rows: Array[Dictionary] = [{"type": "bass", "height": 160}, {"type": "bass_tab", "height": 144}]
+	check(NotationRows.decode(NotationRows.encode(bass_rows)).rows == bass_rows, "saved bass layout round-trips")
+	check(not NotationRows.valid(bass_rows + [{"type": "tab", "height": 144}]), "a layout has one tab tuning")
 	var leading_measures: SongDocument = SongDocument.new()
 	leading_measures.end_tick = 5760
 	leading_measures.notes = [{"id": 40, "part": 0, "pitch": 64, "start": 1440, "end": 1920}, {"id": 41, "part": 1, "pitch": 60, "start": 3840, "end": 4320}]

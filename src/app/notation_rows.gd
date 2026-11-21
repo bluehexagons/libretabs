@@ -7,7 +7,7 @@ const MAX_ROWS: int = 32
 const MIN_HEIGHT: int = 96
 const MAX_HEIGHT: int = 480
 const MAX_BYTES: int = 2048
-const TYPES: Array[String] = ["staff", "tab", "piano", "treble", "bass", "mini_treble", "mini_bass"]
+const TYPES: Array[String] = ["staff", "tab", "piano", "treble", "bass", "mini_treble", "mini_bass", "bass_tab"]
 const DEFAULT_ROWS: Array[Dictionary] = [
 	{"type": "staff", "height": 144},
 	{"type": "tab", "height": 176},
@@ -25,7 +25,13 @@ static func valid(rows: Variant) -> bool:
 		if not (height is int or height is float): return false
 		if not is_finite(float(height)) or float(height) != floorf(float(height)): return false
 		if int(height) < MIN_HEIGHT or int(height) > MAX_HEIGHT: return false
-	return true
+	return not (has_bass_tab(rows) and rows.any(func(row: Dictionary) -> bool: return row.type == "tab"))
+
+static func is_tab(type: String) -> bool:
+	return type in ["tab", "bass_tab"]
+
+static func has_bass_tab(rows: Array) -> bool:
+	return rows.any(func(row: Dictionary) -> bool: return row.type == "bass_tab")
 
 static func clean(rows: Array) -> Array[Dictionary]:
 	if not valid(rows): return defaults()
@@ -89,5 +95,5 @@ static func row_top(rows: Array, index: int) -> float:
 
 static func mapped_y(rows: Array, index: int, native_y: float) -> float:
 	var row: Dictionary = rows[index]
-	if row.type == "tab": native_y -= 48.0
+	if is_tab(str(row.type)): native_y -= 48.0
 	return row_top(rows, index) + native_y * float(row.height) / native_height(str(row.type))

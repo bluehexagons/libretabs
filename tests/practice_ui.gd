@@ -84,7 +84,7 @@ func run() -> void:
 	app.get("catalog_search").text = ""
 	app.call("refresh_song_catalog")
 	check(app.get("title") == TranslationServer.translate("LIBRARY_ODE_TO_JOY"), "default library opens with Ode to Joy")
-	check(app.get("preset_choice_buttons").size() == 8, "all eight practice layouts remain available in their own menu")
+	check(app.get("preset_choice_buttons").size() == 9, "all nine practice layouts remain available in their own menu")
 	check(app.get("opened_drawer") == "WELCOME" and app.get("startup_help_check").button_pressed, "first startup opens quick start with the opt-out enabled")
 	check(app.get("welcome_read").is_visible_in_tree(), "Quick start includes a short reading cue")
 	for factor: float in [1.0, 2.0]:

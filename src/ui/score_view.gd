@@ -537,14 +537,14 @@ func draw_cursor(surface: Control) -> void:
 				var type: String = str(row.type)
 				var row_index: int = int(row.index)
 				if not row_accepts_note(type, note): continue
-				if type == "tab" and projection.placements.has(note.id):
+				if NotationRows.is_tab(type) and projection.placements.has(note.id):
 					var placement: Dictionary = projection.placements[note.id]
 					var y: float = origin.y + mapped_row_y(row_index, ScoreLayout.tab_y(int(placement.string), drawing_notation()))
 					var half: float = ui_font.get_string_size(str(placement.fret), HORIZONTAL_ALIGNMENT_LEFT, -1, row_text_size(row_index, 26)).x / 2 + 4
 					if upcoming or sounding: draw_note_mark(surface, Vector2(x, y), half, upcoming, note, minf(14, mapped_row_distance(row_index, 14)))
 					if onset_here and onset_phase >= 0: draw_ripple(surface, Vector2(x, y), note, onset_phase)
 				elif type in ["staff", "treble", "bass", "mini_treble", "mini_bass"]:
-					var clef: String = NotationRows.clef(type)
+					var clef: String = staff_clef(type)
 					var y: float = origin.y + mapped_row_y(row_index, ScoreLayout.staff_y(int(note.pitch), clef))
 					var top: float = origin.y + mapped_row_y(row_index, 12)
 					var bottom: float = origin.y + mapped_row_y(row_index, 172)
@@ -597,14 +597,14 @@ func draw_live(surface: Control) -> void:
 			var row_index: int = int(row.index)
 			var type: String = str(row.type)
 			if type in ["staff", "treble", "bass", "mini_treble", "mini_bass"]:
-				var clef: String = NotationRows.clef(type)
+				var clef: String = staff_clef(type)
 				var expected: int = int(note.get("expected", -1))
 				if expected >= 0 and expected != int(note.pitch) and row_accepts_note(type, {"part": part, "pitch": expected}):
 					var native_y: float = ScoreLayout.staff_y(expected, clef)
 					if native_y >= 12 and native_y <= 172:
 						surface.draw_circle(Vector2(x + 15, origin.y + mapped_row_y(row_index, native_y)), 7, color, false, 2)
 				if row_accepts_live(type, note): draw_live_staff(surface, int(note.pitch), x, origin.y, row_index, color, clef)
-			elif row.type == "tab":
+			elif NotationRows.is_tab(str(row.type)) and (not projection.bass or note.has("fret")):
 				var y: float = origin.y + mapped_row_y(row_index, ScoreLayout.tab_y(int(note.get("string", 1)), drawing_notation()))
 				var text: String = str(note.fret) if note.has("fret") else "!"
 				if note.get("feedback_kind", "") in ["wrong", "octave"]: text += " ×"
@@ -643,11 +643,11 @@ func row_accepts_note(type: String, note: Dictionary) -> bool:
 	var row_part: int = NotationRows.part_for_row(type, part, staff_pair, drawing_rows())
 	if int(note.part) != row_part: return false
 	if not staff_pair.is_empty() or not NotationRows.has_staff_pair(drawing_rows()): return true
-	return int(note.pitch) >= 60 if NotationRows.clef(type) == "treble" else int(note.pitch) < 60 if NotationRows.clef(type) == "bass" else true
+	return int(note.pitch) >= 60 if staff_clef(type) == "treble" else int(note.pitch) < 60 if staff_clef(type) == "bass" else true
 
 func row_accepts_live(type: String, note: Dictionary) -> bool:
 	var pitch: int = int(note.pitch)
-	var clef: String = NotationRows.clef(type)
+	var clef: String = staff_clef(type)
 	# Keep an exact match beside its reference even if the source part crosses middle C.
 	if int(note.get("expected", -1)) != pitch and NotationRows.has_staff_pair(drawing_rows()):
 		if clef == "treble": return pitch >= 60
@@ -664,14 +664,18 @@ func mapped_row_distance(index: int, native_distance: float) -> float:
 func row_text_size(index: int, base: int) -> int:
 	return roundi(base * minf(1.0, mapped_row_distance(index, 1)))
 
+func staff_clef(type: String) -> String:
+	return "bass" if type == "staff" and projection != null and projection.bass else NotationRows.clef(type)
+
 func draw_reading_guide(surface: Control, row: Dictionary) -> void:
 	var row_index: int = int(row.index)
 	if row.type in ["staff", "treble", "bass", "mini_treble", "mini_bass"]:
-		surface.draw_string(music_font, Vector2(8, mapped_row_y(row_index, ScoreLayout.STAFF_TOP + 40.625)), String.chr(0xe062 if NotationRows.clef(str(row.type)) == "bass" else 0xe050), HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(mapped_row_distance(row_index, ScoreLayout.STAFF_FONT)), get_theme_color("ink", "LibreTabs"))
-		if row.type == "staff": surface.draw_string(ui_font, Vector2(17, mapped_row_y(row_index, 145)), "8", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, get_theme_color("ink", "LibreTabs"))
-	elif row.type == "tab":
-		for string_index: int in range(6):
-			surface.draw_string(ui_font, Vector2(14, mapped_row_y(row_index, ScoreLayout.tab_y(string_index + 1, drawing_notation())) + row_text_size(row_index, 6)), str(string_index + 1), HORIZONTAL_ALIGNMENT_LEFT, -1, row_text_size(row_index, 18), get_theme_color("muted", "LibreTabs"))
+		surface.draw_string(music_font, Vector2(8, mapped_row_y(row_index, ScoreLayout.STAFF_TOP + 40.625)), String.chr(0xe062 if staff_clef(str(row.type)) == "bass" else 0xe050), HORIZONTAL_ALIGNMENT_LEFT, -1, roundi(mapped_row_distance(row_index, ScoreLayout.STAFF_FONT)), get_theme_color("ink", "LibreTabs"))
+		if staff_clef(str(row.type)) == "staff": surface.draw_string(ui_font, Vector2(17, mapped_row_y(row_index, 145)), "8", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, get_theme_color("ink", "LibreTabs"))
+	elif NotationRows.is_tab(str(row.type)):
+		for string_index: int in range(projection.string_count()):
+			var caption: String = projection.string_label(string_index + 1)
+			surface.draw_string(ui_font, Vector2(8 if projection.bass else 14, mapped_row_y(row_index, ScoreLayout.tab_y(string_index + 1, drawing_notation())) + row_text_size(row_index, 6)), caption, HORIZONTAL_ALIGNMENT_LEFT, -1, row_text_size(row_index, 18), get_theme_color("muted", "LibreTabs"))
 
 func draw_piano_rows(surface: Control) -> void:
 	if drawing_rows().is_empty(): return

@@ -1,4 +1,5 @@
 # Decision records
+[0031 — Electric bass practice](0031-electric-bass-practice.md) adds four-string tablature and ties the practice preset to the bass tuner profile.
 
 [0028 — Saved settings and manual learning progress](0028-settings-and-manual-learning-progress.md)
 extends device preferences, scopes reset actions, and adds reversible learned marks

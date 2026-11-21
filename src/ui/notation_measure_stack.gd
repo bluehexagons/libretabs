@@ -40,11 +40,11 @@ func add_canvas(type: String, top: float, height: float, native_height: float, s
 	canvas.projection = projection
 	canvas.index = index
 	canvas.continuous = continuous
-	canvas.notation = NotationRows.clef(type)
+	canvas.notation = "tab" if NotationRows.is_tab(type) else NotationRows.clef(type)
 	canvas.compact_staff = type in ["mini_treble", "mini_bass"]
 	canvas.split_staff = split_staff and NotationRows.clef(type) in ["treble", "bass"]
 	canvas.shape_cues = shape_cues
-	canvas.tab_y_offset = -48 if type == "tab" and not notation_rows.is_empty() else 0
+	canvas.tab_y_offset = -48 if NotationRows.is_tab(type) and not notation_rows.is_empty() else 0
 	canvas.show_measure_title = show_title
 	canvas.ui_font = ui_font
 	canvas.music_font = music_font

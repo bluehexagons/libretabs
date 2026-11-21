@@ -323,6 +323,28 @@ including notes omitted from the tab. MIDI generally does not say which guitar
 finger, pick direction, slide or bend to use, so these tabs are not an exact
 transcription of someone's guitar performance.
 
+## Practice with an electric bass
+
+Open **Menu → Practice → Practice layouts → Electric bass**. The layout shows a
+bass staff at sounding pitch and four lines of tablature, G–D–A–E from top to
+bottom. Each number is a fret and 0 means to play the open string. With two
+pitched parts, it selects the lower one. For a file with more parts, select
+your part in **Songs → Import & exercises**. **Bass focus** gives the lower
+staff more room and keeps a small treble staff visible. **Treble focus** puts
+the higher part first. Switching between these layouts keeps the song position.
+
+The bass tab suggests finger positions in standard E1–A1–D2–G2 tuning through
+fret 20. Check **About this arrangement** for any notes missing from the tab.
+Those notes still sound and remain in the source part. For print or capture,
+choose tabs or a staff with tabs while the Electric bass layout is active.
+
+To hear your electric bass through the tuner, plug it into an audio interface
+using its instrument input. In **Tuner → Settings**, select the device, then
+press **Start listening** and grant access if prompted. Electric bass sets the
+tuner to **Bass guitar**. Play one string at a time. Turn on **Show notes on
+score**, then close the tuner to see what the app detects while you play. The
+app shows the pitch and a suggested fret. Use headphones when playing along.
+
 ## Make the music easier to see
 
 Open **Menu → Practice → Practice layouts** (or choose a layout in **Quick start**) for
@@ -336,9 +358,8 @@ the selected part more room and show the other part on a smaller five-line
 Most bass lines were written for practice. Canon in D uses Pachelbel’s
 repeating bass pattern.
 **Try the piano example** loads an original short piece with separately
-selectable treble and bass parts. Piano keys can also show which notes sound now. Piano and bass staffs show actual sounding
-pitches; guitar tabs still describe six-string E-standard guitar and are not
-bass-guitar fingering. A two-part piano layout places the higher and lower
+selectable treble and bass parts. Piano keys can also show which notes sound now. Piano and bass staffs show actual sounding pitches. Guitar layouts use
+six strings in standard tuning. A two-part piano layout places the higher and lower
 parts on the respective staffs. With a single MIDI part, it splits notes at
 middle C as a reading aid. A file with more than two pitched parts still
 requires selecting one practice part; it is not automatically arranged for two
@@ -519,7 +540,7 @@ actions. Keyboard focus also scrolls controls into view.
    keeping the metronome and count-in audible. Saved volumes and playback position
    are preserved. The same switch is available beside the practice controls.
    Use headphones if the microphone picks up the clicks.
-4. Turn on **Show microphone notes on score**, then close the tuner. The switch
+4. Turn on **Show notes on score**, then close the tuner. The switch
    starts or resumes listening if needed, and the on-screen keyboard is a
    separate choice. Turn the switch off to use the tuner by itself. On paired piano staffs,
    detected notes below middle C appear on the bass staff and matching notes
@@ -530,13 +551,13 @@ actions. Keyboard focus also scrolls controls into view.
 5. **Pause listening** temporarily pauses analysis and feedback without repeating
    permissions. **Resume listening** waits for a fresh note. The microphone icons
    beside the player provide the same actions, with help on long press or hover.
-   **Stop microphone**, under Input settings, releases capture.
-6. Expand **Input settings** to change the device, sensitivity, pitch reference or
+   **Stop microphone**, under Settings, releases capture.
+6. Expand **Settings** to change the device, sensitivity, pitch reference or
    timing compensation. Changing devices stops capture; press Start again. A4
    defaults to 440 Hz. **Check room noise** measures three quiet seconds followed
    by three separate steady notes; use it when background sound causes detections.
    Higher sensitivity accepts softer notes but never goes below a measured noise
-   floor. Setup does not change the tuning reference. **Tuner help** has the note
+   floor. Setup does not change the tuning reference. **Tuning help** has the note
    range, target and privacy details.
 
 Listening is designed for one note at a time. Dampen ringing guitar strings and

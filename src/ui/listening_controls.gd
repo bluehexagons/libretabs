@@ -213,6 +213,11 @@ func group_field(parent: VBoxContainer, title: Label, control: Control) -> void:
 	field.theme_changed.connect(reflow)
 	reflow.call()
 
+func select_profile(index: int) -> void:
+	if instrument_picker.selected == index: return
+	instrument_picker.select(index)
+	instrument_picker.item_selected.emit(index)
+
 func preference_values() -> Dictionary:
 	return {"tuner_profile": PitchListener.PROFILE_IDS[listener.profile], "tuner_sensitivity": roundi(sensitivity.value), "tuner_reference": listener.reference}
 

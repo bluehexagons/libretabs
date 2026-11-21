@@ -331,6 +331,18 @@ msgstr "Strum with a pick"
 msgid "ARRANGEMENT_FINGER"
 msgstr "Fingerpick"
 
+msgid "BASS_ARRANGEMENT_SHORT"
+msgstr "Bass tab"
+
+msgid "BASS_ARRANGEMENT_HELP"
+msgstr "Generated finger positions for four strings tuned E1–A1–D2–G2, through fret 20."
+
+msgid "BASS_COVERAGE"
+msgstr "Bass tab includes %d of %d notes."
+
+msgid "BASS_OMITTED"
+msgstr "%d notes are outside the playable range or cannot be placed together. The staff and playback retain them."
+
 msgid "BASIC_ARRANGEMENT_HELP"
 msgstr "Start here for suggested strings and frets, favoring the lower frets near the headstock. Check the note count and warnings below: some notes cannot be placed, and displayed chords are not guaranteed comfortable."
 
@@ -748,6 +760,9 @@ msgstr "Metronome · %d%%"
 msgid "LOOP_HELP"
 msgstr "A measure is a group of beats between vertical lines. From and Through include both end measures. Play selected section repeats them with your count-in setting."
 
+msgid "HELP_BASS_STRINGS"
+msgstr "The four bass tab lines show G, D, A and E from top to bottom."
+
 msgid "HELP_STRINGS"
 msgstr "Read guitar tablature (tabs) from left to right. The six lines represent strings. The top line is string 1, the thinnest. The bottom line is string 6, the thickest. Standard tuning is E–A–D–G–B–E from thickest to thinnest."
 
@@ -805,6 +820,9 @@ msgstr "Choose what this row shows."
 msgid "NOTATION_STAFF_ROW"
 msgstr "Sheet music"
 
+msgid "NOTATION_BASS_TAB_ROW"
+msgstr "Four-string bass tab"
+
 msgid "NOTATION_TAB_ROW"
 msgstr "Guitar tabs"
 
@@ -837,6 +855,9 @@ msgstr "px"
 
 msgid "ADD_STAFF_ROW"
 msgstr "Add sheet music"
+
+msgid "ADD_BASS_TAB_ROW"
+msgstr "Add bass tab"
 
 msgid "ADD_TAB_ROW"
 msgstr "Add guitar tabs"
@@ -873,6 +894,9 @@ msgstr "Pick strumming"
 
 msgid "PRESET_FINGER"
 msgstr "Fingerpicking"
+
+msgid "PRESET_ELECTRIC_BASS"
+msgstr "Electric bass"
 
 msgid "PRESET_BASS"
 msgstr "Bass staff"

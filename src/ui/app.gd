@@ -100,6 +100,7 @@ var summary: Label
 var cue: Label
 var warning: Label
 var arrangement_picker: OptionButton
+var arrangement_caption: Label
 var arrangement_help: Label
 var offline: Label
 var play_button: Button
@@ -349,6 +350,7 @@ const BUILT_IN_LIBRARY: Array[Dictionary] = [
 ]
 const PRACTICE_PRESETS: Array[Dictionary] = [
 	{"id": "guitar", "key": "PRESET_GUITAR", "rows": [{"type": "staff", "height": 144}, {"type": "tab", "height": 176}], "style": 0},
+	{"id": "electric_bass", "key": "PRESET_ELECTRIC_BASS", "rows": [{"type": "bass", "height": 160}, {"type": "bass_tab", "height": 144}], "style": 0},
 	{"id": "piano", "key": "PRESET_PIANO", "rows": [{"type": "treble", "height": 176}, {"type": "bass", "height": 176}], "style": 0},
 	{"id": "piano_keys", "key": "PRESET_PIANO_KEYS", "rows": [{"type": "treble", "height": 176}, {"type": "bass", "height": 176}], "style": 0, "keyboard": true},
 	{"id": "bass", "key": "PRESET_BASS", "rows": [{"type": "bass", "height": 240}], "style": 0},
@@ -1117,11 +1119,11 @@ func build_welcome_menu() -> void:
 func update_welcome() -> void:
 	var notation: String = score.drawing_notation()
 	var shows_tab: bool = notation in ["both", "tab"] or score.drawing_rows().any(
-		func(row: Dictionary) -> bool: return row.type == "tab")
+		func(row: Dictionary) -> bool: return NotationRows.is_tab(str(row.type)))
 	var key: String = "WELCOME_READ_BODY"
 	if not shows_tab:
 		key = "WELCOME_READ_STAFF"
-	elif current_learning_id == "song:ode_to_joy" and part == 0 and projection.style == TabProjection.BASIC and is_zero_approx(source_tick) and not score.manual_pan:
+	elif not projection.bass and current_learning_id == "song:ode_to_joy" and part == 0 and projection.style == TabProjection.BASIC and is_zero_approx(source_tick) and not score.manual_pan:
 		key = "WELCOME_READ_ODE"
 	welcome_read.text = tr(key)
 	welcome_repeat.disabled = song == null or importer != null
@@ -1162,8 +1164,9 @@ func apply_preset(id: String) -> void:
 		active_preset = id
 		notation_rows.assign((preset.rows as Array).duplicate(true))
 		arrangement_picker.select(int(preset.style))
-		apply_notation_rows()
+		apply_notation_rows(false)
 		rebuild_notation_rows_editor()
+		if id == "electric_bass": listening.select_profile(PitchListener.Profile.BASS)
 		if song != null:
 			var focus: int = preset_focus_part(id, part)
 			if focus != part:
@@ -1182,8 +1185,8 @@ func preset_focus_part(id: String, fallback: int) -> int:
 	if song == null: return fallback
 	var pair: Array[int] = song.staff_pair()
 	if pair.size() != 2: return fallback
-	if id in ["bass", "bass_focus"]: return pair[1]
-	if id == "treble_focus": return pair[0]
+	if id in ["electric_bass", "bass", "bass_focus"]: return pair[1]
+	if id in ["treble_focus", "guitar", "pick", "finger"]: return pair[0]
 	return fallback
 
 func open_piano_example() -> void:
@@ -1258,12 +1261,12 @@ func build_drawers() -> void:
 	add_row.fit_to_longest_item = false
 	add_row.custom_minimum_size.y = 48
 	add_row.accessibility_name = tr("ADD_SCORE_ROW")
-	for key: String in ["ADD_STAFF_ROW", "ADD_TAB_ROW", "ADD_PIANO_ROW", "ADD_MINI_TREBLE_ROW", "ADD_MINI_BASS_ROW"]:
+	for key: String in ["ADD_STAFF_ROW", "ADD_TAB_ROW", "ADD_PIANO_ROW", "ADD_MINI_TREBLE_ROW", "ADD_MINI_BASS_ROW", "ADD_BASS_TAB_ROW"]:
 		add_row.add_item(tr(key))
 	add_row.select(-1)
 	add_row.text = tr("ADD_SCORE_ROW")
 	add_row.item_selected.connect(func(index: int) -> void:
-		add_notation_row(["staff", "tab", "piano", "mini_treble", "mini_bass"][index])
+		add_notation_row(["staff", "tab", "piano", "mini_treble", "mini_bass", "bass_tab"][index])
 		add_row.select(-1)
 		add_row.text = tr("ADD_SCORE_ROW"))
 	rows.add_child(add_row)
@@ -1589,7 +1592,8 @@ func build_drawers() -> void:
 	loops.add_child(button("REPEAT_SONG", func() -> void: repeat_song(); close_menu()))
 
 	var details: VBoxContainer = section("DETAILS")
-	details.add_child(label("ARRANGEMENT_STYLE", 18))
+	arrangement_caption = label("ARRANGEMENT_STYLE", 18)
+	details.add_child(arrangement_caption)
 	arrangement_picker = CaptionOption.new()
 	arrangement_picker.custom_minimum_size.y = 56
 	arrangement_picker.fit_to_longest_item = false
@@ -2357,12 +2361,15 @@ func rebuild_notation_rows_editor() -> void:
 		type.custom_minimum_size = Vector2(150, 56)
 		type.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		type.fit_to_longest_item = false
-		for key: String in ["NOTATION_STAFF_ROW", "NOTATION_TAB_ROW", "NOTATION_PIANO_ROW", "NOTATION_TREBLE_ROW", "NOTATION_BASS_ROW", "NOTATION_MINI_TREBLE_ROW", "NOTATION_MINI_BASS_ROW"]: type.add_item(tr(key))
+		for key: String in ["NOTATION_STAFF_ROW", "NOTATION_TAB_ROW", "NOTATION_PIANO_ROW", "NOTATION_TREBLE_ROW", "NOTATION_BASS_ROW", "NOTATION_MINI_TREBLE_ROW", "NOTATION_MINI_BASS_ROW", "NOTATION_BASS_TAB_ROW"]: type.add_item(tr(key))
 		type.select(NotationRows.TYPES.find(str(notation_rows[index].type)))
 		type.tooltip_text = tr("NOTATION_ROW_TYPE")
 		type.item_selected.connect(func(selected: int) -> void:
-			notation_rows[index].type = NotationRows.TYPES[selected]
-			apply_notation_rows())
+			var new_type: String = NotationRows.TYPES[selected]
+			notation_rows[index].type = new_type
+			switch_tab_rows(new_type)
+			apply_notation_rows()
+			if NotationRows.is_tab(new_type): rebuild_notation_rows_editor())
 		header.add_child(type)
 		var order_actions: MenuGrid = menu_fields(row, 3.5)
 		order_actions.max_columns = 3
@@ -2389,9 +2396,15 @@ func rebuild_notation_rows_editor() -> void:
 		height.value_changed.connect(func(value: float) -> void: update_notation_height(index, int(value)))
 		number_field(row, height, "NOTATION_ROW_HEIGHT")
 
+func switch_tab_rows(type: String) -> void:
+	if not NotationRows.is_tab(type): return
+	for row: Dictionary in notation_rows:
+		if NotationRows.is_tab(str(row.type)): row.type = type
+
 func add_notation_row(type: String) -> void:
 	if notation_rows.size() >= NotationRows.MAX_ROWS: return
 	notation_rows.append({"type": type, "height": 112 if type.begins_with("mini_") else (160 if type == "piano" else (144 if type == "staff" else 176))})
+	switch_tab_rows(type)
 	apply_notation_rows()
 	rebuild_notation_rows_editor()
 
@@ -2421,11 +2434,14 @@ func restore_notation_rows() -> void:
 	apply_notation_rows()
 	rebuild_notation_rows_editor()
 
-func apply_notation_rows() -> void:
+func apply_notation_rows(refresh_projection: bool = true) -> void:
 	notation_rows = NotationRows.clean(notation_rows)
 	sync_preset_marker()
 	if score != null:
 		score.set_notation_rows(notation_rows)
+		if refresh_projection and song != null and projection.bass != NotationRows.has_bass_tab(notation_rows):
+			update_arrangement()
+			update_position()
 		update_main_scroll.call_deferred()
 	if persist_preferences and not host.save_notation_rows(notation_rows):
 		if notation_rows_notice != null:
@@ -3040,12 +3056,20 @@ func update_arrangement() -> void:
 	# Presets and part/style changes rebuild the shared projection. A pending
 	# render must not combine pages from different versions of that projection.
 	invalidate_print()
-	live.configure(song, part)
+	var bass_tab: bool = NotationRows.has_bass_tab(notation_rows)
+	live.configure(song, part, bass_tab)
+	arrangement_caption.visible = not bass_tab
+	arrangement_picker.visible = not bass_tab
 	var style: String = [TabProjection.BASIC, TabProjection.PICK, TabProjection.FINGER][arrangement_picker.selected]
-	projection.build(song, part, style)
+	projection.build(song, part, style, bass_tab)
 	score.set_document(song, part, projection)
 	arrangement_help.text = tr(["BASIC_ARRANGEMENT_HELP", "PICK_ARRANGEMENT_HELP", "FINGER_ARRANGEMENT_HELP"][arrangement_picker.selected])
-	if style == TabProjection.PICK:
+	if bass_tab:
+		arrangement_help.text = tr("BASS_ARRANGEMENT_HELP")
+		notice_button.text = tr("BASS_ARRANGEMENT_SHORT") if projection.omitted.is_empty() else tr("UNPLACED_SHORT") % projection.omitted.size()
+		summary.text = tr("BASS_COVERAGE") % [projection.placed, projection.eligible]
+		warning.text = tr("BASS_OMITTED") % projection.omitted.size() if not projection.omitted.is_empty() else ""
+	elif style == TabProjection.PICK:
 		notice_button.text = tr("PICK_SHORT") % projection.omitted.size()
 		summary.text = tr("PICK_COVERAGE") % [projection.placed, projection.eligible, projection.mute_marks]
 		warning.text = tr("PICK_LIMIT")
@@ -3429,7 +3453,7 @@ func report_state() -> void:
 	if song == null: return
 	if host.trace_enabled():
 		var evidence: Dictionary = audio.metrics()
-		evidence.merge({"muted_parts": muted.duplicate(), "focused_part": part})
+		evidence.merge({"muted_parts": muted.duplicate(), "focused_part": part, "tab_strings": projection.string_count()})
 		evidence.merge({"tv_active": tv_active, "tv_tucked": tv_tucked, "tv_zoom": tv_zoom, "status_visible": status_toast.visible, "tv_systems": score_frame.visible_systems(), "page_slide_count": score_frame.follow_slide_count, "page_slide_offset": score_frame.follow_offset, "music_lines": score_frame.music_lines, "note_spacing": score_frame.note_spacing, "staff_height": score_frame.staff_height, "score_height": score.drawing_height(), "fitted_rows": score.fitted_rows, "fullscreen": host.is_fullscreen(), "follow_pages": score.follow_pages, "upcoming_tick": score.upcoming_tick, "count_beat": int(count_badge.text) if count_badge.visible else 0, "capture_active": capture_active, "capture_notation": capture_view.symbols, "capture_background": capture_view.background, "capture_tick": capture_view.score.current_tick, "loop_enabled": loop_check.button_pressed, "loop_first": int(loop_from.value), "loop_last": int(loop_to.value), "reduced_motion": reduced_motion, "motion_mode": motion_mode, "shape_cues": shape_cues, "font_style": font_style, "control_position": control_position, "handedness": handedness, "controls_on_side": controls_on_side, "print_ready": not print_html.is_empty(), "keyboard_layout": keyboard.layout, "keyboard_octave": keyboard.octave, "live_visuals": score.live_notes.size(), "input_visible": live.piano.visible, "piano_held": live.piano.pointers.size(), "input_result": {"kind": live.latest.get("kind", ""), "timing": live.latest.get("timing", "")}, "midi_status": playing_devices.midi.status, "microphone_status": listening.listener.capture.status, "tuner_enabled": listening.listener.capture.enabled and not listening.listener.paused, "playback_muted": listening.playback_mute.button_pressed, "pitch_analysis_ms": listening.listener.max_analysis_ms, "microphone_dropped": listening.listener.capture.dropped, "count_measures": count_length.value, "metronome": metro_check.button_pressed, "count_in": count_check.button_pressed, "quick_controls": quick_row.visible, "compact": compact, "dark_mode": dark_mode, "appearance": appearance_mode, "interface": interface_id, "interface_rail": presentation.rail, "background_style": background_style, "landscape": landscape, "scroll_y": scroll.scroll_vertical, "scroll_height": scroll.size.y, "score_y": score.global_position.y, "menu_scroll_y": menu_scroll.scroll_vertical, "controls_scroll_y": header_scroll.scroll_vertical, "tuner_profile": listening.listener.profile, "engraving_draws": score.engraving_draws(), "logical_width": size.x, "logical_height": size.y, "play_height": play_button.size.y, "menu_height": menu_button.size.y, "view": score.mode, "notation": score.notation, "notation_rows": notation_rows, "page": score.page_index + 1, "pages": score.pages(), "visible_measures": score.tiles.keys(), "view_offset": score.view_offset, "position_updates": position_updates, "draws": score.draw_count, "cursor_draws": score.cursor.draw_count, "processing": is_processing(), "speed_rect": {"x": main_speed.global_position.x, "y": main_speed.global_position.y, "width": main_speed.size.x, "height": main_speed.size.y}, "panel_speed_rect": {"x": panel_speed.global_position.x, "y": panel_speed.global_position.y, "width": panel_speed.size.x, "height": panel_speed.size.y}, "speed_readout_rect": {"x": speed_readout.position.x, "y": speed_readout.position.y, "width": speed_readout.size.x, "height": speed_readout.size.y}, "speed_pointer_index": main_speed.pointer_index if main_speed.pointer_active else panel_speed.pointer_index, "speed_dragging": speed_dragging, "speed_preview": main_speed.percentage() if main_speed.pointer_active else panel_speed.percentage(), "speed_fine": main_speed.fine_adjustment if main_speed.pointer_active else panel_speed.fine_adjustment, "speed_readout_visible": speed_readout.visible, "speed_range": main_speed.range_ceiling, "speed": speed, "bpm": reference_bpm() * speed, "reference_bpm": reference_bpm(), "bpm_override": bpm_override, "playback_speed": playback_speed(), "drawer": opened_drawer, "state": state, "tick": source_tick, "measure": score.measure_index + 1, "parts": song.parts.size(), "notes": song.notes.size(), "arrangement_style": projection.style, "placed": projection.placed, "eligible": projection.eligible, "omitted": projection.omitted.size(), "mute_marks": projection.mute_marks, "max_import_ms": max_import_usec / 1000.0, "status": status.text})
 		host.report(evidence)
 	offline.text = tr("OFFLINE_READY") if host.offline_ready() else tr("OFFLINE_PENDING")
@@ -3475,7 +3499,7 @@ func update_position(animate_follow: bool = false) -> void:
 	cue.text = ""
 	var shows_tab: bool = false
 	for row: Dictionary in notation_rows:
-		if row.type == "tab": shows_tab = true
+		if NotationRows.is_tab(str(row.type)): shows_tab = true
 	if not shows_tab:
 		var names: Array[String] = []
 		for pitch: int in score.active_pitches(): names.append(score.pitch_name(pitch))
@@ -3487,7 +3511,7 @@ func update_position(animate_follow: bool = false) -> void:
 			if projection.placements.has(note.id):
 				var placement: Dictionary = projection.placements[note.id]
 				cue.text = tr("CUE_NOTE") % [placement.string, placement.fret]
-			elif projection.omitted.has(note.id):
+			elif not projection.bass and projection.omitted.has(note.id):
 				cue.text = tr("CUE_PICK_OMITTED")
 			else:
 				cue.text = tr("CUE_UNPLACED")
@@ -3846,8 +3870,8 @@ func prepare_print() -> void:
 		return
 	var subtitle: String = tr("PRINT_SUBTITLE") % [part + 1, int(print_first.value), int(print_last.value), print_notation.get_item_text(print_notation.selected)]
 	var notes: PackedStringArray = [summary.text, warning.text]
-	if notation != "staff": notes.append_array([tr("HELP_STRINGS"), tr("HELP_FRETS")])
-	if notation != "tab": notes.append(tr("HELP_STAFF"))
+	if notation != "staff": notes.append_array([tr("HELP_BASS_STRINGS" if projection.bass else "HELP_STRINGS"), tr("HELP_FRETS")])
+	if notation != "tab": notes.append(tr("WELCOME_READ_STAFF" if projection.bass else "HELP_STAFF"))
 	print_html = PrintLayout.document(images, title, subtitle, "\n\n".join(notes), paper_size)
 	print_save.disabled = print_html.is_empty()
 	print_status.text = tr("PRINT_READY") % images.size()

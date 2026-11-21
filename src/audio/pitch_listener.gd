@@ -90,7 +90,7 @@ func set_paused(value: bool) -> void:
 func open_strings() -> Array[int]:
 	match profile:
 		Profile.ACOUSTIC_GUITAR, Profile.ELECTRIC_GUITAR: return [40, 45, 50, 55, 59, 64]
-		Profile.BASS: return [28, 33, 38, 43]
+		Profile.BASS: return TabProjection.BASS_TUNING.duplicate()
 		Profile.VIOLIN: return [55, 62, 69, 76]
 		Profile.UKULELE: return [67, 60, 64, 69]
 	return []

@@ -428,8 +428,9 @@ The prototype also offers [practice presets and concert-pitch staff rows](decisi
 for guitar, pick, bass-staff reading, and piano grand-staff reading. Under
 [decision 0020](decisions/0020-paired-example-parts-and-mini-staff.md), original
 examples have separate higher and lower source parts and optional compact
-companion staffs. These views do not add bass fingering or general multi-part
-piano reduction to the MVP contract.
+companion staffs. [Decision 0031](decisions/0031-electric-bass-practice.md) adds
+four-string bass tablature and a linked tuner profile to the prototype. The
+guitar-first MVP contract still excludes a bass course and multi-part reduction.
 
 The navigation feedback pass (2026-10-08) limits seek previews, playback endpoints
 and displayed ticks to the source song's exact end, including partially filled

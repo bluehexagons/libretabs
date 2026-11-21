@@ -3,6 +3,8 @@ class_name TabProjection
 extends RefCounted
 
 const TUNING: Array[int] = [40, 45, 50, 55, 59, 64]
+const BASS_TUNING: Array[int] = [28, 33, 38, 43]
+const MAX_FRET: int = 20
 const BASIC: String = "basic"
 const PICK: String = "pick"
 const FINGER: String = "finger"
@@ -16,9 +18,19 @@ var eligible: int = 0
 var placed: int = 0
 var mute_marks: int = 0
 var style: String = BASIC
+var bass: bool = false
+
+static func tuning_for(is_bass: bool) -> Array[int]:
+	return BASS_TUNING if is_bass else TUNING
+
+func string_label(number: int) -> String:
+	return ["G", "D", "A", "E"][number - 1] if bass else str(number)
+
+func string_count() -> int:
+	return tuning_for(bass).size()
 
 # M0 deterministic low-fret baseline, NOT the M3 whole-phrase optimizer.
-func build(song: SongDocument, part: int, requested_style: String = BASIC) -> void:
+func build(song: SongDocument, part: int, requested_style: String = BASIC, use_bass: bool = false) -> void:
 	placements.clear()
 	omitted.clear()
 	strums.clear()
@@ -27,17 +39,19 @@ func build(song: SongDocument, part: int, requested_style: String = BASIC) -> vo
 	eligible = 0
 	placed = 0
 	mute_marks = 0
-	style = requested_style if requested_style in [BASIC, PICK, FINGER] else BASIC
+	bass = use_bass
+	style = requested_style if not bass and requested_style in [BASIC, PICK, FINGER] else BASIC
 	if style == PICK:
 		build_pick(song, part)
 	elif style == FINGER:
 		build_finger(song, part)
 	else:
 		build_basic(song, part)
-	detect_barres(song, part)
+	if not bass: detect_barres(song, part)
 
 func build_basic(song: SongDocument, part: int) -> void:
 	var active: Array[Dictionary] = []
+	var tuning: Array[int] = tuning_for(bass)
 	for note: Dictionary in song.notes:
 		if int(note.part) != part or note.end <= note.start:
 			continue
@@ -48,25 +62,28 @@ func build_basic(song: SongDocument, part: int) -> void:
 				held.append(other)
 		active = held
 		var best: Dictionary = {}
-		for string_index: int in range(6):
-			var fret: int = int(note.pitch) - TUNING[string_index]
-			if fret < 0 or fret > 20:
+		for string_index: int in range(tuning.size()):
+			var string_number: int = tuning.size() - string_index
+			var fret: int = int(note.pitch) - tuning[string_index]
+			if fret < 0 or fret > MAX_FRET:
 				continue
 			var free: bool = true
 			var low: int = fret if fret > 0 else 99
 			var high: int = fret
 			for other: Dictionary in active:
-				if int(other.string) == 6 - string_index:
+				if int(other.string) == string_number:
 					free = false
 				if int(other.fret) > 0:
 					low = mini(low, int(other.fret))
 					high = maxi(high, int(other.fret))
 			if free and high - low <= 4 and (best.is_empty() or fret < int(best.fret)):
-				best = {"string": 6 - string_index, "fret": fret, "end": note.end}
+				best = {"string": string_number, "fret": fret, "end": note.end}
 		if not best.is_empty():
 			placements[note.id] = best
 			active.append(best)
 			placed += 1
+		elif bass:
+			omitted.append(note.id)
 
 # A bounded per-onset projection for pick users. Each resulting shape occupies
 # one string span; unused strings inside it receive an explicit mute (X). This
@@ -134,7 +151,7 @@ func best_chord_shape(notes: Array, finger_style: bool, reserved_strings: Array 
 		for string_number: int in range(1, 7):
 			if reserved_strings.has(string_number): continue
 			var fret: int = int(note.pitch) - TUNING[6 - string_number]
-			if fret < 0 or fret > 20: continue
+			if fret < 0 or fret > MAX_FRET: continue
 			if best_single.is_empty() or fret < int(best_single.fret):
 				best_single = {"string": string_number, "fret": fret}
 		var frets: Array = reserved_frets.duplicate()
@@ -152,7 +169,7 @@ func best_chord_shape(notes: Array, finger_style: bool, reserved_strings: Array 
 				var role: String = hand_role(string_number)
 				if finger_style and state.roles.has(role): continue
 				var fret: int = int(note.pitch) - TUNING[6 - string_number]
-				if fret < 0 or fret > 20: continue
+				if fret < 0 or fret > MAX_FRET: continue
 				var next: Dictionary = state.duplicate(true)
 				next.placements[id] = {"string": string_number, "fret": fret}
 				if finger_style: next.roles[role] = true
