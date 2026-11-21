@@ -13,7 +13,7 @@ const PROFILE_IDS: Array[String] = ["acoustic_piano", "electronic_piano", "acous
 var profile: int = Profile.ACOUSTIC_PIANO
 var noise_gate: float = 0
 var paused: bool = false
-var gate: float = 0.0015
+var gate: float = 0.00045
 var sensitivity: float = 1.0
 var setup_state: String = "INPUT_SETUP_IDLE"
 var setup_until: int = 0
@@ -34,6 +34,8 @@ var latest: Dictionary = {"valid": false}
 
 func _ready() -> void:
 	capture = MicrophoneInput.new()
+	# Drain capture before the listener analyzes this frame.
+	capture.process_priority = process_priority - 1
 	add_child(capture)
 	capture.samples_ready.connect(accept_samples)
 	capture.interrupted.connect(reset)
@@ -79,7 +81,7 @@ func effective_gate() -> float:
 	return maxf(gate * sensitivity, noise_gate)
 
 func set_sensitivity(value: float) -> void:
-	sensitivity = pow(2.0, (50.0 - clampf(value, 0, 100)) / 10.0)
+	sensitivity = db_to_linear(remap(clampf(value, 0, 100), 0, 100, 36, -36))
 	reset()
 
 func set_paused(value: bool) -> void:
@@ -97,7 +99,10 @@ func open_strings() -> Array[int]:
 
 func invalidate_setup() -> void:
 	reset()
-	gate = 0.0002 if profile == Profile.ELECTRONIC_PIANO else (0.0015 if profile == Profile.ACOUSTIC_PIANO else 0.003)
+	match profile:
+		Profile.ELECTRONIC_PIANO: gate = 0.00006
+		Profile.ACOUSTIC_PIANO: gate = 0.00045
+		_: gate = 0.0009
 	noise_gate = 0
 	detector.gate = gate
 	setup_levels.clear()
@@ -124,18 +129,18 @@ func accept_samples(block: PackedFloat32Array, rate: float, age_ms: float, clock
 	if not is_finite(age_ms) or age_ms < 0 or age_ms > 250:
 		reset()
 		return
-	if last_block > 0 and now - last_block > 250: reset()
+	if last_block > 0 and (now - last_block > 250 or rate != detector.input_rate): reset()
 	if not detector.push(block, rate):
 		reset()
 		return
 	last_block = now
 	last_age = age_ms
 	if setup_state == "INPUT_SETUP_QUIET":
-		if setup_levels.size() < 512: setup_levels.append(detector.rms)
-	elif detector.rms > effective_gate() * 1.5 and detector.rms > maxf(effective_gate(), previous_rms) * 2.2 and last_block - last_onset > 120:
+		if setup_levels.size() < 512: setup_levels.append(1.0 if detector.peak >= 0.98 else detector.band_rms)
+	elif detector.band_rms > effective_gate() * 1.5 and detector.band_rms > maxf(effective_gate(), previous_rms) * 2.2 and last_block - last_onset > 120:
 		# Onset is the block start, not the later stable pitch decision.
 		last_onset = last_block - roundi(age_ms + 1000.0 * block.size() / rate)
-	previous_rms = detector.rms
+	previous_rms = detector.band_rms
 
 func _process(_delta: float) -> void:
 	analyze_at(Time.get_ticks_msec())
@@ -149,21 +154,23 @@ func analyze_at(now: int) -> void:
 		else:
 			setup_levels.sort()
 			var noise: float = setup_levels[floori((setup_levels.size() - 1) * 0.9)]
-			noise_gate = noise * 1.5
-			gate = clampf(noise * 3.0, 0.0001, 0.1)
-			detector.gate = gate
-			setup_state = "INPUT_SETUP_FAILED" if noise > 0.03 else "INPUT_SETUP_NOTES"
+			if noise > 0.03:
+				setup_state = "INPUT_SETUP_FAILED"
+			else:
+				noise_gate = noise * 1.5
+				gate = clampf(noise * 3.0, 0.00001, 0.1)
+				setup_state = "INPUT_SETUP_NOTES"
 		setup_levels.clear()
 		setup_changed.emit()
-	if last_block == 0 or now - last_block > 250 or setup_state == "INPUT_SETUP_QUIET":
-		if last_block > 0 and now - last_block > 250:
+	if last_block == 0 or now - last_block + last_age > 250 or setup_state == "INPUT_SETUP_QUIET":
+		if last_block > 0 and now - last_block + last_age > 250:
 			reset()
 			return
 		latest = {"valid": false}
 		observation.emit(latest)
 		return
 	# Two distinct fresh windows establish a note; repeated idle frames cannot.
-	if now - analyzed_at < 50 or analyzed_block == last_block: return
+	if now - analyzed_at < 20 or analyzed_block == last_block: return
 	analyzed_at = now
 	analyzed_block = last_block
 	var started: int = Time.get_ticks_usec()
@@ -173,15 +180,15 @@ func analyze_at(now: int) -> void:
 	result["fresh"] = true
 	result["quiet"] = float(result.rms) < detector.gate * 0.8 and float(result.peak) < 0.98
 	max_analysis_ms = maxf(max_analysis_ms, (Time.get_ticks_usec() - started) / 1000.0)
-	if result.valid:
+	if result.valid and result.confidence >= (0.85 if profile == Profile.ACOUSTIC_PIANO else 0.9):
 		var pitch: float = PitchDetector.midi_pitch(float(result.hz), reference)
 		var nearest: int = roundi(pitch)
 		stable = stable + 1 if candidate == nearest else 1
 		candidate = nearest
 		result["pitch"] = pitch
-		result["valid"] = stable >= 2 and result.confidence >= (0.85 if profile == Profile.ACOUSTIC_PIANO else 0.9)
+		result["valid"] = stable >= 2
 		result["onset"] = result.valid and last_onset >= 0 and last_onset != emitted_onset and now - last_onset < 600
-		result["age_ms"] = float(now - last_onset) if result.onset else last_age + 1000 * PitchDetector.WINDOW / PitchDetector.RATE / 2
+		result["age_ms"] = float(now - last_onset) if result.onset else now - last_block + last_age + float(result.window_ms) / 2
 		if result.onset:
 			emitted_onset = last_onset
 			if setup_state == "INPUT_SETUP_NOTES" and last_onset != setup_last_onset:
@@ -190,6 +197,7 @@ func analyze_at(now: int) -> void:
 				if setup_notes >= 3: setup_state = "INPUT_SETUP_DONE"
 				setup_changed.emit()
 	else:
+		result["valid"] = false
 		stable = 0
 		candidate = -1
 	latest = result

@@ -35,7 +35,7 @@ func run() -> void:
 	for amplitude: float in [0.01, 0.001, 0.0001]:
 		for hz_soft: float in [55.0, 440.0, 1046.5, 2093.0]:
 			var soft: PitchDetector = PitchDetector.new()
-			soft.gate = 0.00001
+			soft.gate = 0.000008 # Threshold uses level after the analysis low-pass.
 			var fixture: PackedFloat32Array = tone(hz_soft, 48000, true)
 			for index: int in range(fixture.size()): fixture[index] *= amplitude
 			feed(soft, fixture, 48000)
@@ -118,6 +118,11 @@ func run() -> void:
 	listener.analyze_at(clock + 1000)
 	check(absf(listener.gate - 0.006) < 0.00001 and listener.setup_state == "INPUT_SETUP_NOTES", "quiet setup measures a bounded background threshold")
 	check(listener.reference == 440, "noise setup never changes tuning reference")
+	listener.setup_state = "INPUT_SETUP_QUIET"
+	listener.setup_levels.resize(10)
+	listener.setup_levels.fill(0.08)
+	listener.analyze_at(clock + 1100)
+	check(listener.setup_state == "INPUT_SETUP_FAILED" and is_equal_approx(listener.noise_gate, 0.003), "a noisy retry preserves the last usable floor")
 	listener.set_profile(1)
 	check(listener.setup_state == "INPUT_SETUP_IDLE" and listener.detector.samples.is_empty(), "instrument change invalidates setup and pitch history")
 	listener.set_sensitivity(100)
@@ -140,7 +145,7 @@ func run() -> void:
 		listener.analyze_at(clock)
 	check(not listener.latest.valid, "a periodic sound below calibrated noise is rejected even at maximum sensitivity")
 	listener.set_profile(PitchListener.Profile.ACOUSTIC_PIANO)
-	check(listener.detector.difference_threshold == 0.15 and listener.gate > 0.001, "acoustic piano uses its own periodicity and starting level gates")
+	check(listener.detector.difference_threshold == 0.15 and listener.gate > 0.00006, "acoustic piano uses its own periodicity and starting level gates")
 	var acoustic: PackedFloat32Array = tone(440, 48000, true)
 	for index: int in range(acoustic.size()): acoustic[index] *= 0.001 * exp(-2.0 * index / 48000.0)
 	for index: int in range(0, acoustic.size(), 1024):

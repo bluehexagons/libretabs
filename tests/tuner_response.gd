@@ -25,6 +25,19 @@ func signal_samples(hz: float, amplitude: float, duration: float, noise: float =
 func feed(detector: PitchDetector, samples: PackedFloat32Array) -> void:
 	for offset: int in range(0, samples.size(), 1024): detector.push(samples.slice(offset, mini(samples.size(), offset + 1024)), 48000)
 
+# Return time from the start of this segment to the first confirmed target.
+# Preserve listener history between segments to measure a legato key change.
+func acquire(listener: PitchListener, samples: PackedFloat32Array, pitch: int, start_ms: int, rate: int = 48000, block_size: int = 1024) -> int:
+	var first_lock: int = -1
+	for offset: int in range(0, samples.size(), block_size):
+		var end: int = mini(samples.size(), offset + block_size)
+		var elapsed: int = roundi(end * 1000.0 / rate)
+		listener.accept_samples(samples.slice(offset, end), rate, 0, start_ms + elapsed)
+		listener.analyze_at(start_ms + elapsed)
+		if listener.latest.valid and absf(listener.latest.pitch - pitch) < 0.1 and first_lock < 0:
+			first_lock = elapsed
+	return first_lock
+
 func _initialize() -> void: call_deferred("run")
 
 func run() -> void:
@@ -57,10 +70,41 @@ func run() -> void:
 		if clock >= 1200:
 			analyzed += 1
 			if listener.latest.valid: accepted += 1
-	check(first_lock >= 0 and first_lock <= 180, "default electronic piano locks a soft noisy note within 180 ms: %d" % first_lock)
+	check(first_lock >= 0 and first_lock <= 100, "default electronic piano locks a soft noisy note within 100 ms: %d" % first_lock)
 	check(accepted >= analyzed * 0.9, "default electronic piano retains soft note: %d/%d" % [accepted, analyzed])
 	var acquisition: int = first_lock
-	listener.reset()
+	listener.set_sensitivity(100)
+	# Quiet but periodic speaker output, with deterministic background hiss.
+	var faint: PackedFloat32Array = signal_samples(440, 0.000005, 0.35, 0.000001)
+	var faint_lock: int = acquire(listener, faint, 69, 3000)
+	check(faint_lock > 0 and faint_lock <= 100, "maximum sensitivity locks a faint A4 above hiss: %d ms" % faint_lock)
+	var switch_lock: int = acquire(listener, signal_samples(523.251, 0.000005, 0.35, 0.000001), 72, 3350)
+	check(switch_lock > 0 and switch_lock <= 110, "legato A4 to C5 at the same low level: %d ms" % switch_lock)
+	listener.set_profile(PitchListener.Profile.ACOUSTIC_GUITAR)
+	var guitar_lock: int = acquire(listener, signal_samples(82.4069, 0.000060, 0.35, 0.000008, 1.5), 40, 4000)
+	check(guitar_lock > 0 and guitar_lock <= 110, "maximum sensitivity locks faint, decaying low E: %d ms" % guitar_lock)
+	print("Faint fixtures, ms to lock: A4 %d, legato C5 %d, low E %d" % [faint_lock, switch_lock, guitar_lock])
+	# A biased microphone with high-frequency background noise should be able
+	# to calibrate the room and then detect a quiet note in the same room.
+	listener.set_profile(PitchListener.Profile.ELECTRONIC_PIANO)
+	listener.capture.status = "INPUT_MIC_READY"
+	listener.calibrate()
+	listener.setup_until = 8000
+	for block: int in range(200):
+		var room: PackedFloat32Array = PackedFloat32Array()
+		room.resize(960)
+		for i: int in range(room.size()):
+			var t: float = (block * 960 + i) / 48000.0
+			room[i] = 0.006 + 0.0006 * sin(TAU * 8000 * t)
+			if block >= 170: room[i] += 0.00035 * sin(TAU * 440 * t)
+		var now: int = 5000 + (block + 1) * 20
+		listener.accept_samples(room, 48000, 0, now)
+		listener.analyze_at(now)
+		if block == 165:
+			check(listener.setup_state == "INPUT_SETUP_NOTES" and not listener.latest.valid, "calibrated steady background alone stays uncertain")
+	check(listener.latest.valid and absf(listener.latest.pitch - 69) < 0.05, "DC and high-frequency room noise do not bury the quiet note during setup")
+	check(float(listener.latest.rms) > 0.005 and listener.noise_gate < 0.0001, "raw input meter and in-band room floor retain their distinct units of measurement")
+	listener.invalidate_setup()
 	listener.accept_samples(signal_samples(440, 0.1, 0.15), 48000, 0, clock + 100)
 	listener.analyze_at(clock + 100)
 	check(listener.stable == 1 and not listener.latest.valid, "first window requires confirmation")

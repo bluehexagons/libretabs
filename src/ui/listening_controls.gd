@@ -324,12 +324,12 @@ func update_reading() -> void:
 	if not is_instance_valid(gauge): return
 	var receiving: bool = listener.capture.enabled and listener.capture.status == "INPUT_MIC_READY"
 	var measured: bool = receiving and not listener.paused and bool(last_result.get("fresh", false))
-	mic_level.value = minf(100, sqrt(float(last_result.get("rms", 0))) * 200) if measured else 0.0
+	mic_level.value = clampf(remap(linear_to_db(maxf(0.000001, last_result.get("rms", 0))), -120, 0, 0, 100), 0, 100) if measured else 0.0
 	var level_key: String = "INPUT_LEVEL_UNAVAILABLE"
 	if listener.capture.enabled and listener.paused: level_key = "INPUT_LEVEL_PAUSED"
 	elif receiving and listener.setup_state == "INPUT_SETUP_QUIET": level_key = "INPUT_LEVEL_CALIBRATING"
 	elif measured:
-		level_key = "INPUT_LEVEL_CLIP" if float(last_result.get("peak", 0)) >= 0.98 else ("INPUT_LEVEL_OK" if float(last_result.get("rms", 0)) >= listener.effective_gate() else "INPUT_LEVEL_QUIET")
+		level_key = "INPUT_LEVEL_CLIP" if float(last_result.get("peak", 0)) >= 0.98 else ("INPUT_LEVEL_OK" if float(last_result.get("band_rms", 0)) >= listener.effective_gate() else "INPUT_LEVEL_QUIET")
 	mic_level_text.text = tr(level_key)
 	var valid: bool = measured and bool(last_result.get("valid", false))
 	var expected_pitch: int = roundi(last_result.pitch) if valid and target < 0 else target
